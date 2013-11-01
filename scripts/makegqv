@@ -1,0 +1,10 @@
+#!/bin/tcsh
+ls polobs/top5/*/*/*/RvVar.png > tmp.gqv
+sed -e "s/^/\$PWD\//g" tmp.gqv | sed -e 's/^/"/g' | sed -e 's/$/"/g' > RvVar_t5.gqv
+rm tmp.gqv
+gqview --list RvVar_t5.gqv
+
+#ls polobs/top1/*/*/*/RvVar.png > tmp.gqv
+#sed -e "s/^/\$PWD\//g" tmp.gqv | sed -e 's/^/"/g' | sed -e 's/$/"/g' > RvVar_t1.gqv
+
+

@@ -1,0 +1,5 @@
+{
+  gROOT->ProcessLine(".L epconfig.cpp++");
+  gROOT->ProcessLine(".L eid.cpp++");
+  gROOT->ProcessLine(".L ploteidcuts.cpp++");
+}

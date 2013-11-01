@@ -1,0 +1,10 @@
+#!/bin/tcsh
+# $0 = procss_<e1fs1/e1fs2>
+
+if ($0 =~ *_e1fs1*) then
+  root -b -q 'procSimstats.C("e1fs1")'
+else if ($0 =~ *_e1fs2*) then
+  root -b -q 'procSimstats.C("e1fs2")'
+else
+  echo "Could not determine sim"
+endif

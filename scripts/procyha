@@ -1,0 +1,8 @@
+#! /bin/tcsh
+# $1=overwrite
+
+procyh_e1fs1 $1
+procyh_e1fd1 $1
+
+procyh_e1fs2 $1
+procyh_e1fd2 $1

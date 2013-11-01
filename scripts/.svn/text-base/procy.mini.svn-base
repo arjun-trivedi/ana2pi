@@ -1,0 +1,41 @@
+#!/bin/tcsh
+# $0 = procy.mini_<e1fd1/e1fd2>
+
+set type = exp
+
+# set top names and bng
+set top0 = 1
+set top1 = 2
+set top2 = 3
+set top3 = 4
+set top4 = 1:2:3:4
+if ( $0 =~ *_e1fd1* || $0 =~ *_e1fs1*) then
+  set nQ2bins = 1
+  set Q2min = 1.400
+  set Q2max = 1.500
+  set nWbins = 8
+  set Wmin = 1.600
+  set Wmax = 1.800
+else if ( $0 =~ *_e1fd2* || $0 =~ *_e1fs2*) then
+  set nQ2bins = 1
+  set Q2min = 2.000
+  set Q2max = 2.400
+  set nWbins = 24 
+  set Wmin = 1.300
+  set Wmax = 1.900
+endif
+
+# Process Yields
+foreach top ($top0 $top1 $top2 $top3 $top4)
+  set outfile = "$top"__"$nQ2bins"-"$Q2min"-"$Q2max"__"$nWbins"-"$Wmin"-"$Wmax"__"$type".root
+  #prepare arguments for procYields
+  set str_top = \"$top\" #since procYields takes 'top' as a TString
+  set infile = \"yield.root\"
+  if (! -e $outfile) then
+    echo "going to make $outfile"
+    root -b -q "procYields.C($infile, $str_top, $nQ2bins, $Q2min, $Q2max, $nWbins, $Wmin, $Wmax)"
+    echo "done making $outfile"
+  else
+    echo "$outfile exists!"
+  endif
+end

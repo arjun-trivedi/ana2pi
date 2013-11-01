@@ -1,0 +1,13 @@
+Going to make h10skim for e1fs2
+
+Q2W__1.9-2.5__1.3-1.9__400M
+/e1f.sim2pi.datadir2/Q2W__1.9-2.5__1.3-1.9__400M/h10skim exists! If need to overwrite, then implement in make.py
+
+Q2W__1.9-2.5__1.3-1.9__200M
+/e1f.sim2pi.datadir2/Q2W__1.9-2.5__1.3-1.9__200M/h10skim exists! If need to overwrite, then implement in make.py
+
+Q2W__1.9-2.5__1.3-1.9__200Mii
+/e1f.sim2pi.datadir2/Q2W__1.9-2.5__1.3-1.9__200Mii/h10skim exists! If need to overwrite, then implement in make.py
+
+Q2W__1.9-2.5__1.3-1.9__200Miii
+/e1f.sim2pi.datadir2/Q2W__1.9-2.5__1.3-1.9__200Miii/h10skim exists! If need to overwrite, then implement in make.py

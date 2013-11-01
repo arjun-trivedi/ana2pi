@@ -1,0 +1,83 @@
+#!/bin/tcsh
+# $0 = add<mcy/y>_<e1fs1/e1fs2>
+# $1 = bkdirname
+# $2 = logfile
+
+#Determine if add mcyield or yield
+if ($0 =~ *addy*) then
+  set fy = yield.root
+  set dtype = 'cooked'
+else if ($0 =~ *addmcy*) then
+  set fy = mcyield.root
+  set dtype = 'mc'
+endif
+
+# Determine h10type 
+if ($0 =~ *_e1fs1*) then
+  set anadir = $E1F_SIM2PI_ANADIR1
+  set simarray    = ( `cat ${HOME}/ongoing/e1fs1.lst` )
+  set simcumarray = ( `cat ${HOME}/ongoing/e1fs1_cumulative.lst` )
+  cat ${HOME}/ongoing/e1fs1_cumulative.lst > /tmp/cumsimlst
+else if ($0 =~ *_e1fs2*) then
+  set anadir = $E1F_SIM2PI_ANADIR2
+  set simarray    = ( `cat ${HOME}/ongoing/e1fs2.lst` )
+  set simcumarray = ( `cat ${HOME}/ongoing/e1fs2_cumulative.lst` )
+  cat ${HOME}/ongoing/e1fs2_cumulative.lst > /tmp/cumsimlst
+endif
+
+#Determine bk
+if (($1 != '')) then
+  set bk = 1
+  set bkdirname=$1
+else
+  set bk = 0
+endif
+
+# hadd Yields
+@ idx_simarray = 0;
+foreach cumsim ( `cat /tmp/cumsimlst` )
+  
+  if (! -e $anadir/$cumsim) then
+    mkdir $anadir/$cumsim
+  endif
+  cd $anadir/$cumsim
+  echo "$PWD" |& tee -a $2
+  @ idx_simarray += 1;
+  if ($idx_simarray == 1) then
+    echo "No need to add" |& tee -a $2
+    echo "" |& tee -a $2
+    continue;
+  endif
+  
+  if (! -e $fy) then
+    @ idx_simcumarray = ($idx_simarray - 1)
+    echo "going to 'hadd'" |& tee -a $2
+    echo "$anadir/$simcumarray[$idx_simcumarray]/$fy" |& tee -a $2
+    echo "AND" |& tee -a $2
+    echo "$anadir/$simarray[$idx_simarray]/$fy" |& tee -a $2
+    echo "" |& tee -a $2
+    hadd -f $fy $anadir/$simcumarray[$idx_simcumarray]/$fy $anadir/$simarray[$idx_simarray]/$fy |& tee -a $2
+  else if ((-e $fy)&&($bk == 1)) then
+    echo "Going to backup $fy in $bkdirname" |& tee -a $2
+    mkdir $bkdirname
+    mv *__sim.root $bkdirname
+    if ($dtype == 'mc') then
+      mv mcyield.root $bkdirname
+      cp -p yield.root $bkdirname
+    else if ($dtype == 'cooked') then 
+      mv yield.root $bkdirname
+      cp -p mcyield.root $bkdirname
+    endif
+    @ idx_simcumarray = ($idx_simarray - 1)
+    echo "going to 'hadd'" |& tee -a $2
+    echo "$anadir/$simcumarray[$idx_simcumarray]/$fy" |& tee -a $2
+    echo "AND" |& tee -a $2
+    echo "$anadir/$simarray[$idx_simarray]/$fy" |& tee -a $2
+    echo ""
+    hadd -f $fy $anadir/$simcumarray[$idx_simcumarray]/$fy $anadir/$simarray[$idx_simarray]/$fy |& tee -a $2
+  else
+   echo "$fy exists!" |& tee -a $2
+   echo "" |& tee -a $2
+  endif
+  
+end

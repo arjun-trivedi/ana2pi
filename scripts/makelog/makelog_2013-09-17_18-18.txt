@@ -1,0 +1,17 @@
+Going to make yield for e1fs2
+
+Q2W__1.9-2.5__1.3-1.9__400M
+YieldTool:
+yielddir=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M
+h10lst=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/h10skim.lst
+fyield=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/yield.root
+Will update yield and backup old data in /e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/bk__yield____2013-09-17_18-18
+in make_tools::run
+/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/yield.root exists! Making backup in: 
+/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/bk__yield____2013-09-17_18-18
+Going to call runSelector with following arguments
+nevts=1000000000
+h10lst="/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/h10skim.lst"
+fyield="/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/yield.root"
+procorder=gProcOrder_simYield
+cmdstring = 

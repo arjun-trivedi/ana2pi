@@ -1,0 +1,19 @@
+#!/bin/bash
+# $1 = Top. Number
+# $2 = exp/sim
+
+# makepdf for hRvVar
+echo $1 $2
+ls -d polobs3/$2/top$1/*/*/*/RvVar.png  > /tmp/tmp3
+sed -i "s@^@$(pwd)/@" /tmp/tmp3
+sed -i "s/\/RvVar.png//g" /tmp/tmp3  
+
+for i in `cat /tmp/tmp3`
+do
+  convert $i/RvVar.png $i/RvVar.pdf 
+done
+
+ls polobs3/$2/top$1/*/*/*/RvVar.pdf > /tmp/tmppdf3
+sed -i "s@^@$(pwd)/@" /tmp/tmppdf3
+echo "./polobs3/RvVar_$2_top$1.pdf" >> /tmp/tmppdf3
+cat /tmp/tmppdf3 | xargs pdfunite

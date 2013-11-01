@@ -1,0 +1,36 @@
+#!/bin/tcsh
+set h10datadir = $1
+set skimdir = $2
+set procorder  = $3
+
+rm log/*.log
+
+@ isub = 0;
+@ njobs = 0;
+foreach i (`ls $h10datadir/*.root| xargs -n 1 basename`);
+  set skip=0;
+  set fin='"'`echo $h10datadir/$i`'"'
+  set fout='"'`echo $skimdir`"/h10skim_"$i'"'
+
+  if (-e $skimdir/h10skim_$i) then
+    echo "skipping make h10skim for $h10datadir/$i"
+    continue
+  endif  
+
+  echo "fin = $fin"
+  echo "fout = $fout"
+  root -b -q "runSelector.C(1000000000, $fin, $fout, $procorder)" >& log& 
+  @ njobs = `ps -ef | grep runSelector | wc -l` 
+  echo "njobs = $njobs"
+
+  if ($njobs >= 20) then
+    while ($njobs >= 20)
+    @ njobs = `ps -ef | grep runSelector | wc -l`
+    echo "waiting for 5 seconds"
+    sleep 5
+    end
+  endif
+
+  if ($isub + 1  == $argv[1]) break;
+  @ isub += 1;
+end

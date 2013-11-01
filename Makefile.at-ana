@@ -1,0 +1,45 @@
+#SVNREV = -D'SVN_REV="$(shell svnversion -n .)"'
+ROOTLIBS	= $(shell root-config --libs)
+INCLUDE		= $(shell root-config --incdir)
+ROOTSYS		= $(shell root-config --exec-prefix)
+F77 = gfortran
+F_FLAGS =
+C++ = g++
+CXX = g++
+C_FLAGS =
+#atrivedi
+#CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -Wno-deprecated $(SVNREV)
+CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -Wno-deprecated
+#atrivedi
+#INCS =          -I$(shell root-config --incdir) -I$(CLAS6INC) -I$(HOME)/include -I./inc
+INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
+#atrivedi#OBJS =          ep_processor.o epconfig.o data_omega.o data_h10.o data_e.o data_fid.o data_mom.o data_pid.o data_3pi.o proc_fid.o proc_mom_cor.o proc_eid.o proc_skim_q.o proc_morand.o proc_tops.o eid.o sel_h10.o ep_dict.o
+#atrivedi
+OBJS =          ep_processor.o epconfig.o data_omega.o data_h10.o data_e.o data_fid.o data_mom.o data_pid.o data_3pi.o data_2pi.o data_elastic.o proc_fid.o proc_mom_cor.o proc_eid.o proc_skim_q.o proc_pid.o proc_morand.o proc_tops.o eid.o sel_h10.o ep_dict.o
+LIBS =          $(shell root-config --glibs) -lProofPlayer
+LIBOUT =        libEpOmega.so
+#TARGET =	      test
+TARGET = analysis2pi
+
+%.o: %.cpp
+	$(CXX) $(INCS) $(CXXFLAGS) -c $< -o $@
+
+test: lib test.o
+	$(CXX) -o $(TARGET) $(CXXFLAGS) test.o -L. -lEpOmega $(INCS) $(LIBS)
+
+$(TARGET):	lib analysis2pi.o 
+	$(CXX) -o $(TARGET) $(CXXFLAGS) analysis2pi.o $(INCS) $(LIBS) -L. libEpOmega.so
+
+all:	dict lib $(TARGET)
+
+clean:
+	-rm -f $(OBJS) $(LIBOUT) test test.o analysis2pi analysis2pi.o
+
+lib:	$(OBJS)
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $(LIBOUT)
+
+dict: sel_h10.h data_e.h data_3pi.h data_2pi.h data_elastic.h data_fid.h data_pid.h data_h10.h data_mom.h data_omega.h particle_constants.h
+	-rm ep_dict.*
+	@echo ${LD_LIBRARY_PATH}
+	rootcint ep_dict.cpp -c sel_h10.h data_e.h data_3pi.h data_2pi.h data_elastic.h data_fid.h data_pid.h data_h10.h data_mom.h data_omega.h particle_constants.h LinkDef.h
+	$(CXX) $(INCS) $(CXXFLAGS) -c ep_dict.cpp -o ep_dict.o

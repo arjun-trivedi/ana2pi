@@ -1,0 +1,51 @@
+#!/bin/tcsh
+# $0 = make.mini_<yield/mcyield>
+# $1 = <skim> ; by default <skim> = h10
+# $2 = Number of files to process
+if ($0 =~ *_yield) then
+  set procorder  = '"'eid:efid:qskim:pid:top'"'
+  set foutname = yield
+else if ($0 =~ *_mcyield) then
+  set procorder  = '"'top'"'
+  set foutname = mcyield
+endif
+
+# set fin (Determine <skim>)
+if ( "$1" == "h10skim" ) then
+  set skim = h10skim
+  set flst = h10skim.lst
+else if ( "$1" == "h10skim_2piCuts" ) then
+  set skim = h10skim_2piCuts
+  set flst = h10skim_2piCuts.lst
+else
+  set skim = h10
+  set flst = h10.lst
+endif
+
+set nfiles=`ls "$skim"_*.lst | grep $skim"_[0-9].lst"|wc -l`
+echo "Total Files = $nfiles"
+if ($2) then
+  set nprocfiles = $2
+  echo "Total Files to process = $nprocfiles"
+else
+  set nprocfiles = 100
+endif
+
+@ nprocdfiles = 0
+foreach i (`ls "$skim"_*.lst | grep $skim"_[0-9].lst" `)
+ if ($nprocdfiles == $nprocfiles) then
+   break
+ endif
+ 
+ set fin = '"'$i'"' 
+ set fout = `echo $fin| sed s/$skim/"$foutname"_"$skim"/g | sed s/lst/root/g`
+ echo "fin = $fin"
+ echo "fout = $fout"
+ echo "procorder = $procorder"
+ root -l -b -q "runSelector.C(1000000000,$fin,$fout,$procorder)" 
+
+ @ nprocdfiles += 1
+end
+
+#hadd "$foutname"_"$skim".root "$foutname"_"$skim"_*.root
+hadd "$foutname".root "$foutname"_"$skim"_*.root

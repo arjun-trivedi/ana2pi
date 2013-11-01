@@ -1,0 +1,39 @@
+#!/bin/bash
+# $1 = Top. Number
+# $2 = exp/sim
+
+# makepdf for hRvVar
+echo $1 $2
+ls -d polobs/$2/top$1/*/*/*/RvVar.png  > /tmp/tmp
+sed -i "s@^@$(pwd)/@" /tmp/tmp
+sed -i "s/\/RvVar.png//g" /tmp/tmp  
+
+for i in `cat /tmp/tmp`
+do
+  convert $i/RvVar.png $i/RvVar.pdf 
+done
+
+ls polobs/$2/top$1/*/*/*/RvVar.pdf > /tmp/tmppdf
+sed -i "s@^@$(pwd)/@" /tmp/tmppdf
+echo "./polobs/RvVar_$2_top$1.pdf" >> /tmp/tmppdf
+cat /tmp/tmppdf | xargs pdfunite
+
+# makepdf for hphi_diff
+if [ $2 == "exp" ]; then
+  echo $1 
+  ls polobs/exp/top$1/*/*/*/hphi_diff.png > /tmp/tmp
+  sed -i "s@^@$(pwd)/@" /tmp/tmp
+  sed -i "s/\/hphi_diff.png//g" /tmp/tmp
+
+  for i in `cat /tmp/tmp`
+  do
+    convert $i/hphi_diff.png $i/hphi_diff.pdf 
+  done
+
+  ls polobs/exp/top$1/*/*/*/hphi_diff.pdf > /tmp/tmppdf
+  sed -i "s@^@$(pwd)/@" /tmp/tmppdf
+  echo "./polobs/phidiff_top$1.pdf" >> /tmp/tmppdf
+  cat /tmp/tmppdf | xargs pdfunite
+fi
+
+

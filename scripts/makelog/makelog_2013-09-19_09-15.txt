@@ -1,0 +1,36 @@
+Going to make yield for e1fs2
+
+Q2W__1.9-2.5__1.3-1.9__400M
+YieldTool:
+yielddir=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M
+h10lst=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/h10skim.lst
+fyield=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400M/yield.root
+No option for bkdir (i.e. if yield exists, will not overwrite)
+
+Q2W__1.9-2.5__1.3-1.9__200M
+YieldTool:
+yielddir=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200M
+h10lst=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200M/h10skim.lst
+fyield=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200M/yield.root
+No option for bkdir (i.e. if yield exists, will not overwrite)
+
+Q2W__1.9-2.5__1.3-1.9__200Mii
+YieldTool:
+yielddir=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200Mii
+h10lst=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200Mii/h10skim.lst
+fyield=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200Mii/yield.root
+No option for bkdir (i.e. if yield exists, will not overwrite)
+
+Q2W__1.9-2.5__1.3-1.9__200Miii
+YieldTool:
+yielddir=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200Miii
+h10lst=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200Miii/h10skim.lst
+fyield=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__200Miii/yield.root
+No option for bkdir (i.e. if yield exists, will not overwrite)
+
+Q2W__1.9-2.5__1.3-1.9__400Mii
+YieldTool:
+yielddir=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400Mii
+h10lst=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400Mii/h10skim.lst
+fyield=/e1f.sim2pi.anadir2/Q2W__1.9-2.5__1.3-1.9__400Mii/yield.root
+No option for bkdir (i.e. if yield exists, will not overwrite)
