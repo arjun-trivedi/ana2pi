@@ -76,7 +76,8 @@ for q2wbin in dfss_grpd_q2wbin.groups:
 
 itops = {0,1,2,3,4} #NOTE, that these are indices of tops, not tops; vm_tops used for now
 colors = ['b','r','g','m','k']
-markers = ['s','o','^','v','<']
+#markers = ['s','o','^','v','<']
+markers = ['^','s','v','<','o']
 labels = ['Top1','Top2','Top3','Top4','Top5']
 sels  = {}
 gr_Fth = {}
@@ -86,8 +87,11 @@ gr_EsrVsEac = {}
 gr_Esr_frc = {} #Esr[top]/Fth
 gr_Esr_rat = {} #Esr[top]/Esr[top=2]
 
+#gr_FthVq2wbin
+
 for q2wbin in dfss_grpd_q2wbin.groups:
     df = dfss_grpd_q2wbin.get_group(q2wbin)
+    #print 'q2wbin:Sim', q2wbin, df['Sim']
     
     fg_Fth_name  = str.format('Fth_%02d'%q2wbin)
     fg_Fth_title = str.format('Fth[Q2W=%02d]'%q2wbin)
@@ -103,6 +107,13 @@ for q2wbin in dfss_grpd_q2wbin.groups:
     fg_Esr_title = str.format('Esr[Q2W=%02d]'%q2wbin)
     fg_Esr = plt.figure(fg_Esr_name,figsize=(8,5))
     ax_Esr = fg_Esr.add_subplot(1,1,1,title=fg_Esr_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel=df.nEsr.name)
+    ax_Esr.set_ylabel(df.nEsr.name, color='k')
+    for tl in ax_Esr.get_yticklabels():
+        tl.set_color('k')
+    ax_Esr2 = ax_Esr.twinx()
+    ax_Esr2.set_ylabel(df.nEsr.name, color='r')
+    for tl in ax_Esr2.get_yticklabels():
+        tl.set_color('r')
     
     fg_EsrVsEac_name  = str.format('EsrVsEac_%02d'%q2wbin)
     fg_EsrVsEac_title = str.format('EsrVsEac[Q2W=%02d]'%q2wbin)
@@ -113,11 +124,18 @@ for q2wbin in dfss_grpd_q2wbin.groups:
     fg_Esr_frc_title = str.format('Esr_frc[Q2W=%02d]'%q2wbin)
     fg_Esr_frc = plt.figure(fg_Esr_frc_name,figsize=(8,5))
     ax_Esr_frc = fg_Esr_frc.add_subplot(1,1,1,title=fg_Esr_frc_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel='holes[top]/nFth')
+    for tl in ax_Esr_frc.get_yticklabels():
+        tl.set_color('k')
+    ax_Esr_frc2 = ax_Esr_frc.twinx()
+    ax_Esr_frc2.set_ylabel(df.nEsr.name, color='r')
+    for tl in ax_Esr_frc2.get_yticklabels():
+        tl.set_color('r')
 
     fg_Esr_rat_name  = str.format('Esr_rat_%02d'%q2wbin)
     fg_Esr_rat_title = str.format('Esr_rat[Q2W=%02d]'%q2wbin)
     fg_Esr_rat = plt.figure(fg_Esr_rat_name,figsize=(8,5))
     ax_Esr_rat = fg_Esr_rat.add_subplot(1,1,1,title=fg_Esr_rat_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel='holes[top]/holes[2]')
+    
 
 
     for itop in itops:
@@ -128,15 +146,22 @@ for q2wbin in dfss_grpd_q2wbin.groups:
 
         gr_Fsr[itop] = ax_Fsr.scatter(dfsel.Sim, dfsel.nFsr,
                                       s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-
-        gr_Esr[itop] = ax_Esr.scatter(dfsel.Sim, dfsel.nEsr,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
+        if (itop==1 or itop==4):
+            gr_Esr[itop] = ax_Esr2.scatter(dfsel.Sim, dfsel.nEsr,
+                                      s=50,c='r',marker=markers[itop],label=labels[itop])
+        else:
+            gr_Esr[itop] = ax_Esr.scatter(dfsel.Sim, dfsel.nEsr,
+                                      s=50,c='k',marker=markers[itop],label=labels[itop])
 
         gr_EsrVsEac[itop] = ax_EsrVsEac.scatter(dfsel.nEac,dfsel.nEsr,
                                                 s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
 
-        gr_Esr_frc[itop] = ax_Esr_frc.scatter(dfsel.Sim, dfsel.nEsr/dfsel.nFth,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
+        if (itop==1 or itop==4):
+            gr_Esr_frc[itop] = ax_Esr_frc2.scatter(dfsel.Sim, dfsel.nEsr/dfsel.nFth,
+                                      s=50,c='r',marker=markers[itop],label=labels[itop])
+        else:
+            gr_Esr_frc[itop] = ax_Esr_frc.scatter(dfsel.Sim, dfsel.nEsr/dfsel.nFth,
+                                      s=50,c='k',marker=markers[itop],label=labels[itop])
         
         gr_Esr_rat[itop] = ax_Esr_rat.scatter(dfsel.Sim, dfsel.nEsr.values/df[(df['Top']==2) & (df['Varset']==1)].nEsr.values,
                                       s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
@@ -151,7 +176,7 @@ for q2wbin in dfss_grpd_q2wbin.groups:
     fg_Fsr.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Fsr_name))
 
     plt.figure(fg_Esr_name)
-    plt.legend(loc='upper left', prop={'size':6})
+    plt.legend(loc='upper left', prop={'size':10})
     fg_Esr.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Esr_name))
 
     plt.figure(fg_EsrVsEac_name)

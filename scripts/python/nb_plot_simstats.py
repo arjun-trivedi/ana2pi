@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 # <nbformat>3.0</nbformat>
 
+# <markdowncell>
+
+# ### This notebook has various tests for the DataFrame object made for Simulation Statistics
+# - Simulation Statistics file = anae1fd2/simstats_vm.csv    
+
+# <markdowncell>
+
+# ### First load the .csv file and create the DataFrame for simstats(=dfss)
+
 # <codecell>
 
 import os
@@ -49,57 +58,32 @@ for q2wbin in dfss_grpd_q2wbin.groups:
         print dfsel
         print df[(df['Top']==2) & (df['Varset']==1)]
 
+# <markdowncell>
+
+# ### Test gr_nFthVq2wbin
+
 # <codecell>
 
-itops = {0,1,2,3,4} #NOTE, that these are indices of tops, not tops; vm_tops used for now
-colors = ['b','r','g','m','k']
-markers = ['s','o','^','v','<']
-labels = ['Top1','Top2','Top3','Top4','Top5']
-sels  = {}
-gr_Fth = {}
-gr_Fsr = {}
-gr_Esr = {}
-gr_EsrVsEac = {}
+from __future__ import division
+dfss_grpd_q2wbin = dfss.groupby('Q2Wbin')
+nq2wbins = len(dfss_grpd_q2wbin.groups)
+ngridx = 4
+ngridy = nq2wbins/ngridx
+print ngridx, ngridy
 
+#gr_FthVq2wbin
 
 for q2wbin in dfss_grpd_q2wbin.groups:
+    print 'q2wbin', q2wbin
     df = dfss_grpd_q2wbin.get_group(q2wbin)
+    #print 'sim:'
+    #print df['Sim']
     
-    fg_Fth_name  = str.format('Fth_%d'%q2wbin)
-    fg_Fth_title = str.format('Fth[Q2W=%d]'%q2wbin)
-    fg_Fth = plt.figure(fg_Fth_name,figsize=(6,5))
-    ax_Fth = fg_Fth.add_subplot(1,1,1,title=fg_Fth_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel=df.nFth.name)
-    
-    fg_Fsr_name  = str.format('Fsr_%d'%q2wbin)
-    fg_Fsr_title = str.format('Fsr[Q2W=%d]'%q2wbin)
-    fg_Fsr = plt.figure(fg_Fsr_name,figsize=(6,5))
-    ax_Fsr = fg_Fsr.add_subplot(1,1,1,title=fg_Fsr_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel=df.nFsr.name)
-    
-    fg_EsrVsEac_name  = str.format('EsrVsEac_%d'%q2wbin)
-    fg_EsrVsEac_title = str.format('EsrVsEac[Q2W=%d]'%q2wbin)
-    fg_EsrVsEac = plt.figure(fg_EsrVsEac_name,figsize=(6,5))
-    ax_EsrVsEac = fg_EsrVsEac.add_subplot(1,1,1,title=fg_EsrVsEac_title,xlabel=df.nEac.name,ylabel=df.nEsr.name)
-    
-    
-    for itop in itops:
-        sels[itop] = (df['Top']==itop+1) & (df['Varset']==1)
-        dfsel = df[sels[itop]]
-        gr_Fth[itop] = ax_Fth.scatter(dfsel.Sim, dfsel.nFth,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-        gr_Fsr[itop] = ax_Fsr.scatter(dfsel.Sim, dfsel.nFsr,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-        gr_EsrVsEac[itop] = ax_EsrVsEac.scatter(dfsel.nEac,dfsel.nEsr,
-                                                s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-    
-    plt.figure(fg_Fth_name)
-    plt.legend()
-    fg_Fth.savefig("%s.jpg"%fg_Fth_name)
-    plt.figure(fg_Fsr_name)
-    plt.legend()
-    fg_Fsr.savefig("%s.jpg"%fg_Fsr_name)
-    plt.figure(fg_EsrVsEac_name)
-    plt.legend()
-    fg_EsrVsEac.savefig("%s.jpg"%fg_EsrVsEac_name)
+    siml = df['Sim'].max()
+    sel = (df['Sim']==siml) & (df['Top']==2)
+    #nFth_siml = df.nFth(sel)
+    nFth_siml = df.nFth[sel]
+    print siml,nFth_siml
 
 # <codecell>
 
