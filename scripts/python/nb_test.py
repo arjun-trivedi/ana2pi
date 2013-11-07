@@ -5,7 +5,7 @@
 
 # ## Lists and Arrays in Python (Arrays are made up of Lists in Python)
 
-# <markdowncell>
+# <rawcell>
 
 # Example of List & implementation of 2D data structure using List
 
@@ -30,28 +30,18 @@ print "Initiliazed \"2D Array\" = ",md
 
 # <codecell>
 
+from numpy  import *
+a = arange(10).reshape(2, 5)
+print "array A shape:size =",a.shape,":",a.ndim
+print a
 
-# <codecell>
+b = array([(1,2,1),(3,4,1),(3,4,1),(4,5,1)])
+print "array B shape:size =",b.shape,":",b.ndim
+print b
 
-import matplotlib.pyplot as plt
-
-x = range(100)
-y = range(100,200)
-fig = plt.figure()
-
-ax1 = fig.add_subplot(221,title="ax1")
-opts = 'c=\'b\', marker=\"s\"'
-print opts
-#ax1.scatter(x[:4], y[:4], s=10, opts)
-ax1.scatter(y[4:], x[4:], s=10, c='r', marker="o")
-
-
-ax2 = fig.add_subplot(222, title="ax2")
-ax2.scatter(x[:4], y[:4], s=1, c='b', marker="s")
-ax2.scatter(y[4:], x[4:], s=1, c='r', marker="o")
-
-#plt.show()
-plt.savefig("test2.jpg")
+c = zeros((5,5,5))
+print "array C shape:size =",c.shape,":",c.ndim
+print c
 
 # <codecell>
 
