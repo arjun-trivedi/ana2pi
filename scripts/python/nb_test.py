@@ -3,7 +3,9 @@
 
 # <markdowncell>
 
-# ## Lists and Arrays in Python (Arrays are made up of Lists in Python)
+# ## Lists and Arrays in Python 
+# * ### Arrays are made of of Lists
+# * ### Lists are 1D "horizontal" data structures
 
 # <rawcell>
 
@@ -30,18 +32,44 @@ print "Initiliazed \"2D Array\" = ",md
 
 # <codecell>
 
-from numpy  import *
-a = arange(10).reshape(2, 5)
+#from numpy import * 
+import numpy as np
+a = np.arange(10).reshape(2, 5)
 print "array A shape:size =",a.shape,":",a.ndim
 print a
 
-b = array([(1,2,1),(3,4,1),(3,4,1),(4,5,1)])
+b = np.array([(1,2,1),(3,4,1),(3,4,1),(4,5,1)])
 print "array B shape:size =",b.shape,":",b.ndim
 print b
 
-c = zeros((5,5,5))
+c = np.zeros((5,5,5))
 print "array C shape:size =",c.shape,":",c.ndim
 print c
+c[0][0][0] = 1
+print c[0][0][0]
+
+# <codecell>
+
+#print b
+bt = np.transpose(b)
+print bt 
+np.vsplit(bt,3)
+#vs = np.vsplit(bt,2)
+#hs = np.hsplit(bt,(0,1,2))
+#print vs
+#print hs
+
+#print vs[0][0]
+#print hs[0][0]
+
+# <codecell>
+
+a = floor(10*random.random((12,1)))
+print a
+
+# <codecell>
+
+np.hsplit(a,1)
 
 # <codecell>
 

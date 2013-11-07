@@ -40,6 +40,7 @@ print ngridx, ngridy
 # <codecell>
 
 from __future__ import division
+import numpy as npy
 
 #create Figure
 plt.figure(figsize=(8,8))
@@ -47,62 +48,66 @@ plt.figure(figsize=(8,8))
 ax1 = plt.subplot(3,1,1,ylabel = 'nFth') 
 ax2 = plt.subplot(3,1,2,ylabel='nEsr')
 ax3 = plt.subplot(3,1,3,xlabel='q2wbin',ylabel='frc')
-#sels = {}
-nf = [[],[],[],[]]
-ne = [[],[],[],[]]
-frc = [[],[],[],[]]
-q2wb = []
+sels = {}
+tops = [1,2,3,4,5];
+nFTH = npy.zeros((nq2wbins,ntops));
+nESR = npy.zeros((nq2wbins,ntops));
+frc = npy.zeros((nq2wbins,ntops));
+q2wb = npy.arange(1,nq2wbins+1,1);
 for q2wbin in dfss_grpd_q2wbin.groups:
+    iq2wbin = q2wbin-1
     #print 'q2wbin', q2wbin
     df = dfss_grpd_q2wbin.get_group(q2wbin)
     #print 'sim:'
     #print df['Sim']
     
     siml = df['Sim'].max()
-    selt1 = (df['Sim']==siml) & (df['Top']==1)
-    selt2 = (df['Sim']==siml) & (df['Top']==2)
-    #nFth_siml = df.nFth(sel)
-    #nFth = df.nFth[sels[2]]
-    #nEsr = df.nEsr[sels[2]]
-    f = nEsr/nFth
-    #print siml,nFth_siml
-    nf[0].append(df.nFth[sels[1]])
-    ne[0].append(df.nEsr[sels[1]])
-    frc.append(f)
-    q2wb.append(q2wbin)
-    
-ax1.scatter(q2wb,nf)
+    for top in tops:
+        itop = top-1
+        sels[itop] = (df['Sim']==siml) & (df['Top']==(itop+1))
+        nFTH[iq2wbin][itop] = df.nFth[sels[itop]]
+        nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
+        frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
+
+tp = numpy.vsplit(npy.transpose(nFTH),ntops)
+print tp
+print tp[0]
+print q2wb
+ax1.scatter(q2wb, tp[0])
 ax2.scatter(q2wb,ne)
-ax3.scatter(q2wb,frc)
+#ax3.scatter(q2wb,frc)
 #ax3.axes.xaxis.label = 'Q2WBIN'
-plt.show()
+#plt.show()
+
+# <markdowncell>
+
+# ### Test Division Operation between two different columumns of D
 
 # <codecell>
 
-### Test Division Operation between two different columumns of DF
+#from __future__ import division
+#for q2wbin in dfss_grpd_q2wbin.groups:
+#    df = dfss_grpd_q2wbin.get_group(q2wbin)
+#    if (q2wbin==1):
+#        #x= df.nEsr/df.nFth
+#        #print x
+#        dfsel = df[(df['Top']==1) & (df['Varset']==1)]
+#        num = dfsel.nEsr.values
+#        print num
+#        #num.reindex
+#        #print num
+#        
+#        den = df[(df['Top']==2) & (df['Varset']==1)].nEsr.values
+#        print den
+#        #den.reindex
+#        #print den
+#        
+#        x = num/den
+#        print x
+#        
+#        print dfsel
+#        print df[(df['Top']==2) & (df['Varset']==1)]
 
 # <codecell>
 
-from __future__ import division
-for q2wbin in dfss_grpd_q2wbin.groups:
-    df = dfss_grpd_q2wbin.get_group(q2wbin)
-    if (q2wbin==1):
-        #x= df.nEsr/df.nFth
-        #print x
-        dfsel = df[(df['Top']==1) & (df['Varset']==1)]
-        num = dfsel.nEsr.values
-        print num
-        #num.reindex
-        #print num
-        
-        den = df[(df['Top']==2) & (df['Varset']==1)].nEsr.values
-        print den
-        #den.reindex
-        #print den
-        
-        x = num/den
-        print x
-        
-        print dfsel
-        print df[(df['Top']==2) & (df['Varset']==1)]
 
