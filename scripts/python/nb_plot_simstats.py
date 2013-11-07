@@ -69,12 +69,14 @@ for q2wbin in dfss_grpd_q2wbin.groups:
         nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
         frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
 
-tp = numpy.vsplit(npy.transpose(nFTH),ntops)
-print tp
-print tp[0]
+nFTH_tp = numpy.vsplit(npy.transpose(nFTH),ntops)
+nESR_tp = numpy.vsplit(npy.transpose(nESR),ntops)
+frc_tp = numpy.vsplit(npy.transpose(frc),ntops)
+print frc
+print frc[0]
 print q2wb
-ax1.scatter(q2wb, tp[0])
-ax2.scatter(q2wb,ne)
+#ax1.scatter(q2wb, tp[0])
+#ax2.scatter(q2wb,ne)
 #ax3.scatter(q2wb,frc)
 #ax3.axes.xaxis.label = 'Q2WBIN'
 #plt.show()
