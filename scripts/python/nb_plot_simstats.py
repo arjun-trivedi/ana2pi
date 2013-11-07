@@ -75,6 +75,14 @@ frc_tp = numpy.vsplit(npy.transpose(frc),ntops)
 print frc
 print frc[0]
 print q2wb
+
+colors = ['r','g','b','k','y']
+for top in tops:
+    itop = top-1
+    ax1.scatter(q2wb, nFTH_tp[itop], color=colors[itop])
+    ax2.scatter(q2wb, nESR_tp[itop], color=colors[itop])
+    ax3.scatter(q2wb, frc_tp[itop], color=colors[itop])
+    
 #ax1.scatter(q2wb, tp[0])
 #ax2.scatter(q2wb,ne)
 #ax3.scatter(q2wb,frc)
