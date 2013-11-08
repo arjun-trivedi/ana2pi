@@ -45,10 +45,11 @@ import numpy as npy
 #create Figure
 plt.figure(figsize=(8,8))
 # create Axes that go in the Figure
-ax1 = plt.subplot(3,1,1,ylabel = 'nFth') 
-ax2 = plt.subplot(3,1,2,ylabel='nEsr')
-ax3 = plt.subplot(3,1,3,xlabel='q2wbin',ylabel='frc')
+ax_nFTH = plt.subplot(3,1,1,ylabel = 'nFth') 
+ax_nESR = plt.subplot(3,1,2,ylabel='nEsr')
+ax_frc = plt.subplot(3,1,3,xlabel='q2wbin',ylabel='frc')
 sels = {}
+ntops=5
 tops = [1,2,3,4,5];
 nFTH = npy.zeros((nq2wbins,ntops));
 nESR = npy.zeros((nq2wbins,ntops));
@@ -69,25 +70,102 @@ for q2wbin in dfss_grpd_q2wbin.groups:
         nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
         frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
 
-nFTH_tp = numpy.vsplit(npy.transpose(nFTH),ntops)
-nESR_tp = numpy.vsplit(npy.transpose(nESR),ntops)
-frc_tp = numpy.vsplit(npy.transpose(frc),ntops)
-print frc
-print frc[0]
-print q2wb
+nFTH_trps = numpy.vsplit(npy.transpose(nFTH),ntops)
+nESR_trps = numpy.vsplit(npy.transpose(nESR),ntops)
+frc_trps = numpy.vsplit(npy.transpose(frc),ntops)
+#print frc
+#print frc[0]
+#print q2wb
 
 colors = ['r','g','b','k','y']
 for top in tops:
     itop = top-1
-    ax1.scatter(q2wb, nFTH_tp[itop], color=colors[itop])
-    ax2.scatter(q2wb, nESR_tp[itop], color=colors[itop])
-    ax3.scatter(q2wb, frc_tp[itop], color=colors[itop])
+    ax_nFTH.scatter(q2wb, nFTH_trps[itop], color=colors[itop])
+    ax_nESR.scatter(q2wb, nESR_trps[itop], color=colors[itop])
+    ax_frc.scatter(q2wb, frc_trps[itop], color=colors[itop])
     
 #ax1.scatter(q2wb, tp[0])
 #ax2.scatter(q2wb,ne)
 #ax3.scatter(q2wb,frc)
 #ax3.axes.xaxis.label = 'Q2WBIN'
 #plt.show()
+
+# <codecell>
+
+#create Figure
+from matplotlib.lines import Line2D
+plt.figure("tfig",figsize=(8,8))
+# create Axes that go in the Figure
+#ax_nFTH = plt.subplot(3,1,1,ylabel = 'nFth')
+ax_nESR = []
+ax_nESR.append(plt.subplot(1,1,1,ylabel='nEsr'))
+ax_nESR[0].set_ylabel('nESR top1,3&4')
+ax_nESR[0].legend(loc=0)
+ax_nESR.append(ax_nESR[0].twinx())
+ax_nESR[1].set_ylabel('nESR top2&5',color='r')
+ax_nESR[1].legend(loc=0)
+for tl in ax_nESR[1].get_yticklabels():
+    tl.set_color('r')
+
+q2wb = npy.arange(1,nq2wbins+1,1);
+for q2wbin in dfss_grpd_q2wbin.groups:
+    iq2wbin = q2wbin-1
+    #print 'q2wbin', q2wbin
+    df = dfss_grpd_q2wbin.get_group(q2wbin)
+    #print 'sim:'
+    #print df['Sim']
+    
+    siml = df['Sim'].max()
+    for top in tops:
+        itop = top-1
+        sels[itop] = (df['Sim']==siml) & (df['Top']==(itop+1))
+        #nFTH[iq2wbin][itop] = df.nFth[sels[itop]]
+        nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
+        #frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
+
+nFTH_trps = numpy.vsplit(npy.transpose(nFTH),ntops)
+nESR_trps = numpy.vsplit(npy.transpose(nESR),ntops)
+frc_trps = numpy.vsplit(npy.transpose(frc),ntops)
+#print frc
+#print frc[0]
+#print q2wb
+
+#markers = []
+#for m in Line2D.markers:
+#    try:
+#        if len(m) == 1 and m != ' ':
+#            markers.append(m)
+#    except TypeError:
+#        pass
+labels = ['Top1','Top2','Top3','Top4','Top5']
+markers = ['s','<','8' ,'p','>']
+colors =  ['b','r','g','y','r']
+linestyles = ['_', '-', '--', ':']
+lns = []
+for top in tops:
+    itop = top-1
+    if top==2 or top==5:
+        #print markers[itop]
+        lns.append(ax_nESR[1].scatter(q2wb, nESR_trps[itop], color='r', marker=markers[itop], s=50,
+                           label=labels[itop]))
+    else:
+        lns.append(ax_nESR[0].scatter(q2wb, nESR_trps[itop], color='k', marker=markers[itop], s=50,
+                           label=labels[itop]))    
+    #ax_nFTH.scatter(q2wb, nFTH_tp[itop], color=colors[itop])
+    #ax_nESR.scatter(q2wb, nESR_tp[itop], color=colors[itop])
+    #ax_frc.scatter(q2wb, frc_tp[itop], color=colors[itop])
+#p1, = plot([1,2,3], label="test1")
+#p2, = plot([3,2,1], label="test2")
+
+#l1 = legend([ax_nESR[1],ax_nESR[0]], ["Label 1"], loc=1)
+#l2 = legend([ax_nESR[0]], ["Label 2"], loc=4) # this removes l1 from the axes.
+#gca().add_artist(l1) # add l1 as a separate artist to the axes
+
+#plt.legend()#, ["Label 1"], loc=1)
+#plt.figure("tfig")
+labs = [l.get_label() for l in lns]
+ax_nESR[0].legend(lns, labs, loc=0)
+plt.show()
 
 # <markdowncell>
 

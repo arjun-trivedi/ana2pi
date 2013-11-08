@@ -73,4 +73,23 @@ np.hsplit(a,1)
 
 # <codecell>
 
+#fg = plt.figure("figure")
+#ax = [plt.Axes(fg)]
+#ax = [plt.subplot(2,1,1), ax[0].twinx()]
+#for tl in ax[1].get_yticklabels():
+    #tl.set_color('r')
+x = [1,2,3]
+y1 = [1,2,3]
+y2 = [2,4,6]
+fig = plt.figure("test")
+ax = fig.add_subplot(111,title="test")
+ax1=ax.twinx()
+for tl in ax1.get_yticklabels():
+    tl.set_color('r')
+ax.scatter(x,y1)
+ax1.plot(x,y2,'^')
+plt.show()
+
+# <codecell>
+
 
