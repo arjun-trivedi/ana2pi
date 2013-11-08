@@ -120,7 +120,8 @@ for q2wbin in dfss_grpd_q2wbin.groups:
         itop = top-1
         sels[itop] = (df['Sim']==siml) & (df['Top']==(itop+1))
         #nFTH[iq2wbin][itop] = df.nFth[sels[itop]]
-        nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
+        #nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
+        nESR[iq2wbin][itop] = df['nEsr'][sels[itop]]
         #frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
 
 nFTH_trps = numpy.vsplit(npy.transpose(nFTH),ntops)
@@ -166,6 +167,10 @@ for top in tops:
 labs = [l.get_label() for l in lns]
 ax_nESR[0].legend(lns, labs, loc=0)
 plt.show()
+
+# <codecell>
+
+def tdraw():
 
 # <markdowncell>
 
