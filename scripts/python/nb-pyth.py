@@ -54,41 +54,6 @@ print c[0][0][0]
 bt = np.transpose(b)
 print bt 
 np.vsplit(bt,3)
-#vs = np.vsplit(bt,2)
-#hs = np.hsplit(bt,(0,1,2))
-#print vs
-#print hs
-
-#print vs[0][0]
-#print hs[0][0]
-
-# <codecell>
-
-a = floor(10*random.random((12,1)))
-print a
-
-# <codecell>
-
-np.hsplit(a,1)
-
-# <codecell>
-
-#fg = plt.figure("figure")
-#ax = [plt.Axes(fg)]
-#ax = [plt.subplot(2,1,1), ax[0].twinx()]
-#for tl in ax[1].get_yticklabels():
-    #tl.set_color('r')
-x = [1,2,3]
-y1 = [1,2,3]
-y2 = [2,4,6]
-fig = plt.figure("test")
-ax = fig.add_subplot(111,title="test")
-ax1=ax.twinx()
-for tl in ax1.get_yticklabels():
-    tl.set_color('r')
-ax.scatter(x,y1)
-ax1.plot(x,y2,'^')
-plt.show()
 
 # <codecell>
 

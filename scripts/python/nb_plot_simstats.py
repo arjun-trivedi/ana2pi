@@ -100,10 +100,10 @@ plt.figure("tfig",figsize=(8,8))
 ax_nESR = []
 ax_nESR.append(plt.subplot(1,1,1,ylabel='nEsr'))
 ax_nESR[0].set_ylabel('nESR top1,3&4')
-ax_nESR[0].legend(loc=0)
+#ax_nESR[0].legend(loc=0)
 ax_nESR.append(ax_nESR[0].twinx())
 ax_nESR[1].set_ylabel('nESR top2&5',color='r')
-ax_nESR[1].legend(loc=0)
+#ax_nESR[1].legend(loc=0)
 for tl in ax_nESR[1].get_yticklabels():
     tl.set_color('r')
 
@@ -124,20 +124,12 @@ for q2wbin in dfss_grpd_q2wbin.groups:
         nESR[iq2wbin][itop] = df['nEsr'][sels[itop]]
         #frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
 
-nFTH_trps = numpy.vsplit(npy.transpose(nFTH),ntops)
 nESR_trps = numpy.vsplit(npy.transpose(nESR),ntops)
-frc_trps = numpy.vsplit(npy.transpose(frc),ntops)
+#frc_trps = numpy.vsplit(npy.transpose(frc),ntops)
 #print frc
 #print frc[0]
 #print q2wb
 
-#markers = []
-#for m in Line2D.markers:
-#    try:
-#        if len(m) == 1 and m != ' ':
-#            markers.append(m)
-#    except TypeError:
-#        pass
 labels = ['Top1','Top2','Top3','Top4','Top5']
 markers = ['s','<','8' ,'p','>']
 colors =  ['b','r','g','y','r']
@@ -147,10 +139,10 @@ for top in tops:
     itop = top-1
     if top==2 or top==5:
         #print markers[itop]
-        lns.append(ax_nESR[1].scatter(q2wb, nESR_trps[itop], color='r', marker=markers[itop], s=50,
+        lns.append(ax_nESR[0].scatter(q2wb, nESR_trps[itop], color='k', marker=markers[itop], s=50,
                            label=labels[itop]))
     else:
-        lns.append(ax_nESR[0].scatter(q2wb, nESR_trps[itop], color='k', marker=markers[itop], s=50,
+        lns.append(ax_nESR[1].scatter(q2wb, nESR_trps[itop], color='r', marker=markers[itop], s=50,
                            label=labels[itop]))    
     #ax_nFTH.scatter(q2wb, nFTH_tp[itop], color=colors[itop])
     #ax_nESR.scatter(q2wb, nESR_tp[itop], color=colors[itop])
@@ -170,7 +162,59 @@ plt.show()
 
 # <codecell>
 
-def tdraw():
+def tdraw(sq):
+    ax = []
+    ax.append(plt.subplot(1,1,1,ylabel=sq))
+    ax.append(ax[0].twinx())
+    ax[0].set_ylabel('nESR t2,5')
+    ax[1].set_ylabel('nESR top1,3,4',color='r')
+    #ax_nESR[1].legend(loc=0)
+    for tl in ax[0].get_yticklabels():
+        tl.set_color('r')
+    n = npy.zeros((nq2wbins,ntops));
+    q2wb = npy.arange(1,nq2wbins+1,1);
+    for q2wbin in dfss_grpd_q2wbin.groups:
+        iq2wbin = q2wbin-1
+        #print 'q2wbin', q2wbin
+        df = dfss_grpd_q2wbin.get_group(q2wbin)
+        #print 'sim:'
+        #print df['Sim']
+    
+        siml = df['Sim'].max()
+        for top in tops:
+            itop = top-1
+            sels[itop] = (df['Sim']==siml) & (df['Top']==(itop+1))
+            #nFTH[iq2wbin][itop] = df.nFth[sels[itop]]
+            #nESR[iq2wbin][itop] = df.nEsr[sels[itop]]
+            n[iq2wbin][itop] = df[sq][sels[itop]]
+            #frc[iq2wbin][itop] = nESR[iq2wbin][itop]/nFTH[iq2wbin][itop]
+
+    n_trps = numpy.vsplit(npy.transpose(n),ntops)
+    #nESR_trps = numpy.vsplit(npy.transpose(nESR),ntops)
+    #frc_trps = numpy.vsplit(npy.transpose(frc),ntops)
+    #print frc
+    #print frc[0]
+    #print q2wb
+
+    labels = ['Top1','Top2','Top3','Top4','Top5']
+    markers = ['s','<','8' ,'p','>']
+    colors =  ['b','r','g','y','r']
+    linestyles = ['_', '-', '--', ':']
+    lns = []
+    for top in tops:
+        itop = top-1
+        if top==2 or top==5:
+            #print markers[itop]
+            lns.append(ax[1].scatter(q2wb, n_trps[itop], color='r', marker=markers[itop], s=50,
+                           label=labels[itop]))
+        else:
+            lns.append(ax[0].scatter(q2wb, n_trps[itop], color='k', marker=markers[itop], s=50,
+                           label=labels[itop]))    
+    labs = [l.get_label() for l in lns]
+    ax[0].legend(lns, labs, loc=0)
+    plt.show()
+    
+tdraw('nEsr')
 
 # <markdowncell>
 
