@@ -60,8 +60,16 @@ print df
 print "Select column df[col]: >>>df[\'s1\']"
 print df['s1']
 print "\n"
-print "Select row by label df.loc[label]: >>>df.loc[\'s1\']"
+print "Select row by label df.loc[label]: >>>df.loc[0]"
 print df.loc[0]
+print "\n"
+print "Select row by integer location df.iloc[label]: >>>df.iloc[0]"
+print df.iloc[0]
+print "\n"
+print "Slice rows df[rlabel1:rlabel2]: >>>df[0:2]"
+print df[0:2]
+
+
 
 # <codecell>
 
