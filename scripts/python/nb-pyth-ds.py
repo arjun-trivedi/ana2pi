@@ -39,8 +39,8 @@ print s
 #     
 #     OR more abstractly (for example if imagining a flat 2D structure or horizontal rows and vertical columns)
 #     
-#     * __index__ = __horizontal__ label
-#     * __columns__ = __vertical__ label
+#     * __index__ = __horizontal__ label = __axis 0__
+#     * __columns__ = __vertical__ label = __axis 1__
 
 # <codecell>
 
@@ -63,13 +63,37 @@ print "\n"
 print "Select row by label df.loc[label]: >>>df.loc[0]"
 print df.loc[0]
 print "\n"
-print "Select row by integer location df.iloc[label]: >>>df.iloc[0]"
+print "Select row by integer location df.iloc[loc]: >>>df.iloc[0]"
 print df.iloc[0]
 print "\n"
 print "Slice rows df[rlabel1:rlabel2]: >>>df[0:2]"
 print df[0:2]
 
 
+
+# <markdowncell>
+
+# ### More sophisticated indexing
+# (http://pandas.pydata.org/pandas-docs/dev/indexing.html)
+
+# <markdowncell>
+
+# ### Boolean Indexing
+# 
+# * This is what I have been using for simstats DF to select data. 
+# * The idea is to set up a __boolean vector__ that can be passed to the indexing operator __[]__
+
+# <codecell>
+
+d = pd.DataFrame(randn(3,5), index=['r1','r2','r3'], 
+                 columns=['c1','c2','c3','c4','c5'])
+print d
+
+# <codecell>
+
+#set up boolean vector =  selection
+sel = d['c1']>0.1
+print d[sel]
 
 # <codecell>
 
