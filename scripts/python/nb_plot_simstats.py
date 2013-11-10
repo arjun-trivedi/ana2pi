@@ -162,12 +162,17 @@ plt.show()
 
 # <codecell>
 
-def tdraw(sq):
+#seq = [ST,SR,SA,SC,SH,SF], [ER,EC,EF]
+#nbins = nbins(seq)
+#tdraw(seq) plots:
+#  1. nbins(seq) Vs. q2wbin
+#  2. frc(seq) Vs. q2wbin, where frc(seq)=nbins(seq)/nbins(ST)
+def tdraw(seq):
     ax = []
-    ax.append(plt.subplot(1,1,1,ylabel=sq))
+    ax.append(plt.subplot(1,1,1,ylabel=seq))
     ax.append(ax[0].twinx())
-    ax[0].set_ylabel('%s t2,5'%sq)
-    ax[1].set_ylabel(('%s top1,3,4'%sq),color='r')
+    ax[0].set_ylabel('%s t2,5'%seq)
+    ax[1].set_ylabel(('%s top1,3,4'%seq),color='r')
     for tl in ax[0].get_yticklabels():
         tl.set_color('r')
     n = npy.zeros((nq2wbins,ntops));
@@ -179,7 +184,7 @@ def tdraw(sq):
         for top in tops:
             itop = top-1
             sels[itop] = (df['Sim']==siml) & (df['Top']==(itop+1))
-            n[iq2wbin][itop] = df[sq][sels[itop]]
+            n[iq2wbin][itop] = df[seq][sels[itop]]
     
     n_trps = numpy.vsplit(npy.transpose(n),ntops)
     
