@@ -164,7 +164,7 @@ plt.show()
 
 #seq = [ST,SR,SA,SC,SH,SF], [ER,EC,EF]
 #nbins = nbins(seq)
-#tdraw(seq) plots:
+#tdraw(seq) plots, for each topology:
 #  1. nbins(seq) Vs. q2wbin
 #  2. frc(seq) Vs. q2wbin, where frc(seq)=nbins(seq)/nbins(ST)
 def tdraw(seq):
@@ -175,7 +175,7 @@ def tdraw(seq):
     ax[1].set_ylabel(('%s top1,3,4'%seq),color='r')
     for tl in ax[0].get_yticklabels():
         tl.set_color('r')
-    n = npy.zeros((nq2wbins,ntops));
+    nbins = npy.zeros((nq2wbins,ntops));
     q2wb = npy.arange(1,nq2wbins+1,1);
     for q2wbin in dfss_grpd_q2wbin.groups:
         iq2wbin = q2wbin-1
@@ -184,9 +184,9 @@ def tdraw(seq):
         for top in tops:
             itop = top-1
             sels[itop] = (df['Sim']==siml) & (df['Top']==(itop+1))
-            n[iq2wbin][itop] = df[seq][sels[itop]]
+            nbins[iq2wbin][itop] = df[seq][sels[itop]]
     
-    n_trps = numpy.vsplit(npy.transpose(n),ntops)
+    nbins_trps = numpy.vsplit(npy.transpose(nbins),ntops)
     
     labels = ['Top1','Top2','Top3','Top4','Top5']
     markers = ['s','<','8' ,'p','>']
@@ -196,10 +196,10 @@ def tdraw(seq):
     for top in tops:
         itop = top-1
         if top==2 or top==5:
-            lns.append(ax[1].scatter(q2wb, n_trps[itop], color='r', marker=markers[itop], s=50,
+            lns.append(ax[1].scatter(q2wb, nbins_trps[itop], color='r', marker=markers[itop], s=50,
                            label=labels[itop]))
         else:
-            lns.append(ax[0].scatter(q2wb, n_trps[itop], color='k', marker=markers[itop], s=50,
+            lns.append(ax[0].scatter(q2wb, nbins_trps[itop], color='k', marker=markers[itop], s=50,
                            label=labels[itop]))    
     labs = [l.get_label() for l in lns]
     ax[0].legend(lns, labs, loc=0)
