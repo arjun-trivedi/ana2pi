@@ -1,6 +1,7 @@
 #python imports
 import os
 from array import array
+import math
 #scipy imports
 from matplotlib import pyplot as plt
 import numpy as np
@@ -57,8 +58,10 @@ for q2wdir in keys:
 	for ibin in (0,nbins):
 		bincoord = array('i',[0, 0, 0, 0, 0])
 		binc = h5[('EC','POS')].GetBinContent(ibin,bincoord)
-		print binc
-		
+		binerr = h5[('EC','POS')].GetBinError(ibin)
+		phi = math.radians( axphi.GetBinLowEdge(bincoord[var['PHI']]) )
+		#print binc
+		h5[('EC','POS')].SetBinContent(ibin,math.sin(phi)*binc)
 
 	#h.append(rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
 			#q2wdir.GetName()));
