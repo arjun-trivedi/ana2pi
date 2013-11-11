@@ -1,8 +1,10 @@
+#python imports
 import os
-
+from array import array
+#scipy imports
 from matplotlib import pyplot as plt
 import numpy as np
-
+#rootpy imports
 from rootpy.io import root_open
 import rootpy.plotting.root2matplotlib as rplt
 from rootpy.plotting import Hist
@@ -53,8 +55,8 @@ for q2wdir in keys:
 	nbins=h5[('EC','POS')].GetNbins()
 	axphi = h5[('EC','POS')].GetAxis(var['PHI'])
 	for ibin in (0,nbins):
-		bincoord = np.zeros((1,5))
-		binc = h5[('EC','POS')].GetBinContent(ibin)#,bincoord)
+		bincoord = array('i',[0, 0, 0, 0, 0])
+		binc = h5[('EC','POS')].GetBinContent(ibin,bincoord)
 		print binc
 		
 
