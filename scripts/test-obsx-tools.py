@@ -1,12 +1,13 @@
 import os
 
 from matplotlib import pyplot as plt
+import numpy as np
 
 from rootpy.io import root_open
 import rootpy.plotting.root2matplotlib as rplt
 from rootpy.plotting import Hist
 
-from ROOT import gSystem
+from ROOT import gSystem, THnSparseF
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
@@ -22,20 +23,45 @@ rplt.hist(hist, axes=axes)
 #plt.show()
 
 
+"""Test Case for plotR2"""
+var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
+print var
 
 
+#INPUT data
 anadir =  os.environ['E1F_2PI_ANADIR2']
-print anadir
-rfilename = os.path.join(anadir,'2:1__1-2.000-2.400__24-1.300-1.900__pol__exp.root')#test.root')
+rfilename = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')#test.root')
 rfile = root_open(rfilename)
 keys = rfile.GetListOfKeys()
-print keys.GetSize()
-h = []
-for x in keys:
-	h.append(rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
-			x.GetName()));
+#OUTPUT data
+outdir_root = os.path.join(anadir,'polobs.new')
+if not os.path.isdir(outdir_root):
+	os.makedirs(outdir_root)
 
-print mythnt.GetNbinsNotEq0(h[0])
+h5 = {}
+for q2wdir in keys:
+	outdir = os.path.join( ('%s/%s/')%
+		                   (outdir_root,q2wdir.GetName()) )
+	if not os.path.isdir(outdir):
+		os.makedirs(outdir);
+
+	h5[('EC','POS')]=rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+	h5[('EC','NEG')]=rfile.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+
+	nbins=h5[('EC','POS')].GetNbins()
+	axphi = h5[('EC','POS')].GetAxis(var['PHI'])
+	for ibin in (0,nbins):
+		bincoord = np.zeros((1,5))
+		binc = h5[('EC','POS')].GetBinContent(ibin)#,bincoord)
+		print binc
+		
+
+	#h.append(rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+			#q2wdir.GetName()));
+
+#print mythnt.GetNbinsNotEq0(h[0])
 
 
 
