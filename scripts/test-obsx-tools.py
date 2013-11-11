@@ -52,21 +52,11 @@ for q2wdir in keys:
 							q2wdir.GetName());
 	h5[('EC','NEG')]=rfile.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
+	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
+	mythnt.MultiplyBySinPhi(h5[('EC','NEG')]);
+	
 
-	nbins=h5[('EC','POS')].GetNbins()
-	axphi = h5[('EC','POS')].GetAxis(var['PHI'])
-	for ibin in (0,nbins):
-		bincoord = array('i',[0, 0, 0, 0, 0])
-		binc = h5[('EC','POS')].GetBinContent(ibin,bincoord)
-		binerr = h5[('EC','POS')].GetBinError(ibin)
-		phi = math.radians( axphi.GetBinLowEdge(bincoord[var['PHI']]) )
-		#print binc
-		h5[('EC','POS')].SetBinContent(ibin,math.sin(phi)*binc)
 
-	#h.append(rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
-			#q2wdir.GetName()));
-
-#print mythnt.GetNbinsNotEq0(h[0])
 
 
 
