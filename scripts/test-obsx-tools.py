@@ -17,16 +17,6 @@ gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
 
-#an example of plotting with rootpy and pyplot
-# fg = plt.figure('test')
-# axes = plt.axes()
-# hist = Hist(100, 0, 10, name='test hist')
-# hist.Fill(3) # Small bug: trying to plot an empty histogram gives an error
-# print hist.GetName()
-# #rplt.hist(hist)
-# rplt.hist(hist, axes=axes)
-# #plt.show()
-
 
 """Test Case for plotR2"""
 var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
