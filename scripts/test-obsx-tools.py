@@ -12,16 +12,17 @@ import rootpy.plotting.root2matplotlib as rplt
 #import root2matplot as r2m
 from rootpy.plotting import Hist
 
-from ROOT import gSystem, gROOT, THnSparseF, TCanvas, TString, TLine, TPaveText, TText
+from ROOT import gSystem, gROOT, gStyle, THnSparseF, TCanvas, TString, TLine, TPaveText, TText
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
 
 
 """Test Case for plotR2"""
-var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
+#var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
+M1, M2, THETA, PHI, ALPHA = range(5)
 #print var
-varTitle = [ 
+vartitle = [ 
 				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
 			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
@@ -30,7 +31,9 @@ varTitle = [
 
                             
 
-
+#COSMETICS
+gStyle.SetOptStat(0);
+gStyle.SetOptFit(1111);
 #INPUT data
 anadir =  os.environ['E1F_2PI_ANADIR2']
 fname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')#test.root')
@@ -67,10 +70,10 @@ for q2wdir in keys:
 	
 	norm = 50000
 	hR2 = {}
-	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
+	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(THETA)
 	hR2[('THETA','POS')].Scale(1/math.pi)
 	hR2[('THETA','POS')].Scale(1/norm)
-	hR2[('THETA','NEG')] = h5[('EC','NEG')].Projection(var['THETA'])
+	hR2[('THETA','NEG')] = h5[('EC','NEG')].Projection(THETA)
 	hR2[('THETA','NEG')].Scale(1/math.pi)
 	hR2[('THETA','NEG')].Scale(1/norm)
 	hR2[('THETA','AVG')] = hR2[('THETA','POS')].Clone("avg")
@@ -85,7 +88,7 @@ for q2wdir in keys:
 	pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 	q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
 	q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-	vart = pt.AddText(("D^{%s} vs. %s")%('test','test'));
+	vart = pt.AddText(("D^{%s} vs. %s")%(vartitle[0][THETA],vartitle[0][THETA]));
 	vart.SetTextSize(0.05);
 
 	
