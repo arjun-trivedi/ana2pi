@@ -12,7 +12,7 @@ import rootpy.plotting.root2matplotlib as rplt
 #import root2matplot as r2m
 from rootpy.plotting import Hist
 
-from ROOT import gSystem, gROOT, THnSparseF, TCanvas, TString
+from ROOT import gSystem, gROOT, THnSparseF, TCanvas, TString, TLine
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
@@ -85,8 +85,10 @@ for q2wdir in keys:
 
 	
 	cR2 = {}
+	l = TLine(0,0,180,0);
 	cR2[('THETA','AVG')] = TCanvas("RvVar", "RvVar")
 	hR2[('THETA','AVG')].Draw("ep")
+	l.Draw("same")
 	cR2[('THETA','AVG')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG')].GetName()))
 
 	#print hR2[('THETA','POS')].GetName()
