@@ -65,26 +65,26 @@ for q2wdir in keys:
 							q2wdir.GetName());
 	h5[('EC','NEG')]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
-	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
-	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
+	h5[('EC','POS','D')] = mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
+	h5[('EC','POS','D')] = mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
 	
 	norm = 50000
 	hR2 = {}
-	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(THETA)
-	hR2[('THETA','POS')].Scale(1/math.pi)
-	hR2[('THETA','POS')].Scale(1/norm)
-	hR2[('THETA','NEG')] = h5[('EC','NEG')].Projection(THETA)
-	hR2[('THETA','NEG')].Scale(1/math.pi)
-	hR2[('THETA','NEG')].Scale(1/norm)
-	hR2[('THETA','AVG')] = hR2[('THETA','POS')].Clone("avg")
-	hR2[('THETA','AVG')].Add(hR2[('THETA','NEG')])
-	hR2[('THETA','AVG')].Scale(0.5)
-	hR2[('THETA','AVG')].SetMinimum(-0.003)
-	hR2[('THETA','AVG')].SetMaximum(0.003)
-	hR2[('THETA','AVG')].SetLineColor(gROOT.ProcessLine("kMagenta"));
-	hR2[('THETA','AVG')].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+	hR2[('THETA','POS', 'D')] = h5[('EC','POS', 'D')].Projection(THETA)
+	hR2[('THETA','POS', 'D')].Scale(1/math.pi)
+	hR2[('THETA','POS', 'D')].Scale(1/norm)
+	hR2[('THETA','NEG', 'D')] = h5[('EC','POS', 'D')].Projection(THETA)
+	hR2[('THETA','NEG', 'D')].Scale(1/math.pi)
+	hR2[('THETA','NEG', 'D')].Scale(1/norm)
+	hR2[('THETA','AVG', 'D')] = hR2[('THETA','POS', 'D')].Clone("avg")
+	hR2[('THETA','AVG', 'D')].Add(hR2[('THETA','NEG', 'D')])
+	hR2[('THETA','AVG', 'D')].Scale(0.5)
+	hR2[('THETA','AVG', 'D')].SetMinimum(-0.003)
+	hR2[('THETA','AVG', 'D')].SetMaximum(0.003)
+	hR2[('THETA','AVG', 'D')].SetLineColor(gROOT.ProcessLine("kMagenta"));
+	hR2[('THETA','AVG', 'D')].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 	#Make Titles nice
-	hR2[('THETA','AVG')].SetTitle("")
+	hR2[('THETA','AVG','D')].SetTitle("")
 	pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 	q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
 	q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
@@ -94,8 +94,8 @@ for q2wdir in keys:
 	
 	cR2 = {}
 	l = TLine(0,0,180,0)
-	cR2[('THETA','AVG')] = TCanvas("RvVar", "RvVar")
-	hR2[('THETA','AVG')].Draw("ep")
+	cR2[('THETA','AVG', 'D')] = TCanvas("RvVar", "RvVar")
+	hR2[('THETA','AVG', 'D')].Draw("ep")
 	l.Draw("same")
 	pt.Draw()
-	cR2[('THETA','AVG')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG')].GetName()))
+	cR2[('THETA','AVG', 'D')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG', 'D')].GetName()))
