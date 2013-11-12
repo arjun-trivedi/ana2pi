@@ -36,6 +36,7 @@ nPOBS=4
 A,B,C,D=range(nPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 
 #print var
+varname = ['M1','M2','THETA','PHI','ALPHA']
 vartitle = [ 
 				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
@@ -44,35 +45,39 @@ vartitle = [
 def plotR2_D(h5):
 	norm = 50000
 	hR2 = {}
-	hR2[(THETA,POS,D)] = h5[(EC,POS,D)].Projection(THETA)
-	hR2[(THETA,POS,D)].Scale(1/math.pi)
-	hR2[(THETA,POS,D)].Scale(1/norm)
-	hR2[(THETA,NEG,D)] = h5[(EC,NEG,D)].Projection(THETA)
-	hR2[(THETA,NEG,D)].Scale(1/math.pi)
-	hR2[(THETA,NEG,D)].Scale(1/norm)
-	hR2[(THETA,AVG,D)] = hR2[(THETA,POS,D)].Clone("avg")
-	hR2[(THETA,AVG,D)].Add(hR2[(THETA,NEG,D)])
-	hR2[(THETA,AVG,D)].Scale(0.5)
-	hR2[(THETA,AVG,D)].SetMinimum(-0.003)
-	hR2[(THETA,AVG,D)].SetMaximum(0.003)
-	hR2[(THETA,AVG,D)].SetLineColor(gROOT.ProcessLine("kMagenta"));
-	hR2[(THETA,AVG,D)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-	#Make Titles nice
-	hR2[(THETA,AVG,D)].SetTitle("")
-	pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
-	q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
-	q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-	vart = pt.AddText(("D^{%s} vs. %s")%(vartitle[0][THETA],vartitle[0][THETA]));
-	vart.SetTextSize(0.05);
+	for var in range(0,nVARS):
+		if var==M1 or var==M2 or var==PHI or var==ALPHA:
+			continue
+		hR2[(var,POS,D)] = h5[(EC,POS,D)].Projection(var)
+		hR2[(var,POS,D)].Scale(1/math.pi)
+		hR2[(var,POS,D)].Scale(1/norm)
+		hR2[(var,NEG,D)] = h5[(EC,NEG,D)].Projection(var)
+		hR2[(var,NEG,D)].Scale(1/math.pi)
+		hR2[(var,NEG,D)].Scale(1/norm)
+		hR2[(var,AVG,D)] = hR2[(var,POS,D)].Clone("avg")
+		hR2[(var,AVG,D)].Add(hR2[(var,NEG,D)])
+		hR2[(var,AVG,D)].Scale(0.5)
+		hR2[(var,AVG,D)].SetMinimum(-0.003)
+		hR2[(var,AVG,D)].SetMaximum(0.003)
+		hR2[(var,AVG,D)].SetLineColor(gROOT.ProcessLine("kMagenta"));
+		hR2[(var,AVG,D)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+		#Make Titles nice
+		hR2[(var,AVG,D)].SetTitle("")
+		pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
+		q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
+		q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
+		vart = pt.AddText(("D^{%s} vs. %s")%(vartitle[0][var],vartitle[0][var]));
+		vart.SetTextSize(0.05);
 
 	
-	cR2 = {}
-	l = TLine(0,0,180,0)
-	cR2[(THETA,AVG, D)] = TCanvas("RvVar", "RvVar")
-	hR2[(THETA,AVG, D)].Draw("ep")
-	l.Draw("same")
-	pt.Draw()
-	cR2[(THETA,AVG, D)].SaveAs( ('%s/%s.png')%(outdir,cR2[(THETA,AVG, D)].GetName()))
+		cR2 = {}
+		l = TLine(0,0,180,0)
+		cname = ('R2%sV%s')%(varname[var],varname[var])
+		cR2[(var,AVG, D)] = TCanvas(cname,cname)#"RvVar", "RvVar")
+		hR2[(var,AVG, D)].Draw("ep")
+		l.Draw("same")
+		pt.Draw()
+		cR2[(var,AVG, D)].SaveAs( ('%s/%s.png')%(outdir,cR2[(var,AVG, D)].GetName()))
 
 
 #COSMETICS
