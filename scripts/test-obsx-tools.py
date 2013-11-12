@@ -41,19 +41,25 @@ outdir_root = os.path.join(anadir,'polobs.new')
 if not os.path.isdir(outdir_root):
 	os.makedirs(outdir_root)
 
-h5 = {}
 for q2wdir in keys:
-	outdir = os.path.join( ('%s/%s/')%
-		                   (outdir_root,q2wdir.GetName()) )
+	outdir = os.path.join( ('%s/%s/')%(outdir_root,q2wdir.GetName()) )
 	if not os.path.isdir(outdir):
 		os.makedirs(outdir);
 
+	h5 = {}	
 	h5[('EC','POS')]=rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
 	h5[('EC','NEG')]=rfile.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
 	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
-	mythnt.MultiplyBySinPhi(h5[('EC','NEG')]);
+	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
+	hR2 = {}
+	fig = plt.figure('test')
+	ax = fig.add_subplot(111)
+	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
+	print hR2[('THETA','POS')].GetName()
+	#rplt.hist(hR2[('THETA','POS')],axes=ax)
+
 	
 
 
