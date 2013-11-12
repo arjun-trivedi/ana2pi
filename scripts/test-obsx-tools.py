@@ -12,7 +12,7 @@ import rootpy.plotting.root2matplotlib as rplt
 #import root2matplot as r2m
 from rootpy.plotting import Hist
 
-from ROOT import gSystem, gROOT, THnSparseF, TCanvas, TString, TLine
+from ROOT import gSystem, gROOT, THnSparseF, TCanvas, TString, TLine, TPaveText, TText
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
@@ -82,21 +82,19 @@ for q2wdir in keys:
 	hR2[('THETA','AVG')].SetMaximum(0.003)
 	hR2[('THETA','AVG')].SetLineColor(gROOT.ProcessLine("kMagenta"));
 	hR2[('THETA','AVG')].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+	#Make Titles nice
+	hR2[('THETA','AVG')].SetTitle("")
+	pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
+	q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
+	q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
+	vart = pt.AddText(("D^{%s} vs. %s")%('test','test'));
+	vart.SetTextSize(0.05);
 
 	
 	cR2 = {}
-	l = TLine(0,0,180,0);
+	l = TLine(0,0,180,0)
 	cR2[('THETA','AVG')] = TCanvas("RvVar", "RvVar")
 	hR2[('THETA','AVG')].Draw("ep")
 	l.Draw("same")
+	pt.Draw()
 	cR2[('THETA','AVG')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG')].GetName()))
-
-	#print hR2[('THETA','POS')].GetName()
-
-
-	
-
-
-
-
-
