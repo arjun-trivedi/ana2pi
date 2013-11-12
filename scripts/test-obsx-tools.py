@@ -65,14 +65,20 @@ for q2wdir in keys:
 							q2wdir.GetName());
 	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
 	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
+	
 	hR2 = {}
-	cR2 = {}
-	cR2[('THETA','POS')] = TCanvas("RvVar", "RvVar")
 	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
-	hR2[('THETA','POS')].Draw()
-	cR2[('THETA','POS')].SaveAs("test.png")
+	hR2[('THETA','NEG')] = h5[('EC','NEG')].Projection(var['THETA'])
+	hR2[('THETA','AVG')] = hR2[('THETA','POS')].Clone("avg")
+	hR2[('THETA','AVG')].Add(hR2[('THETA','NEG')])
+	hR2[('THETA','AVG')].Scale(0.5)
+	
+	cR2 = {}
+	cR2[('THETA','AVG')] = TCanvas("RvVar", "RvVar")
+	hR2[('THETA','AVG')].Draw()
+	cR2[('THETA','AVG')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG')].GetName()))
 
-	print hR2[('THETA','POS')].GetName()
+	#print hR2[('THETA','POS')].GetName()
 
 
 	
