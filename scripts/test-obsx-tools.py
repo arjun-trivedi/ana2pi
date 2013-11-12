@@ -19,8 +19,25 @@ mythnt = myTHnTool()
 
 
 """Test Case for plotR2"""
-#var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
-M1, M2, THETA, PHI, ALPHA = range(5)
+nVARSETS=3
+
+nVARS=5
+M1,M2,THETA,PHI,ALPHA=range(nVARS)
+
+nSEQ_SIM=6
+ST,SR,SA,SC,SH,SF=range(nSEQ_SIM)
+
+nSEQ_EXP=3
+ER,EC,EF=range(nSEQ_EXP)
+
+nPOLS=4
+POS,NEG,UNP,AVG=range(nPOLS)
+
+nPOBS=4
+A,B,C,D=range(nPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
+
+
+
 #print var
 vartitle = [ 
 				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
@@ -45,8 +62,8 @@ f = root_open(fname)
 # 	print dirs
 # 	obj = os.path.join('.',dirs,'hY5D_POS','Varset1','hY5D_ACC_CORR')
 # 	print 'obj=',obj
-# 	h5[('EC','POS')] = obj
-# 	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
+# 	h5[(EC,POS)] = obj
+# 	mythnt.MultiplyBySinPhi(h5[(EC,POS)]);
 
 """PyRoot"""
 keys = f.GetListOfKeys()
@@ -61,30 +78,30 @@ for q2wdir in keys:
 		os.makedirs(outdir);
 
 	h5 = {}	
-	h5[('EC','POS')]=f.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+	h5[(EC,POS)]=f.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
-	h5[('EC','NEG')]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
+	h5[(EC,NEG)]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
-	h5[('EC','POS','D')] = mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
-	h5[('EC','POS','D')] = mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
+	h5[(EC,POS,D)] = mythnt.MultiplyBySinPhi(h5[(EC,POS)]);
+	h5[(EC,POS,D)] = mythnt.MultiplyBySinPhi(h5[(EC,NEG)],-1);
 	
 	norm = 50000
 	hR2 = {}
-	hR2[('THETA','POS', 'D')] = h5[('EC','POS', 'D')].Projection(THETA)
-	hR2[('THETA','POS', 'D')].Scale(1/math.pi)
-	hR2[('THETA','POS', 'D')].Scale(1/norm)
-	hR2[('THETA','NEG', 'D')] = h5[('EC','POS', 'D')].Projection(THETA)
-	hR2[('THETA','NEG', 'D')].Scale(1/math.pi)
-	hR2[('THETA','NEG', 'D')].Scale(1/norm)
-	hR2[('THETA','AVG', 'D')] = hR2[('THETA','POS', 'D')].Clone("avg")
-	hR2[('THETA','AVG', 'D')].Add(hR2[('THETA','NEG', 'D')])
-	hR2[('THETA','AVG', 'D')].Scale(0.5)
-	hR2[('THETA','AVG', 'D')].SetMinimum(-0.003)
-	hR2[('THETA','AVG', 'D')].SetMaximum(0.003)
-	hR2[('THETA','AVG', 'D')].SetLineColor(gROOT.ProcessLine("kMagenta"));
-	hR2[('THETA','AVG', 'D')].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+	hR2[(THETA,POS,D)] = h5[(EC,POS, D)].Projection(THETA)
+	hR2[(THETA,POS,D)].Scale(1/math.pi)
+	hR2[(THETA,POS,D)].Scale(1/norm)
+	hR2[(THETA,NEG,D)] = h5[(EC,POS, D)].Projection(THETA)
+	hR2[(THETA,NEG,D)].Scale(1/math.pi)
+	hR2[(THETA,NEG,D)].Scale(1/norm)
+	hR2[(THETA,AVG,D)] = hR2[(THETA,POS, D)].Clone("avg")
+	hR2[(THETA,AVG,D)].Add(hR2[(THETA,NEG, D)])
+	hR2[(THETA,AVG,D)].Scale(0.5)
+	hR2[(THETA,AVG,D)].SetMinimum(-0.003)
+	hR2[(THETA,AVG,D)].SetMaximum(0.003)
+	hR2[(THETA,AVG,D)].SetLineColor(gROOT.ProcessLine("kMagenta"));
+	hR2[(THETA,AVG,D)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 	#Make Titles nice
-	hR2[('THETA','AVG','D')].SetTitle("")
+	hR2[(THETA,AVG,D)].SetTitle("")
 	pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 	q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
 	q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
@@ -94,8 +111,8 @@ for q2wdir in keys:
 	
 	cR2 = {}
 	l = TLine(0,0,180,0)
-	cR2[('THETA','AVG', 'D')] = TCanvas("RvVar", "RvVar")
-	hR2[('THETA','AVG', 'D')].Draw("ep")
+	cR2[(THETA,AVG, D)] = TCanvas("RvVar", "RvVar")
+	hR2[(THETA,AVG, D)].Draw("ep")
 	l.Draw("same")
 	pt.Draw()
-	cR2[('THETA','AVG', 'D')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG', 'D')].GetName()))
+	cR2[(THETA,AVG, D)].SaveAs( ('%s/%s.png')%(outdir,cR2[(THETA,AVG, D)].GetName()))
