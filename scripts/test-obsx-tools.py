@@ -36,57 +36,39 @@ print var
 anadir =  os.environ['E1F_2PI_ANADIR2']
 fname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')#test.root')
 f = root_open(fname)
-#f = File(fname,'read')
-# for path, dirs, objects in rfile.walk():
-# 	print path,dirs#,objects
-tl = list(f)
-print tl
-for root,subfolders,files in f.walk():
-	print 'root=', root
-	print 'subfolders=',subfolders
-	print 'files=',files
-	# for iroot in root:
-	# 	obj = os.path.join(iroot,'hY5D_POS','Varset1','hY5D_ACC_CORR')
-	# 	print 'obj =', obj
-# for i in t:
-# 	print i
-#print f.keys()
-# for dirs,paths,objects in f.walk('',maxdepth=0):
-# 	for d in dirs:
-# 		print d
-	#h5[('EC','POS')] = rfile.q2wdir.hY5D_POS.Varset1.hY5D_ACC_CORR
-	# print dirs
-	# for objects in dirs:
-	# 	print objects
 
-# keys = rfile.GetListOfKeys()
-# #OUTPUT data
-# outdir_root = os.path.join(anadir,'polobs.new')
-# if not os.path.isdir(outdir_root):
-# 	os.makedirs(outdir_root)
-
-# for q2wdir in keys:
-# 	outdir = os.path.join( ('%s/%s/')%(outdir_root,q2wdir.GetName()) )
-# 	if not os.path.isdir(outdir):
-# 		os.makedirs(outdir);
-
-# 	h5 = {}	
-# 	h5[('EC','POS')]=rfile.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
-# 							q2wdir.GetName());
-# 	h5[('EC','NEG')]=rfile.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
-# 							q2wdir.GetName());
+"""rootpy"""
+# for dirs in f.walk('.').next()[1]:
+# 	h5 = {}
+# 	print dirs
+# 	obj = os.path.join('.',dirs,'hY5D_POS','Varset1','hY5D_ACC_CORR')
+# 	print 'obj=',obj
+# 	h5[('EC','POS')] = obj
 # 	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
-# 	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
-# 	hR2 = {}
-# 	fig = plt.figure('test')
-# 	ax = fig.add_subplot(111)
-# 	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
-# 	#rplt.hist(hR2[('THETA','POS')],axes=ax)
-# 	print hR2[('THETA','POS')].GetName()
 
-# 	fig.savefig("test.png")
-# 	fig.show()
-# 	#rplt.hist(hR2[('THETA','POS')],axes=ax)
+"""PyRoot"""
+keys = f.GetListOfKeys()
+#OUTPUT data
+outdir_root = os.path.join(anadir,'polobs.new')
+if not os.path.isdir(outdir_root):
+	os.makedirs(outdir_root)
+
+for q2wdir in keys:
+	outdir = os.path.join( ('%s/%s/')%(outdir_root,q2wdir.GetName()) )
+	if not os.path.isdir(outdir):
+		os.makedirs(outdir);
+
+	h5 = {}	
+	h5[('EC','POS')]=f.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+	h5[('EC','NEG')]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
+	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
+	hR2 = {}
+	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
+	print hR2[('THETA','POS')].GetName()
+
 
 	
 
