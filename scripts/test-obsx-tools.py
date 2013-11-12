@@ -11,7 +11,7 @@ import rootpy.plotting.root2matplotlib as rplt
 #import root2matplot as r2m
 from rootpy.plotting import Hist
 
-from ROOT import gSystem, THnSparseF
+from ROOT import gSystem, THnSparseF,TCanvas
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
@@ -66,7 +66,12 @@ for q2wdir in keys:
 	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
 	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
 	hR2 = {}
+	cR2 = {}
+	cR2[('THETA','POS')] = TCanvas("RvVar", "RvVar")
 	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
+	hR2[('THETA','POS')].Draw()
+	cR2[('THETA','POS')].SaveAs("test.png")
+
 	print hR2[('THETA','POS')].GetName()
 
 
