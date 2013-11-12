@@ -2054,9 +2054,11 @@ void plotr3_dnp(int top,bool sim=kFALSE){
     float dw = wmax-wmin;
         
     //! GET Normalization for this Q2Wbin
-    double vgflux = getvgflux(W,_q2min);
+    /*double vgflux = getvgflux(W,_q2min);
     double factor = 1000000000;
     double norm = LUM*vgflux*_dq2*dw*factor;
+    cout << "norm =" << norm << endl;*/
+    double norm = 50000; //at 11-12-13: arbitrary norm
     //printf("wmin:wmax=%f:%f",wmin, wmax);
 
 

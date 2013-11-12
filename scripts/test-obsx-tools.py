@@ -1,3 +1,4 @@
+from __future__ import division
 #python imports
 import os
 from array import array
@@ -11,7 +12,7 @@ import rootpy.plotting.root2matplotlib as rplt
 #import root2matplot as r2m
 from rootpy.plotting import Hist
 
-from ROOT import gSystem, THnSparseF,TCanvas
+from ROOT import gSystem, gROOT, THnSparseF, TCanvas, TString
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
@@ -66,16 +67,26 @@ for q2wdir in keys:
 	mythnt.MultiplyBySinPhi(h5[('EC','POS')]);
 	mythnt.MultiplyBySinPhi(h5[('EC','NEG')],-1);
 	
+	norm = 50000
 	hR2 = {}
 	hR2[('THETA','POS')] = h5[('EC','POS')].Projection(var['THETA'])
+	hR2[('THETA','POS')].Scale(1/math.pi)
+	hR2[('THETA','POS')].Scale(1/norm)
 	hR2[('THETA','NEG')] = h5[('EC','NEG')].Projection(var['THETA'])
+	hR2[('THETA','NEG')].Scale(1/math.pi)
+	hR2[('THETA','NEG')].Scale(1/norm)
 	hR2[('THETA','AVG')] = hR2[('THETA','POS')].Clone("avg")
 	hR2[('THETA','AVG')].Add(hR2[('THETA','NEG')])
 	hR2[('THETA','AVG')].Scale(0.5)
+	hR2[('THETA','AVG')].SetMinimum(-0.003)
+	hR2[('THETA','AVG')].SetMaximum(0.003)
+	hR2[('THETA','AVG')].SetLineColor(gROOT.ProcessLine("kMagenta"));
+	hR2[('THETA','AVG')].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+
 	
 	cR2 = {}
 	cR2[('THETA','AVG')] = TCanvas("RvVar", "RvVar")
-	hR2[('THETA','AVG')].Draw()
+	hR2[('THETA','AVG')].Draw("ep")
 	cR2[('THETA','AVG')].SaveAs( ('%s/%s.png')%(outdir,cR2[('THETA','AVG')].GetName()))
 
 	#print hR2[('THETA','POS')].GetName()
