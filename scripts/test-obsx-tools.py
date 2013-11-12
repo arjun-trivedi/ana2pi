@@ -17,6 +17,30 @@ gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
 
+"""Test Case for plotR2"""
+nVARSETS=3
+
+nVARS=5
+M1,M2,THETA,PHI,ALPHA=range(nVARS)
+
+nSEQ_SIM=6
+ST,SR,SA,SC,SH,SF=range(nSEQ_SIM)
+
+nSEQ_EXP=3
+ER,EC,EF=range(nSEQ_EXP)
+
+nPOLS=4
+POS,NEG,UNP,AVG=range(nPOLS)
+
+nPOBS=4
+A,B,C,D=range(nPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
+
+#print var
+vartitle = [ 
+				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
+			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
+			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
+		   ]
 def plotR2_D(h5):
 	norm = 50000
 	hR2 = {}
@@ -50,36 +74,6 @@ def plotR2_D(h5):
 	pt.Draw()
 	cR2[(THETA,AVG, D)].SaveAs( ('%s/%s.png')%(outdir,cR2[(THETA,AVG, D)].GetName()))
 
-
-"""Test Case for plotR2"""
-nVARSETS=3
-
-nVARS=5
-M1,M2,THETA,PHI,ALPHA=range(nVARS)
-
-nSEQ_SIM=6
-ST,SR,SA,SC,SH,SF=range(nSEQ_SIM)
-
-nSEQ_EXP=3
-ER,EC,EF=range(nSEQ_EXP)
-
-nPOLS=4
-POS,NEG,UNP,AVG=range(nPOLS)
-
-nPOBS=4
-A,B,C,D=range(nPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
-
-
-
-#print var
-vartitle = [ 
-				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
-			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
-			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
-		   ]
-#print varTitle[0][var['M1']]
-
-                            
 
 #COSMETICS
 gStyle.SetOptStat(0);
@@ -123,14 +117,14 @@ for q2wdir in keys:
 	
 	# norm = 50000
 	# hR2 = {}
-	# hR2[(THETA,POS,D)] = h5[(EC,POS, D)].Projection(THETA)
+	# hR2[(THETA,POS,D)] = h5[(EC,POS,D)].Projection(THETA)
 	# hR2[(THETA,POS,D)].Scale(1/math.pi)
 	# hR2[(THETA,POS,D)].Scale(1/norm)
-	# hR2[(THETA,NEG,D)] = h5[(EC,POS, D)].Projection(THETA)
+	# hR2[(THETA,NEG,D)] = h5[(EC,NEG,D)].Projection(THETA)
 	# hR2[(THETA,NEG,D)].Scale(1/math.pi)
 	# hR2[(THETA,NEG,D)].Scale(1/norm)
-	# hR2[(THETA,AVG,D)] = hR2[(THETA,POS, D)].Clone("avg")
-	# hR2[(THETA,AVG,D)].Add(hR2[(THETA,NEG, D)])
+	# hR2[(THETA,AVG,D)] = hR2[(THETA,POS,D)].Clone("avg")
+	# hR2[(THETA,AVG,D)].Add(hR2[(THETA,NEG,D)])
 	# hR2[(THETA,AVG,D)].Scale(0.5)
 	# hR2[(THETA,AVG,D)].SetMinimum(-0.003)
 	# hR2[(THETA,AVG,D)].SetMaximum(0.003)
