@@ -20,7 +20,15 @@ mythnt = myTHnTool()
 
 """Test Case for plotR2"""
 var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
-print var
+#print var
+varTitle = [ 
+				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
+			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
+			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
+		   ]
+#print varTitle[0][var['M1']]
+
+                            
 
 
 #INPUT data
