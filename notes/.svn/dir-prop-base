@@ -1,7 +1,0 @@
-K 10
-svn:ignore
-V 27
-.ipynb_checkpoints
-.~lock*
-
-END

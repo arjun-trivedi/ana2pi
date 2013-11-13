@@ -1,2 +1,0 @@
-rm yield.root
-ln -s /home/trivedia/CLAS/data/e1f/ana2pi/yield.root yield.root
