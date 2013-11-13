@@ -36,7 +36,7 @@ nPOBS=4
 A,B,C,D=range(nPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 
 #print var
-varname = ['M1','M2','THETA','PHI','ALPHA']
+varname = ['M1','M2','theta','phi','alpha']
 vartitle = [ 
 				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
@@ -44,9 +44,10 @@ vartitle = [
 		   ]
 def plotR2_D(h5):
 	norm = 50000
-	hR2 = {}
+	hR2 = {} #indexed by (ij,alpha,pol)
+	cR2 = {}
 	for var in range(0,nVARS):
-		if var==M1 or var==M2 or var==PHI or var==ALPHA:
+		if var==PHI or var==ALPHA:
 			continue
 		hR2[(var,POS,D)] = h5[(EC,POS,D)].Projection(var)
 		hR2[(var,POS,D)].Scale(1/math.pi)
@@ -70,14 +71,14 @@ def plotR2_D(h5):
 		vart.SetTextSize(0.05);
 
 	
-		cR2 = {}
 		l = TLine(0,0,180,0)
 		cname = ('R2%sV%s')%(varname[var],varname[var])
-		cR2[(var,AVG, D)] = TCanvas(cname,cname)#"RvVar", "RvVar")
-		hR2[(var,AVG, D)].Draw("ep")
+		cR2[(var,AVG,D)] = TCanvas(cname,cname)#"RvVar", "RvVar")
+		hR2[(var,AVG,D)].Draw("ep")
 		l.Draw("same")
 		pt.Draw()
-		cR2[(var,AVG, D)].SaveAs( ('%s/%s.png')%(outdir,cR2[(var,AVG, D)].GetName()))
+		csavename = ('%s/%s')%(outdir,cR2[(var,AVG, D)].GetName())
+		cR2[(var,AVG, D)].SaveAs( ('%s.png')%(csavename))
 
 
 #COSMETICS
@@ -87,8 +88,13 @@ gStyle.SetOptFit(1111);
 anadir =  os.environ['E1F_2PI_ANADIR2']
 fname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')#test.root')
 f = root_open(fname)
+#OUTPUT data
+outdir_root = os.path.join(anadir,'polobs.new')
+if not os.path.isdir(outdir_root):
+	os.makedirs(outdir_root)
 
-"""rootpy"""
+#MAIN part of program
+# Using rootpy
 # for dirs in f.walk('.').next()[1]:
 # 	h5 = {}
 # 	print dirs
@@ -97,13 +103,13 @@ f = root_open(fname)
 # 	h5[(EC,POS)] = obj
 # 	mythnt.MultiplyBySinPhi(h5[(EC,POS)]);
 
-"""PyRoot"""
+#Using PyRoot
+"""
+First, for each q2wbin, make all R2^{ij}_{alpha} where:
+	-ij    = Index over nVARSETS and nVAR respectively
+	-alpha = Index over nPOBS (=[A,B,C,D])
+"""
 keys = f.GetListOfKeys()
-#OUTPUT data
-outdir_root = os.path.join(anadir,'polobs.new')
-if not os.path.isdir(outdir_root):
-	os.makedirs(outdir_root)
-
 for q2wdir in keys:
 	outdir = os.path.join( ('%s/%s/')%(outdir_root,q2wdir.GetName()) )
 	if not os.path.isdir(outdir):
@@ -120,34 +126,6 @@ for q2wdir in keys:
 
 	plotR2_D(h5)
 	
-	# norm = 50000
-	# hR2 = {}
-	# hR2[(THETA,POS,D)] = h5[(EC,POS,D)].Projection(THETA)
-	# hR2[(THETA,POS,D)].Scale(1/math.pi)
-	# hR2[(THETA,POS,D)].Scale(1/norm)
-	# hR2[(THETA,NEG,D)] = h5[(EC,NEG,D)].Projection(THETA)
-	# hR2[(THETA,NEG,D)].Scale(1/math.pi)
-	# hR2[(THETA,NEG,D)].Scale(1/norm)
-	# hR2[(THETA,AVG,D)] = hR2[(THETA,POS,D)].Clone("avg")
-	# hR2[(THETA,AVG,D)].Add(hR2[(THETA,NEG,D)])
-	# hR2[(THETA,AVG,D)].Scale(0.5)
-	# hR2[(THETA,AVG,D)].SetMinimum(-0.003)
-	# hR2[(THETA,AVG,D)].SetMaximum(0.003)
-	# hR2[(THETA,AVG,D)].SetLineColor(gROOT.ProcessLine("kMagenta"));
-	# hR2[(THETA,AVG,D)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-	# #Make Titles nice
-	# hR2[(THETA,AVG,D)].SetTitle("")
-	# pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
-	# q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
-	# q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-	# vart = pt.AddText(("D^{%s} vs. %s")%(vartitle[0][THETA],vartitle[0][THETA]));
-	# vart.SetTextSize(0.05);
-
-	
-	# cR2 = {}
-	# l = TLine(0,0,180,0)
-	# cR2[(THETA,AVG, D)] = TCanvas("RvVar", "RvVar")
-	# hR2[(THETA,AVG, D)].Draw("ep")
-	# l.Draw("same")
-	# pt.Draw()
-	# cR2[(THETA,AVG, D)].SaveAs( ('%s/%s.png')%(outdir,cR2[(THETA,AVG, D)].GetName()))
+"""
+Now put all q2wbin/R2^{ij}_{alpha} in a single pdf
+"""
