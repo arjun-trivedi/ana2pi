@@ -1,12 +1,13 @@
 from __future__ import division
-#python imports
+
 import os
 from array import array
 import math
-#scipy imports
+import subprocess
+
 from matplotlib import pyplot as plt
 import numpy as np
-#rootpy imports
+
 from rootpy.io import root_open, File
 import rootpy.plotting.root2matplotlib as rplt
 #import root2matplot as r2m
@@ -44,7 +45,7 @@ vartitle = [
 		   ]
 def plotR2_D(h5):
 	norm = 50000
-	hR2 = {} #indexed by (ij,alpha,pol)
+	hR2 = {} #indexed by (ij,pol,alpha)
 	cR2 = {}
 	for var in range(0,nVARS):
 		if var==PHI or var==ALPHA:
@@ -79,6 +80,7 @@ def plotR2_D(h5):
 		pt.Draw()
 		csavename = ('%s/%s')%(outdir,cR2[(var,AVG, D)].GetName())
 		cR2[(var,AVG, D)].SaveAs( ('%s.png')%(csavename))
+		subprocess.call
 
 
 #COSMETICS
