@@ -116,21 +116,21 @@ First, for each q2wbin, make all R2^{ij}_{alpha} where:
 	-ij    = Index over NVARSETS and nVAR respectively
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
-# keys = f.GetListOfKeys()
-# for q2wdir in keys:
-# 	outdir = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
-# 	if not os.path.isdir(outdir):os.makedirs(outdir);
+keys = f.GetListOfKeys()
+for q2wdir in keys:
+	outdir = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
+	if not os.path.isdir(outdir):os.makedirs(outdir);
 
-# 	h5 = {}	
-# 	h5[(EC,POS)]=f.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
-# 							q2wdir.GetName());
-# 	h5[(EC,NEG)]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
-# 							q2wdir.GetName());
-# 	h5[(EC,POS,D)] = mythnt.MultiplyBySinPhi(h5[(EC,POS)]);
-# 	h5[(EC,NEG,D)] = mythnt.MultiplyBySinPhi(h5[(EC,NEG)],-1);
-# 	print 'h5=',h5
+	h5 = {}	
+	h5[(EC,POS)]=f.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+	h5[(EC,NEG)]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+	h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+	h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+	print 'h5=',h5
 
-# 	plotR2_D(h5)
+	plotR2_D(h5)
 	
 """
 Now put all q2wbin/R2^{ij}_{alpha} in a single pdf
