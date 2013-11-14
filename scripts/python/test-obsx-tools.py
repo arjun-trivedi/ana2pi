@@ -140,9 +140,16 @@ Now put all q2wbin/R2^{ij}_{alpha} in a single pdf
 for var in range(0,NVARS):
 	if var==PHI or var==ALPHA:continue
 	#print 'q2wdir,var=',q2wdir,varname[var]
-	pdfs = ('%s/*/R2_D_1%s.pdf')%(outdir_root,varname[var])
-	print '>>> ls ',pdfs,'> /tmp/tmp'
+	pdfname='R2_D_1%s.pdf'%varname[var]
+	pdfs=('%s/*/%s')%(outdir_root,pdfname)
+	pdf=('%s/%s')%(outdir_root,pdfname)
+
+	#print '>>> ls ',pdfs,'> /tmp/tmp'
 	#rc=subprocess.call(['ls',pdfs,'>','/tmp/tmp'])
 	rc=subprocess.call('ls %s > /tmp/tmp'%pdfs,shell=True)
+	if rc!=0: print 'command failed!'
+	rc=subprocess.call('echo %s >> /tmp/tmp'%pdf,shell=True)
+	if rc!=0: print 'command failed!'
+	rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
 	if rc!=0: print 'command failed!'
 
