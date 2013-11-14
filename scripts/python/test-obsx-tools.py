@@ -144,12 +144,15 @@ for var in range(0,NVARS):
 	pdfs=('%s/*/%s')%(outdir_root,pdfname)
 	pdf=('%s/%s')%(outdir_root,pdfname)
 
-	#print '>>> ls ',pdfs,'> /tmp/tmp'
-	#rc=subprocess.call(['ls',pdfs,'>','/tmp/tmp'])
+	print '>>>ls %s > /tmp/tmp'%pdfs
 	rc=subprocess.call('ls %s > /tmp/tmp'%pdfs,shell=True)
 	if rc!=0: print 'command failed!'
+
+	print '>>>echo %s >> /tmp/tmp'%pdf
 	rc=subprocess.call('echo %s >> /tmp/tmp'%pdf,shell=True)
 	if rc!=0: print 'command failed!'
+
+	print '>>>cat /tmp/tmp | xargs pdfunite'
 	rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
 	if rc!=0: print 'command failed!'
 
