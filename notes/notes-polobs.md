@@ -1,7 +1,9 @@
 # Notes on extracting polarization observables
 
-[11-14-13]
+*	[11-14-13](#11-14-13)
+	*	Formalism
 
+<h2 id="11-14-13">11-14-13</h2>
 Define:
 	${ \left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right) }^{h}
 	\equiv
@@ -13,6 +15,11 @@ Define:
 where
 
 * ij = index over Varset,Variable (3x5 matrix)
+
+
+
+
+
 
 This is a normal paragraph:
 
