@@ -22,6 +22,10 @@ mythnt = myTHnTool()
 out=open('/tmp/stdout.text','w')
 err=open('/tmp/stderr.text','w')
 
+NDTYPE=2
+EXP,SIM=range(NDTYPE)
+colorname=['kGreen','kRed']
+
 NVARSETS=3
 
 NVARS=5
@@ -48,28 +52,28 @@ vartitle = [
 		   ]
 def plotR2(h5):
 	norm = 50000
-	hR2 = {} #indexed by (ij,pol,alpha)
+	hR2 = {} 
 	cR2 = {}
 	for var in range(0,NVARS):
 		if var==PHI or var==ALPHA:continue
 		for pobs in range(0,NPOBS):
 			if pobs==A: continue
-			hR2[(var,POS,pobs)] = h5[(EC,POS,pobs)].Projection(var)
-			hR2[(var,POS,pobs)].Scale(1/math.pi)
-			hR2[(var,POS,pobs)].Scale(1/norm)
-			hR2[(var,NEG,pobs)] = h5[(EC,NEG,pobs)].Projection(var)
-			hR2[(var,NEG,pobs)].Scale(1/math.pi)
-			hR2[(var,NEG,pobs)].Scale(1/norm)
-			hR2[(var,AVG,pobs)] = hR2[(var,POS,pobs)].Clone("avg")
-			hR2[(var,AVG,pobs)].Add(hR2[(var,NEG,pobs)])
-			hR2[(var,AVG,pobs)].Scale(0.5)
+			hR2[(POS)] = h5[(EC,POS,pobs)].Projection(var)
+			hR2[(POS)].Scale(1/math.pi)
+			hR2[(POS)].Scale(1/norm)
+			hR2[(NEG)] = h5[(EC,NEG,pobs)].Projection(var)
+			hR2[(NEG)].Scale(1/math.pi)
+			hR2[(NEG)].Scale(1/norm)
+			hR2[(AVG)] = hR2[(POS)].Clone("avg")
+			hR2[(AVG)].Add(hR2[(NEG)])
+			hR2[(AVG)].Scale(0.5)
 			if pobs==D:
-				hR2[(var,AVG,pobs)].SetMinimum(-0.003)
-				hR2[(var,AVG,pobs)].SetMaximum(0.003)
-			hR2[(var,AVG,pobs)].SetLineColor(gROOT.ProcessLine("kMagenta"));
-			hR2[(var,AVG,pobs)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+				hR2[(AVG)].SetMinimum(-0.003)
+				hR2[(AVG)].SetMaximum(0.003)
+			hR2[(AVG)].SetLineColor(gROOT.ProcessLine("kMagenta"));
+			hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 			#Make Titles nice
-			hR2[(var,AVG,pobs)].SetTitle("")
+			hR2[(AVG)].SetTitle("")
 			pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 			q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
 			q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
@@ -79,12 +83,12 @@ def plotR2(h5):
 			l = TLine(0,0,180,0)
 			#cname = ('R2%sV%s')%(varname[var],varname[var])
 			cname = ('R2_%s_1%s')%(pobsname[pobs],varname[var])
-			cR2[(var,AVG,pobs)] = TCanvas(cname,cname)#"RvVar", "RvVar")
-			hR2[(var,AVG,pobs)].Draw("ep")
+			cR2[(AVG)] = TCanvas(cname,cname)#"RvVar", "RvVar")
+			hR2[(AVG)].Draw("ep")
 			l.Draw("same")
 			pt.Draw()
-			csavename = ('%s/%s')%(outdir,cR2[(var,AVG,pobs)].GetName())
-			cR2[(var,AVG,pobs)].SaveAs( ('%s.png')%(csavename))
+			csavename = ('%s/%s')%(outdir,cR2[(AVG)].GetName())
+			cR2[(AVG)].SaveAs( ('%s.png')%(csavename))
 			print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
 			rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
 			if rc!=0:print '.png to .pdf failed for %s'%csavename
@@ -95,8 +99,10 @@ gStyle.SetOptStat(0);
 gStyle.SetOptFit(1111);
 #INPUT data
 anadir =  os.environ['E1F_2PI_ANADIR2']
-fname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')#test.root')
-f = root_open(fname)
+fexpname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')
+fsimname = os.path.join(anadir,'simdir','1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__sim.root')#test.root')
+fexp = root_open(fexpname)
+fsim = root_open(fsimname)
 #OUTPUT data
 outdir_root = os.path.join(anadir,'polobs.new')
 if not os.path.isdir(outdir_root):
@@ -118,22 +124,36 @@ First, for each q2wbin, make all R2^{ij}_{alpha} where:
 	-ij    = Index over NVARSETS and nVAR respectively
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
-keys = f.GetListOfKeys()
+keys = fexp.GetListOfKeys()
 for q2wdir in keys:
 	outdir = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
 	if not os.path.isdir(outdir):os.makedirs(outdir);
 
 	h5 = {}	
-	h5[(EC,POS)]=f.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+	h5[(EF,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%
 							q2wdir.GetName());
-	h5[(EC,NEG)]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
+	h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
+	h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+	h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
+							q2wdir.GetName());
+
+	h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%
+							q2wdir.GetName());
+	
+	h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
+	h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+	h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+
 	h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
-	h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
 	h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
 	h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+
+	h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
+	h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
 	h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+
 	#print 'h5=',h5
 
 	#plotR2_D(h5)
