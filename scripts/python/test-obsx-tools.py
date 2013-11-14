@@ -142,6 +142,7 @@ for var in range(0,NVARS):
 	#print 'q2wdir,var=',q2wdir,varname[var]
 	pdfs = ('%s/*/R2_D_1%s.pdf')%(outdir_root,varname[var])
 	print '>>> ls ',pdfs,'> /tmp/tmp'
-	rc=subprocess.call(['ls',pdfs,'>','/tmp/tmp'])
+	#rc=subprocess.call(['ls',pdfs,'>','/tmp/tmp'])
+	rc=subprocess.call('ls %s > /tmp/tmp'%pdfs,shell=True)
 	if rc!=0: print 'command failed!'
 
