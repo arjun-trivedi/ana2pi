@@ -38,7 +38,7 @@ POS,NEG,UNP,AVG=range(NPOLS)
 
 NPOBS=4
 A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
-
+pobsname=['A','B','C','D']
 #print var
 varname = ['M1','M2','theta','phi','alpha']
 vartitle = [ 
@@ -46,46 +46,47 @@ vartitle = [
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
 			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
 		   ]
-def plotR2_D(h5):
+def plotR2(h5):
 	norm = 50000
 	hR2 = {} #indexed by (ij,pol,alpha)
 	cR2 = {}
 	for var in range(0,NVARS):
 		if var==PHI or var==ALPHA:continue
-		hR2[(var,POS,D)] = h5[(EC,POS,D)].Projection(var)
-		hR2[(var,POS,D)].Scale(1/math.pi)
-		hR2[(var,POS,D)].Scale(1/norm)
-		hR2[(var,NEG,D)] = h5[(EC,NEG,D)].Projection(var)
-		hR2[(var,NEG,D)].Scale(1/math.pi)
-		hR2[(var,NEG,D)].Scale(1/norm)
-		hR2[(var,AVG,D)] = hR2[(var,POS,D)].Clone("avg")
-		hR2[(var,AVG,D)].Add(hR2[(var,NEG,D)])
-		hR2[(var,AVG,D)].Scale(0.5)
-		hR2[(var,AVG,D)].SetMinimum(-0.003)
-		hR2[(var,AVG,D)].SetMaximum(0.003)
-		hR2[(var,AVG,D)].SetLineColor(gROOT.ProcessLine("kMagenta"));
-		hR2[(var,AVG,D)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-		#Make Titles nice
-		hR2[(var,AVG,D)].SetTitle("")
-		pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
-		q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
-		q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-		vart = pt.AddText(("D^{%s} vs. %s")%(vartitle[0][var],vartitle[0][var]));
-		vart.SetTextSize(0.05);
+		for pobs in range(0,NPOBS):
+			if pobs==A: continue
+			hR2[(var,POS,pobs)] = h5[(EC,POS,pobs)].Projection(var)
+			hR2[(var,POS,pobs)].Scale(1/math.pi)
+			hR2[(var,POS,pobs)].Scale(1/norm)
+			hR2[(var,NEG,pobs)] = h5[(EC,NEG,pobs)].Projection(var)
+			hR2[(var,NEG,pobs)].Scale(1/math.pi)
+			hR2[(var,NEG,pobs)].Scale(1/norm)
+			hR2[(var,AVG,pobs)] = hR2[(var,POS,pobs)].Clone("avg")
+			hR2[(var,AVG,pobs)].Add(hR2[(var,NEG,pobs)])
+			hR2[(var,AVG,pobs)].Scale(0.5)
+			hR2[(var,AVG,pobs)].SetMinimum(-0.003)
+			hR2[(var,AVG,pobs)].SetMaximum(0.003)
+			hR2[(var,AVG,pobs)].SetLineColor(gROOT.ProcessLine("kMagenta"));
+			hR2[(var,AVG,pobs)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+			#Make Titles nice
+			hR2[(var,AVG,pobs)].SetTitle("")
+			pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
+			q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
+			q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
+			vart = pt.AddText(("%s^{%s} vs. %s")%(pobsname[pobs],vartitle[0][var],vartitle[0][var]));
+			vart.SetTextSize(0.05);
 
-	
-		l = TLine(0,0,180,0)
-		#cname = ('R2%sV%s')%(varname[var],varname[var])
-		cname = ('R2_D_1%s')%(varname[var])
-		cR2[(var,AVG,D)] = TCanvas(cname,cname)#"RvVar", "RvVar")
-		hR2[(var,AVG,D)].Draw("ep")
-		l.Draw("same")
-		pt.Draw()
-		csavename = ('%s/%s')%(outdir,cR2[(var,AVG, D)].GetName())
-		cR2[(var,AVG, D)].SaveAs( ('%s.png')%(csavename))
-		print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
-		rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
-		if rc!=0:print '.png to .pdf failed for %s'%csavename
+			l = TLine(0,0,180,0)
+			#cname = ('R2%sV%s')%(varname[var],varname[var])
+			cname = ('R2_%s_1%s')%(pobsname[pobs],varname[var])
+			cR2[(var,AVG,pobs)] = TCanvas(cname,cname)#"RvVar", "RvVar")
+			hR2[(var,AVG,pobs)].Draw("ep")
+			l.Draw("same")
+			pt.Draw()
+			csavename = ('%s/%s')%(outdir,cR2[(var,AVG,pobs)].GetName())
+			cR2[(var,AVG,pobs)].SaveAs( ('%s.png')%(csavename))
+			print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
+			rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
+			if rc!=0:print '.png to .pdf failed for %s'%csavename
 
 
 #COSMETICS
@@ -126,11 +127,16 @@ for q2wdir in keys:
 							q2wdir.GetName());
 	h5[(EC,NEG)]=f.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
 							q2wdir.GetName());
+	h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
+	h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
+	h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+	h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
 	h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
 	h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
-	print 'h5=',h5
+	#print 'h5=',h5
 
-	plotR2_D(h5)
+	#plotR2_D(h5)
+	plotR2(h5)
 	
 """
 Now put all q2wbin/R2^{ij}_{alpha} in a single pdf
