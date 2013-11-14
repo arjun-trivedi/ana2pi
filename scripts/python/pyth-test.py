@@ -58,7 +58,7 @@
 # 		   ]
 #print varTitle[0][M1]
 
-#Test walking directory structure
+"""Test walking directory structure"""
 import os
 #print os.__file__
 anadir =  os.environ['E1F_2PI_ANADIR2']
@@ -72,15 +72,18 @@ outdir = os.path.join(anadir,'polobs.new')
 # for dirs in os.walk(outdir).next()[1]:
 # 	print 'dirs=',dirs
 
-ldirs = [dirs[0] for dirs in os.walk(outdir)]
-print ldirs
+# ldirs = [dirs[0] for dirs in os.walk(outdir)]
+# print ldirs
 	
-#Test Subprocess
+"""Test Subprocess"""
 import subprocess
 out=open('/tmp/stdout.text','w')
 err=open('/tmp/stderr.text','w')
-code = subprocess.call(["ls", "test"],stdout=out,stderr=err)
-print 'code=',code
-if code!=0:
-	print 'failed!'
+#code = subprocess.call(["ls", "test"],stdout=out,stderr=err)
+opt = '-lrt'
+#code = subprocess.call(["ls",opt,'> /tmp/tmp'])#,stdout=out,stderr=err)
+subprocess.Popen('ls /home/trivedia/*.d',shell=True)
+#print 'code=',code
+# if code!=0:
+# 	print 'failed!'
 	
