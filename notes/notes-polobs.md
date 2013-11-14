@@ -4,17 +4,20 @@
 	*	Formalism
 
 <h2 id="11-14-13">11-14-13</h2>
-Define:
-	${ \left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right) }^{h}
-	\equiv
-	f^{h}(X^{ij},\phi^{j}) = A^{ij} +
-							B^{ij}\cos\phi^{j} +
-							C^{ij}\cos2\phi^{j} +
-							hPD^{ij}\sin\phi^{j}$
+${ \left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right) }^{h}
+\doteq
+f^{h}(X^{ij},\phi^{j}) = A^{ij} +
+						B^{ij}\cos\phi^{j} +
+						C^{ij}\cos2\phi^{j} +
+						hPD^{ij}\sin\phi^{j}$
 
 where
 
-* ij = index over Varset,Variable (3x5 matrix)
+*	ij = index over Varset,Variable (3x5 matrix)
+*	$R2^{ij}_{\alpha} \doteq 
+	[A^{ij},B^{ij},C^{ij},D^{ij}] \equiv 
+	[R_{T}+\epsilon_{L}R_{L}, R_{LT}, R_{TT}, R_{LT'}]$
+
 
 
 

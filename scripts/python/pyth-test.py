@@ -1,4 +1,4 @@
-# # Testing dict
+"""Testing dict"""
 # h = {}
 # h['T'] = 'Thrown'
 # h['R'] = 'Reco'
@@ -11,12 +11,12 @@
 # h2[('A','N')] = 'Acc Corr, Neg'
 # print h2
 
-# # Test for loop
+"""Test for loop"""
 # for i in xrange(0,10):
 # 	print i
 
 
-# #Test passing array to ROOT
+"""Test passing array to ROOT"""
 # from ROOT import gSystem, gROOT, gStyle, gPad, TCanvas, TF1, TH1F, THnSparseF
 # from array import array
 
@@ -43,7 +43,7 @@
 # print rad
 # print math.sin(rad)
 
-#Test 2 by 2 DS
+"""Test 2 by 2 DS"""
 #matrix = [[1, 2, 3, 4],[5, 6, 7, 8],[9, 10, 11, 12] ]
 #var = {'M1':0, 'M2':1, 'THETA':2, 'PHI':3, 'ALPHA':4};
 # nVAR=5
