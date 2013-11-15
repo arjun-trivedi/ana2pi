@@ -87,7 +87,8 @@ outdir = os.path.join(anadir,'polobs.new')
 # # if code!=0:
 # # 	print 'failed!'
 
-""" Filling Matrix of Integers & Strings in Blocks"""
+""" Filling Matrix Strings in Blocks"""
+#http://stackoverflow.com/questions/14639496/python-numpy-array-of-arbitrary-length-strings
 import numpy as np
 s = np.zeros((5,5),object)
 s[0:4,0:1]="arjun"
