@@ -24,74 +24,110 @@ err=open('/tmp/stderr.text','w')
 
 NDTYPE=2
 EXP,SIM=range(NDTYPE)
-colorname=['kGreen','kRed']
+COLOR_DTYPES=['kGreen','kRed']
 
 NVARSETS=3
 
 NVARS=5
 M1,M2,THETA,PHI,ALPHA=range(NVARS)
-
-NSEQ_SIM=6
-ST,SR,SA,SC,SH,SF=range(NSEQ_SIM)
-
-NSEQ_EXP=3
-ER,EC,EF=range(NSEQ_EXP)
-
-NPOLS=4
-POS,NEG,UNP,AVG=range(NPOLS)
-
-NPOBS=4
-A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
-pobsname=['A','B','C','D']
-#print var
-varname = ['M1','M2','theta','phi','alpha']
-vartitle = [ 
+VAR_NAME = ['M1','M2','theta','phi','alpha']
+VAR_TITLE = [ 
 				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
 			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
 		   ]
-def plotR2(h5):
-	norm = 50000
-	hR2 = {} 
-	cR2 = {}
-	for var in range(0,NVARS):
-		if var==PHI or var==ALPHA:continue
-		for pobs in range(0,NPOBS):
-			if pobs==A: continue
-			hR2[(POS)] = h5[(EC,POS,pobs)].Projection(var)
-			hR2[(POS)].Scale(1/math.pi)
-			hR2[(POS)].Scale(1/norm)
-			hR2[(NEG)] = h5[(EC,NEG,pobs)].Projection(var)
-			hR2[(NEG)].Scale(1/math.pi)
-			hR2[(NEG)].Scale(1/norm)
-			hR2[(AVG)] = hR2[(POS)].Clone("avg")
-			hR2[(AVG)].Add(hR2[(NEG)])
-			hR2[(AVG)].Scale(0.5)
-			if pobs==D:
-				hR2[(AVG)].SetMinimum(-0.003)
-				hR2[(AVG)].SetMaximum(0.003)
-			hR2[(AVG)].SetLineColor(gROOT.ProcessLine("kMagenta"));
-			hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-			#Make Titles nice
-			hR2[(AVG)].SetTitle("")
-			pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
-			q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
-			q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-			vart = pt.AddText(("%s^{%s} vs. %s")%(pobsname[pobs],vartitle[0][var],vartitle[0][var]));
-			vart.SetTextSize(0.05);
 
-			l = TLine(0,0,180,0)
-			#cname = ('R2%sV%s')%(varname[var],varname[var])
-			cname = ('R2_%s_1%s')%(pobsname[pobs],varname[var])
-			cR2[(AVG)] = TCanvas(cname,cname)#"RvVar", "RvVar")
-			hR2[(AVG)].Draw("ep")
-			l.Draw("same")
-			pt.Draw()
-			csavename = ('%s/%s')%(outdir,cR2[(AVG)].GetName())
-			cR2[(AVG)].SaveAs( ('%s.png')%(csavename))
-			print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
-			rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
-			if rc!=0:print '.png to .pdf failed for %s'%csavename
+# NSEQ_SIM=6
+# ST,SR,SA,SC,SH,SF=range(NSEQ_SIM)
+
+# NSEQ_EXP=3
+# ER,EC,EF=range(NSEQ_EXP)
+
+NSEQ_COMB=9
+ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ_COMB)
+SEQ_COMB_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
+
+
+NPOLS=4
+POS,NEG,UNP,AVG=range(NPOLS)
+COLOR_POLS=['kRed','kBlack','kBlue','kMagenta']
+
+NPOBS=4
+A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
+POBS_NAME=['A','B','C','D']
+#print var
+
+def plotR2(h5,seql):
+	norm = 50000
+	
+	for seq in seql:
+		outdir_seq=os.path.join(outdir_q2w,SEQ_COMB_NAME[seq])
+		if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
+		for var in range(0,NVARS):
+			if var==PHI or var==ALPHA:continue
+			for pobs in range(0,NPOBS):
+				if pobs==A: continue
+				hR2 = {} 
+				hR2[(POS)] = h5[(seq,POS,pobs)].Projection(var)
+				hR2[(POS)].Scale(1/math.pi)
+				hR2[(POS)].Scale(1/norm)
+				hR2[(NEG)] = h5[(seq,NEG,pobs)].Projection(var)
+				hR2[(NEG)].Scale(1/math.pi)
+				hR2[(NEG)].Scale(1/norm)
+				hR2[(AVG)] = hR2[(POS)].Clone("avg")
+				hR2[(AVG)].Add(hR2[(NEG)])
+				hR2[(AVG)].Scale(0.5)
+				if pobs==D:
+					hR2[(AVG)].SetMinimum(-0.003)
+					hR2[(AVG)].SetMaximum(0.003)
+				hR2[(AVG)].SetLineColor(gROOT.ProcessLine("kMagenta"));
+				hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+				#Make Titles nice
+				hR2[(AVG)].SetTitle("")
+				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
+				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
+				q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
+				vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VAR_TITLE[0][var],VAR_TITLE[0][var]));
+				vart.SetTextSize(0.05);
+
+				cR2 = {}
+				l = TLine(0,0,180,0)
+				#cname = ('R2%sV%s')%(VAR_NAME[var],VAR_NAME[var])
+				cname = ('R2_%s_1%s')%(POBS_NAME[pobs],VAR_NAME[var])
+				cR2[(AVG)] = TCanvas(cname,cname)#"RvVar", "RvVar")
+				hR2[(AVG)].Draw("ep")
+				l.Draw("same")
+				pt.Draw()
+				csavename = ('%s/%s')%(outdir_seq,cR2[(AVG)].GetName())
+				cR2[(AVG)].SaveAs( ('%s.png')%(csavename))
+				print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
+				rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
+				if rc!=0:print '.png to .pdf failed for %s'%csavename
+
+def makepdf(seql):
+	for seq in seql:
+		outdir_pdf=os.path.join(outdir_root,SEQ_COMB_NAME[seq])
+		if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
+		for var in range(0,NVARS):
+			if var==PHI or var==ALPHA:continue
+			for pobs in range(0,NPOBS):
+				if pobs==A: continue
+				#Following are arguments for UNIX shell command
+				pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VAR_NAME[var])
+				q2w_pdfs=('%s/*/%s/%s')%(outdir_root,SEQ_COMB_NAME[seq],pdfname)
+				out_pdf=('%s/%s')%(outdir_pdf,pdfname)
+
+				print '>>>ls %s > /tmp/tmp'%q2w_pdfs
+				rc=subprocess.call('ls %s > /tmp/tmp'%q2w_pdfs,shell=True)
+				if rc!=0: print 'command failed!'
+
+				print '>>>echo %s >> /tmp/tmp'%out_pdf
+				rc=subprocess.call('echo %s >> /tmp/tmp'%out_pdf,shell=True)
+				if rc!=0: print 'command failed!'
+
+				print '>>>cat /tmp/tmp | xargs pdfunite'
+				rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
+				if rc!=0: print 'command failed!'
 
 
 #COSMETICS
@@ -126,62 +162,62 @@ First, for each q2wbin, make all R2^{ij}_{alpha} where:
 """
 keys = fexp.GetListOfKeys()
 for q2wdir in keys:
-	outdir = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
-	if not os.path.isdir(outdir):os.makedirs(outdir);
+	outdir_q2w = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
+	if not os.path.isdir(outdir_q2w):os.makedirs(outdir_q2w);
 
 	h5 = {}	
-	h5[(EF,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%
-							q2wdir.GetName());
-	h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%
-							q2wdir.GetName());
-	h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%
-							q2wdir.GetName());
-	h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%
-							q2wdir.GetName());
+	h5[(EF,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
+	h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+	h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+	h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
 
-	h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%
-							q2wdir.GetName());
+	h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
 	
+	"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
 	h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
 	h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
 	h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-
 	h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
 	h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
 	h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-
 	h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
 	h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
 	h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+	"""Prepare h5s to extract POBS from SF-UNP data"""
+	h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
+	
 
 	#print 'h5=',h5
 
 	#plotR2_D(h5)
-	plotR2(h5)
+	seql = [EC]
+	#plotR2(h5,seql)
+
 	
 """
-Now put all q2wbin/R2^{ij}_{alpha} in a single pdf
+Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 """
+makepdf(seql)
 # q2wdirs = [dirs[0] for dirs in os.walk(outdir_root)]
 # for q2wdir in q2wdirs:
-for var in range(0,NVARS):
-	if var==PHI or var==ALPHA:continue
-	for pobs in range(0,NPOBS):
-		if pobs==A: continue
-		#print 'q2wdir,var=',q2wdir,varname[var]
-		pdfname=('R2_%s_1%s.pdf')%(pobsname[pobs],varname[var])
-		pdfs=('%s/*/%s')%(outdir_root,pdfname)
-		pdf=('%s/%s')%(outdir_root,pdfname)
+# for var in range(0,NVARS):
+# 	if var==PHI or var==ALPHA:continue
+# 	for pobs in range(0,NPOBS):
+# 		if pobs==A: continue
+# 		#print 'q2wdir,var=',q2wdir,VAR_NAME[var]
+# 		pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VAR_NAME[var])
+# 		pdfs=('%s/*/%s')%(outdir_root,pdfname)
+# 		pdf=('%s/%s')%(outdir_root,pdfname)
 
-		print '>>>ls %s > /tmp/tmp'%pdfs
-		rc=subprocess.call('ls %s > /tmp/tmp'%pdfs,shell=True)
-		if rc!=0: print 'command failed!'
+# 		print '>>>ls %s > /tmp/tmp'%pdfs
+# 		rc=subprocess.call('ls %s > /tmp/tmp'%pdfs,shell=True)
+# 		if rc!=0: print 'command failed!'
 
-		print '>>>echo %s >> /tmp/tmp'%pdf
-		rc=subprocess.call('echo %s >> /tmp/tmp'%pdf,shell=True)
-		if rc!=0: print 'command failed!'
+# 		print '>>>echo %s >> /tmp/tmp'%pdf
+# 		rc=subprocess.call('echo %s >> /tmp/tmp'%pdf,shell=True)
+# 		if rc!=0: print 'command failed!'
 
-		print '>>>cat /tmp/tmp | xargs pdfunite'
-		rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
-		if rc!=0: print 'command failed!'
+# 		print '>>>cat /tmp/tmp | xargs pdfunite'
+# 		rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
+# 		if rc!=0: print 'command failed!'
 
