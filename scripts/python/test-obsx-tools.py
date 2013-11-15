@@ -43,30 +43,32 @@ VAR_TITLE = [
 # NSEQ_EXP=3
 # ER,EC,EF=range(NSEQ_EXP)
 
-NSEQ_COMB=9
-ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ_COMB)
-SEQ_COMB_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
+NSEQ=9
+ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ)
+SEQ_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
 
 NPOLS=4
 POS,NEG,UNP,AVG=range(NPOLS)
-COLOR_POLS=['kRed','kBlack','kBlue','kMagenta']
+POLS_COLOR=['kRed','kBlack','kBlue','kMagenta']
 
 ANADIR = os.environ['E1F_2PI_ANADIR2']
 TOP = "1:2:3:4"
 Q2WBNG = '1-2.000-2.400__24-1.300-1.900'
-SIMDIR = os.path.join(ANADIR/simdir)
-SEQ_COMB_POL_H5FILE = np.chararray((NSEQ_COMB,NPOLS))
-EQ_COMB_POL_H5FILE[ST:] 
+SIMDIR = os.path.join(ANADIR,'simdir')
+SEQ_POL_H5FILE = np.zeros((NSEQ,NPOLS),object)
+SEQ_POL_H5FILE[ST:SF+1,POS:NEG+1]='%s__%s__pol__sim.root'%(TOP,Q2WBNG)
+SEQ_POL_H5FILE[ST:SF+1,UNP:AVG]='%s__%s__sim.root'%(TOP,Q2WBNG)
+print SEQ_POL_H5FILE
 
 # =[
 # 	['%s/%s_%s__pol__sim.root'%s(SIMDIR,TOP,Q2WBNG), ]
 # ]
-SEQ_COMB_POL_H5PATH=[
+SEQ_POL_H5PATH=[
 	['','','hY5D/Varset%d/hY5D_TH',''],
 	['','','hY5D/Varset%d/hY5D_RECO',''],
 	['','','hY5D/Varset%d/hY5D_ACC',''],
 	['','','hY5D/Varset%d/hY5D_ACC_CORR',''],
-	['','','hY5D/Varset%d/hY5D_HOLE','']
+	['','','hY5D/Varset%d/hY5D_HOLE',''],
 	['','','hY5D/Varset%d/hY5D_FULL',''],
 	['hY5D_POS/Varset%d/hY5D_RECO','hY5D_NEG/Varset%d/hY5D_RECO','hY5D/Varset%d/hY5D_RECO',''],
 	['hY5D_POS/Varset%d/hY5D_ACC_CORR','hY5D_NEG/Varset%d/hY5D_ACC_CORR','hY5D/Varset%d/hY5D_ACC_CORR',''],
@@ -82,7 +84,7 @@ def plotR2(h5,seql):
 	norm = 50000
 	
 	for seq in seql:
-		outdir_seq=os.path.join(outdir_q2w,SEQ_COMB_NAME[seq])
+		outdir_seq=os.path.join(outdir_q2w,SEQ_NAME[seq])
 		if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
 		for var in range(0,NVARS):
 			if var==PHI or var==ALPHA:continue
@@ -127,7 +129,7 @@ def plotR2(h5,seql):
 
 def makepdf(seql):
 	for seq in seql:
-		outdir_pdf=os.path.join(outdir_root,SEQ_COMB_NAME[seq])
+		outdir_pdf=os.path.join(outdir_root,SEQ_NAME[seq])
 		if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
 		for var in range(0,NVARS):
 			if var==PHI or var==ALPHA:continue
@@ -135,7 +137,7 @@ def makepdf(seql):
 				if pobs==A: continue
 				#Following are arguments for UNIX shell command
 				pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VAR_NAME[var])
-				q2w_pdfs=('%s/*/%s/%s')%(outdir_root,SEQ_COMB_NAME[seq],pdfname)
+				q2w_pdfs=('%s/*/%s/%s')%(outdir_root,SEQ_NAME[seq],pdfname)
 				out_pdf=('%s/%s')%(outdir_pdf,pdfname)
 
 				print '>>>ls %s > /tmp/tmp'%q2w_pdfs
@@ -209,18 +211,14 @@ for q2wdir in keys:
 		"""Prepare h5s to extract POBS from SF-UNP data"""
 		h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
 	
-
-	#print 'h5=',h5
-
-	#plotR2_D(h5)
-	#seql = [EC,EF]
-	plotR2(h5,seql)
+	
+	#plotR2(h5,seql)
 
 	
 """
 Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 """
-makepdf(seql)
+#makepdf(seql)
 # q2wdirs = [dirs[0] for dirs in os.walk(outdir_root)]
 # for q2wdir in q2wdirs:
 # for var in range(0,NVARS):
