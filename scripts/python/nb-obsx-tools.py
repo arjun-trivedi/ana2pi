@@ -12,6 +12,7 @@ import subprocess
 
 from matplotlib import pyplot as plt
 import numpy as np
+import pandas as pd
 
 from rootpy.io import root_open, File
 import rootpy.plotting.root2matplotlib as rplt
