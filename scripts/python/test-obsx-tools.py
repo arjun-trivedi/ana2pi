@@ -82,52 +82,46 @@ POBS_NAME=['A','B','C','D']
 def plotR2(h5,seql,poll):
 	norm = 50000
 	for var in range(0,NVARS):
-	if var==PHI or var==ALPHA:continue
-	for pobs in range(0,NPOBS):
-		if pobs==A: continue
-		for seq in seql:
-			outdir_seq=os.path.join(outdir_q2w,SEQ_NAME[seq])
-			if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
-			for pol in poll:
-				hR2 = {} 
-				hR2[(pol)] = h5[(seq,pol,pobs)].Projection(var)
-				hR2[(pol)].Scale(1/math.pi)
-				hR2[(pol)].Scale(1/norm)
-				hR2[(POS)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[POS]));
-				hR2[(POS)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-				hR2[(NEG)] = h5[(seq,NEG,pobs)].Projection(var)
-				hR2[(NEG)].Scale(1/math.pi)
-				hR2[(NEG)].Scale(1/norm)
-				hR2[(NEG)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[NEG]));
-				hR2[(NEG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-				hR2[(AVG)] = hR2[(POS)].Clone("avg")
-				hR2[(AVG)].Add(hR2[(NEG)])
-				hR2[(AVG)].Scale(0.5)
-				hR2[(AVG)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[AVG]));
-				hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-				if pobs==D:
-					hR2[(AVG)].SetMinimum(-0.003)
-					hR2[(AVG)].SetMaximum(0.003)
-				
-				#Make Titles nice
-				hR2[(POS)].SetTitle("")
-				hR2[(NEG)].SetTitle("")
-				hR2[(AVG)].SetTitle("")
+		if var==PHI or var==ALPHA:continue
+		for pobs in range(0,NPOBS):
+			if pobs==A: continue
+			for seq in seql:
+				outdir_seq=os.path.join(outdir_q2w,SEQ_NAME[seq])
+				if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
+
+				cname = ('R2_%s_1%s')%(POBS_NAME[pobs],VAR_NAME[var])
+				l = TLine(0,0,180,0)
+				cR2 = TCanvas(cname,cname)#"RvVar", "RvVar")
+				hR2 = {}
+				pltnum=0
+				for pol in poll:
+					hR2[(pol)] = h5[(seq,pol,pobs)].Projection(var)
+					hR2[(pol)].Scale(1/math.pi)
+					hR2[(pol)].Scale(1/norm)
+					hR2[(pol)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[pol]));
+					hR2[(pol)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+								
+					#Make Titles nice
+					hR2[(pol)].SetTitle("")
+					#hR2[(NEG)].SetTitle("")
+					#hR2[(AVG)].SetTitle("")
+					
+
+					#cR2 = {}
+					#l = TLine(0,0,180,0)
+					#cname = ('R2%sV%s')%(VAR_NAME[var],VAR_NAME[var])
+					if pltnum==0:
+						hR2[(pol)].Draw("ep")
+					else:
+						hR2[(pol)].Draw("ep same")
+					# hR2[(NEG)].Draw("ep same")
+					#hR2[(AVG)].Draw("ep same")
+				l.Draw("same")
 				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
 				q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
 				vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VAR_TITLE[0][var],VAR_TITLE[0][var]));
 				vart.SetTextSize(0.05);
-
-				#cR2 = {}
-				l = TLine(0,0,180,0)
-				#cname = ('R2%sV%s')%(VAR_NAME[var],VAR_NAME[var])
-				cname = ('R2_%s_1%s')%(POBS_NAME[pobs],VAR_NAME[var])
-				cR2 = TCanvas(cname,cname)#"RvVar", "RvVar")
-				hR2[(POS)].Draw("ep")
-				hR2[(NEG)].Draw("ep same")
-				hR2[(AVG)].Draw("ep same")
-				l.Draw("same")
 				pt.Draw()
 				csavename = ('%s/%s')%(outdir_seq,cR2.GetName())
 				cR2.SaveAs( ('%s.png')%(csavename))
@@ -210,7 +204,7 @@ for q2wdir in keys:
 				#h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi',-1)
 				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi')
 	
-	plotR2(h5,seql)
+	plotR2(h5,seql,poll)
 
 	
 """
