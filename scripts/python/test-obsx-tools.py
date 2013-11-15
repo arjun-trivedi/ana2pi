@@ -79,20 +79,20 @@ A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
 #print var
 
-def plotR2(h5,seql):
+def plotR2(h5,seql,poll):
 	norm = 50000
-	
-	for seq in seql:
-		outdir_seq=os.path.join(outdir_q2w,SEQ_NAME[seq])
-		if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
-		for var in range(0,NVARS):
-			if var==PHI or var==ALPHA:continue
-			for pobs in range(0,NPOBS):
-				if pobs==A: continue
+	for var in range(0,NVARS):
+	if var==PHI or var==ALPHA:continue
+	for pobs in range(0,NPOBS):
+		if pobs==A: continue
+		for seq in seql:
+			outdir_seq=os.path.join(outdir_q2w,SEQ_NAME[seq])
+			if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
+			for pol in poll:
 				hR2 = {} 
-				hR2[(POS)] = h5[(seq,POS,pobs)].Projection(var)
-				hR2[(POS)].Scale(1/math.pi)
-				hR2[(POS)].Scale(1/norm)
+				hR2[(pol)] = h5[(seq,pol,pobs)].Projection(var)
+				hR2[(pol)].Scale(1/math.pi)
+				hR2[(pol)].Scale(1/norm)
 				hR2[(POS)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[POS]));
 				hR2[(POS)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 				hR2[(NEG)] = h5[(seq,NEG,pobs)].Projection(var)
@@ -103,11 +103,12 @@ def plotR2(h5,seql):
 				hR2[(AVG)] = hR2[(POS)].Clone("avg")
 				hR2[(AVG)].Add(hR2[(NEG)])
 				hR2[(AVG)].Scale(0.5)
+				hR2[(AVG)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[AVG]));
+				hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 				if pobs==D:
 					hR2[(AVG)].SetMinimum(-0.003)
 					hR2[(AVG)].SetMaximum(0.003)
-				hR2[(AVG)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[AVG]));
-				hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
+				
 				#Make Titles nice
 				hR2[(POS)].SetTitle("")
 				hR2[(NEG)].SetTitle("")
@@ -163,12 +164,6 @@ def makepdf(seql):
 #COSMETICS
 gStyle.SetOptStat(0);
 gStyle.SetOptFit(1111);
-#INPUT data
-
-# fexpname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')
-# fsimname = os.path.join(anadir,'simdir','1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__sim.root')#test.root')
-# fexp = root_open(fexpname)
-# fsim = root_open(fsimname)
 #OUTPUT data
 outdir_root = os.path.join(ANADIR,'polobs.new')
 if not os.path.isdir(outdir_root):
@@ -191,7 +186,8 @@ First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
 seql = [EF,SF]
-poll = [POS,NEG]
+#poll = [POS,NEG]
+poll = [UNP]
 ftemplate = root_open(SEQ_POL_H5FILE[0][0])
 keys = ftemplate.GetListOfKeys()
 for q2wdir in keys:
@@ -211,7 +207,8 @@ for q2wdir in keys:
 			if pol==POS or pol==UNP:
 				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi')
 			elif pol==NEG:
-				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi',-1)
+				#h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi',-1)
+				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi')
 	
 	plotR2(h5,seql)
 
