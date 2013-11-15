@@ -50,6 +50,7 @@ SEQ_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
 NPOLS=4
 POS,NEG,UNP,AVG=range(NPOLS)
 POLS_COLOR=['kRed','kBlack','kBlue','kMagenta']
+POLS_NAME=['POS','NEG','UNP','AVG']
 
 ANADIR = os.environ['E1F_2PI_ANADIR2']
 TOP = "1:2:3:4"
@@ -93,8 +94,10 @@ def plotR2(h5,seql,poll):
 				l = TLine(0,0,180,0)
 				cR2 = TCanvas(cname,cname)#"RvVar", "RvVar")
 				hR2 = {}
-				pltnum=0
+				#pltnum=0
 				for pol in poll:
+					outdir_pol=os.path.join(outdir_seq,POLS_NAME[pol])
+					if not os.path.isdir(outdir_pol):os.makedirs(outdir_pol)
 					hR2[(pol)] = h5[(seq,pol,pobs)].Projection(var)
 					hR2[(pol)].Scale(1/math.pi)
 					hR2[(pol)].Scale(1/norm)
@@ -110,49 +113,50 @@ def plotR2(h5,seql,poll):
 					#cR2 = {}
 					#l = TLine(0,0,180,0)
 					#cname = ('R2%sV%s')%(VAR_NAME[var],VAR_NAME[var])
-					if pltnum==0:
-						hR2[(pol)].Draw("ep")
-					else:
-						hR2[(pol)].Draw("ep same")
+					#if pltnum==0:
+					hR2[(pol)].Draw("ep")
+					#else:
+					#	hR2[(pol)].Draw("ep same")
 					# hR2[(NEG)].Draw("ep same")
 					#hR2[(AVG)].Draw("ep same")
-				l.Draw("same")
-				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
-				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
-				q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-				vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VAR_TITLE[0][var],VAR_TITLE[0][var]));
-				vart.SetTextSize(0.05);
-				pt.Draw()
-				csavename = ('%s/%s')%(outdir_seq,cR2.GetName())
-				cR2.SaveAs( ('%s.png')%(csavename))
-				print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
-				rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
-				if rc!=0:print '.png to .pdf failed for %s'%csavename
+					l.Draw("same")
+					pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
+					q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
+					q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
+					vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VAR_TITLE[0][var],VAR_TITLE[0][var]));
+					vart.SetTextSize(0.05);
+					pt.Draw()
+					csavename = ('%s/%s')%(outdir_pol,cR2.GetName())
+					cR2.SaveAs( ('%s.png')%(csavename))
+					print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
+					rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
+					if rc!=0:print '.png to .pdf failed for %s'%csavename
 
-def makepdf(seql):
+def makepdf(seql,poll):
 	for seq in seql:
-		outdir_pdf=os.path.join(outdir_root,SEQ_NAME[seq])
-		if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
-		for var in range(0,NVARS):
-			if var==PHI or var==ALPHA:continue
-			for pobs in range(0,NPOBS):
-				if pobs==A: continue
-				#Following are arguments for UNIX shell command
-				pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VAR_NAME[var])
-				q2w_pdfs=('%s/*/%s/%s')%(outdir_root,SEQ_NAME[seq],pdfname)
-				out_pdf=('%s/%s')%(outdir_pdf,pdfname)
+		for pol in poll:
+			outdir_pdf=os.path.join(outdir_root,SEQ_NAME[seq],POLS_NAME[pol])
+			if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
+			for var in range(0,NVARS):
+				if var==PHI or var==ALPHA:continue
+				for pobs in range(0,NPOBS):
+					if pobs==A: continue
+					#Following are arguments for UNIX shell command
+					pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VAR_NAME[var])
+					q2w_pdfs=('%s/*/%s/%s/%s')%(outdir_root,SEQ_NAME[seq],POLS_NAME[pol],pdfname)
+					out_pdf=('%s/%s')%(outdir_pdf,pdfname)
 
-				print '>>>ls %s > /tmp/tmp'%q2w_pdfs
-				rc=subprocess.call('ls %s > /tmp/tmp'%q2w_pdfs,shell=True)
-				if rc!=0: print 'command failed!'
+					print '>>>ls %s > /tmp/tmp'%q2w_pdfs
+					rc=subprocess.call('ls %s > /tmp/tmp'%q2w_pdfs,shell=True)
+					if rc!=0: print 'command failed!'
 
-				print '>>>echo %s >> /tmp/tmp'%out_pdf
-				rc=subprocess.call('echo %s >> /tmp/tmp'%out_pdf,shell=True)
-				if rc!=0: print 'command failed!'
+					print '>>>echo %s >> /tmp/tmp'%out_pdf
+					rc=subprocess.call('echo %s >> /tmp/tmp'%out_pdf,shell=True)
+					if rc!=0: print 'command failed!'
 
-				print '>>>cat /tmp/tmp | xargs pdfunite'
-				rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
-				if rc!=0: print 'command failed!'
+					print '>>>cat /tmp/tmp | xargs pdfunite'
+					rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
+					if rc!=0: print 'command failed!'
 
 
 #COSMETICS
@@ -204,10 +208,10 @@ for q2wdir in keys:
 				#h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi',-1)
 				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi')
 	
-	plotR2(h5,seql,poll)
+	#plotR2(h5,seql,poll)
 
 	
 """
 Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 """
-makepdf(seql)
+makepdf(seql,poll)
