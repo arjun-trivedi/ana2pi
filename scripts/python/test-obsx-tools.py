@@ -69,9 +69,9 @@ SEQ_POL_H5=[
 	['','','hY5D/Varset1/hY5D_ACC_CORR',''],
 	['','','hY5D/Varset1/hY5D_HOLE',''],
 	['','','hY5D/Varset1/hY5D_FULL',''],
-	['hY5D_POS/Varset1/hY5D_RECO','hY5D_NEG/Varset1/hY5D_RECO','hY5D/Varset1/hY5D_RECO',''],
+	['hY5D_POS/Varset1/hY5D_RECO',    'hY5D_NEG/Varset1/hY5D_RECO',    'hY5D/Varset1/hY5D_RECO',''],
 	['hY5D_POS/Varset1/hY5D_ACC_CORR','hY5D_NEG/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR',''],
-	['hY5D_POS/Varset1/hY5D_FULL','hY5D_NEG/Varset1/hY5D_FULL','hY5D/Varset1/hY5D_FULL','']
+	['hY5D_POS/Varset1/hY5D_FULL',    'hY5D_NEG/Varset1/hY5D_FULL',    'hY5D/Varset1/hY5D_FULL','']
 ]
 
 NPOBS=4
@@ -148,7 +148,7 @@ def makepdf(seql):
 				if rc!=0: print 'command failed!'
 
 				print '>>>cat /tmp/tmp | xargs pdfunite'
-				rc=subprocess.call('cat /tmp/tmp | xargs pdfufghkw6-[]nite',shell=True)
+				rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
 				if rc!=0: print 'command failed!'
 
 
@@ -182,47 +182,51 @@ First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 	-ij    = Index over NVARSETS and nVAR respectively
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
-seql = [EC,EF]
+seql = [EC]#,EF]
 poll = [POS,NEG]
 ftemplate = root_open(SEQ_POL_H5FILE[0][0])
 keys = ftemplate.GetListOfKeys()
 for q2wdir in keys:
 	outdir_q2w = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
 	if not os.path.isdir(outdir_q2w):os.makedirs(outdir_q2w);
-
+	print 'q2wdir=',q2wdir.GetName()
 	h5 = {}	
+	#Get all h5s from root file & prepare them to extract POBS
 	for seq in seql:
 		for pol in poll:
+			# print '+seq:pol:file',seq,pol,SEQ_POL_H5FILE[seq][pol]
+			# print ' +h5=',SEQ_POL_H5[seq][pol]
 			f=root_open(SEQ_POL_H5FILE[seq][pol])
 			h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POL_H5[seq][pol]))
-			#h5[(seq,pol)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
-		# h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-		# h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-		# h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-
-		# h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
+			h5[(seq,pol,B)]=mythnt.MultiplyBy(h5[(seq,pol)],'cphi')
+			h5[(seq,pol,C)]=mythnt.MultiplyBy(h5[(seq,pol)],'c2phi')
+			if pol==POS or pol==UNP:
+				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi')
+			elif pol==NEG:
+				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi',-1)
+			
 	
-		# """Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
-		# h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
-		# h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-		# h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-		# h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
-		# h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-		# h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-		# h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
-		# h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
-		# h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
-		# """Prepare h5s to extract POBS from SF-UNP data"""
-		# h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
+	"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
+	#h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
+	#h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+	#h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+	# h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
+	# h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+	# h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+	# h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
+	# h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
+	# h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+	"""Prepare h5s to extract POBS from SF-UNP data"""
+	#h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
 	
 	
-	#plotR2(h5,seql)
+	plotR2(h5,seql)
 
 	
 """
 Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 """
-#makepdf(seql)
+makepdf(seql)
 # q2wdirs = [dirs[0] for dirs in os.walk(outdir_root)]
 # for q2wdir in q2wdirs:
 # for var in range(0,NVARS):
