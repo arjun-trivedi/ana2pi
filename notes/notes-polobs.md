@@ -24,7 +24,7 @@ where
 
 ##Event Selection
 
-##Knowledge & questions based on current Observations
+##Knowledge & Questions based on current Observations
 
 1. What do `R2` from Simulation Data (`SF`) represent?
 
