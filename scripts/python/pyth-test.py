@@ -76,14 +76,26 @@ outdir = os.path.join(anadir,'polobs.new')
 # print ldirs
 	
 """Test Subprocess"""
-import subprocess
-out=open('/tmp/stdout.text','w')
-err=open('/tmp/stderr.text','w')
-#code = subprocess.call(["ls", "test"],stdout=out,stderr=err)
-opt = '-lrt'
-#code = subprocess.call(["ls",opt,'> /tmp/tmp'])#,stdout=out,stderr=err)
-subprocess.Popen('ls /home/trivedia/*.d',shell=True)
-#print 'code=',code
-# if code!=0:
-# 	print 'failed!'
+# import subprocess
+# out=open('/tmp/stdout.text','w')
+# err=open('/tmp/stderr.text','w')
+# #code = subprocess.call(["ls", "test"],stdout=out,stderr=err)
+# opt = '-lrt'
+# #code = subprocess.call(["ls",opt,'> /tmp/tmp'])#,stdout=out,stderr=err)
+# subprocess.Popen('ls /home/trivedia/*.d',shell=True)
+# #print 'code=',code
+# # if code!=0:
+# # 	print 'failed!'
+
+""" Filling Matrix of Integers & Strings in Blocks"""
+import numpy as np
+s = np.zeros((5,5),object)
+s[0:4,0:1]="arjun"
+s[0:4,1:2]="trivedi"
+print s
+print s[0,0]
+
+z = np.zeros((5,5),int)
+z[0:4,0:1] = 3
+print z
 	

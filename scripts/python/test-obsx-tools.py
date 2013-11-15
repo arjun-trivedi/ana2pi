@@ -47,10 +47,31 @@ NSEQ_COMB=9
 ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ_COMB)
 SEQ_COMB_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
 
-
 NPOLS=4
 POS,NEG,UNP,AVG=range(NPOLS)
 COLOR_POLS=['kRed','kBlack','kBlue','kMagenta']
+
+ANADIR = os.environ['E1F_2PI_ANADIR2']
+TOP = "1:2:3:4"
+Q2WBNG = '1-2.000-2.400__24-1.300-1.900'
+SIMDIR = os.path.join(ANADIR/simdir)
+SEQ_COMB_POL_H5FILE = np.chararray((NSEQ_COMB,NPOLS))
+EQ_COMB_POL_H5FILE[ST:] 
+
+# =[
+# 	['%s/%s_%s__pol__sim.root'%s(SIMDIR,TOP,Q2WBNG), ]
+# ]
+SEQ_COMB_POL_H5PATH=[
+	['','','hY5D/Varset%d/hY5D_TH',''],
+	['','','hY5D/Varset%d/hY5D_RECO',''],
+	['','','hY5D/Varset%d/hY5D_ACC',''],
+	['','','hY5D/Varset%d/hY5D_ACC_CORR',''],
+	['','','hY5D/Varset%d/hY5D_HOLE','']
+	['','','hY5D/Varset%d/hY5D_FULL',''],
+	['hY5D_POS/Varset%d/hY5D_RECO','hY5D_NEG/Varset%d/hY5D_RECO','hY5D/Varset%d/hY5D_RECO',''],
+	['hY5D_POS/Varset%d/hY5D_ACC_CORR','hY5D_NEG/Varset%d/hY5D_ACC_CORR','hY5D/Varset%d/hY5D_ACC_CORR',''],
+	['hY5D_POS/Varset%d/hY5D_FULL','hY5D_NEG/Varset%d/hY5D_FULL','hY5D/Varset%d/hY5D_FULL','']
+]
 
 NPOBS=4
 A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
@@ -126,7 +147,7 @@ def makepdf(seql):
 				if rc!=0: print 'command failed!'
 
 				print '>>>cat /tmp/tmp | xargs pdfunite'
-				rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
+				rc=subprocess.call('cat /tmp/tmp | xargs pdfufghkw6-[]nite',shell=True)
 				if rc!=0: print 'command failed!'
 
 
@@ -134,7 +155,7 @@ def makepdf(seql):
 gStyle.SetOptStat(0);
 gStyle.SetOptFit(1111);
 #INPUT data
-anadir =  os.environ['E1F_2PI_ANADIR2']
+
 fexpname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')
 fsimname = os.path.join(anadir,'simdir','1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__sim.root')#test.root')
 fexp = root_open(fexpname)
@@ -156,42 +177,44 @@ if not os.path.isdir(outdir_root):
 
 #Using PyRoot
 """
-First, for each q2wbin, make all R2^{ij}_{alpha} where:
+First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 	-ij    = Index over NVARSETS and nVAR respectively
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
+seql = [EC,EF]
 keys = fexp.GetListOfKeys()
 for q2wdir in keys:
 	outdir_q2w = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
 	if not os.path.isdir(outdir_q2w):os.makedirs(outdir_q2w);
 
 	h5 = {}	
-	h5[(EF,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
-	h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-	h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-	h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+	for seq in seql:
+		h5[(EF,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
+		h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+		h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+		h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
 
-	h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
+		h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
 	
-	"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
-	h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
-	h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-	h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
-	h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-	h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
-	h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
-	h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
-	"""Prepare h5s to extract POBS from SF-UNP data"""
-	h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
+		"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
+		h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
+		h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+		h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+		h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
+		h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+		h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+		h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
+		h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
+		h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+		"""Prepare h5s to extract POBS from SF-UNP data"""
+		h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
 	
 
 	#print 'h5=',h5
 
 	#plotR2_D(h5)
-	seql = [EC]
-	#plotR2(h5,seql)
+	#seql = [EC,EF]
+	plotR2(h5,seql)
 
 	
 """
