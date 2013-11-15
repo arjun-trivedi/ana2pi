@@ -56,13 +56,12 @@ TOP = "1:2:3:4"
 Q2WBNG = '1-2.000-2.400__24-1.300-1.900'
 SIMDIR = os.path.join(ANADIR,'simdir')
 SEQ_POL_H5FILE = np.zeros((NSEQ,NPOLS),object)
-SEQ_POL_H5FILE[ST:SF+1,POS:NEG+1]='%s__%s__pol__sim.root'%(TOP,Q2WBNG)
-SEQ_POL_H5FILE[ST:SF+1,UNP:AVG]='%s__%s__sim.root'%(TOP,Q2WBNG)
-print SEQ_POL_H5FILE
+SEQ_POL_H5FILE[ST:SF+1,POS:NEG+1]='%s/%s__%s__pol__sim.root'%(SIMDIR,TOP,Q2WBNG)
+SEQ_POL_H5FILE[ST:SF+1,UNP:AVG]='%s/%s__%s__sim.root'%(SIMDIR,TOP,Q2WBNG)
+SEQ_POL_H5FILE[ER:,POS:NEG+1]='%s/%s__%s__pol__exp.root'%(ANADIR,TOP,Q2WBNG)
+SEQ_POL_H5FILE[ER:,UNP:AVG]='%s/%s__%s__exp.root'%(ANADIR,TOP,Q2WBNG)
+#print SEQ_POL_H5FILE
 
-# =[
-# 	['%s/%s_%s__pol__sim.root'%s(SIMDIR,TOP,Q2WBNG), ]
-# ]
 SEQ_POL_H5PATH=[
 	['','','hY5D/Varset%d/hY5D_TH',''],
 	['','','hY5D/Varset%d/hY5D_RECO',''],
