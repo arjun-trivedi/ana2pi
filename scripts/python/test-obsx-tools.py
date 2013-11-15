@@ -62,16 +62,16 @@ SEQ_POL_H5FILE[ER:,POS:NEG+1]='%s/%s__%s__pol__exp.root'%(ANADIR,TOP,Q2WBNG)
 SEQ_POL_H5FILE[ER:,UNP:AVG]='%s/%s__%s__exp.root'%(ANADIR,TOP,Q2WBNG)
 #print SEQ_POL_H5FILE
 
-SEQ_POL_H5PATH=[
-	['','','hY5D/Varset%d/hY5D_TH',''],
-	['','','hY5D/Varset%d/hY5D_RECO',''],
-	['','','hY5D/Varset%d/hY5D_ACC',''],
-	['','','hY5D/Varset%d/hY5D_ACC_CORR',''],
-	['','','hY5D/Varset%d/hY5D_HOLE',''],
-	['','','hY5D/Varset%d/hY5D_FULL',''],
-	['hY5D_POS/Varset%d/hY5D_RECO','hY5D_NEG/Varset%d/hY5D_RECO','hY5D/Varset%d/hY5D_RECO',''],
-	['hY5D_POS/Varset%d/hY5D_ACC_CORR','hY5D_NEG/Varset%d/hY5D_ACC_CORR','hY5D/Varset%d/hY5D_ACC_CORR',''],
-	['hY5D_POS/Varset%d/hY5D_FULL','hY5D_NEG/Varset%d/hY5D_FULL','hY5D/Varset%d/hY5D_FULL','']
+SEQ_POL_H5=[
+	['','','hY5D/Varset1/hY5D_TH',''],
+	['','','hY5D/Varset1/hY5D_RECO',''],
+	['','','hY5D/Varset1/hY5D_ACC',''],
+	['','','hY5D/Varset1/hY5D_ACC_CORR',''],
+	['','','hY5D/Varset1/hY5D_HOLE',''],
+	['','','hY5D/Varset1/hY5D_FULL',''],
+	['hY5D_POS/Varset1/hY5D_RECO','hY5D_NEG/Varset1/hY5D_RECO','hY5D/Varset1/hY5D_RECO',''],
+	['hY5D_POS/Varset1/hY5D_ACC_CORR','hY5D_NEG/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR',''],
+	['hY5D_POS/Varset1/hY5D_FULL','hY5D_NEG/Varset1/hY5D_FULL','hY5D/Varset1/hY5D_FULL','']
 ]
 
 NPOBS=4
@@ -157,12 +157,12 @@ gStyle.SetOptStat(0);
 gStyle.SetOptFit(1111);
 #INPUT data
 
-fexpname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')
-fsimname = os.path.join(anadir,'simdir','1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__sim.root')#test.root')
-fexp = root_open(fexpname)
-fsim = root_open(fsimname)
+# fexpname = os.path.join(anadir,'1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__exp.root')
+# fsimname = os.path.join(anadir,'simdir','1:2:3:4__1-2.000-2.400__24-1.300-1.900__pol__sim.root')#test.root')
+# fexp = root_open(fexpname)
+# fsim = root_open(fsimname)
 #OUTPUT data
-outdir_root = os.path.join(anadir,'polobs.new')
+outdir_root = os.path.join(ANADIR,'polobs.new')
 if not os.path.isdir(outdir_root):
 	os.makedirs(outdir_root)
 
@@ -183,32 +183,37 @@ First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
 seql = [EC,EF]
-keys = fexp.GetListOfKeys()
+poll = [POS,NEG]
+ftemplate = root_open(SEQ_POL_H5FILE[0][0])
+keys = ftemplate.GetListOfKeys()
 for q2wdir in keys:
 	outdir_q2w = os.path.join( ('%s/%s')%(outdir_root,q2wdir.GetName()) )
 	if not os.path.isdir(outdir_q2w):os.makedirs(outdir_q2w);
 
 	h5 = {}	
 	for seq in seql:
-		h5[(EF,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
-		h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-		h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
-		h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+		for pol in poll:
+			f=root_open(SEQ_POL_H5FILE[seq][pol])
+			h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POL_H5[seq][pol]))
+			#h5[(seq,pol)]=fexp.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
+		# h5[(EC,UNP)]=fexp.Get('%s/hY5D/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+		# h5[(EC,POS)]=fexp.Get('%s/hY5D_POS/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
+		# h5[(EC,NEG)]=fexp.Get('%s/hY5D_NEG/Varset1/hY5D_ACC_CORR'%q2wdir.GetName());
 
-		h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
+		# h5[(SF,UNP)]=fsim.Get('%s/hY5D/Varset1/hY5D_FULL'%q2wdir.GetName());
 	
-		"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
-		h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
-		h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-		h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-		h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
-		h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-		h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-		h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
-		h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
-		h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
-		"""Prepare h5s to extract POBS from SF-UNP data"""
-		h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
+		# """Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
+		# h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
+		# h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+		# h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+		# h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
+		# h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+		# h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+		# h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
+		# h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
+		# h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+		# """Prepare h5s to extract POBS from SF-UNP data"""
+		# h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
 	
 	
 	#plotR2(h5,seql)
