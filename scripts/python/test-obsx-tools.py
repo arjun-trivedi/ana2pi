@@ -57,18 +57,18 @@ Q2WBNG = '1-2.000-2.400__24-1.300-1.900'
 SIMDIR = os.path.join(ANADIR,'simdir')
 SEQ_POL_H5FILE = np.zeros((NSEQ,NPOLS),object)
 SEQ_POL_H5FILE[ST:SF+1,POS:NEG+1]='%s/%s__%s__pol__sim.root'%(SIMDIR,TOP,Q2WBNG)
-SEQ_POL_H5FILE[ST:SF+1,UNP:AVG]='%s/%s__%s__sim.root'%(SIMDIR,TOP,Q2WBNG)
-SEQ_POL_H5FILE[ER:,POS:NEG+1]='%s/%s__%s__pol__exp.root'%(ANADIR,TOP,Q2WBNG)
-SEQ_POL_H5FILE[ER:,UNP:AVG]='%s/%s__%s__exp.root'%(ANADIR,TOP,Q2WBNG)
+SEQ_POL_H5FILE[ST:SF+1,UNP:AVG]  ='%s/%s__%s__sim.root'%(SIMDIR,TOP,Q2WBNG)
+SEQ_POL_H5FILE[ER:,POS:NEG+1]    ='%s/%s__%s__pol__exp.root'%(ANADIR,TOP,Q2WBNG)
+SEQ_POL_H5FILE[ER:,UNP:AVG]      ='%s/%s__%s__exp.root'%(ANADIR,TOP,Q2WBNG)
 #print SEQ_POL_H5FILE
 
 SEQ_POL_H5=[
-	['','','hY5D/Varset1/hY5D_TH',''],
-	['','','hY5D/Varset1/hY5D_RECO',''],
-	['','','hY5D/Varset1/hY5D_ACC',''],
-	['','','hY5D/Varset1/hY5D_ACC_CORR',''],
-	['','','hY5D/Varset1/hY5D_HOLE',''],
-	['','','hY5D/Varset1/hY5D_FULL',''],
+	['hY5D/Varset1/hY5D_TH','hY5D/Varset1/hY5D_TH','hY5D/Varset1/hY5D_TH',''],
+	['hY5D/Varset1/hY5D_RECO','hY5D/Varset1/hY5D_RECO','hY5D/Varset1/hY5D_RECO',''],
+	['hY5D/Varset1/hY5D_ACC','hY5D/Varset1/hY5D_ACC','hY5D/Varset1/hY5D_ACC',''],
+	['hY5D/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR',''],
+	['hY5D/Varset1/hY5D_HOLE','hY5D/Varset1/hY5D_HOLE','hY5D/Varset1/hY5D_HOLE',''],
+	['hY5D/Varset1/hY5D_FULL','hY5D/Varset1/hY5D_FULL','hY5D/Varset1/hY5D_FULL',''],
 	['hY5D_POS/Varset1/hY5D_RECO',    'hY5D_NEG/Varset1/hY5D_RECO',    'hY5D/Varset1/hY5D_RECO',''],
 	['hY5D_POS/Varset1/hY5D_ACC_CORR','hY5D_NEG/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR',''],
 	['hY5D_POS/Varset1/hY5D_FULL',    'hY5D_NEG/Varset1/hY5D_FULL',    'hY5D/Varset1/hY5D_FULL','']
@@ -93,18 +93,24 @@ def plotR2(h5,seql):
 				hR2[(POS)] = h5[(seq,POS,pobs)].Projection(var)
 				hR2[(POS)].Scale(1/math.pi)
 				hR2[(POS)].Scale(1/norm)
+				hR2[(POS)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[POS]));
+				hR2[(POS)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 				hR2[(NEG)] = h5[(seq,NEG,pobs)].Projection(var)
 				hR2[(NEG)].Scale(1/math.pi)
 				hR2[(NEG)].Scale(1/norm)
+				hR2[(NEG)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[NEG]));
+				hR2[(NEG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 				hR2[(AVG)] = hR2[(POS)].Clone("avg")
 				hR2[(AVG)].Add(hR2[(NEG)])
 				hR2[(AVG)].Scale(0.5)
 				if pobs==D:
 					hR2[(AVG)].SetMinimum(-0.003)
 					hR2[(AVG)].SetMaximum(0.003)
-				hR2[(AVG)].SetLineColor(gROOT.ProcessLine("kMagenta"));
+				hR2[(AVG)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[AVG]));
 				hR2[(AVG)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
 				#Make Titles nice
+				hR2[(POS)].SetTitle("")
+				hR2[(NEG)].SetTitle("")
 				hR2[(AVG)].SetTitle("")
 				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
@@ -112,16 +118,18 @@ def plotR2(h5,seql):
 				vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VAR_TITLE[0][var],VAR_TITLE[0][var]));
 				vart.SetTextSize(0.05);
 
-				cR2 = {}
+				#cR2 = {}
 				l = TLine(0,0,180,0)
 				#cname = ('R2%sV%s')%(VAR_NAME[var],VAR_NAME[var])
 				cname = ('R2_%s_1%s')%(POBS_NAME[pobs],VAR_NAME[var])
-				cR2[(AVG)] = TCanvas(cname,cname)#"RvVar", "RvVar")
-				hR2[(AVG)].Draw("ep")
+				cR2 = TCanvas(cname,cname)#"RvVar", "RvVar")
+				hR2[(POS)].Draw("ep")
+				hR2[(NEG)].Draw("ep same")
+				hR2[(AVG)].Draw("ep same")
 				l.Draw("same")
 				pt.Draw()
-				csavename = ('%s/%s')%(outdir_seq,cR2[(AVG)].GetName())
-				cR2[(AVG)].SaveAs( ('%s.png')%(csavename))
+				csavename = ('%s/%s')%(outdir_seq,cR2.GetName())
+				cR2.SaveAs( ('%s.png')%(csavename))
 				print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
 				rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
 				if rc!=0:print '.png to .pdf failed for %s'%csavename
@@ -182,7 +190,7 @@ First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 	-ij    = Index over NVARSETS and nVAR respectively
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
-seql = [EC]#,EF]
+seql = [EF,SF]
 poll = [POS,NEG]
 ftemplate = root_open(SEQ_POL_H5FILE[0][0])
 keys = ftemplate.GetListOfKeys()
@@ -194,8 +202,8 @@ for q2wdir in keys:
 	#Get all h5s from root file & prepare them to extract POBS
 	for seq in seql:
 		for pol in poll:
-			# print '+seq:pol:file',seq,pol,SEQ_POL_H5FILE[seq][pol]
-			# print ' +h5=',SEQ_POL_H5[seq][pol]
+			print '+seq:pol:file',seq,pol,SEQ_POL_H5FILE[seq][pol]
+			print ' +h5=',SEQ_POL_H5[seq][pol]
 			f=root_open(SEQ_POL_H5FILE[seq][pol])
 			h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POL_H5[seq][pol]))
 			h5[(seq,pol,B)]=mythnt.MultiplyBy(h5[(seq,pol)],'cphi')
@@ -204,21 +212,6 @@ for q2wdir in keys:
 				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi')
 			elif pol==NEG:
 				h5[(seq,pol,D)]=mythnt.MultiplyBy(h5[(seq,pol)],'sphi',-1)
-			
-	
-	"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
-	#h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
-	#h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	#h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-	# h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
-	# h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	# h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-	# h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
-	# h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
-	# h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
-	"""Prepare h5s to extract POBS from SF-UNP data"""
-	#h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
-	
 	
 	plotR2(h5,seql)
 
@@ -227,26 +220,3 @@ for q2wdir in keys:
 Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 """
 makepdf(seql)
-# q2wdirs = [dirs[0] for dirs in os.walk(outdir_root)]
-# for q2wdir in q2wdirs:
-# for var in range(0,NVARS):
-# 	if var==PHI or var==ALPHA:continue
-# 	for pobs in range(0,NPOBS):
-# 		if pobs==A: continue
-# 		#print 'q2wdir,var=',q2wdir,VAR_NAME[var]
-# 		pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VAR_NAME[var])
-# 		pdfs=('%s/*/%s')%(outdir_root,pdfname)
-# 		pdf=('%s/%s')%(outdir_root,pdfname)
-
-# 		print '>>>ls %s > /tmp/tmp'%pdfs
-# 		rc=subprocess.call('ls %s > /tmp/tmp'%pdfs,shell=True)
-# 		if rc!=0: print 'command failed!'
-
-# 		print '>>>echo %s >> /tmp/tmp'%pdf
-# 		rc=subprocess.call('echo %s >> /tmp/tmp'%pdf,shell=True)
-# 		if rc!=0: print 'command failed!'
-
-# 		print '>>>cat /tmp/tmp | xargs pdfunite'
-# 		rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
-# 		if rc!=0: print 'command failed!'
-

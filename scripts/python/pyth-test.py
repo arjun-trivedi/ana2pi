@@ -87,6 +87,20 @@ outdir = os.path.join(anadir,'polobs.new')
 # # if code!=0:
 # # 	print 'failed!'
 
+"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
+	#h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
+	#h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+	#h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+	# h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
+	# h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
+	# h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
+	# h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
+	# h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
+	# h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
+	"""Prepare h5s to extract POBS from SF-UNP data"""
+	#h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
+	
+
 """ Filling Matrix Strings in Blocks"""
 #http://stackoverflow.com/questions/14639496/python-numpy-array-of-arbitrary-length-strings
 import numpy as np
