@@ -87,13 +87,19 @@ def plotR2(seq_pol_sell):
 		print dq2w_seq_pol
 		# seq = dq2w_seq_pol['SEQ']
 		# print 'seq=',seq
+		# hR2 = dq2w_seq_pol['hR2_B_1THETA']
+		# print 'hR2=',hR2
+		# hR2.Draw()
 
-
-		hR2 = dq2w_seq_pol['hR2_B_1THETA']
-		print 'hR2=',hR2
-		hR2.Draw()
-
-		#print dq2w_seq_pol.values
+		tl = dq2w_seq_pol.values
+		print 'tl='
+		print tl
+		print tl[0][6]
+		h = tl[0][6]
+		print h.GetName()
+		c = TCanvas("test","test")
+		h.Draw()
+		c.SaveAs("test.png")
 
 	
 
