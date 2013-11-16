@@ -83,7 +83,8 @@ POBS_NAME=['A','B','C','D']
 def plotR2(seq_pl_sell):
 	norm = 50000
 	for seq_pol_sel in seq_pol_sell:
-		print dq2w[seq_pol_sel]
+		dq2w_sel_pol = dq2w[seq_pol_sel]
+		print dq2w_sel_pol
 		#for var in range(0,NVARS)
 
 	
