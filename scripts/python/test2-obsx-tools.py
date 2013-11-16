@@ -119,10 +119,10 @@ def makepdf(seql,poll):
 			if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
 			for var in range(0,NVARS):
 				if var==PHI or var==ALPHA:continue
-				for pobs in range(0,NPOBS):
-					if pobs==A: continue
+				for pob in range(0,NPOBS):
+					if pob==A: continue
 					#Following are arguments for UNIX shell command
-					pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pobs],VARS_NAME[var])
+					pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pob],VARS_NAME[var])
 					q2w_pdfs=('%s/*/%s/%s/%s')%(outdir_root,SEQ_NAME[seq],POLS_NAME[pol],pdfname)
 					out_pdf=('%s/%s')%(outdir_pdf,pdfname)
 
@@ -185,7 +185,7 @@ for q2wdir in keys:
 		# hR2_C_1THETA={}
 		# hR2_D_1THETA={}
 		#dhists=[]
-		h5m={}#indexed by POBS
+		h5m={}#indexed by POLS,POBS
 		hR2={}#indexed by POLS,POBS,VARSETS,VARS
 		norm = 50000*math.pi
 		for pol in poll:
@@ -196,38 +196,36 @@ for q2wdir in keys:
 				h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 				f.Close()
 				
-				for pobs in range(0,NPOBS):
-					if pobs==A: continue
-					elif pobs==B: h5m[pobs]=mythnt.MultiplyBy(h5,'cphi')
-					elif pobs==C: h5m[pobs]=mythnt.MultiplyBy(h5,'c2phi')
-					elif pobs==D:
+				for pob in range(0,NPOBS):
+					if   pob==A: continue
+					elif pob==B: h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'cphi')
+					elif pob==C: h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'c2phi')
+					elif pob==D:
 						if   pol==POS or pol==UNP:
-							h5m[pobs]=mythnt.MultiplyBy(h5,'sphi')
+							h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'sphi')
 						elif pol==NEG:
-							h5m[pobs]=mythnt.MultiplyBy(h5,'sphi',-1)
-					dhists.append(h5m[pobs])	
+							h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'sphi',-1)
+					dhists.append(h5m[(pol,pob)])	
 					for varset in range(0,NVARSETS):
 						if varset==1 or varset==2: continue
-
 						for var in range(0,NVARS):
-							hR2[(pol,pobs,varset,var)]=h5m[pobs].Projection(var)
-							hR2[(pol,pobs,varset,var)].Scale(1/norm)
-							dhists.append(hR2[(pol,pobs,varset,var)])
+							hR2[(pol,pob,varset,var)]=h5m[(pol,pob)].Projection(var)
+							hR2[(pol,pob,varset,var)].Scale(1/norm)
+							dhists.append(hR2[(pol,pob,varset,var)])
 			elif pol==AVG:
-				for pobs in range(0,NPOBS):
-					if pobs==A: continue
+				for pob in range(0,NPOBS):
+					if pob==A: continue
 					dhists.append('')
 					for varset in range(0,NVARSETS):
 						if varset==1 or varset==2: continue
-
 						for var in range(0,NVARS):
-							hR2[(AVG,pobs,varset,var)]=hR2[(POS,pobs,varset,var)].Clone('avg')
-							hR2[(AVG,pobs,varset,var)].Add(hR2[(NEG,pobs,varset,var)])
-							hR2[(AVG,pobs,varset,var)].Scale(1/norm)
-							if pobs==D:
-								hR2[(AVG,pobs,varset,var)].SetMinimum(-0.003)
-								hR2[(AVG,pobs,varset,var)].SetMaximum(0.003)
-							dhists.append(hR2[(pol,pobs,varset,var)])		
+							hR2[(AVG,pob,varset,var)]=hR2[(POS,pob,varset,var)].Clone("avg")
+							hR2[(AVG,pob,varset,var)].Add(hR2[(NEG,pob,varset,var)])
+							hR2[(AVG,pob,varset,var)].Scale(0.5)
+							if pob==D:
+								hR2[(AVG,pob,varset,var)].SetMinimum(-0.003)
+								hR2[(AVG,pob,varset,var)].SetMaximum(0.003)
+							dhists.append(hR2[(AVG,pob,varset,var)])		
 				# hR2_B_1THETA[AVG] = hR2_B_1THETA[POS].Clone("avg")
 				# hR2_B_1THETA[AVG].Add(hR2_B_1THETA[NEG])
 				# hR2_B_1THETA[AVG].Scale(0.5)
@@ -276,21 +274,21 @@ nq2wbins = len(dt_grpd_q2wbin)
 print 'nq2wbins=',nq2wbins
 
 
-# """Now use the DataFrame to access histograms"""
-# for q2wbin in dt_grpd_q2wbin.groups:
-# 		dq2w=dt_grpd_q2wbin.get_group(q2wbin)
-# 		outdir_q2w=os.path.join(outdir_root,q2wbin)
-# 		if not os.path.isdir(outdir_q2w):
-# 			os.makedirs(outdir_q2w)
-# 		# seq_pol_sell = [
-# 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
-# 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
-# 		# 	   ]
-# 		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
-# 		plotR2(seq_pol_sell)
+"""Now use the DataFrame to access histograms"""
+for q2wbin in dt_grpd_q2wbin.groups:
+		dq2w=dt_grpd_q2wbin.get_group(q2wbin)
+		outdir_q2w=os.path.join(outdir_root,q2wbin)
+		if not os.path.isdir(outdir_q2w):
+			os.makedirs(outdir_q2w)
+		# seq_pol_sell = [
+		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
+		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
+		# 	   ]
+		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
+		plotR2(seq_pol_sell)
 
 	
-# """
-# Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
-# """
-#makepdf(seql,poll)
+"""
+Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
+"""
+makepdf(seql,poll)
