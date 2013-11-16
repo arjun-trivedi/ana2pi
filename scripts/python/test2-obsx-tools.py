@@ -214,8 +214,10 @@ for q2wdir in keys:
 			#h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 			h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 			f.Close()
+			h5B=mythnt.MultiplyBy(h5,'cphi')
+			hR2_B_1M1 = h5B.Projection(M1)
 
-			l = [q2wdirnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5]
+			l = [q2wdirnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1M1]
 			if not d:
 				data = pd.DataFrame({'s1':l}) # Data for 1st. Column 
 				d = d.append(data)
@@ -224,6 +226,12 @@ for q2wdir in keys:
 #print a few columns of d to see what it looks like
 print 'dataframe = '
 print d.loc[:,'s1':'s4']
+
+dt = d.transpose()
+print dt.loc['s1':'s4',:]
+# c = TCanvas("test","test")
+# d['s2'][6].Draw("ep")
+# c.SaveAs("test.png")
 			
 
 	#plotR2(h5,seql,poll)
