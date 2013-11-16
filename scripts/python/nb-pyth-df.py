@@ -30,4 +30,23 @@ print df
 
 # <codecell>
 
+df_grpd_A = df.groupby('A')
+for grp in df_grpd_A.groups:
+    print grp
+    d=df_grpd_A.get_group(grp)
+    print d
+    #name = d.values[0][0]
+    #print name
+    
+    if d['B']==768:
+        print 'here'
+        num1 = d['A']#,d['B'],d['C']
+        num2 = d['B']
+        print num1
+        print num2
+        print num1+num2
+
+
+# <codecell>
+
 

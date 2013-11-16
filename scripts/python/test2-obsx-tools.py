@@ -13,7 +13,7 @@ from rootpy.io import root_open, File
 import rootpy.plotting.root2matplotlib as rplt
 from rootpy.plotting import Hist
 
-from ROOT import gSystem, gROOT, gStyle, THnSparseF, TCanvas, TString, TLine, TPaveText, TText
+from ROOT import gSystem, gROOT, gStyle, THnSparseF, TCanvas, TString, TLine, TPaveText, TText, TH1D
 gSystem.Load('myTHnTool_C')
 from ROOT import myTHnTool
 mythnt = myTHnTool()
@@ -80,12 +80,20 @@ A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
 #print var
 
-def plotR2(seq_pl_sell):
+def plotR2(seq_pol_sell):
 	norm = 50000
 	for seq_pol_sel in seq_pol_sell:
-		dq2w_sel_pol = dq2w[seq_pol_sel]
-		print dq2w_sel_pol
-		#for var in range(0,NVARS)
+		dq2w_seq_pol = dq2w[seq_pol_sel]
+		print dq2w_seq_pol
+		# seq = dq2w_seq_pol['SEQ']
+		# print 'seq=',seq
+
+
+		hR2 = dq2w_seq_pol['hR2_B_1THETA']
+		print 'hR2=',hR2
+		hR2.Draw()
+
+		#print dq2w_seq_pol.values
 
 	
 
