@@ -181,53 +181,78 @@ counter=0
 for q2wdir in keys:
 	q2wbinnum+=1
 	for seq in seql:
-		hR2_B_1THETA={} #indexed by pol
-		hR2_C_1THETA={}
-		hR2_D_1THETA={}
+		# hR2_B_1THETA={} #indexed by pol
+		# hR2_C_1THETA={}
+		# hR2_D_1THETA={}
+		#dhists=[]
+		h5m={}#indexed by POBS
+		hR2={}#indexed by POLS,POBS,VARSETS,VARS
 		norm = 50000*math.pi
 		for pol in poll:
+			dhists=[]
 			counter+=1
 			if pol!=AVG:
 				f=root_open(SEQ_POLS_H5FILE[seq][pol])
 				h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 				f.Close()
 				
-				h5B=mythnt.MultiplyBy(h5,'cphi')
-				hR2_B_1THETA[pol] = h5B.Projection(THETA)
-				hR2_B_1THETA[pol].Scale(1/norm)
-				
-				h5C=mythnt.MultiplyBy(h5,'c2phi')
-				hR2_C_1THETA[pol] = h5C.Projection(THETA)
-				hR2_C_1THETA[pol].Scale(1/norm)
-				
-				if pol==POS or pol==UNP:
-					h5D=mythnt.MultiplyBy(h5,'sphi')
-				elif pol==NEG:
-					h5D=mythnt.MultiplyBy(h5,'sphi',-1)
-				hR2_D_1THETA[pol] = h5D.Projection(THETA)
-				hR2_D_1THETA[pol].Scale(1/norm)
+				for pobs in range(0,NPOBS):
+					if pobs==A: continue
+					elif pobs==B: h5m[pobs]=mythnt.MultiplyBy(h5,'cphi')
+					elif pobs==C: h5m[pobs]=mythnt.MultiplyBy(h5,'c2phi')
+					elif pobs==D:
+						if   pol==POS or pol==UNP:
+							h5m[pobs]=mythnt.MultiplyBy(h5,'sphi')
+						elif pol==NEG:
+							h5m[pobs]=mythnt.MultiplyBy(h5,'sphi',-1)
+					dhists.append(h5m[pobs])	
+					for varset in range(0,NVARSETS):
+						if varset==1 or varset==2: continue
+
+						for var in range(0,NVARS):
+							hR2[(pol,pobs,varset,var)]=h5m[pobs].Projection(var)
+							hR2[(pol,pobs,varset,var)].Scale(1/norm)
+							dhists.append(hR2[(pol,pobs,varset,var)])
 			elif pol==AVG:
-				hR2_B_1THETA[AVG] = hR2_B_1THETA[POS].Clone("avg")
-				hR2_B_1THETA[AVG].Add(hR2_B_1THETA[NEG])
-				hR2_B_1THETA[AVG].Scale(0.5)
+				for pobs in range(0,NPOBS):
+					if pobs==A: continue
+					dhists.append('')
+					for varset in range(0,NVARSETS):
+						if varset==1 or varset==2: continue
+
+						for var in range(0,NVARS):
+							hR2[(AVG,pobs,varset,var)]=hR2[(POS,pobs,varset,var)].Clone('avg')
+							hR2[(AVG,pobs,varset,var)].Add(hR2[(NEG,pobs,varset,var)])
+							hR2[(AVG,pobs,varset,var)].Scale(1/norm)
+							if pobs==D:
+								hR2[(AVG,pobs,varset,var)].SetMinimum(-0.003)
+								hR2[(AVG,pobs,varset,var)].SetMaximum(0.003)
+							dhists.append(hR2[(pol,pobs,varset,var)])		
+				# hR2_B_1THETA[AVG] = hR2_B_1THETA[POS].Clone("avg")
+				# hR2_B_1THETA[AVG].Add(hR2_B_1THETA[NEG])
+				# hR2_B_1THETA[AVG].Scale(0.5)
 				
-				hR2_C_1THETA[AVG] = hR2_C_1THETA[POS].Clone("avg")
-				hR2_C_1THETA[AVG].Add(hR2_C_1THETA[NEG])
-				hR2_C_1THETA[AVG].Scale(0.5)
+				# hR2_C_1THETA[AVG] = hR2_C_1THETA[POS].Clone("avg")
+				# hR2_C_1THETA[AVG].Add(hR2_C_1THETA[NEG])
+				# hR2_C_1THETA[AVG].Scale(0.5)
 				
-				hR2_D_1THETA[AVG] = hR2_D_1THETA[POS].Clone("avg")
-				hR2_D_1THETA[AVG].Add(hR2_D_1THETA[NEG])
-				hR2_D_1THETA[AVG].Scale(0.5)
-				hR2_D_1THETA[AVG].SetMinimum(-0.003)
-				hR2_D_1THETA[AVG].SetMaximum(0.003)
+				# hR2_D_1THETA[AVG] = hR2_D_1THETA[POS].Clone("avg")
+				# hR2_D_1THETA[AVG].Add(hR2_D_1THETA[NEG])
+				# hR2_D_1THETA[AVG].Scale(0.5)
+				# hR2_D_1THETA[AVG].SetMinimum(-0.003)
+				# hR2_D_1THETA[AVG].SetMaximum(0.003)
 			
-			dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],
-			h5B,hR2_B_1THETA[pol],h5C,hR2_C_1THETA[pol],h5D,hR2_D_1THETA[pol]]
+			# dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],
+			# h5B,hR2_B_1THETA[pol],h5C,hR2_C_1THETA[pol],h5D,hR2_D_1THETA[pol]]
+			dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol]]
+			dl+=dhists
 			print 'dl='
 			print dl
 			print len(dl)
 			rindex=['q2wbinnum','q2wbin','SEQ','POL',
-			'h5B','hR2_B_1THETA','h5C','hR2_C_1THETA','h5D','hR2_D_1THETA']
+			'h5B','hR2_B_1M1','hR2_B_1M2','hR2_B_1THETA','hR2_B_1PHI','hR2_B_1ALPHA',
+			'h5C','hR2_C_1M1','hR2_C_1M2','hR2_C_1THETA','hR2_C_1PHI','hR2_C_1ALPHA',
+			'h5D','hR2_D_1M1','hR2_D_1M2','hR2_D_1THETA','hR2_D_1PHI','hR2_D_1ALPHA']
 			print len(rindex)
 			if not d:
 				data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
@@ -245,27 +270,27 @@ print d.loc[:,'s1':'s4']
 # c.SaveAs("test.png")
 
 dt = d.transpose()
-print dt.loc['s1':'s4',:]
+print dt.loc['s1':'s3','h5B':'h5C']
 dt_grpd_q2wbin=dt.groupby('q2wbin')
 nq2wbins = len(dt_grpd_q2wbin)
 print 'nq2wbins=',nq2wbins
 
 
-"""Now use the DataFrame to access histograms"""
-for q2wbin in dt_grpd_q2wbin.groups:
-		dq2w=dt_grpd_q2wbin.get_group(q2wbin)
-		outdir_q2w=os.path.join(outdir_root,q2wbin)
-		if not os.path.isdir(outdir_q2w):
-			os.makedirs(outdir_q2w)
-		# seq_pol_sell = [
-		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
-		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
-		# 	   ]
-		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
-		plotR2(seq_pol_sell)
+# """Now use the DataFrame to access histograms"""
+# for q2wbin in dt_grpd_q2wbin.groups:
+# 		dq2w=dt_grpd_q2wbin.get_group(q2wbin)
+# 		outdir_q2w=os.path.join(outdir_root,q2wbin)
+# 		if not os.path.isdir(outdir_q2w):
+# 			os.makedirs(outdir_q2w)
+# 		# seq_pol_sell = [
+# 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
+# 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
+# 		# 	   ]
+# 		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
+# 		plotR2(seq_pol_sell)
 
 	
 # """
 # Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 # """
-makepdf(seql,poll)
+#makepdf(seql,poll)
