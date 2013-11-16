@@ -202,10 +202,10 @@ d = pd.DataFrame()
 ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
 keys = ftemplate.GetListOfKeys()
 
-q2wdirnum=0
+q2wbinnum=0
 counter=0
 for q2wdir in keys:
-	q2wdirnum+=1
+	q2wbinnum+=1
 	for seq in seql:
 		for pol in poll:
 			if pol==AVG: continue
@@ -217,21 +217,34 @@ for q2wdir in keys:
 			h5B=mythnt.MultiplyBy(h5,'cphi')
 			hR2_B_1M1 = h5B.Projection(M1)
 
-			l = [q2wdirnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1M1]
+			l = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1M1]
+			rindex=['q2wbinnum','q2wbin','SEQ','POL','h5','h5B','hR2_B_1M1']
 			if not d:
-				data = pd.DataFrame({'s1':l}) # Data for 1st. Column 
+				data = pd.DataFrame({'s1':l},index=rindex) # Data for 1st. Column 
 				d = d.append(data)
 			else:
 				d['s%d'%counter]=l
 #print a few columns of d to see what it looks like
 print 'dataframe = '
 print d.loc[:,'s1':'s4']
-
-dt = d.transpose()
-print dt.loc['s1':'s4',:]
+# Test Drawing a histogram from d
 # c = TCanvas("test","test")
 # d['s2'][6].Draw("ep")
 # c.SaveAs("test.png")
+
+dt = d.transpose()
+print dt.loc['s1':'s4',:]
+dt_grpd_q2wbinnum=dt.groupby('q2wbinnum')
+nq2wbins = len(dt_grpd_q2wbinnum)
+print 'nq2wbins=',nq2wbins
+
+for q2wbin in dt_grpd_q2wbinnum.groups:
+	#print q2wbin
+	df=dt_grpd_q2wbinnum.get_group(q2wbin)
+	sel = (df['SEQ']=='EC') & (df['POL']=='POS')
+	print df[sel]
+
+
 			
 
 	#plotR2(h5,seql,poll)
