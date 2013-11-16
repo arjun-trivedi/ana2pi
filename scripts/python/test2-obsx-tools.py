@@ -158,23 +158,34 @@ counter=0
 for q2wdir in keys:
 	q2wbinnum+=1
 	for seq in seql:
+		hR2_B_1THETA={} #indexed by pol
 		for pol in poll:
-			if pol==AVG: continue
-			counter+=1	
-			f=root_open(SEQ_POLS_H5FILE[seq][pol])
-			#h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
-			h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
-			f.Close()
-			h5B=mythnt.MultiplyBy(h5,'cphi')
-			hR2_B_1THETA = h5B.Projection(THETA)
+			counter+=1
+			if pol!=AVG:
+				f=root_open(SEQ_POLS_H5FILE[seq][pol])
+				#h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
+				h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
+				f.Close()
+				
+				h5B=mythnt.MultiplyBy(h5,'cphi')
+				hR2_B_1THETA[pol] = h5B.Projection(THETA)
 
-			l = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1THETA]
-			rindex=['q2wbinnum','q2wbin','SEQ','POL','h5','h5B','hR2_B_1THETA']
-			if not d:
-				data = pd.DataFrame({'s1':l},index=rindex) # Data for 1st. Column 
-				d = d.append(data)
-			else:
-				d['s%d'%counter]=l
+				dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1THETA[pol]]
+				rindex=['q2wbinnum','q2wbin','SEQ','POL','h5','h5B','hR2_B_1THETA']
+				if not d:
+					data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
+					d = d.append(data)
+				else:
+					d['s%d'%counter]=dl
+			elif pol==AVG:
+				hR2_B_1THETA[AVG] = hR2_B_1THETA[POS].Clone("avg")
+				hR2_B_1THETA[AVG].Add(hR2_B_1THETA[NEG])
+				hR2_B_1THETA[AVG].Scale(0.5)
+				dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[AVG],'','',hR2_B_1THETA[AVG]]
+				d['s%d'%counter]=dl
+
+
+
 #print a few columns of d to see what it looks like
 print 'dataframe = '
 print d.loc[:,'s1':'s4']
@@ -185,19 +196,22 @@ print d.loc[:,'s1':'s4']
 
 dt = d.transpose()
 print dt.loc['s1':'s4',:]
-dt_grpd_q2wbinnum=dt.groupby('q2wbinnum')
-nq2wbins = len(dt_grpd_q2wbinnum)
+dt_grpd_q2wbin=dt.groupby('q2wbin')
+nq2wbins = len(dt_grpd_q2wbin)
 print 'nq2wbins=',nq2wbins
 
 
 """Now use the DataFrame to access histograms"""
-for q2wbin in dt_grpd_q2wbinnum.groups:
-		#print q2wbin
-		dq2w=dt_grpd_q2wbinnum.get_group(q2wbin)
-		seq_pol_sell = [
-					(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
-					(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
-			   ]
+for q2wbin in dt_grpd_q2wbin.groups:
+		dq2w=dt_grpd_q2wbin.get_group(q2wbin)
+		outdir_q2w=os.path.join(outdir_root,q2wbin)
+		if not os.path.isdir(outdir_q2w):
+			os.makedirs(outdir_q2w)
+		# seq_pol_sell = [
+		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
+		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
+		# 	   ]
+		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
 		plotR2(seq_pol_sell)
 
 
