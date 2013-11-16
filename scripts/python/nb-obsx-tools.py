@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # <nbformat>3.0</nbformat>
 
+# <markdowncell>
+
+# ### Test Case to see if I can use a DataFrame for extracting Polarization Observables
+
 # <codecell>
 
 from __future__ import division
