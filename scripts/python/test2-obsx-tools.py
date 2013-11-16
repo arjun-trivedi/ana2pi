@@ -80,64 +80,12 @@ A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
 #print var
 
-def plotR2(h5,seql,poll):
+def plotR2(sell):
 	norm = 50000
-	for var in range(0,NVARS):
-		if var==PHI or var==ALPHA:continue
-		for pobs in range(0,NPOBS):
-			if pobs==A: continue
-			for seq in seql:
-				outdir_seq=os.path.join(outdir_q2w,SEQ_NAME[seq])
-				if not os.path.isdir(outdir_seq):os.makedirs(outdir_seq)
+	for sel in sell:
+		print df[sel]
 
-				cname = ('R2_%s_1%s')%(POBS_NAME[pobs],VARS_NAME[var])
-				l = TLine(0,0,180,0)
-				cR2 = TCanvas(cname,cname)#"RvVar", "RvVar")
-				hR2 = {}
-				#pltnum=0
-				for pol in poll:
-					outdir_pol=os.path.join(outdir_seq,POLS_NAME[pol])
-					if not os.path.isdir(outdir_pol):os.makedirs(outdir_pol)
-					if pol!=AVG:
-						hR2[(pol)] = h5[(seq,pol,pobs)].Projection(var)
-						hR2[(pol)].Scale(1/math.pi)
-						hR2[(pol)].Scale(1/norm)
-						hR2[(pol)].SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[pol]));
-						hR2[(pol)].SetMarkerStyle(gROOT.ProcessLine("kFullCircle"));
-					elif pol==AVG:
-						hR2[(AVG)] = hR2[(POS)].Clone("avg")
-						hR2[(AVG)].Add(hR2[(NEG)])
-						hR2[(AVG)].Scale(0.5)
-						if pobs==D:
-							hR2[(AVG)].SetMinimum(-0.003)
-							hR2[(AVG)].SetMaximum(0.003)			
-					#Make Titles nice
-					hR2[(pol)].SetTitle("")
-					#hR2[(NEG)].SetTitle("")
-					#hR2[(AVG)].SetTitle("")
-					
-
-					#cR2 = {}
-					#l = TLine(0,0,180,0)
-					#cname = ('R2%sV%s')%(VARS_NAME[var],VARS_NAME[var])
-					#if pltnum==0:
-					hR2[(pol)].Draw("ep")
-					#else:
-					#	hR2[(pol)].Draw("ep same")
-					# hR2[(NEG)].Draw("ep same")
-					#hR2[(AVG)].Draw("ep same")
-					l.Draw("same")
-					pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
-					q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
-					q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-					vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VARS_TITLE[0][var],VARS_TITLE[0][var]));
-					vart.SetTextSize(0.05);
-					pt.Draw()
-					csavename = ('%s/%s')%(outdir_pol,cR2.GetName())
-					cR2.SaveAs( ('%s.png')%(csavename))
-					print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
-					rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
-					if rc!=0:print '.png to .pdf failed for %s'%csavename
+	
 
 def makepdf(seql,poll):
 	for seq in seql:
@@ -202,6 +150,7 @@ d = pd.DataFrame()
 ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
 keys = ftemplate.GetListOfKeys()
 
+"""First create the DataFrame that will be used in the analysis"""
 q2wbinnum=0
 counter=0
 for q2wdir in keys:
@@ -215,10 +164,10 @@ for q2wdir in keys:
 			h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 			f.Close()
 			h5B=mythnt.MultiplyBy(h5,'cphi')
-			hR2_B_1M1 = h5B.Projection(M1)
+			hR2_B_1THETA = h5B.Projection(THETA)
 
-			l = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1M1]
-			rindex=['q2wbinnum','q2wbin','SEQ','POL','h5','h5B','hR2_B_1M1']
+			l = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1THETA]
+			rindex=['q2wbinnum','q2wbin','SEQ','POL','h5','h5B','hR2_B_1THETA']
 			if not d:
 				data = pd.DataFrame({'s1':l},index=rindex) # Data for 1st. Column 
 				d = d.append(data)
@@ -238,11 +187,23 @@ dt_grpd_q2wbinnum=dt.groupby('q2wbinnum')
 nq2wbins = len(dt_grpd_q2wbinnum)
 print 'nq2wbins=',nq2wbins
 
+
+"""Now use the DataFrame to access histograms"""
 for q2wbin in dt_grpd_q2wbinnum.groups:
-	#print q2wbin
-	df=dt_grpd_q2wbinnum.get_group(q2wbin)
-	sel = (df['SEQ']=='EC') & (df['POL']=='POS')
-	print df[sel]
+		#print q2wbin
+		df=dt_grpd_q2wbinnum.get_group(q2wbin)
+		sell = [
+					(df['SEQ']=='EC') & (df['POL']=='POS'),
+					(df['SEQ']=='EC') & (df['POL']=='NEG'),
+			   ]
+		plotR2(sell)
+
+
+# for q2wbin in dt_grpd_q2wbinnum.groups:
+# 	#print q2wbin
+# 	df=dt_grpd_q2wbinnum.get_group(q2wbin)
+# 	sel = (df['SEQ']=='EC') & (df['POL']=='POS')
+# 	print df[sel]
 
 
 			
