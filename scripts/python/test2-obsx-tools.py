@@ -30,7 +30,7 @@ NVARSETS=3
 
 NVARS=5
 M1,M2,THETA,PHI,ALPHA=range(NVARS)
-VARS_NAME = ['M1','M2','theta','phi','alpha']
+VARS_NAME = ['M1','M2','THETA','PHI','ALPHA']
 VARS_TITLE = [ 
 				["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{#pi^{-}}", "#phi_{#pi^{-}}", "#alpha_{[p^{'}#pi^{+}][p#pi^{-}]}"],
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
@@ -97,12 +97,18 @@ def plotR2(seq_pol_sell):
 		# print tl[0][6]
 		# h = tl[0][6]
 		# print h.GetName()
+		outdir_seq_pol=os.path.join(outdir_q2w,dq2w_seq_pol.iloc[0]['SEQ'],dq2w_seq_pol.iloc[0]['POL'])
+		if not os.path.isdir(outdir_seq_pol):
+			os.makedirs(outdir_seq_pol)
 
-		h = dq2w_seq_pol.iloc[0]['hR2_B_1THETA']
-
-		c = TCanvas("test","test")
-		h.Draw()
-		c.SaveAs("test.png")
+		hR2 = dq2w_seq_pol.iloc[0]['hR2_D_1THETA']
+		cR2 = TCanvas("R2_D_1THETA","R2_D_1THETA")
+		hR2.Draw("ep")
+		csavename=('%s/%s')%(outdir_seq_pol,cR2.GetName())
+		cR2.SaveAs(('%s.png')%(csavename))
+		print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
+		rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
+		if rc!=0:print '.png to .pdf failed for %s'%csavename
 
 	
 
@@ -176,31 +182,58 @@ for q2wdir in keys:
 	q2wbinnum+=1
 	for seq in seql:
 		hR2_B_1THETA={} #indexed by pol
+		hR2_C_1THETA={}
+		hR2_D_1THETA={}
+		norm = 50000*math.pi
 		for pol in poll:
 			counter+=1
 			if pol!=AVG:
 				f=root_open(SEQ_POLS_H5FILE[seq][pol])
-				#h5[(seq,pol)]=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 				h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
 				f.Close()
 				
 				h5B=mythnt.MultiplyBy(h5,'cphi')
 				hR2_B_1THETA[pol] = h5B.Projection(THETA)
-
-				dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],h5,h5B,hR2_B_1THETA[pol]]
-				rindex=['q2wbinnum','q2wbin','SEQ','POL','h5','h5B','hR2_B_1THETA']
-				if not d:
-					data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
-					d = d.append(data)
-				else:
-					d['s%d'%counter]=dl
+				hR2_B_1THETA[pol].Scale(1/norm)
+				
+				h5C=mythnt.MultiplyBy(h5,'c2phi')
+				hR2_C_1THETA[pol] = h5C.Projection(THETA)
+				hR2_C_1THETA[pol].Scale(1/norm)
+				
+				if pol==POS or pol==UNP:
+					h5D=mythnt.MultiplyBy(h5,'sphi')
+				elif pol==NEG:
+					h5D=mythnt.MultiplyBy(h5,'sphi',-1)
+				hR2_D_1THETA[pol] = h5D.Projection(THETA)
+				hR2_D_1THETA[pol].Scale(1/norm)
 			elif pol==AVG:
 				hR2_B_1THETA[AVG] = hR2_B_1THETA[POS].Clone("avg")
 				hR2_B_1THETA[AVG].Add(hR2_B_1THETA[NEG])
 				hR2_B_1THETA[AVG].Scale(0.5)
-				dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[AVG],'','',hR2_B_1THETA[AVG]]
+				
+				hR2_C_1THETA[AVG] = hR2_C_1THETA[POS].Clone("avg")
+				hR2_C_1THETA[AVG].Add(hR2_C_1THETA[NEG])
+				hR2_C_1THETA[AVG].Scale(0.5)
+				
+				hR2_D_1THETA[AVG] = hR2_D_1THETA[POS].Clone("avg")
+				hR2_D_1THETA[AVG].Add(hR2_D_1THETA[NEG])
+				hR2_D_1THETA[AVG].Scale(0.5)
+				hR2_D_1THETA[AVG].SetMinimum(-0.003)
+				hR2_D_1THETA[AVG].SetMaximum(0.003)
+			
+			dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],
+			h5B,hR2_B_1THETA[pol],h5C,hR2_C_1THETA[pol],h5D,hR2_D_1THETA[pol]]
+			print 'dl='
+			print dl
+			print len(dl)
+			rindex=['q2wbinnum','q2wbin','SEQ','POL',
+			'h5B','hR2_B_1THETA','h5C','hR2_C_1THETA','h5D','hR2_D_1THETA']
+			print len(rindex)
+			if not d:
+				data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
+				d = d.append(data)
+			else:
 				d['s%d'%counter]=dl
-
 
 
 #print a few columns of d to see what it looks like
@@ -231,20 +264,8 @@ for q2wbin in dt_grpd_q2wbin.groups:
 		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
 		plotR2(seq_pol_sell)
 
-
-# for q2wbin in dt_grpd_q2wbinnum.groups:
-# 	#print q2wbin
-# 	df=dt_grpd_q2wbinnum.get_group(q2wbin)
-# 	sel = (df['SEQ']=='EC') & (df['POL']=='POS')
-# 	print df[sel]
-
-
-			
-
-	#plotR2(h5,seql,poll)
-
 	
-"""
-Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
-"""
-#makepdf(seql,poll)
+# """
+# Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
+# """
+makepdf(seql,poll)
