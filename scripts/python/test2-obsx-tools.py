@@ -80,10 +80,11 @@ A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
 #print var
 
-def plotR2(sell):
+def plotR2(seq_pl_sell):
 	norm = 50000
-	for sel in sell:
-		print df[sel]
+	for seq_pol_sel in seq_pol_sell:
+		print dq2w[seq_pol_sel]
+		#for var in range(0,NVARS)
 
 	
 
@@ -191,12 +192,12 @@ print 'nq2wbins=',nq2wbins
 """Now use the DataFrame to access histograms"""
 for q2wbin in dt_grpd_q2wbinnum.groups:
 		#print q2wbin
-		df=dt_grpd_q2wbinnum.get_group(q2wbin)
-		sell = [
-					(df['SEQ']=='EC') & (df['POL']=='POS'),
-					(df['SEQ']=='EC') & (df['POL']=='NEG'),
+		dq2w=dt_grpd_q2wbinnum.get_group(q2wbin)
+		seq_pol_sell = [
+					(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
+					(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
 			   ]
-		plotR2(sell)
+		plotR2(seq_pol_sell)
 
 
 # for q2wbin in dt_grpd_q2wbinnum.groups:
