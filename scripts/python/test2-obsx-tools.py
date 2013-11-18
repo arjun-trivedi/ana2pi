@@ -163,7 +163,15 @@ def makepdf():
 def makedf():
 	"""For a particular Q2W analysis range, starting at the level of h5s, put all analysis
 	objects into a DataFrame
+
+	output -- ana_store.h5
+	contains DataFrame d with analysis data represented by columns:
+	q2wbinnum,q2wbin,SEQ,POL,h5,h5alpha,hR2^{ij}_{alpha}
+	
 	"""
+	outfile = os.path.join(ANADIR,'ana_store.h5')
+	store = pd.HDFStore(outfile)
+
 	seql = [EC]
 	poll = [POS,NEG,AVG]
 
@@ -224,12 +232,12 @@ def makedf():
 				'h5B','hR2_B_1M1','hR2_B_1M2','hR2_B_1THETA','hR2_B_1PHI','hR2_B_1ALPHA',
 				'h5C','hR2_C_1M1','hR2_C_1M2','hR2_C_1THETA','hR2_C_1PHI','hR2_C_1ALPHA',
 				'h5D','hR2_D_1M1','hR2_D_1M2','hR2_D_1THETA','hR2_D_1PHI','hR2_D_1ALPHA']
-				print 'len(dl)=',len(dl)
-				print 'len(rindex)=',len(rindex)
-				print 'dl='
-				print dl
-				print 'rindex='
-				print rindex
+				# print 'len(dl)=',len(dl)
+				# print 'len(rindex)=',len(rindex)
+				# print 'dl='
+				# print dl
+				# print 'rindex='
+				# print rindex
 				if not d:
 					data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
 					d = d.append(data)
@@ -237,20 +245,26 @@ def makedf():
 					d['s%d'%dl_counter]=dl
 	
 	dt = d.transpose()
-	return dt					
+	store['d']=dt
+	#return dt					
 
 # MAIN part of the program
 #COSMETICS
 gStyle.SetOptStat(0);
 gStyle.SetOptFit(1111);
+#INPUT data
+infile = os.path.join(ANADIR,'ana_store.h5')
 #OUTPUT data
 outdir_root = os.path.join(ANADIR,'polobs.new')
 if not os.path.isdir(outdir_root):
 	os.makedirs(outdir_root)
 
 #First make DataFrame that will be used in the analysis
-d = makedf()
+if not infile:
+	makedf()
 #See what d looks like
+store = pd.HDFStore(infile)
+d=store['d']
 print d.loc['s1':'s3','h5B':'h5C']
 #Now use the DataFrame to access histograms"""
 d_grpd_q2wbin=d.groupby('q2wbin')
