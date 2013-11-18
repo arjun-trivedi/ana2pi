@@ -145,6 +145,7 @@ def makepdf():
 			outdir_pdf=os.path.join(outdir_root,SEQ_NAME[seq],POLS_NAME[pol])
 			if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
 			for var in range(0,NVARS):
+				if var==PHI or var==ALPHA: continue
 				for pob in range(0,NPOBS):
 					if pob==A: continue
 					#Following are arguments for UNIX shell command
