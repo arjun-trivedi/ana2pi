@@ -87,30 +87,53 @@ outdir = os.path.join(anadir,'polobs.new')
 # # if code!=0:
 # # 	print 'failed!'
 
-"""Prepare h5s to extract POBS from EC-UNP,POS,NEG data"""
-	#h5[(EC,UNP,B)] = mythnt.MultiplyBy(h5[(EC,UNP)],'cphi');
-	#h5[(EC,UNP,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	#h5[(EC,UNP,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-	# h5[(EC,POS,B)] = mythnt.MultiplyBy(h5[(EC,POS)],'cphi');
-	# h5[(EC,POS,C)] = mythnt.MultiplyBy(h5[(EC,POS)],'c2phi');
-	# h5[(EC,POS,D)] = mythnt.MultiplyBy(h5[(EC,POS)],'sphi');
-	# h5[(EC,NEG,B)] = mythnt.MultiplyBy(h5[(EC,NEG)],'cphi');
-	# h5[(EC,NEG,C)] = mythnt.MultiplyBy(h5[(EC,NEG)],'c2phi');
-	# h5[(EC,NEG,D)] = mythnt.MultiplyBy(h5[(EC,NEG)],'sphi',-1);
-	"""Prepare h5s to extract POBS from SF-UNP data"""
-	#h5[(SF,UNP,B)] = mythnt.MultiplyBy(h5[(SF,UNP)],'cphi');
-	
 
 """ Filling Matrix Strings in Blocks"""
-#http://stackoverflow.com/questions/14639496/python-numpy-array-of-arbitrary-length-strings
-import numpy as np
-s = np.zeros((5,5),object)
-s[0:4,0:1]="arjun"
-s[0:4,1:2]="trivedi"
-print s
-print s[0,0]
+# #http://stackoverflow.com/questions/14639496/python-numpy-array-of-arbitrary-length-strings
+# import numpy as np
+# s = np.zeros((5,5),object)
+# s[0:4,0:1]="arjun"
+# s[0:4,1:2]="trivedi"
+# print s
+# print s[0,0]
 
-z = np.zeros((5,5),int)
-z[0:4,0:1] = 3
-print z
+# z = np.zeros((5,5),int)
+# z[0:4,0:1] = 3
+# print z
+
+""" Try HDF5"""
+import numpy as np
+randn = np.random.randn
+import pandas as pd
+
+from ROOT import TH1D
+
+store = pd.HDFStore('store.h5')
+print 'store =',store
+
+
+# h1 = TH1D("test1","test1",100,0,5)
+# h2 = TH1D("test2","test2",100,0,5)
+# h3 = TH1D("test3","test3",100,0,5)
+# hl = [h1,h2,h3]
+hl = []
+for i in range(0,8):
+	name = 'h%d'%(i+1)
+	hl.append(TH1D(name,name,100,0,5))
+hl[0].Draw()
+print hl[0]
+
+
 	
+#index = pd.date_range('1/1/2000', periods=8)
+index = np.arange(0,8)
+# s = pd.Series(randn(5), index=['a', 'b', 'c', 'd', 'e'])
+#df = pd.DataFrame(randn(8, 3), index=index,
+#                  columns=['A', 'B', 'C'])
+df = pd.DataFrame()
+if not df:
+	data = pd.DataFrame({'s1':hl},index=index) # Data for 1st. Column 
+	df = df.append(data)
+
+df['H'] = hl
+print 'df=',df

@@ -16,7 +16,8 @@ if not df:
 rindex=['name','surname','roll#']   
 boy1 = ['saswat','sarda',772]
 data = pd.DataFrame({"A": boy1},index=rindex) # Data for 1st. Column 
-df = df.append(data) # Add Data for 1st column
+df = df.append(data)
+
 if not df:
     print 'df is empty after 1st append'
 

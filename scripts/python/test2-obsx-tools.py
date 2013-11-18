@@ -175,11 +175,11 @@ def makedf():
 	dl_counter=0 #counter for number of dls (=Data-Lists, defined later) insereted into DF
 	for q2wdir in keys:
 		q2wbinnum+=1
-		for seq in seql:
+		for seq in range(0,NSEQ):#seql:
 			h5m={}#indexed by POLS,POBS
 			hR2={}#indexed by POLS,POBS,VARSETS,VARS
 			norm = 50000*math.pi
-			for pol in poll:
+			for pol in range(0,NPOLS):#poll:
 				dhists=[]
 				dl_counter+=1
 				if pol!=AVG:

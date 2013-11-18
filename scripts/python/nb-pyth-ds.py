@@ -97,4 +97,8 @@ print d[sel]
 
 # <codecell>
 
+np.arange(0,2)
+
+# <codecell>
+
 
