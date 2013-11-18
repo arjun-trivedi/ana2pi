@@ -81,48 +81,56 @@ POBS_NAME=['A','B','C','D']
 #print var
 
 def plotR2(seq_pol_sell):
-	norm = 50000
-	for seq_pol_sel in seq_pol_sell:
-		dq2w_seq_pol = dq2w[seq_pol_sel]
-		print dq2w_seq_pol
-		# seq = dq2w_seq_pol['SEQ']
-		# print 'seq=',seq
-		# hR2 = dq2w_seq_pol['hR2_B_1THETA']
-		# print 'hR2=',hR2
-		# hR2.Draw()
+	"""On a TCanvas, plot R2 for a list of particular SEQ and POL selections
+	
+	Keyword arguments:
+	seq_pol_sell -- A List of DataFrame selections based on SEQ and POL
 
-		# tl = dq2w_seq_pol.values
-		# print 'tl='
-		# print tl
-		# print tl[0][6]
-		# h = tl[0][6]
-		# print h.GetName()
-		outdir_seq_pol=os.path.join(outdir_q2w,dq2w_seq_pol.iloc[0]['SEQ'],dq2w_seq_pol.iloc[0]['POL'])
+	"""
+	for seq_pol_sel in seq_pol_sell:
+		d_q2w_seq_pol = d_q2w[seq_pol_sel]
+		#print dq2w_seq_pol
+		outdir_seq_pol=os.path.join(outdir_q2w,d_q2w_seq_pol.iloc[0]['SEQ'],d_q2w_seq_pol.iloc[0]['POL'])
 		if not os.path.isdir(outdir_seq_pol):
 			os.makedirs(outdir_seq_pol)
 
-		hR2 = dq2w_seq_pol.iloc[0]['hR2_D_1THETA']
-		cR2 = TCanvas("R2_D_1THETA","R2_D_1THETA")
-		hR2.Draw("ep")
-		csavename=('%s/%s')%(outdir_seq_pol,cR2.GetName())
-		cR2.SaveAs(('%s.png')%(csavename))
-		print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
-		rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
-		if rc!=0:print '.png to .pdf failed for %s'%csavename
+		for pob in range(0,NPOBS):
+			if pob==A: continue
+			for var in range(0,NVARS):
+				hR2_name = 'hR2_%s_1%s'%(POBS_NAME[pob],VARS_NAME[var])
+				hR2 = d_q2w_seq_pol.iloc[0][hR2_name]
+				cR2 = TCanvas(hR2_name,hR2_name)
+				hR2.Draw("ep")
+				csavename=('%s/%s')%(outdir_seq_pol,cR2.GetName())
+				cR2.SaveAs(('%s.png')%(csavename))
+				print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
+				rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
+				if rc!=0:print '.png to .pdf failed for %s'%csavename
+#def makepdf(seql,poll):
+def makepdf():
+	"""For every SEQ and POL, combines R2 from every q2wbin into a single pdf.
+	If R2 does not exist, it is simply ignored
 
-	
-
-def makepdf(seql,poll):
-	for seq in seql:
-		for pol in poll:
+	"""
+	for seq in range(0,NSEQ):
+		for pol in range(0,NPOLS):
+			#First check to see if SEQ/POl exists and if so if there are any R2s plotted for SEQ/POL
+			R2s_exist=False
+			outdir_seq_pol=os.path.join(outdir_root,SEQ_NAME[seq],POLS_NAME[pol])
+			if os.path.isdir(outdir_seq_pol):
+				files = os.listdir(outdir_seq_pol)
+  				if len(files) != 0:
+					R2s_exist=True
+						
+			if not R2s_exist: continue
+			#print 'R2s exist for', outdir_seq_pol
 			outdir_pdf=os.path.join(outdir_root,SEQ_NAME[seq],POLS_NAME[pol])
 			if not os.path.isdir(outdir_pdf):os.makedirs(outdir_pdf)
 			for var in range(0,NVARS):
-				if var==PHI or var==ALPHA:continue
 				for pob in range(0,NPOBS):
 					if pob==A: continue
 					#Following are arguments for UNIX shell command
-					pdfname=('R2_%s_1%s.pdf')%(POBS_NAME[pob],VARS_NAME[var])
+					pdfname=('hR2_%s_1%s.pdf')%(POBS_NAME[pob],VARS_NAME[var])
 					q2w_pdfs=('%s/*/%s/%s/%s')%(outdir_root,SEQ_NAME[seq],POLS_NAME[pol],pdfname)
 					out_pdf=('%s/%s')%(outdir_pdf,pdfname)
 
@@ -168,115 +176,101 @@ First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 # poll = [UNP]
 
 #2.
-seql = [EC]
-poll = [POS,NEG,AVG]
+def makedf():
+	seql = [EC]
+	poll = [POS,NEG,AVG]
 
-d = pd.DataFrame()
-ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
-keys = ftemplate.GetListOfKeys()
+	d = pd.DataFrame()
+	ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
+	keys = ftemplate.GetListOfKeys()
 
-"""First create the DataFrame that will be used in the analysis"""
-q2wbinnum=0
-counter=0
-for q2wdir in keys:
-	q2wbinnum+=1
-	for seq in seql:
-		# hR2_B_1THETA={} #indexed by pol
-		# hR2_C_1THETA={}
-		# hR2_D_1THETA={}
-		#dhists=[]
-		h5m={}#indexed by POLS,POBS
-		hR2={}#indexed by POLS,POBS,VARSETS,VARS
-		norm = 50000*math.pi
-		for pol in poll:
-			dhists=[]
-			counter+=1
-			if pol!=AVG:
-				f=root_open(SEQ_POLS_H5FILE[seq][pol])
-				h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
-				f.Close()
+
+	q2wbinnum=0
+	counter=0
+	for q2wdir in keys:
+		q2wbinnum+=1
+		for seq in seql:
+			h5m={}#indexed by POLS,POBS
+			hR2={}#indexed by POLS,POBS,VARSETS,VARS
+			norm = 50000*math.pi
+			for pol in poll:
+				dhists=[]
+				counter+=1
+				if pol!=AVG:
+					f=root_open(SEQ_POLS_H5FILE[seq][pol])
+					h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
+					f.Close()
 				
-				for pob in range(0,NPOBS):
-					if   pob==A: continue
-					elif pob==B: h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'cphi')
-					elif pob==C: h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'c2phi')
-					elif pob==D:
-						if   pol==POS or pol==UNP:
-							h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'sphi')
-						elif pol==NEG:
-							h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'sphi',-1)
-					dhists.append(h5m[(pol,pob)])	
-					for varset in range(0,NVARSETS):
-						if varset==1 or varset==2: continue
-						for var in range(0,NVARS):
-							hR2[(pol,pob,varset,var)]=h5m[(pol,pob)].Projection(var)
-							hR2[(pol,pob,varset,var)].Scale(1/norm)
-							dhists.append(hR2[(pol,pob,varset,var)])
-			elif pol==AVG:
-				for pob in range(0,NPOBS):
-					if pob==A: continue
-					dhists.append('')
-					for varset in range(0,NVARSETS):
-						if varset==1 or varset==2: continue
-						for var in range(0,NVARS):
-							hR2[(AVG,pob,varset,var)]=hR2[(POS,pob,varset,var)].Clone("avg")
-							hR2[(AVG,pob,varset,var)].Add(hR2[(NEG,pob,varset,var)])
-							hR2[(AVG,pob,varset,var)].Scale(0.5)
-							if pob==D:
-								hR2[(AVG,pob,varset,var)].SetMinimum(-0.003)
-								hR2[(AVG,pob,varset,var)].SetMaximum(0.003)
-							dhists.append(hR2[(AVG,pob,varset,var)])		
-				# hR2_B_1THETA[AVG] = hR2_B_1THETA[POS].Clone("avg")
-				# hR2_B_1THETA[AVG].Add(hR2_B_1THETA[NEG])
-				# hR2_B_1THETA[AVG].Scale(0.5)
-				
-				# hR2_C_1THETA[AVG] = hR2_C_1THETA[POS].Clone("avg")
-				# hR2_C_1THETA[AVG].Add(hR2_C_1THETA[NEG])
-				# hR2_C_1THETA[AVG].Scale(0.5)
-				
-				# hR2_D_1THETA[AVG] = hR2_D_1THETA[POS].Clone("avg")
-				# hR2_D_1THETA[AVG].Add(hR2_D_1THETA[NEG])
-				# hR2_D_1THETA[AVG].Scale(0.5)
-				# hR2_D_1THETA[AVG].SetMinimum(-0.003)
-				# hR2_D_1THETA[AVG].SetMaximum(0.003)
-			
-			# dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol],
-			# h5B,hR2_B_1THETA[pol],h5C,hR2_C_1THETA[pol],h5D,hR2_D_1THETA[pol]]
-			dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol]]
-			dl+=dhists
-			print 'dl='
-			print dl
-			print len(dl)
-			rindex=['q2wbinnum','q2wbin','SEQ','POL',
-			'h5B','hR2_B_1M1','hR2_B_1M2','hR2_B_1THETA','hR2_B_1PHI','hR2_B_1ALPHA',
-			'h5C','hR2_C_1M1','hR2_C_1M2','hR2_C_1THETA','hR2_C_1PHI','hR2_C_1ALPHA',
-			'h5D','hR2_D_1M1','hR2_D_1M2','hR2_D_1THETA','hR2_D_1PHI','hR2_D_1ALPHA']
-			print len(rindex)
-			if not d:
-				data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
-				d = d.append(data)
-			else:
-				d['s%d'%counter]=dl
+					for pob in range(0,NPOBS):
+						if   pob==A: continue
+						elif pob==B: h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'cphi')
+						elif pob==C: h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'c2phi')
+						elif pob==D:
+							if   pol==POS or pol==UNP:
+								h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'sphi')
+							elif pol==NEG:
+								h5m[(pol,pob)]=mythnt.MultiplyBy(h5,'sphi',-1)
+						dhists.append(h5m[(pol,pob)])	
+						for varset in range(0,NVARSETS):
+							if varset==1 or varset==2: continue
+							for var in range(0,NVARS):
+								hR2[(pol,pob,varset,var)]=h5m[(pol,pob)].Projection(var)
+								hR2[(pol,pob,varset,var)].Scale(1/norm)
+								dhists.append(hR2[(pol,pob,varset,var)])
+				elif pol==AVG:
+					for pob in range(0,NPOBS):
+						if pob==A: continue
+						dhists.append('')
+						for varset in range(0,NVARSETS):
+							if varset==1 or varset==2: continue
+							for var in range(0,NVARS):
+								hR2[(AVG,pob,varset,var)]=hR2[(POS,pob,varset,var)].Clone("avg")
+								hR2[(AVG,pob,varset,var)].Add(hR2[(NEG,pob,varset,var)])
+								hR2[(AVG,pob,varset,var)].Scale(0.5)
+								if pob==D:
+									hR2[(AVG,pob,varset,var)].SetMinimum(-0.003)
+									hR2[(AVG,pob,varset,var)].SetMaximum(0.003)
+								dhists.append(hR2[(AVG,pob,varset,var)])		
+				"""Create Data-List (dl) to be added to the DataFrame"""			
+				dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol]]
+				dl+=dhists
+				rindex=['q2wbinnum','q2wbin','SEQ','POL',
+				'h5B','hR2_B_1M1','hR2_B_1M2','hR2_B_1THETA','hR2_B_1PHI','hR2_B_1ALPHA',
+				'h5C','hR2_C_1M1','hR2_C_1M2','hR2_C_1THETA','hR2_C_1PHI','hR2_C_1ALPHA',
+				'h5D','hR2_D_1M1','hR2_D_1M2','hR2_D_1THETA','hR2_D_1PHI','hR2_D_1ALPHA']
+				print 'len(dl)=',len(dl)
+				print 'len(rindex)=',len(rindex)
+				print 'dl='
+				print dl
+				print 'rindex='
+				print rindex
+				if not d:
+					data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
+					d = d.append(data)
+				else:
+					d['s%d'%counter]=dl
+	
+	dt = d.transpose()
+	return dt					
 
+#First make DataFrame that will be used in the analysis
+d = makedf()
+# """print a few columns of d to see what it looks like"""
+# print 'dataframe = '
+# print d.loc[:,'s1':'s4']
 
-#print a few columns of d to see what it looks like
-print 'dataframe = '
-print d.loc[:,'s1':'s4']
-# Test Drawing a histogram from d
-# c = TCanvas("test","test")
-# d['s2'][6].Draw("ep")
-# c.SaveAs("test.png")
-
-dt = d.transpose()
-print dt.loc['s1':'s3','h5B':'h5C']
-dt_grpd_q2wbin=dt.groupby('q2wbin')
-nq2wbins = len(dt_grpd_q2wbin)
-print 'nq2wbins=',nq2wbins
-
+"""Transpose d --> dt; dt is the final usable form of the DataFrame"""
+#dt = d.transpose()
+"""See what dt looks like"""
+print d.loc['s1':'s3','h5B':'h5C']
 
 """Now use the DataFrame to access histograms"""
-for q2wbin in dt_grpd_q2wbin.groups:
-		dq2w=dt_grpd_q2wbin.get_group(q2wbin)
+d_grpd_q2wbin=d.groupby('q2wbin')
+nq2wbins = len(d_grpd_q2wbin)
+print 'nq2wbins=',nq2wbins
+
+for q2wbin in d_grpd_q2wbin.groups:
+		d_q2w=d_grpd_q2wbin.get_group(q2wbin)
 		outdir_q2w=os.path.join(outdir_root,q2wbin)
 		if not os.path.isdir(outdir_q2w):
 			os.makedirs(outdir_q2w)
@@ -284,11 +278,11 @@ for q2wbin in dt_grpd_q2wbin.groups:
 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
 		# 	   ]
-		seq_pol_sell = [(dq2w['SEQ']=='EC') & (dq2w['POL']=='AVG')]
+		seq_pol_sell = [(d_q2w['SEQ']=='EC') & (d_q2w['POL']=='AVG')]
 		plotR2(seq_pol_sell)
 
 	
 """
 Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 """
-makepdf(seql,poll)
+makepdf()
