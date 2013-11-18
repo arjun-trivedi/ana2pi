@@ -101,7 +101,8 @@ outdir = os.path.join(anadir,'polobs.new')
 # z[0:4,0:1] = 3
 # print z
 
-""" Try HDF5"""
+""" Use Case for storing Pandas DataFrame with ROOT Histograms in 
+a HDF5 file"""
 import numpy as np
 randn = np.random.randn
 import pandas as pd
@@ -116,24 +117,30 @@ print 'store =',store
 # h2 = TH1D("test2","test2",100,0,5)
 # h3 = TH1D("test3","test3",100,0,5)
 # hl = [h1,h2,h3]
-hl = []
-for i in range(0,8):
-	name = 'h%d'%(i+1)
-	hl.append(TH1D(name,name,100,0,5))
-hl[0].Draw()
-print hl[0]
+# hl = []
+# for i in range(0,8):
+# 	name = 'h%d'%(i+1)
+# 	hl.append(TH1D(name,name,100,0,5))
+# hl[0].Draw()
+# print hl[0]
 
 
 	
-#index = pd.date_range('1/1/2000', periods=8)
-index = np.arange(0,8)
-# s = pd.Series(randn(5), index=['a', 'b', 'c', 'd', 'e'])
-#df = pd.DataFrame(randn(8, 3), index=index,
-#                  columns=['A', 'B', 'C'])
-df = pd.DataFrame()
-if not df:
-	data = pd.DataFrame({'s1':hl},index=index) # Data for 1st. Column 
-	df = df.append(data)
+# #index = pd.date_range('1/1/2000', periods=8)
+# index = np.arange(0,8)
+# # s = pd.Series(randn(5), index=['a', 'b', 'c', 'd', 'e'])
+# #df = pd.DataFrame(randn(8, 3), index=index,
+# #                  columns=['A', 'B', 'C'])
+# df = pd.DataFrame()
+# if not df:
+# 	data = pd.DataFrame({'s1':hl},index=index) # Data for 1st. Column 
+# 	df = df.append(data)
 
-df['H'] = hl
-print 'df=',df
+# df['H'] = hl
+# print 'df=',df
+
+# store['df']=df
+# #store.root.wp._v_attrs.pandas_type
+# store
+
+print store['df']
