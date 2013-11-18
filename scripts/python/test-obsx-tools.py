@@ -129,7 +129,7 @@ def plotR2(h5,seql,poll):
 					pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 					q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wdir.GetName())
 					q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-					vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pobs],VARS_TITLE[0][var],VARS_TITLE[0][var]));
+					vart = pt.AddText(("%s,%s: %s^{%s} vs. %s")%(SEQ_NAME[seq],POLS_NAME[pol],POBS_NAME[pobs],VARS_TITLE[0][var],VARS_TITLE[0][var]))
 					vart.SetTextSize(0.05);
 					pt.Draw()
 					csavename = ('%s/%s')%(outdir_pol,cR2.GetName())
@@ -190,12 +190,12 @@ First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
 	-alpha = Index over NPOBS (=[A,B,C,D])
 """
 #1.
-# seql = [EF,SF]
-# poll = [UNP]
+seql = [EF,SF]
+poll = [UNP]
 
 #2.
-seql = [EC]
-poll = [POS,NEG,AVG]
+# seql = [EC]
+# poll = [POS,NEG,AVG]
 
 ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
 keys = ftemplate.GetListOfKeys()

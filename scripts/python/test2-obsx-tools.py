@@ -92,16 +92,20 @@ def plotR2(seq_pol_sell):
 	for seq_pol_sel in seq_pol_sell:
 		d_q2w_seq_pol = d_q2w[seq_pol_sel]
 		#print dq2w_seq_pol
-		outdir_seq_pol=os.path.join(outdir_q2w,d_q2w_seq_pol.iloc[0]['SEQ'],d_q2w_seq_pol.iloc[0]['POL'])
+		seq=d_q2w_seq_pol.iloc[0]['SEQ']
+		pol=d_q2w_seq_pol.iloc[0]['POL']
+		outdir_seq_pol=os.path.join(outdir_q2w,seq,pol)
 		if not os.path.isdir(outdir_seq_pol):
 			os.makedirs(outdir_seq_pol)
 
 		for pob in range(0,NPOBS):
 			if pob==A: continue
 			for var in range(0,NVARS):
+				if var==PHI or VAR==ALPHA: continue
 				hR2_name = 'hR2_%s_1%s'%(POBS_NAME[pob],VARS_NAME[var])
 				hR2 = d_q2w_seq_pol.iloc[0][hR2_name]
 				cR2 = TCanvas(hR2_name,hR2_name)
+				hR2.SetLineColor(gROOT.ProcessLine("%s"%POLS_COLOR[pol]))
 				hR2.SetTitle("")# will be made "prettier" later
 				hR2.Draw("ep")
 
@@ -110,7 +114,7 @@ def plotR2(seq_pol_sell):
 				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wbin)
 				q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-				vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pob],VARS_TITLE[0][var],VARS_TITLE[0][var]));
+				vart = pt.AddText(("%s,%s: %s^{%s} vs. %s")%(SEQ_NAME[seq],POLS_NAME[pol],POBS_NAME[pobs],VARS_TITLE[0][var],VARS_TITLE[0][var]))
 				vart.SetTextSize(0.05);
 				pt.Draw()
 
@@ -167,7 +171,7 @@ def makedf():
 	output -- ana_store.h5
 	contains DataFrame d with analysis data represented by columns:
 	q2wbinnum,q2wbin,SEQ,POL,h5,h5alpha,hR2^{ij}_{alpha}
-	
+
 	"""
 	outfile = os.path.join(ANADIR,'ana_store.h5')
 	store = pd.HDFStore(outfile)
@@ -280,7 +284,13 @@ for q2wbin in d_grpd_q2wbin.groups:
 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
 		# 	   ]
-		seq_pol_sell = [(d_q2w['SEQ']=='EC') & (d_q2w['POL']=='AVG')]
+		seq_pol_sell = [
+		(d_q2w['SEQ']=='SF') & (d_q2w['POL']=='UNP'),
+		(d_q2w['SEQ']=='EF') & (d_q2w['POL']=='UNP'),
+		(d_q2w['SEQ']=='EF') & (d_q2w['POL']=='POS'),
+		(d_q2w['SEQ']=='EF') & (d_q2w['POL']=='NEG'),
+		(d_q2w['SEQ']=='EC') & (d_q2w['POL']=='AVG') #dnp results
+						]
 		plotR2(seq_pol_sell)
 
 #Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
