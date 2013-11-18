@@ -94,14 +94,14 @@ def plotR2(seq_pol_sell):
 		#print dq2w_seq_pol
 		seq=d_q2w_seq_pol.iloc[0]['SEQ']
 		pol=d_q2w_seq_pol.iloc[0]['POL']
-		outdir_seq_pol=os.path.join(outdir_q2w,seq,pol)
+		outdir_seq_pol=os.path.join(outdir_q2w,SEQ_NAME[seq],POLS_NAME[pol])
 		if not os.path.isdir(outdir_seq_pol):
 			os.makedirs(outdir_seq_pol)
 
 		for pob in range(0,NPOBS):
 			if pob==A: continue
 			for var in range(0,NVARS):
-				if var==PHI or VAR==ALPHA: continue
+				if var==PHI or var==ALPHA: continue
 				hR2_name = 'hR2_%s_1%s'%(POBS_NAME[pob],VARS_NAME[var])
 				hR2 = d_q2w_seq_pol.iloc[0][hR2_name]
 				cR2 = TCanvas(hR2_name,hR2_name)
@@ -114,7 +114,7 @@ def plotR2(seq_pol_sell):
 				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
 				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wbin)
 				q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
-				vart = pt.AddText(("%s,%s: %s^{%s} vs. %s")%(SEQ_NAME[seq],POLS_NAME[pol],POBS_NAME[pobs],VARS_TITLE[0][var],VARS_TITLE[0][var]))
+				vart = pt.AddText(("%s,%s: %s^{%s} vs. %s")%(SEQ_NAME[seq],POLS_NAME[pol],POBS_NAME[pob],VARS_TITLE[0][var],VARS_TITLE[0][var]))
 				vart.SetTextSize(0.05);
 				pt.Draw()
 
@@ -176,8 +176,8 @@ def makedf():
 	outfile = os.path.join(ANADIR,'ana_store.h5')
 	store = pd.HDFStore(outfile)
 
-	seql = [EC]
-	poll = [POS,NEG,AVG]
+	# seql = [EC]
+	# poll = [POS,NEG,AVG]
 
 	d = pd.DataFrame()
 	ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
@@ -230,7 +230,8 @@ def makedf():
 									hR2[(AVG,pob,varset,var)].SetMaximum(0.003)
 								dhists.append(hR2[(AVG,pob,varset,var)])		
 				"""Create Data-List (dl) to be added to the DataFrame"""			
-				dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol]]
+				#dl = [q2wbinnum,q2wdir.GetName(),SEQ_NAME[seq],POLS_NAME[pol]]
+				dl = [q2wbinnum,q2wdir.GetName(),seq,pol]
 				dl+=dhists
 				rindex=['q2wbinnum','q2wbin','SEQ','POL',
 				'h5B','hR2_B_1M1','hR2_B_1M2','hR2_B_1THETA','hR2_B_1PHI','hR2_B_1ALPHA',
@@ -264,7 +265,7 @@ if not os.path.isdir(outdir_root):
 	os.makedirs(outdir_root)
 
 #First make DataFrame that will be used in the analysis
-if not infile:
+if not os.path.isfile(infile):
 	makedf()
 #See what d looks like
 store = pd.HDFStore(infile)
@@ -285,11 +286,11 @@ for q2wbin in d_grpd_q2wbin.groups:
 		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
 		# 	   ]
 		seq_pol_sell = [
-		(d_q2w['SEQ']=='SF') & (d_q2w['POL']=='UNP'),
-		(d_q2w['SEQ']=='EF') & (d_q2w['POL']=='UNP'),
-		(d_q2w['SEQ']=='EF') & (d_q2w['POL']=='POS'),
-		(d_q2w['SEQ']=='EF') & (d_q2w['POL']=='NEG'),
-		(d_q2w['SEQ']=='EC') & (d_q2w['POL']=='AVG') #dnp results
+		(d_q2w['SEQ']==SF) & (d_q2w['POL']==UNP),
+		(d_q2w['SEQ']==EF) & (d_q2w['POL']==UNP),
+		(d_q2w['SEQ']==EF) & (d_q2w['POL']==POS),
+		(d_q2w['SEQ']==EF) & (d_q2w['POL']==NEG),
+		(d_q2w['SEQ']==EC) & (d_q2w['POL']==AVG) #dnp results
 						]
 		plotR2(seq_pol_sell)
 
