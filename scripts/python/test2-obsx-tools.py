@@ -87,6 +87,8 @@ def plotR2(seq_pol_sell):
 	seq_pol_sell -- A List of DataFrame selections based on SEQ and POL
 
 	"""
+	l = TLine(0,0,180,0)# will be used for all hR2 objects
+
 	for seq_pol_sel in seq_pol_sell:
 		d_q2w_seq_pol = d_q2w[seq_pol_sel]
 		#print dq2w_seq_pol
@@ -100,7 +102,18 @@ def plotR2(seq_pol_sell):
 				hR2_name = 'hR2_%s_1%s'%(POBS_NAME[pob],VARS_NAME[var])
 				hR2 = d_q2w_seq_pol.iloc[0][hR2_name]
 				cR2 = TCanvas(hR2_name,hR2_name)
+				hR2.SetTitle("")# will be made "prettier" later
 				hR2.Draw("ep")
+
+				#make Title of hR2 "pretty"
+				l.Draw("same")
+				pt = TPaveText(0.3, 0.85, 0.7, 1.0, "NDC")
+				q2wt = pt.AddText('[Q^{2}][W] = %s'%q2wbin)
+				q2wt.SetTextColor(gROOT.ProcessLine("kBlue"))
+				vart = pt.AddText(("%s^{%s} vs. %s")%(POBS_NAME[pob],VARS_TITLE[0][var],VARS_TITLE[0][var]));
+				vart.SetTextSize(0.05);
+				pt.Draw()
+
 				csavename=('%s/%s')%(outdir_seq_pol,cR2.GetName())
 				cR2.SaveAs(('%s.png')%(csavename))
 				print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
@@ -148,6 +161,9 @@ def makepdf():
 					if rc!=0: print 'command failed!'
 
 def makedf():
+	"""For a particular Q2W analysis range, starting at the level of h5s, put all analysis
+	objects into a DataFrame
+	"""
 	seql = [EC]
 	poll = [POS,NEG,AVG]
 
@@ -155,9 +171,8 @@ def makedf():
 	ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
 	keys = ftemplate.GetListOfKeys()
 
-
 	q2wbinnum=0
-	counter=0
+	dl_counter=0 #counter for number of dls (=Data-Lists, defined later) insereted into DF
 	for q2wdir in keys:
 		q2wbinnum+=1
 		for seq in seql:
@@ -166,7 +181,7 @@ def makedf():
 			norm = 50000*math.pi
 			for pol in poll:
 				dhists=[]
-				counter+=1
+				dl_counter+=1
 				if pol!=AVG:
 					f=root_open(SEQ_POLS_H5FILE[seq][pol])
 					h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
@@ -219,7 +234,7 @@ def makedf():
 					data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
 					d = d.append(data)
 				else:
-					d['s%d'%counter]=dl
+					d['s%d'%dl_counter]=dl
 	
 	dt = d.transpose()
 	return dt					
@@ -235,9 +250,8 @@ if not os.path.isdir(outdir_root):
 
 #First make DataFrame that will be used in the analysis
 d = makedf()
-#See what d looks like"""
+#See what d looks like
 print d.loc['s1':'s3','h5B':'h5C']
-
 #Now use the DataFrame to access histograms"""
 d_grpd_q2wbin=d.groupby('q2wbin')
 nq2wbins = len(d_grpd_q2wbin)
