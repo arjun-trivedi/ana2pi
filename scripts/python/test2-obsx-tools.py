@@ -106,7 +106,7 @@ def plotR2(seq_pol_sell):
 				print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
 				rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
 				if rc!=0:print '.png to .pdf failed for %s'%csavename
-#def makepdf(seql,poll):
+
 def makepdf():
 	"""For every SEQ and POL, combines R2 from every q2wbin into a single pdf.
 	If R2 does not exist, it is simply ignored
@@ -114,9 +114,10 @@ def makepdf():
 	"""
 	for seq in range(0,NSEQ):
 		for pol in range(0,NPOLS):
-			#First check to see if SEQ/POl exists and if so if there are any R2s plotted for SEQ/POL
+			#First check to see if in the last q2wbin processed,
+			#SEQ/POl exists and if so if there are any R2s plotted for SEQ/POL
 			R2s_exist=False
-			outdir_seq_pol=os.path.join(outdir_root,SEQ_NAME[seq],POLS_NAME[pol])
+			outdir_seq_pol=os.path.join(outdir_q2w,SEQ_NAME[seq],POLS_NAME[pol])
 			if os.path.isdir(outdir_seq_pol):
 				files = os.listdir(outdir_seq_pol)
   				if len(files) != 0:
@@ -146,36 +147,6 @@ def makepdf():
 					rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
 					if rc!=0: print 'command failed!'
 
-
-#COSMETICS
-gStyle.SetOptStat(0);
-gStyle.SetOptFit(1111);
-#OUTPUT data
-outdir_root = os.path.join(ANADIR,'polobs.new')
-if not os.path.isdir(outdir_root):
-	os.makedirs(outdir_root)
-
-#MAIN part of program
-# Using rootpy
-# for dirs in f.walk('.').next()[1]:
-# 	h5 = {}
-# 	print dirs
-# 	obj = os.path.join('.',dirs,'hY5D_POS','Varset1','hY5D_ACC_CORR')
-# 	print 'obj=',obj
-# 	h5[(EC,POS)] = obj
-# 	mythnt.MultiplyBySinPhi(h5[(EC,POS)]);
-
-#Using PyRoot
-"""
-First, for each q2wbin/seql, make all R2^{ij}_{alpha} where:
-	-ij    = Index over NVARSETS and nVAR respectively
-	-alpha = Index over NPOBS (=[A,B,C,D])
-"""
-#1.
-# seql = [EF,SF]
-# poll = [UNP]
-
-#2.
 def makedf():
 	seql = [EC]
 	poll = [POS,NEG,AVG]
@@ -253,18 +224,21 @@ def makedf():
 	dt = d.transpose()
 	return dt					
 
+# MAIN part of the program
+#COSMETICS
+gStyle.SetOptStat(0);
+gStyle.SetOptFit(1111);
+#OUTPUT data
+outdir_root = os.path.join(ANADIR,'polobs.new')
+if not os.path.isdir(outdir_root):
+	os.makedirs(outdir_root)
+
 #First make DataFrame that will be used in the analysis
 d = makedf()
-# """print a few columns of d to see what it looks like"""
-# print 'dataframe = '
-# print d.loc[:,'s1':'s4']
-
-"""Transpose d --> dt; dt is the final usable form of the DataFrame"""
-#dt = d.transpose()
-"""See what dt looks like"""
+#See what d looks like"""
 print d.loc['s1':'s3','h5B':'h5C']
 
-"""Now use the DataFrame to access histograms"""
+#Now use the DataFrame to access histograms"""
 d_grpd_q2wbin=d.groupby('q2wbin')
 nq2wbins = len(d_grpd_q2wbin)
 print 'nq2wbins=',nq2wbins
@@ -281,8 +255,5 @@ for q2wbin in d_grpd_q2wbin.groups:
 		seq_pol_sell = [(d_q2w['SEQ']=='EC') & (d_q2w['POL']=='AVG')]
 		plotR2(seq_pol_sell)
 
-	
-"""
-Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
-"""
+#Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 makepdf()
