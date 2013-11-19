@@ -24,7 +24,14 @@ where
 
 ##Event Selection
 
-##Matters relating to current Observations
+##`R2` Extraction Method
+
+For every `q2wbin`:
+
+1. `h5[pol]` where `pol` $\in$ {POS,NEG,UNP,AVG}; `pol` $\neq$ AVG
+2. `h5[pol]` $\rightarrow$ `h5m[pol,pob]` where `pob` $\in$ {A,B,C,D}; `pol` $\neq$ AVG
+
+##Notes on current Observations
 
 1. What do `R2` from Simulation Data (`SF`) represent?
 

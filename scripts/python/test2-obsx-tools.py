@@ -282,17 +282,16 @@ for q2wbin in d_grpd_q2wbin.groups:
 		outdir_q2w=os.path.join(outdir_root,q2wbin)
 		if not os.path.isdir(outdir_q2w):
 			os.makedirs(outdir_q2w)
-		# seq_pol_sell = [
-		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='POS'),
-		# 			(dq2w['SEQ']=='EC') & (dq2w['POL']=='NEG'),
-		# 	   ]
-		seq_pol_sell = [
-		(d_q2w['SEQ']==SF) & (d_q2w['POL']==UNP),
-		(d_q2w['SEQ']==EF) & (d_q2w['POL']==UNP),
-		(d_q2w['SEQ']==EF) & (d_q2w['POL']==POS),
-		(d_q2w['SEQ']==EF) & (d_q2w['POL']==NEG),
-		(d_q2w['SEQ']==EC) & (d_q2w['POL']==AVG) #dnp results
-						]
+		
+		seq_pol_sell = 
+		[
+			(d_q2w['SEQ']==SF) & (d_q2w['POL']==UNP),
+			(d_q2w['SEQ']==EF) & (d_q2w['POL']==UNP),
+			(d_q2w['SEQ']==EF) & (d_q2w['POL']==POS),
+			(d_q2w['SEQ']==EF) & (d_q2w['POL']==NEG),
+			(d_q2w['SEQ']==EC) & (d_q2w['POL']==AVG) #dnp results
+		]
+		
 		plotR2(seq_pol_sell)
 
 #Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
