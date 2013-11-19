@@ -24,6 +24,11 @@ where
 
 ##Event Selection
 
+1. `eid`
+2. `efid`
+3. `momcorr`
+4. `MM cut`
+
 ##`R2` Extraction Method
 
 Of the methods listed earlier:
@@ -32,7 +37,7 @@ Of the methods listed earlier:
 2.	Calculate Asymmetry $\doteq$ $f^{h=+}-f^{h=-}$ and then extract $D^{ij}$
 3.	$\int f^{h}(X^{ij},\phi^{j}) * (\cos\phi/\cos 2\phi/\sin\phi)d\phi$ to extract $B^{ij}/C^{ij}/D^{ij}$
 
-Method 3. is used, which even at the level of algorithmic detail is listed below.
+Method 3. is used, which even at the level of algorithmic detail is listed below. $\color{red} \text{NOTE that when multiplying by $\sin\phi$, the sign of the polarization is explicity used}$
 
 For every `q2wbin`:
 
@@ -41,19 +46,14 @@ For every `q2wbin`:
 	*	`pob` $\in$ {A,B,C,D}; `pol` $\neq$ AVG
 	*	`h5f[pob]`:
 		*	 For every bin `i`,  `h5f[pob](i)` = `f[pob](i)`
-		*	 `f[pob]` $\in$ {N.A.,$\cos\phi$,$\cos 2\phi$,$\sin\phi$}
+		*	 `f[pob]` $\in$ {N.A.,$\cos\phi$,$\cos 2\phi$,$\color{red}{\text{sign(pol)}}$ $\sin\phi$}
 3.	`hR2_Xij[pol,pob]` = `h5m[pol,pob]` `Project` on to $X^{ij}$; `pol` $\neq$ AVG
 4. 	`hR2_Xij[pol=AVG,pob]` = (`hR2_Xij[pol=POS,pob]` + `hR2_Xij[pol=NEG,pob]`)/2
 
 ##Notes on current Observations
 
-1. What do `R2` from Simulation Data (`SF`) represent?
-
-	*	Study in comparison with Hole-Filled Experimental Data (`EF`)
-	*	Therefore, is Hole-Filling valid?
-
-2. `R2` from Acceptance Corrected Experimental Data (`EC`)
-
+1. `R2_Xij[UNP,D]` $\neq$ 0 for Simulation. Why?
+2. `R2_Xij[UNP,D]` $\neq$ 0 for Experiment.
 
 
 
