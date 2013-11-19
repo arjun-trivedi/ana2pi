@@ -7,7 +7,7 @@
 # 
 # Assume following form of $\phi$ distribution (see nb-beamasym-obs-mtg-091013)
 # 
-# $$ \left(\frac{d^2\sigma_{v}}{ {dX^{ij}d\phi^{j}} }\right)^{h}  = A^{ij} + B^{ij}\cos\phi + C^{ij}\cos2\phi + D^{ij}\sin\phi $$
+# $$ \left(\frac{d^2\sigma_{v}}{ {dX^{ij}d\phi^{j}} }\right)^{h}  = A^{ij} + B^{ij}\cos\phi^{j} + C^{ij}\cos2\phi^{j} + D^{ij}\sin\phi^{j} $$
 # 
 # >  where
 # 
@@ -25,29 +25,35 @@ import math
 
 #Ideal phi distribution(fphi)
 N = 10
-dx = 2*math.pi/N
-x  = arange(0,2*math.pi,dx)
-A=16
-B=3.1
-C=3.6
-D=-0.021
-f = A + B*cos(x) + C*cos(2*x) + D*sin(x)
-fsinphi = sin(x)
+xmax=360
+xmin=0
+dx=(xmax-xmin)/N
+x=arange(xmin,xmax,dx)
+print 'x =',x
+print 'dx =',dx
+#dx = 2*math.pi/N
+#x  = arange(0,2*math.pi,dx)
+A=15#16
+B=2.3#3.1
+C=2.7#3.6
+D=0.0026#-0.021
+f = A + B*cos(radians(x)) + C*cos(radians(2*x)) + D*sin(radians(x))
+fsinphi = sin(radians(x))
 fig = plt.figure(figsize=(3,3))
 ax = fig.add_subplot(111, title=('fphi%d'%N))
-plt.scatter(x,fsinphi,marker='o', color='r',s=50,label='fsinphi')
+#plt.scatter(x,fsinphi,marker='o', color='r',s=50,label='fsinphi')
 plt.scatter(x,f,marker='^', color='g',s=50,label='fphi')
 
 #Reconstructed phi distribution(r_fphi)
-fphi  = lambda x: A + B*cos(x) + C*cos(2*x) + D*sin(x)
+fphi  = lambda t: A + B*cos(radians(t)) + C*cos(radians(2*t)) + D*sin(radians(t))
 def int_fphi(x,dx):
     return integrate.quad(fphi,x,x+dx)[0]
 
 r_fphidx=[]
 r_fphi=[]
-for i in x:
+for i in range(0,N):
     #add a statistical modelled error to integral!
-    integral = int_fphi(i,dx)
+    integral = int_fphi(x[i],dx)
     r_fphidx.append(integral)
     r_fphi.append(divide(integral,dx))
 
@@ -57,15 +63,15 @@ ax.scatter(x,r_fphi,marker='<',color='b',s=50,label='r_fphi')
 
 integral=0
 for i in range(0,N):
-    integral+=r_fphidx[i]*sin(x[i])
+    integral+=r_fphidx[i]*sin(radians(x[i]))
     #integral+=r_fphi[i]*sin(x[i])*dx
 #print integral
-print 'integral =', integral/math.pi
+print 'coefficient, D =', integral/math.pi
 
 # <codecell>
 
 #Ideal phi distribution(fphi)
-N = 10
+N = 3
 dx = 2*math.pi/N
 x  = arange(0,2*math.pi,dx)
 A=16
@@ -108,19 +114,28 @@ for i in range(0,N):
    integral['T'] += f[i]*sin(x[i])*dx
    #integral+=r_fphi[i]*sin(x[i])*dx
 #print integral
-print 'integral_B =',integral['B']/math.pi
-print 'integral_C =',integral['C']/math.pi
-print 'integral_D =',integral['D']/math.pi
-print 'integral_T =',integral['T']/math.pi
+print 'B =',integral['B']/math.pi
+print 'C =',integral['C']/math.pi
+print 'D =',integral['D']/math.pi
+print 'T =',integral['T']/math.pi
 
 #integral_T_check = integral['B']+integral['C']+integral['D']
 #print 'cross check by directly adding integrals = ',integral_T_check
 
 # <codecell>
 
-t = {}
-t['A']= t['B']=1
-print t
+ft  = lambda t: sin(radians(t))#*sin(radians(t))
+print 'using degrees = ',integrate.quad(ft,0,180)[0]
+
+ft  = lambda t: sin(t)#*sin(t)
+print 'using radians = ',integrate.quad(ft,0,math.pi)[0]
+
+#def int_fphi(x,dx):
+ #   return integrate.quad(fphi,x,x+dx)[0]
+
+# <codecell>
+
+sin(radians(90))
 
 # <codecell>
 
