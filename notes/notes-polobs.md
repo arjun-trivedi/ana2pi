@@ -7,7 +7,7 @@
 
 ##Formalism
 
-${ \left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right) }^{h}
+$\left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right)^{h}
 \doteq
 f^{h}(X^{ij},\phi^{j}) = A^{ij} +
 						B^{ij}\cos\phi^{j} +
@@ -26,10 +26,24 @@ where
 
 ##`R2` Extraction Method
 
+Of the methods listed earlier:
+
+1.	Fit $f^{h}(X^{ij},\phi^{j})$ to extract `R2`
+2.	Calculate Asymmetry $\doteq$ $f^{h=+}-f^{h=-}$ and then extract $D^{ij}$
+3.	$\int f^{h}(X^{ij},\phi^{j}) * (\cos\phi/\cos 2\phi/\sin\phi)d\phi$ to extract $B^{ij}/C^{ij}/D^{ij}$
+
+Method 3. is used, which even at the level of algorithmic detail is listed below.
+
 For every `q2wbin`:
 
-1. `h5[pol]` where `pol` $\in$ {POS,NEG,UNP,AVG}; `pol` $\neq$ AVG
-2. `h5[pol]` $\rightarrow$ `h5m[pol,pob]` where `pob` $\in$ {A,B,C,D}; `pol` $\neq$ AVG
+1.	`h5[pol]` where `pol` $\in$ {POS,NEG,UNP,AVG}; `pol` $\neq$ AVG
+2.	`h5m[pol,pob]` = `h5[pol]`$\cdot$ `h5f[pob]` 
+	*	`pob` $\in$ {A,B,C,D}; `pol` $\neq$ AVG
+	*	`h5f[pob]`:
+		*	 For every bin `i`,  `h5f[pob](i)` = `f[pob](i)`
+		*	 `f[pob]` $\in$ {N.A.,$\cos\phi$,$\cos 2\phi$,$\sin\phi$}
+3.	`hR2_Xij[pol,pob]` = `h5m[pol,pob]` `Project` on to $X^{ij}$; `pol` $\neq$ AVG
+4. 	`hR2_Xij[pol=AVG,pob]` = (`hR2_Xij[pol=POS,pob]` + `hR2_Xij[pol=NEG,pob]`)/2
 
 ##Notes on current Observations
 
