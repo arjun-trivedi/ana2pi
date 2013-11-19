@@ -27,13 +27,15 @@ import math
 N = 10
 dx = 2*math.pi/N
 x  = arange(0,2*math.pi,dx)
-A=10
-B=10
-C=10
-D=10
+A=16
+B=3.1
+C=3.6
+D=-0.021
 f = A + B*cos(x) + C*cos(2*x) + D*sin(x)
+fsinphi = sin(x)
 fig = plt.figure(figsize=(3,3))
 ax = fig.add_subplot(111, title=('fphi%d'%N))
+plt.scatter(x,fsinphi,marker='o', color='r',s=50,label='fsinphi')
 plt.scatter(x,f,marker='^', color='g',s=50,label='fphi')
 
 #Reconstructed phi distribution(r_fphi)
@@ -51,30 +53,74 @@ for i in x:
 
 #ax.scatter(x,r_fphidx,marker='v',color='r',s=50, label='r_fphidx')
 ax.scatter(x,r_fphi,marker='<',color='b',s=50,label='r_fphi')
-plt.legend()
-
-
-# <markdowncell>
-
-# ### Try to retreive constant multiplying $\sin(\phi)$ using Method 2
-
-# <codecell>
+#plt.legend()
 
 integral=0
 for i in range(0,N):
     integral+=r_fphidx[i]*sin(x[i])
     #integral+=r_fphi[i]*sin(x[i])*dx
 #print integral
-print integral/math.pi
+print 'integral =', integral/math.pi
 
 # <codecell>
 
-dl=[0.0003,-0.0009,0.002,0.0068,0.0026,-0.0021,0.0022,0.0049,0.0052,-0.0037]
-dlerr = np.empty(10)
-dlerr[:]=0.02
-xl = np.arange(0,10)
-#plt.scatter(xl,dl)
-plt.errorbar(xl,dl,yerr=dlerr)
+#Ideal phi distribution(fphi)
+N = 10
+dx = 2*math.pi/N
+x  = arange(0,2*math.pi,dx)
+A=16
+B=3.1
+C=3.6
+D=-0.021
+
+f_A = A
+f_B = B*cos(x)
+f_C = C*cos(2*x)
+f_D = D*sin(x)
+f = f_A + f_B + f_C + f_D #A + B*cos(x) + C*cos(2*x) + D*sin(x)
+
+fsinphi = sin(x)
+
+fig,axs = plt.subplots(4, sharex=True,figsize=(5,8))
+
+axs[0].scatter(x,f_B,marker='o', color='k',s=50,label='f_B')
+axs[0].set_ylabel('f_B')
+#axs[0].scatter(x,fsinphi,marker='o', color='r',s=50,label='f_sinphi')
+
+axs[1].scatter(x,f_C,marker='o', color='k',s=50,label='f_C')
+axs[1].set_ylabel('f_C')
+#axs[1].scatter(x,fsinphi,marker='o', color='r',s=50,label='f_sinphi')
+
+axs[2].scatter(x,f_D,marker='o', color='k',s=50,label='f_D')
+axs[2].set_ylabel('f_D')
+#axs[2].scatter(x,fsinphi,marker='o', color='r',s=50,label='f_sinphi')
+
+axs[3].scatter(x,f,marker='o', color='k',s=50,label='f')
+axs[3].set_ylabel('f')
+#axs[3].scatter(x,fsinphi,marker='o', color='r',s=50,label='f_sinphi')
+
+integral = {}
+integral['B']=integral['C']=integral['D']=integral['T']=0
+for i in range(0,N):
+   integral['B'] += f_B[i]*sin(x[i])*dx
+   integral['C'] += f_C[i]*sin(x[i])*dx
+   integral['D'] += f_D[i]*sin(x[i])*dx
+   integral['T'] += f[i]*sin(x[i])*dx
+   #integral+=r_fphi[i]*sin(x[i])*dx
+#print integral
+print 'integral_B =',integral['B']/math.pi
+print 'integral_C =',integral['C']/math.pi
+print 'integral_D =',integral['D']/math.pi
+print 'integral_T =',integral['T']/math.pi
+
+#integral_T_check = integral['B']+integral['C']+integral['D']
+#print 'cross check by directly adding integrals = ',integral_T_check
+
+# <codecell>
+
+t = {}
+t['A']= t['B']=1
+print t
 
 # <codecell>
 
