@@ -27,12 +27,12 @@ import math
 N = 10
 dx = 2*math.pi/N
 x  = arange(0,2*math.pi,dx)
-A=100
+A=10
 B=10
-C=20
-D=1
+C=10
+D=10
 f = A + B*cos(x) + C*cos(2*x) + D*sin(x)
-fig = plt.figure(figsize=(8,8))
+fig = plt.figure(figsize=(3,3))
 ax = fig.add_subplot(111, title=('fphi%d'%N))
 plt.scatter(x,f,marker='^', color='g',s=50,label='fphi')
 
@@ -66,6 +66,15 @@ for i in range(0,N):
     #integral+=r_fphi[i]*sin(x[i])*dx
 #print integral
 print integral/math.pi
+
+# <codecell>
+
+dl=[0.0003,-0.0009,0.002,0.0068,0.0026,-0.0021,0.0022,0.0049,0.0052,-0.0037]
+dlerr = np.empty(10)
+dlerr[:]=0.02
+xl = np.arange(0,10)
+#plt.scatter(xl,dl)
+plt.errorbar(xl,dl,yerr=dlerr)
 
 # <codecell>
 
