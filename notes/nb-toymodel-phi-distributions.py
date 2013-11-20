@@ -5,18 +5,24 @@
 
 # ## Toy Model of $\phi$ distributions and extraction of parameters
 # 
-# Assume following form of $\phi$ distribution (see nb-beamasym-obs-mtg-091013)
+# Assume following form for $\phi$ Cross Sections (see nb-beamasym-obs-mtg-091013)
 # 
 # $$ \left(\frac{d^2\sigma_{v}}{ {dX^{ij}d\phi^{j}} }\right)^{h}  = A^{ij} + B^{ij}\cos\phi^{j} + C^{ij}\cos2\phi^{j} + D^{ij}\sin\phi^{j} $$
 # 
 # >  where
 # 
-# * $A,B,C,\mathcal{R}^{ij}_{k} = f(Q^{2},W,X^{ij}_{k})$
+# * $A^{ij},B^{ij},C^{ij},D^{ij} = f(Q^{2},W,X^{ij})$
 
 # <markdowncell>
 
-# * Assume a form for fphi = 1 + 10*cos(x) + 20*cos(2*x) + 100*sin(x)
-# * Given binning resolution in x, see how well fphi can be "reconstructed" (r_fphi)
+# Assume a form for the $\phi$ projection of the Double Differential Cross Section for a particular $X^{ij}$ bin
+# 
+# * `diffxsec(x) = A + Bcos(x) + Ccos(2x) + Dsin(x)`
+# 
+# Given binning resolution in $\phi$, see 
+# 
+# 1. How well `xsec(x)` can be `Reconstructed` 
+# 2. How well `Method 3.` can then be used to extract `R2`
 
 # <codecell>
 
@@ -24,7 +30,6 @@ from __future__ import division
 from scipy import integrate
 import math
 
-#Ideal phi distribution(fphi)
 N = 10
 xmax=360
 xmin=0
@@ -38,40 +43,43 @@ A=15#16
 B=2.3#3.1
 C=2.7#3.6
 D=0.0026#-0.021
-f = A + B*cos(radians(x)) + C*cos(radians(2*x)) + D*sin(radians(x))
-fsinphi = sin(radians(x))
+diffxsec = A + B*cos(radians(x)) + C*cos(radians(2*x)) + D*sin(radians(x))
+f_sinx = sin(radians(x))
+
 fig = plt.figure(figsize=(5,5))
-ax = fig.add_subplot(111, title=('fphi%d'%N))
+ax = fig.add_subplot(111, title='R2 Extraction Test (Method 3)')
 
 #plt.scatter(x,fsinphi,marker='o', color='r',s=50,label='fsinphi')
-plt.scatter(x,f,marker='^', color='g',s=50,label='fphi')
+#plt.scatter(x,f,marker='^', color='g',s=50,label='fphi')
+#marker='^', color='g',s=50,label='fphi')
+#ax.plot(
 
 #Reconstructed phi distribution(r_fphi)
-fphi  = lambda t: A + B*cos(radians(t)) + C*cos(radians(2*t)) + D*sin(radians(t))
-def int_fphi(x,dx):
-    return integrate.quad(fphi,x,x+dx)[0]
+diffxsec_lambda  = lambda t: A + B*cos(radians(t)) + C*cos(radians(2*t)) + D*sin(radians(t))
+def integrate_diffxsec(xmin,xmax):
+    return integrate.quad(diffxsec_lambda,xmin,xmax)[0]
 
-r_fphidx=[]
-r_fphi=[]
+r_xsec=[]
+#r_n=[]
 for i in range(0,N):
     #add a statistical modelled error to integral!
-    integral = int_fphi(x[i],dx)
-    r_fphidx.append(integral)
-    r_fphi.append(integral/dx)
+    xsec = integrate_diffxsec(x[i],x[i]+dx)
+    r_xsec.append(xsec)
+    #r_nphi.append(integral/dx)
 
 #ax.scatter(x,r_fphidx,marker='o',color='r',s=50, label='r_fphidx')
-ax.scatter(x,r_fphi,marker='.',color='r',s=50,label='r_fphi')
+ax.scatter(x,r_xsec,marker='.',color='r',s=50,label='r_fphi')
 ax.set_xticks(x)
-ax.set_yticks(arange(int(min(r_fphi)),int(max(r_fphi))+2,1))
+#ax.set_yticks(arange(int(min(r_xsec)),int(max(r_xsec))+2,1))
 ax.grid()
 #plt.legend()
 
-integral=0
-for i in range(0,N):
-    integral+=r_fphidx[i]*sin(radians(x[i]))
+#integral=0
+#for i in range(0,N):
+    #integral+=r_nphidx[i]*sin(radians(x[i]))
     #integral+=r_fphi[i]*sin(x[i])*dx
 #print integral
-print 'coefficient, D =', integral/math.pi
+#print 'coefficient, D =', integral/math.pi
 
 # <codecell>
 
