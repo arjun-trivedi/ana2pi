@@ -1,9 +1,12 @@
 # Notes on extracting polarization observables
 
-*	[11-14-13](#11-14-13)
+*	[11-20-13](#11-20-13)
 	*	Formalism
+	*	Event Selection
+	*	`R2` Extraction Method
+	*	Notes on current Observations
 
-<h2 id="11-14-13">11-14-13</h2>
+<h1 id="11-20-13">11-20-13</h1>
 
 ##Formalism
 
@@ -52,22 +55,18 @@ For every `q2wbin`:
 
 ##Notes on current Observations
 
-1. `R2_Xij[UNP,D]` $\neq$ 0 for Simulation. Why?
-2. `R2_Xij[UNP,D]` $\neq$ 0 for Experiment.
+Focussed only on `<B/C/D>_1THETA`
 
+Consistencies:
 
+1.	`<B/C>[pos]=<B/C>[neg]=<B/C>[unp]` 
+2.	`exp-<C>[unp]` $\approx$ `sim-<C>[unp]`
 
+Inconsistencies:
 
-
-
-This is a normal paragraph:
-
-This is also
-
-	This is a code block
-
-Use `printf`
-
-
-
-
+1.	!`exp-D[unp]` $\neq$ 0!
+	*	!`D[pos]` = `-D[neg]`
+	*	!`D[unp]` = `D[pos]`
+2.	!`sim-D[unp]` $\neq$ 0
+	*	!`sim-D[unp]` $\neq$ `exp-D[unp]`
+3.	!`exp-B[unp]` $\neq$ `sim-B[unp]`

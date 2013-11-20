@@ -5,24 +5,17 @@
 
 # ## Toy Model of $\phi$ distributions and extraction of parameters
 # 
-# Assume following form for $\phi$ Cross Sections (see nb-beamasym-obs-mtg-091013)
+# Assume the following form for the Double Differential Cross Sections($X^{ij},\phi^{j}$):
 # 
 # $$ \left(\frac{d^2\sigma_{v}}{ {dX^{ij}d\phi^{j}} }\right)^{h}  = A^{ij} + B^{ij}\cos\phi^{j} + C^{ij}\cos2\phi^{j} + D^{ij}\sin\phi^{j} $$
 # 
 # >  where
 # 
-# * $A^{ij},B^{ij},C^{ij},D^{ij} = f(Q^{2},W,X^{ij})$
+# * $R2^{ij}_{\alpha} \doteq [A^{ij},B^{ij},C^{ij},D^{ij}]$
+# * $R2^{ij}_{\alpha} = f(Q^{2},W,X^{ij})$
 
 # <markdowncell>
 
-# Assume a form for the $\phi$ projection of the Double Differential Cross Section for a particular $X^{ij}$ bin
-# 
-# * `diffxsec(x) = A + Bcos(x) + Ccos(2x) + Dsin(x)`
-# 
-# Given binning resolution in $\phi$, see 
-# 
-# 1. How well `xsec(x)` can be `Reconstructed` 
-# 2. How well `Method 3.` can then be used to extract `R2`
 
 # <codecell>
 
