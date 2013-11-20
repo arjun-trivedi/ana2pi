@@ -20,6 +20,7 @@
 
 # <codecell>
 
+from __future__ import division
 from scipy import integrate
 import math
 
@@ -29,8 +30,8 @@ xmax=360
 xmin=0
 dx=(xmax-xmin)/N
 x=arange(xmin,xmax,dx)
-print 'x =',x
-print 'dx =',dx
+#print 'x =',x
+#print 'dx =',dx
 #dx = 2*math.pi/N
 #x  = arange(0,2*math.pi,dx)
 A=15#16
@@ -39,8 +40,9 @@ C=2.7#3.6
 D=0.0026#-0.021
 f = A + B*cos(radians(x)) + C*cos(radians(2*x)) + D*sin(radians(x))
 fsinphi = sin(radians(x))
-fig = plt.figure(figsize=(3,3))
+fig = plt.figure(figsize=(5,5))
 ax = fig.add_subplot(111, title=('fphi%d'%N))
+
 #plt.scatter(x,fsinphi,marker='o', color='r',s=50,label='fsinphi')
 plt.scatter(x,f,marker='^', color='g',s=50,label='fphi')
 
@@ -55,10 +57,13 @@ for i in range(0,N):
     #add a statistical modelled error to integral!
     integral = int_fphi(x[i],dx)
     r_fphidx.append(integral)
-    r_fphi.append(divide(integral,dx))
+    r_fphi.append(integral/dx)
 
-#ax.scatter(x,r_fphidx,marker='v',color='r',s=50, label='r_fphidx')
-ax.scatter(x,r_fphi,marker='<',color='b',s=50,label='r_fphi')
+#ax.scatter(x,r_fphidx,marker='o',color='r',s=50, label='r_fphidx')
+ax.scatter(x,r_fphi,marker='.',color='r',s=50,label='r_fphi')
+ax.set_xticks(x)
+ax.set_yticks(arange(int(min(r_fphi)),int(max(r_fphi))+2,1))
+ax.grid()
 #plt.legend()
 
 integral=0
@@ -70,7 +75,7 @@ print 'coefficient, D =', integral/math.pi
 
 # <codecell>
 
-#Ideal phi distribution(fphi)
+#Idealphi distribution(fphi)
 N = 3
 dx = 2*math.pi/N
 x  = arange(0,2*math.pi,dx)
@@ -136,6 +141,10 @@ print 'using radians = ',integrate.quad(ft,0,math.pi)[0]
 # <codecell>
 
 sin(radians(90))
+
+# <codecell>
+
+print divide(360,100)
 
 # <codecell>
 
