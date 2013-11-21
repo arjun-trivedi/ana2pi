@@ -49,7 +49,20 @@ Of the methods listed earlier:
 Method 3. is used, which even at the level of algorithmic detail is listed below. \textcolor{red}{NOTE that when multiplying by $\sin\phi$, the sign of the polarization is explicity used}
 
 For every \verb|q2wbin|:
-
+\begin{enumerate}
+	\item \verb|h5[pol]| where \verb|pol| $\in$ \{POS,NEG,UNP,AVG\}; \verb|pol| $\neq$ AVG
+	\item \verb|h5m[pol,pob]| = \verb|h5[pol]|$\cdot$\verb|h5f[pob]| 
+		\begin{itemize}
+		\item \verb|pob| $\in$ {A,B,C,D}; \verb|pol\verb| $\neq$ AVG
+		\item \verb|h5f[pob]|:
+			\begin{itemize}
+			\item For every bin \verb|i|,  \verb|h5f[pob](i)| = \verb|f[pob](i)|
+			\item \verb|f[pob]| $\in$ \{N.A.,$\cos\phi$,$\cos 2\phi$,$\color{red}{\text{sign(pol)}}$ $\sin\phi$\}
+			\end{itemize}
+		\end{itemize}
+	\item \verb|hR2_Xij[pol,pob]| = \verb|h5m[pol,pob]| \verb|Project| on to $X^{ij}$; \verb|pol| $\neq$ AVG
+	\item \verb|hR2_Xij[pol=AVG,pob]| = (\verb|hR2_Xij[pol=POS,pob]| + \verb|hR2_Xij[pol=NEG,pob]|)/2
+\end{enumerate}
 
 \subsection{Notes on current observations}
 
