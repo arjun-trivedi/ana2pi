@@ -89,7 +89,7 @@ df = get_df_hdf5()
 
 # <markdowncell>
 
-# In this block of code, from the DF retreived from store.h5, I will retreive the TH1Ds in Column H1 as a Series. Then I will demonstrate how I can manipulate the histograms in this series and add the manipulated histograms as a new Column in the DF
+# #### In this following block of code, from the DF retreived from store.h5, I will retreive the TH1Ds in Column H1 as a Series. Then I will demonstrate how I can manipulate the histograms in this series and add the manipulated histograms as a new Column in the DF
 
 # <codecell>
 
