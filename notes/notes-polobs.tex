@@ -21,6 +21,8 @@
 \newcommand{\atgr}[1]{\textcolor{darkgreen}{#1}}
 \definecolor{orange}{cmyk}{0,0.6,1,0}
 \newcommand{\ator}[1]{\textcolor{orange}{#1}}
+
+\newcommand{\fb}{\paragraph{Feedback}}
 %
 
 \numberwithin{equation}{subsection}
@@ -93,19 +95,22 @@ For every \code{q2wbin}:
 \be
 	\item \atgr{\code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}}
 	\item \ator{\code{EF-C[unp]} $\approx$ \code{SF-C[unp]}}
-		\paragraph{Feedback}
-		\be
-			\item To ensure that this consistency is not due to \code{Hole-Filling}, see how well \code{EC-C[unp]} agrees with \code{SF-C[unp]}
-		\ee
+		\fb
+		To ensure that this consistency is not due to \code{Hole-Filling}, see how well \code{EC-C[unp]} agrees with \code{SF-C[unp]}
 \ee
 
 \paragraph{\textbf{Inconsistencies(I)}:}
 \be
-   	\item \code{EF-D[unp]} $\neq$ 0
+   	\item \ator{\code{EF-D[unp]} $\neq$ 0}
    	\be
-   		\item \code{D[pos]} = \code{-D[neg]}
-   		\item \code{D[unp]} = \code{D[pos]}
+   		\item \ator{\code{D[pos]} = \code{-D[neg]}}
+   		\item \ator{\code{D[unp]} = \code{D[pos]}}
    	\ee
+   	\fb
+   	These inconsistencies may be resolved if there is an additional $\sin\phi$ dependence present:\\
+   	$f^{h}(X^{ij},\phi^{j}) \rightarrow f^{h}(X^{ij},\phi^{j}) + X\sin\phi$
+  	
+
    	\item \code{SF-D[unp]} $\neq$ 0
    	\be
    		\item \code{SF-D[unp]} $\neq$ \code{EF-D[unp]}
