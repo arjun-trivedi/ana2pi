@@ -87,23 +87,21 @@ def get_df_hdf5():
 make_test_hdf5()
 df = get_df_hdf5()
 
+# <markdowncell>
+
+# In this block of code, from the DF retreived from store.h5, I will retreive the TH1Ds in Column H1 as a Series. Then I will demonstrate how I can manipulate the histograms in this series and add the manipulated histograms as a new Column in the DF
+
 # <codecell>
 
-def print_hname(h):
-    print h.GetName()
-def print_entries(h):
-    print h.GetEntries()
-def fill1(h):
-    h.Fill(1)
-def fill2(h):
-    h.Fill(2)
-    
-hs=df['H1']
-for i in range(0,len(hs)):
-    print_hname(hs[i])
-    print_entries(hs[i])
-    #fill(hs[i])
-    print_entries(hs[i])
+def clone(col):
+    hs=df[col]
+    hs_clone=[]
+    for i in range(0,len(hs)):
+        hs_clone.append(hs[i].Clone('%s_clone'%hs[i].GetName()))
+    return hs_clone
+
+df['H1_clone']=clone('H1')
+print df
     
 
 # <codecell>
