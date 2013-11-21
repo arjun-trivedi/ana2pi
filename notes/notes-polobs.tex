@@ -2,21 +2,57 @@
 \usepackage{graphicx}
 \usepackage{amssymb,amsmath}
 \usepackage{hyperref}
+\usepackage{color}
+
+\numberwithin{equation}{subsection}
 \begin{document}
 
 \tableofcontents
 
 \section{Meeting 11-20-13}
 \subsection{Formalism}
-$\left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right)^{h}
-\doteq
-f^{h}(X^{ij},\phi^{j}) = A^{ij} +
-						B^{ij}\cos\phi^{j} +
-						C^{ij}\cos2\phi^{j} +
-						hPD^{ij}\sin\phi^{j}$
+Using the form of the double-differential Cross-section for single-pion Electroproduction(2 d.o.f.), we can formalize the following for double-charged-pion Electroproduction:
+\begin{eqnarray}
+\left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right)^{h} = 
+A^{ij} +  B^{ij}\cos\phi^{j} + C^{ij}\cos2\phi^{j} + hPD^{ij}\sin\phi^{j}
+\end{eqnarray}
+where
+\begin{itemize}
+	\item ij = index over Varset,Variable (3x5 matrix)
+	\item $R2^{ij}_{\alpha} \doteq 
+	[A^{ij},B^{ij},C^{ij},D^{ij}] \equiv 
+	[R_{T}+\epsilon_{L}R_{L}, R_{LT}, R_{TT}, R_{LT'}]$
+	\item $R2^{ij}_{\alpha} = f(Q^{2},W,X^{ij})$
+\end{itemize}
+
+For convenience, I define the following:
+\begin{eqnarray}
+f^{h}(X^{ij},\phi^{j}) \doteq \left(\frac{d\sigma}{dX^{ij}d\phi^{j}}\right)^{h}
+\end{eqnarray}
+
+
 \subsection{Event selection}
+\begin{itemize}
+	\item eid
+	\item efid
+	\item momcorr
+	\item MM Cuts
+\end{itemize}
+
 \subsection{R2 Extraction method}
+Of the methods listed earlier:
+\begin{enumerate}
+	\item Fit $f^{h}(X^{ij},\phi^{j})$ to extract `R2`
+	\item Calculate Asymmetry $\doteq$ $f^{h=+}-f^{h=-}$ and then extract $D^{ij}$
+	\item $\int f^{h}(X^{ij},\phi^{j}) * (\cos\phi/\cos 2\phi/\sin\phi)d\phi$ to extract $B^{ij}/C^{ij}/D^{ij}$
+\end{enumerate}
+Method 3. is used, which even at the level of algorithmic detail is listed below. \textcolor{red}{NOTE that when multiplying by $\sin\phi$, the sign of the polarization is explicity used}
+
+For every \verb|q2wbin|:
+
+
 \subsection{Notes on current observations}
+
 
 
 % \section{QCD Lagrangian}
