@@ -5,8 +5,9 @@
 \usepackage{color}
 \usepackage[sharp]{easylist} 
 
+%User defined "stuff"
 
-%Define 'atc' to process argument as a code. NOTE, I did not use the preferred
+%NOTE, I did not use the preferred
 %\verb command, since it did not seem to work inside \newcommand
 \newcommand{\code}[1]{\texttt{#1}}
 
@@ -16,12 +17,18 @@
 \newcommand{\be}{\begin{enumerate}}
 \newcommand{\ee}{\end{enumerate}}
 
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\newcommand{\atgr}[1]{\textcolor{darkgreen}{#1}}
+\definecolor{orange}{cmyk}{0,0.7,1,0}
+\newcommand{\ator}[1]{\textcolor{orange}{#1}}
+%
+
 \numberwithin{equation}{subsection}
 \begin{document}
 
 \tableofcontents
 
-\section{Meeting 11-20-13}
+\section{Meeting minutes: 11-20-13}
 \subsection{Formalism}
 Using the form of the double-differential Cross-section for single-pion Electroproduction(2 d.o.f.), we can formalize the following for double-charged-pion Electroproduction:
 \begin{eqnarray}
@@ -79,25 +86,26 @@ For every \code{q2wbin}:
 \subsection{Observations}
 Focussed only on \code{<B/C/D>\_1THETA}
 
-\begin{itemize}
-    \item \textbf{Consistencies}:
-    \begin{enumerate}
- 		\item \code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}
- 		\item \code{exp-C[unp]} $\approx$ \code{sim-C[unp]}
-	\end{enumerate}
-    \item \textbf{Inconsistencies}:
-    \begin{enumerate}
-    	\item \code{exp-D[unp]} $\neq$ 0
-    	\begin{itemize}
+\bi
+    \item \textbf{Consistencies(C)}:
+    \be
+ 		\item \atgr{\code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}}
+ 		\item \ator{\code{EF-C[unp]} $\approx$ \code{SF-C[unp]}}
+	\ee
+
+    \item \textbf{Inconsistencies(I)}:
+    \be
+    	\item \code{EF-D[unp]} $\neq$ 0
+    	\be
     		\item \code{D[pos]} = \code{-D[neg]}
     		\item \code{D[unp]} = \code{D[pos]}
-    	\end{itemize}
-    	\item \code{sim-D[unp]} $\neq$ 0
-    	\begin{itemize}
-    		\item \code{sim-D[unp]} $\neq$ \code{exp-D[unp]}
-    	\end{itemize}
-    	\item \code{sim-D[unp]} $\neq$ \code{exp-D[unp]}
-    \end{enumerate}
-\end{itemize}
+    	\ee
+    	\item \code{SF-D[unp]} $\neq$ 0
+    	\be
+    		\item \code{SF-D[unp]} $\neq$ \code{EF-D[unp]}
+    	\ee
+    	\item \code{SF-B[unp]} $\neq$ \code{EF-B[unp]}
+    \ee
+\ei
 
 \end{document}
