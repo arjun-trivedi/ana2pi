@@ -113,6 +113,11 @@ import pandas as pd
 from ROOT import TH1D
 
 def make_test_hdf5():
+	""" Create a DF with just one Column of N TH1Ds,
+    indexed by [0,...,N] and store it in a HDF5 file.
+    Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytables
+
+    """
 	print 'Going to create store.h5:'
 	#1. If store.hdf5 exists, delete it
 	if os.path.isfile('store.h5'):
@@ -122,29 +127,25 @@ def make_test_hdf5():
 	print 'store =',store
 
 	#3. Create Histograms to store
+	NHISTS=10
 	hl = []
-	for i in range(0,8):
+	for i in range(0,NHISTS):
 		name = 'h%d'%(i+1)
 		hl.append(TH1D(name,name,100,0,5))
 		
-	index = np.arange(0,8)
-	df = pd.DataFrame()
-
 	#4. Insert 1st columns into df
+	index = np.arange(0,NHISTS)
+	df = pd.DataFrame()
 	if not df:
-		data = pd.DataFrame({'s1':hl},index=index) # Data for 1st. Column 
+		data = pd.DataFrame({'H1':hl},index=index) # Data for 1st. Column 
 		df = df.append(data)
 
-	#5. Insert 2nd (duplicate) column into df
-	df['H'] = hl
-	#print 'df=',df
-
-	#6. Add df to store
+	#5. Add df to store
 	store['df']=df
-	#7. See the stored data type 
+	#6. See the stored data type 
 	print 'Type of stored data = ',store.root.df._v_attrs.pandas_type
-	#8. See what the file finally contains
-	print store
+	#7. See what the file finally contains
+	print 'store=',store
 
 def read_test_hdf5():
 	print 'Going to read contents of store.h5:'
