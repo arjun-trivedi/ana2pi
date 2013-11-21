@@ -95,8 +95,7 @@ For every \code{q2wbin}:
 \be
 	\item \atgr{\code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}}
 	\item \ator{\code{EF-C[unp]} $\approx$ \code{SF-C[unp]}}
-		\fb
-		To ensure that this consistency is not due to \code{Hole-Filling}, see how well \code{EC-C[unp]} agrees with \code{SF-C[unp]}
+	\fb To ensure that this consistency is not due to \code{Hole-Filling}, see how well \code{EC-C[unp]} agrees with \code{SF-C[unp]}
 \ee
 
 \paragraph{\textbf{Inconsistencies(I)}:}
@@ -106,16 +105,26 @@ For every \code{q2wbin}:
    		\item \ator{\code{D[pos]} = \code{-D[neg]}}
    		\item \ator{\code{D[unp]} = \code{D[pos]}}
    	\ee
-   	\fb
-   	These inconsistencies may be resolved if there is an additional $\sin\phi$ dependence present:\\
-   	$f^{h}(X^{ij},\phi^{j}) \rightarrow f^{h}(X^{ij},\phi^{j}) + X\sin\phi$
+   	\fb	These inconsistencies may be resolved if there is an additional $\sin\phi$ dependence present:
+
+   	\[f^{h}(X^{ij},\phi^{j}) \rightarrow f^{h}(X^{ij},\phi^{j}) + X\sin\phi\]
+   	
+   	This external dependence could be due to:
+   	\bi
+   		\item Detector
+   		\item Physics: SIDIS?
+   	\ei
+   	However, the fact that no such external $\sin\phi$ dependence is seen in the Simulation (\code{ST-D}=\code{SF-D}) and if we assume that the Detector is accurately described by GSIM, rules out any Detector based external $\sin\phi$ dependence.
+
+   	Need to look into Physics causes of any such effect: SIDIS?s
   	
 
-   	\item \code{SF-D[unp]} $\neq$ 0
-   	\be
-   		\item \code{SF-D[unp]} $\neq$ \code{EF-D[unp]}
-   	\ee
-   	\item \code{SF-B[unp]} $\neq$ \code{EF-B[unp]}
+   	\item \ator{\code{SF-D[unp]} $\neq$ 0}
+   	\fb What does Viktor think?
+   	\item \ator{\code{SF-D[unp]} $\neq$ \code{EF-D[unp]}}
+   	\fb Revisit post resolution for I.1
+   	\item \ator{\code{SF-B[unp]} $\neq$ \code{EF-B[unp]}}
+   	\fb Not sure what to make of this yet. Since there were my first order observations, with very iteration and growing confidence in data analysis, maybe this will still be the case, which means that Simulation be need \"tuning\" to reproduce Experimental observations? 
 \ee
 
 
