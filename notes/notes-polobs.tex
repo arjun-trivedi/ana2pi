@@ -73,25 +73,34 @@ For every \code{q2wbin}:
 \subsection{Observations}
 Focussed only on \code{<B/C/D>\_1THETA}
 
-% \begin{itemize}
-%     \item \textbf{Consistencies}:
-%     \begin{enumerate}
-%  		\item test
-%  		\item test2
-% 	\end{enumerate}
-%     \item \textbf{Inconsistencies}:
-%     \begin{enumerate}
-%     	\item test
-%     \end{enumerate}
-% \end{itemize}
+\begin{itemize}
+    \item \textbf{Consistencies}:
+    \begin{enumerate}
+ 		\item \code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}
+ 		\item \code{exp-C[unp]} $\approx$ \code{sim-C[unp]}
+	\end{enumerate}
+    \item \textbf{Inconsistencies}:
+    \begin{enumerate}
+    	\item \code{exp-D[unp]} $\neq$ 0
+    	\begin{itemize}
+    		\item \code{D[pos]} = \code{-D[neg]}
+    		\item \code{D[unp]} = \code{D[pos]}
+    	\end{itemize}
+    	\item \code{sim-D[unp]} $\neq$ 0
+    	\begin{itemize}
+    		\item \code{sim-D[unp]} $\neq$ \code{exp-D[unp]}
+    	\end{itemize}
+    	\item \code{sim-D[unp]} $\neq$ \code{exp-D[unp]}
+    \end{enumerate}
+\end{itemize}
 
-\begin{easylist}
-# Consistencies
-## test1
-## test2
-# Inconsistencies
-## test
-\end{easylist}
+% \begin{easylist}
+% # \textbf{Consistencies}
+% ## test1
+% ## test2
+% # \textbf{Inconsistencies}
+% ## test
+% \end{easylist}
 
 
 
