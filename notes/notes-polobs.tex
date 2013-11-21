@@ -19,7 +19,7 @@
 
 \definecolor{darkgreen}{rgb}{0,0.6,0}
 \newcommand{\atgr}[1]{\textcolor{darkgreen}{#1}}
-\definecolor{orange}{cmyk}{0,0.7,1,0}
+\definecolor{orange}{cmyk}{0,0.6,1,0}
 \newcommand{\ator}[1]{\textcolor{orange}{#1}}
 %
 
@@ -84,28 +84,33 @@ For every \code{q2wbin}:
 \end{enumerate}
 
 \subsection{Observations}
-Focussed only on \code{<B/C/D>\_1THETA}
-
 \bi
-    \item \textbf{Consistencies(C)}:
-    \be
- 		\item \atgr{\code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}}
- 		\item \ator{\code{EF-C[unp]} $\approx$ \code{SF-C[unp]}}
-	\ee
-
-    \item \textbf{Inconsistencies(I)}:
-    \be
-    	\item \code{EF-D[unp]} $\neq$ 0
-    	\be
-    		\item \code{D[pos]} = \code{-D[neg]}
-    		\item \code{D[unp]} = \code{D[pos]}
-    	\ee
-    	\item \code{SF-D[unp]} $\neq$ 0
-    	\be
-    		\item \code{SF-D[unp]} $\neq$ \code{EF-D[unp]}
-    	\ee
-    	\item \code{SF-B[unp]} $\neq$ \code{EF-B[unp]}
-    \ee
+	\item Focussed only on \code{<B/C/D>\_1THETA}
+	\item \code{Top 1:2:3:4} used
 \ei
+
+\paragraph{\textbf{Consistencies(C)}:}
+\be
+	\item \atgr{\code{<B/C>[pos]}=\code{<B/C>[neg]}=\code{<B/C>[unp]}}
+	\item \ator{\code{EF-C[unp]} $\approx$ \code{SF-C[unp]}}
+		\begin{description}
+			\item [Feedback] To ensure that this consistency is not due to \code{Hole-Filling}, see how well \code{EC-C[unp]} agrees with \code{SF-C[unp]}
+		\end{description}
+\ee
+
+\paragraph{\textbf{Inconsistencies(I)}:}
+\be
+   	\item \code{EF-D[unp]} $\neq$ 0
+   	\be
+   		\item \code{D[pos]} = \code{-D[neg]}
+   		\item \code{D[unp]} = \code{D[pos]}
+   	\ee
+   	\item \code{SF-D[unp]} $\neq$ 0
+   	\be
+   		\item \code{SF-D[unp]} $\neq$ \code{EF-D[unp]}
+   	\ee
+   	\item \code{SF-B[unp]} $\neq$ \code{EF-B[unp]}
+\ee
+
 
 \end{document}
