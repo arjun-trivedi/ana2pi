@@ -136,10 +136,7 @@ def plot_track_stats():
         iq2wbin = q2wbinnum-1
         #if q2wbinnum>1: continue
         df = dfss_grpd_q2wbinnum.get_group(q2wbinnum)
-        #q2wbinname=df.loc[0]['q2wbin']
-        s = df['q2wbin']
-        l = s.tolist()
-        q2wbinname = l[0]
+        q2wbinname = df['q2wbin'].tolist()[0]
         for stat in range(0,NSTATS):
             print STATS_NAME[stat]
             fig=plt.figure(STATS_NAME[stat])
