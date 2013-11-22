@@ -15,10 +15,10 @@ from matplotlib.lines import Line2D
 pandas.set_printoptions(max_columns=20)
 
 #load .csv file and create DataFrame for simstats(=dfss)
-datadir = os.environ['E1F_2PI_ANADIR1']
-filename = os.path.join(datadir, "simstats_vm.csv")
+anadir = os.environ['E1F_2PI_ANADIR1']
+filename = os.path.join(anadir, "simstats_vm.csv")
 dfss = pandas.read_csv(filename, na_values=['\n'])
-print dfss
+#print dfss
 
 #group dfss by q2wbinnum column
 dfss_grpd_q2wbinnum = dfss.groupby('q2wbinnum')
@@ -82,8 +82,10 @@ def plot_track_stats(stat):
         iq2wbin = q2wbinnum-1
         if q2wbinnum>1: continue
         df = dfss_grpd_q2wbinnum.get_group(q2wbinnum)
+        q2wbinname=df.loc[0]['q2wbin']
+        fig=plt.figure(stat)
         ax = []
-        ax.append(plt.subplot(1,1,1,ylabel=stat,title=df.loc[0]['q2wbin']))
+        ax.append(fig.add_subplot(1,1,1,ylabel=stat,title=q2wbinname))
         ax.append(ax[MAX_TOPS].twinx())
         ax[MAX_TOPS].set_ylabel('%s t2,5'%stat)
         ax[MIN_TOPS].set_ylabel(('%s top1,3,4'%stat),color='r')
@@ -112,6 +114,13 @@ def plot_track_stats(stat):
         ax[MAX_TOPS].legend(lns, labs, loc=2)
         plt.show()
         
+        #save plots
+        outdir = os.path.join(anadir,'simstats.new',q2wbinname)
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        plt.figure(stat)
+        fig.savefig('%s/%s.jpg'%(outdir,stat))
+
 plot_track_stats('nFB_SR')
         
     
