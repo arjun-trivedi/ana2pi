@@ -1,3 +1,36 @@
+/*
+[11-22-13]
+In a CSV format, store the following tabular data:
+"Sim","Top","Q2Wbin","Varset","nFB_ST","nEB_SR","nFB_SR","nEB_SA"
+
+where:
+nFB_ST = Total number of Bins that are Filled (FB) by `genev` (ST) in the 2pi Reaction Phase Space (PS)
+nEB_SR = Out of nFB_ST, the number of Bins that DO NOT HAVE Reconstructed events.
+nFB_SR = Out of nFB_ST, the number of Bins that HAVE Reconstructed events.
+nEB_SA = Out of nFB_ER (number of Bins that are Filled by Reconstructed events in Experiment), the number
+         of bins that have no Acceptance.
+
+Hypothesis for "Complete" Simulation
+====================================
+Before stating the hypothesis, I want to note the following 2 important assumptions:
+1. It is assumed that `genev`=Nature and therefore, `genev` throws events within the Natural PS
+2. It is assumed that `GSIM`= CLAS Detector
+
+Counting nEB_SR/nFB_SR is the primary means for keeping track of when the Simulation is "complete". Ideally,
+for all nFB_ST that lie within the Fiducial Volume of the CLAS detector, there should be a FB_SR. Any of 
+the nFB_ST events that lie outside this Fiducial volume, should count for nEB_SR.
+Therefore:
+nFB_SR = nFB_ST-nEB-SR
+
+In addition, nEB_SA can serve as another (independent?) gauge. For if the Simulation is "Complete",
+nEB_SA should approach its asymptotic limit too. Ideally, if ER data has no Background and the Simulation is 
+ideal, this asymptotic limit should approach 0. However, the limit will approach a number that may be representative
+of the number of bins in ER data that is filled with Background events.
+
+Hence, once Simulation is complete:
+1. nFB_ST,nFB_SR,nEB_SR,nEB_SA should approach their asymptotic limits
+2. nFB_SR = nFB_ST-nEB-SR
+*/
 #include <TFile.h>
 #include <TTree.h>
 #include <TSystem.h>
@@ -75,7 +108,7 @@ void proc_simstats(TString sim, hel_t hel=UNPOL,TString xsectype="vm"){
 	}
 	
 	char fout_col_names[100];
-	sprintf(fout_col_names,"%s,%s,%s,%s,%s,%s,%s,%s\n","Sim","Top","Q2Wbin","Varset","nEac","nEsr","nFsr","nFth");
+	sprintf(fout_col_names,"%s,%s,%s,%s,%s,%s,%s,%s\n","Sim","Top","Q2Wbin","Varset","nFB_ST","nEB_SR","nFB_SR","nEB_SA");
 	fout << fout_col_names;
 	
 	for (Int_t iSim=0;iSim<nsims;iSim++){//begin Sim loop
@@ -116,13 +149,13 @@ void proc_simstats(TString sim, hel_t hel=UNPOL,TString xsectype="vm"){
 					sprintf(hname, "%s/hY5D/Varset%d/hY5D_ACC", Q2Wdirname.Data(),iVarset+1);
 					THnSparse* hY5D_ACC = (THnSparse*)fsim->Get(hname);
 
-					int nEac = hNtool.GetNbinsEq0(hY5D_ACC,hY5D_ER);
-					int nEsr = hNtool.GetNbinsEq0(hY5D_SR,hY5D_TH);
-					int nFsr = hNtool.GetNbinsNotEq0(hY5D_SR);
-					int nFth = hNtool.GetNbinsNotEq0(hY5D_TH);
-
+					int nFB_ST = hNtool.GetNbinsNotEq0(hY5D_TH);
+					int nEB_SR = hNtool.GetNbinsEq0(hY5D_SR,hY5D_TH);
+					int nFB_SR = hNtool.GetNbinsNotEq0(hY5D_SR,hY5D_TH);
+					int nEB_SA = hNtool.GetNbinsEq0(hY5D_ACC,hY5D_ER);
+					
 					char fout_data[100];
-					sprintf(fout_data,"%d,%d,%d,%d,%d,%d,%d,%d\n",iSim+1,iTop+1,iQ2Wbin+1,iVarset+1,nEac,nEsr,nFsr,nFth);
+					sprintf(fout_data,"%d,%d,%d,%d,%d,%d,%d,%d\n",iSim+1,iTop+1,iQ2Wbin+1,iVarset+1,nFB_ST,nEB_SR,nFB_SR,nEB_SA);
 					fout << fout_data;
 				}//end Varset loop
 			iQ2Wbin+=1;	
