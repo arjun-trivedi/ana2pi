@@ -17,7 +17,7 @@ from pandas import *
 pandas.set_printoptions(max_columns=20)
 
 datadir = os.environ['E1F_2PI_ANADIR1']
-filename = os.path.join(datadir, "simstats_vm.csv")
+filename = os.path.join(datadir, "simstats_vm.csv.bk.112213")
 dfss = pandas.read_csv(filename, na_values=['\n'])
 #print df
 

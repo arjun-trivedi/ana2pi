@@ -110,7 +110,7 @@
 # ##3. processed yields $\rightarrow$ process simstats $\rightarrow$ plot simstats
 # 1. Make sure that __proc_simstats.h__ is updated with latest __cumsim__ (__I should automate this__)  
 # 2. Make sure that __proc_yields__ has been called for the latest __cumsim__
-# 3. proc_simstats("e1fs2")
+# 3. In ROOT, call proc_simstats("e1fs2")
 #         
 # ### Helicity dependent 
 # * Add optional 2nd argument (set to UNPOL by default) i.e. proc_simstats("e1fs2",POS)

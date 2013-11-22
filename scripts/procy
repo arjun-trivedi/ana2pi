@@ -27,8 +27,8 @@ else if ($0 =~ *_e1fs2*) then
   set usehel = 0
   set type = sim
   set datadir = $E1F_SIM2PI_ANADIR2
-  #cat ${HOME}/ongoing/e1fs2_cumulative.lst > /tmp/simlst
-  cat ${HOME}/ongoing/e1fs2_cumulative_latest.lst > /tmp/simlst
+  cat ${HOME}/ongoing/e1fs2_cumulative.lst > /tmp/simlst
+  #cat ${HOME}/ongoing/e1fs2_cumulative_latest.lst > /tmp/simlst
 endif
 
 if ($0 =~ *h_e1fd1*) then
