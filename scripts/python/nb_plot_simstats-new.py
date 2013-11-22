@@ -24,8 +24,6 @@ print dfss
 dfss_grpd_q2wbinnum = dfss.groupby('q2wbinnum')
 nq2wbins = len(dfss_grpd_q2wbinnum.groups)
 print 'nq2wbins=',nq2wbins
-#for q2wbinnum in dfss_grpd_q2wbinnum.groups:
-#        print 'q2wbinnum=',q2wbinnum
 
 #stat = columns of df [nFB_ST,nEB_SR,nFB_SR,nEB_SA]
 #tdraw(stat) plots, for each topology & latest simulation:
@@ -59,10 +57,6 @@ def plot_latest_stats(stat):
             sel = (df['Sim']==siml) & (df['Top']==(top))
             m_nbins[itop][iq2wbin] = df[stat][sel]
     
-    #nbins_trps = numpy.vsplit(npy.transpose(nbins),ntops)
-    #m_nbins_trps = npy.transpose(m_nbins)
-    
-    
     lns = []
     for top in tops:
         itop = top-1
@@ -84,12 +78,12 @@ plot_latest_stats('nFB_ST')
 # <codecell>
 
 def plot_track_stats(stat):
-    for q2wbin in dfss_grpd_q2wbin.groups:
-        iq2wbin = q2wbin-1
-        if q2wbin>1: continue
-        df = dfss_grpd_q2wbin.get_group(q2wbin)
+    for q2wbinnum in dfss_grpd_q2wbinnum.groups:
+        iq2wbin = q2wbinnum-1
+        if q2wbinnum>1: continue
+        df = dfss_grpd_q2wbinnum.get_group(q2wbinnum)
         ax = []
-        ax.append(plt.subplot(1,1,1,ylabel=stat,title=q2wbin))
+        ax.append(plt.subplot(1,1,1,ylabel=stat,title=df.loc[0]['q2wbin']))
         ax.append(ax[MAX_TOPS].twinx())
         ax[MAX_TOPS].set_ylabel('%s t2,5'%stat)
         ax[MIN_TOPS].set_ylabel(('%s top1,3,4'%stat),color='r')
