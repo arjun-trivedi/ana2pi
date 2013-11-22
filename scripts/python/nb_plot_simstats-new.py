@@ -112,18 +112,70 @@ def plot_track_stats(stat):
                                      marker=top_markers[itop],label=top_labels[itop]))
         labs = [l.get_label() for l in lns]
         ax[MAX_TOPS].legend(lns, labs, loc=2)
-        plt.show()
+        #plt.show()
         
         #save plots
         outdir = os.path.join(anadir,'simstats.new',q2wbinname)
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
-        plt.figure(stat)
+        #plt.figure(stat)
         fig.savefig('%s/%s.jpg'%(outdir,stat))
+        
 
 plot_track_stats('nFB_SR')
-        
+plt.show()
     
+
+# <codecell>
+
+NSTATS=4
+nFB_ST,nEB_SR,nFB_SR,nEB_SA = range(0,NSTATS)
+STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
+def plot_track_stats():
+    for q2wbinnum in dfss_grpd_q2wbinnum.groups:
+        iq2wbin = q2wbinnum-1
+        #if q2wbinnum>1: continue
+        df = dfss_grpd_q2wbinnum.get_group(q2wbinnum)
+        #q2wbinname=df.loc[0]['q2wbin']
+        s = df['q2wbin']
+        l = s.tolist()
+        q2wbinname = l[0]
+        for stat in range(0,NSTATS):
+            print STATS_NAME[stat]
+            fig=plt.figure(STATS_NAME[stat])
+            ax = []
+            ax.append(fig.add_subplot(1,1,1,ylabel=stat,title=q2wbinname))
+            ax.append(ax[MAX_TOPS].twinx())
+            ax[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
+            ax[MIN_TOPS].set_ylabel(('%s top1,3,4'%STATS_NAME[stat]),color='r')
+            for tl in ax[MIN_TOPS].get_yticklabels():
+                tl.set_color('r')
+        
+            lns = []
+            for top in tops:
+                itop=top-1
+                if top==2 or top==5:
+                    #print df['Sim'][df['Top']==top]
+                    sel= (df['Top']==top)
+                    lns.append(ax[MAX_TOPS].scatter(df['Sim'][sel],df[STATS_NAME[stat]][sel],color='k',
+                                     marker=top_markers[itop],label=top_labels[itop]))
+                else:
+                    sel= (df['Top']==top)
+                    lns.append(ax[MIN_TOPS].scatter(df['Sim'][sel],df[STATS_NAME[stat]][sel],color='r',
+                                     marker=top_markers[itop],label=top_labels[itop]))
+            labs = [l.get_label() for l in lns]
+            ax[MAX_TOPS].legend(lns, labs, loc=2)
+            #plt.show()
+        
+            #save plots
+            outdir = os.path.join(anadir,'simstats.new',q2wbinname)
+            if not os.path.isdir(outdir):
+                os.makedirs(outdir)
+            #plt.figure(stat)
+            fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))
+            
+plot_track_stats()
+        
 
 # <codecell>
 

@@ -15,7 +15,7 @@ import pandas as pd
 
 # Example of Series (sub-class = NDFrame; earlier was ndarray)
 #series with default index [1,2,3...]
-s=pd.Series(np.sin(np.arange(0,np.pi,np.pi/4))); 
+s=pd.Series(np.sin(np.arange(0,np.pi,np.pi/4)));
 print s
 
 # <markdowncell>
