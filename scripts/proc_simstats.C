@@ -1,7 +1,7 @@
 /*
 [11-22-13]
 In a CSV format, store the following tabular data:
-"Sim","Top","Q2Wbin","Varset","nFB_ST","nEB_SR","nFB_SR","nEB_SA"
+"Sim","Top","q2wbinnum","q2wbin" "Varset","nFB_ST","nEB_SR","nFB_SR","nEB_SA"
 
 where:
 nFB_ST = Total number of Bins that are Filled (FB) by `genev` (ST) in the 2pi Reaction Phase Space (PS)
@@ -108,7 +108,7 @@ void proc_simstats(TString sim, hel_t hel=UNPOL,TString xsectype="vm"){
 	}
 	
 	char fout_col_names[100];
-	sprintf(fout_col_names,"%s,%s,%s,%s,%s,%s,%s,%s\n","Sim","Top","Q2Wbin","Varset","nFB_ST","nEB_SR","nFB_SR","nEB_SA");
+	sprintf(fout_col_names,"%s,%s,%s,%s,%s,%s,%s,%s,%s\n","Sim","Top","q2wbinnum","q2wbin","Varset","nFB_ST","nEB_SR","nFB_SR","nEB_SA");
 	fout << fout_col_names;
 	
 	for (Int_t iSim=0;iSim<nsims;iSim++){//begin Sim loop
@@ -155,7 +155,10 @@ void proc_simstats(TString sim, hel_t hel=UNPOL,TString xsectype="vm"){
 					int nEB_SA = hNtool.GetNbinsEq0(hY5D_ACC,hY5D_ER);
 					
 					char fout_data[100];
-					sprintf(fout_data,"%d,%d,%d,%d,%d,%d,%d,%d\n",iSim+1,iTop+1,iQ2Wbin+1,iVarset+1,nFB_ST,nEB_SR,nFB_SR,nEB_SA);
+					TString Q2Wdirname_csv = Q2Wdirname.Data();
+					Q2Wdirname_csv.Replace(Q2Wdirname_csv.First(","),1," ");
+					Q2Wdirname_csv.Replace(Q2Wdirname_csv.First(","),1," ");
+					sprintf(fout_data,"%d,%d,%d,%s,%d,%d,%d,%d,%d\n",iSim+1,iTop+1,iQ2Wbin+1,Q2Wdirname_csv.Data(),iVarset+1,nFB_ST,nEB_SR,nFB_SR,nEB_SA);
 					fout << fout_data;
 				}//end Varset loop
 			iQ2Wbin+=1;	

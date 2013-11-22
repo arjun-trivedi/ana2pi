@@ -4,42 +4,6 @@
 # <markdowncell>
 
 # ### This notebook has various tests for the DataFrame object made for Simulation Statistics
-# - Simulation Statistics file = anae1fd2/simstats_vm.csv    
-
-# <markdowncell>
-
-# ### First load the .csv file and create the DataFrame for simstats(=dfss)
-
-# <codecell>
-
-#load .csv file and create DataFrame for simstats(=dfss)
-import os
-from pandas import *
-pandas.set_printoptions(max_columns=20)
-
-datadir = os.environ['E1F_2PI_ANADIR1']
-filename = os.path.join(datadir, "simstats_vm.csv")
-dfss = pandas.read_csv(filename, na_values=['\n'])
-#print df
-
-#group dfss by q2wbin column
-dfss_grpd_q2wbin = dfss.groupby('Q2Wbin')
-nq2wbins = len(dfss_grpd_q2wbin.groups)
-ngridx = 4
-ngridy = nq2wbins/ngridx
-print ngridx, ngridy
-
-# <markdowncell>
-
-# ### Group dfss by q2wbin column
-
-# <codecell>
-
-dfss_grpd_q2wbin = dfss.groupby('Q2Wbin')
-nq2wbins = len(dfss_grpd_q2wbin.groups)
-ngridx = 4
-ngridy = nq2wbins/ngridx
-print ngridx, ngridy
 
 # <codecell>
 
@@ -54,14 +18,14 @@ pandas.set_printoptions(max_columns=20)
 datadir = os.environ['E1F_2PI_ANADIR1']
 filename = os.path.join(datadir, "simstats_vm.csv")
 dfss = pandas.read_csv(filename, na_values=['\n'])
-#print df
+print dfss
 
-#group dfss by q2wbin column
-dfss_grpd_q2wbin = dfss.groupby('Q2Wbin')
-nq2wbins = len(dfss_grpd_q2wbin.groups)
-ngridx = 4
-ngridy = nq2wbins/ngridx
-#print ngridx, ngridy
+#group dfss by q2wbinnum column
+dfss_grpd_q2wbinnum = dfss.groupby('q2wbinnum')
+nq2wbins = len(dfss_grpd_q2wbinnum.groups)
+print 'nq2wbins=',nq2wbins
+#for q2wbinnum in dfss_grpd_q2wbinnum.groups:
+#        print 'q2wbinnum=',q2wbinnum
 
 #stat = columns of df [nFB_ST,nEB_SR,nFB_SR,nEB_SA]
 #tdraw(stat) plots, for each topology & latest simulation:
@@ -85,9 +49,10 @@ def plot_latest_stats(stat):
     #m_nbins = npy.zeros((nq2wbins,ntops));
     m_nbins = npy.zeros((ntops,nq2wbins));
     l_q2wb = npy.arange(1,nq2wbins+1,1);
-    for q2wbin in dfss_grpd_q2wbin.groups:
-        iq2wbin = q2wbin-1
-        df = dfss_grpd_q2wbin.get_group(q2wbin)
+    for q2wbinnum in dfss_grpd_q2wbinnum.groups:
+        #print 'q2wbinnum=',q2wbinnum
+        iq2wbin = q2wbinnum-1
+        df = dfss_grpd_q2wbinnum.get_group(q2wbinnum)
         siml = df['Sim'].max()
         for top in tops:
             itop = top-1
@@ -124,7 +89,7 @@ def plot_track_stats(stat):
         if q2wbin>1: continue
         df = dfss_grpd_q2wbin.get_group(q2wbin)
         ax = []
-        ax.append(plt.subplot(1,1,1,ylabel=stat))
+        ax.append(plt.subplot(1,1,1,ylabel=stat,title=q2wbin))
         ax.append(ax[MAX_TOPS].twinx())
         ax[MAX_TOPS].set_ylabel('%s t2,5'%stat)
         ax[MIN_TOPS].set_ylabel(('%s top1,3,4'%stat),color='r')
