@@ -108,6 +108,8 @@ def plot_latest_stats():
 # global outdirname
 # global csvfname
 # global csvf
+csvfname = 'simstats_vm.csv'
+outdirname = 'simstats'
 opts, args = getopt.getopt(sys.argv[1:],"h",["help", "e1fs1", "e1fs2", "hel="])
 
 for opt, arg in opts:
@@ -119,16 +121,13 @@ for opt, arg in opts:
     elif opt == "--e1fs2":
         anadir = os.environ['E1F_2PI_ANADIR2']
     elif opt == "--hel":       
-         if arg=='UNPOL': 
-            csvfname = 'simstats_vm.csv'
-            outdirname = 'simstats'
-         elif arg=='POS': 
+        if arg=='POS': 
             csvfname = 'simstats_vm_POS.csv'
             outdirname = 'simstats_POS'
-         elif arg=='NEG': 
+        elif arg=='NEG': 
             csvfname = 'simstats_vm_NEG.csv'
             outdirname = 'simstats_NEG'
-         else:
+        else:
             print arg,' is not recognized'
             sys.exit()
             
