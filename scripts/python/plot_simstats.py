@@ -74,7 +74,7 @@ def plot_latest_stats():
     for stat in range(0,NSTATS):
         fig=plt.figure('%s'%(STATS_NAME[stat]))
         ax = []
-        ax.append(plt.subplot(1,1,1,title=STATS_NAME[stat]))
+        ax.append(plt.subplot(1,1,1,title=STATS_NAME[stat],xticks=np.arange(1,nq2wbins+1,1),xlabel='q2wbinnum'))
         ax.append(ax[MAX_TOPS].twinx())
         ax[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
         ax[MIN_TOPS].set_ylabel(('%s t1,3,4'%STATS_NAME[stat]),color='r')
