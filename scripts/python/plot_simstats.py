@@ -1,5 +1,7 @@
+#!/usr/bin/python
+
 from __future__ import division
-import os
+import os,sys,getopt, shutil, datetime, time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -98,10 +100,44 @@ NSTATS=4
 nFB_ST,nEB_SR,nFB_SR,nEB_SA = range(0,NSTATS)
 STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
 
+#get options
+global anadir
+global outdir
+global csvfname
+print sys.argv[1:]
+opts, args = getopt.getopt(sys.argv[1:],"h",["help", "e1fs1", "e1fs2", "hel="])
+
+for opt, arg in opts:
+    if opt in ('-h', '--help'):
+        print 'plot_simstats.py --<e1fs1/e1fs2> --hel=<UNPOL/POS/NEG>'
+        sys.exit()
+    elif opt == "--e1fs1":
+        anadir = os.environ['E1F_2PI_ANADIR1']
+    elif opt == "--e1fs2":
+        anadir = os.environ['E1F_2PI_ANADIR2']
+    elif opt == "--hel":       
+         if arg=='UNPOL': 
+            csvfname = 'simstats_vm.csv'
+            outdir = 'simstats'
+         elif arg=='POS': 
+            csvfname = 'simstats_vm_POS.csv'
+            outdir = 'simstats_POS'
+         elif arg=='NEG': 
+            csvfname = 'simstats_vm_NEG.csv'
+            outdir = 'simstats_NEG'
+         else:
+            print arg,' is not recognized'
+            sys.exit()
+            
+print 'anadir = ', anadir
+print 'outdir = ', outdir
+print 'csvfilename = ', csvfname
+csvf = os.path.join(anadir,csvfname)
+
 #anadir = os.environ['E1F_2PI_ANADIR1']
-anadir = os.environ['E1F_2PI_ANADIR2']
+#anadir = os.environ['E1F_2PI_ANADIR2']
 filename = os.path.join(anadir, "simstats_vm.csv")
-df = pd.read_csv(filename, na_values=['\n'])
+df = pd.read_csv(csvf, na_values=['\n'])
 #print df
 
 #group df by q2wbinnum column
