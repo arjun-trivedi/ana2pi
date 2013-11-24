@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 pd.set_printoptions(max_columns=20)
 
-anadir = os.environ['E1F_2PI_ANADIR1']
+#anadir = os.environ['E1F_2PI_ANADIR1']
+anadir = os.environ['E1F_2PI_ANADIR2']
 filename = os.path.join(anadir, "simstats_vm.csv")
 df = pd.read_csv(filename, na_values=['\n'])
 #print df
