@@ -5,11 +5,12 @@ This package is implemented to extract "a set of defined" Observables by analyzi
 
 ### Details of various programs:
 
-#### `proc_simstats.C` & `plot_simstats.py`[11-22-13]
+##### `proc_simstats.C` & `plot_simstats.py`[11-22-13]
 These two programs are used to test the hypothesis for __Complete Simulation__ (defined in the text below)
-`proc_simstats.C`:
 
-Consolidate from various [top]_[q2w_range].root files, in a CSV format, store the following tabular data:
+`plot_simstats.py`:
+
+Consolidates from various [top]_[q2w_range].root files, in a CSV format, store the following tabular data:
 `Sim`,`Top`,`q2wbinnum`,`q2wbin`,`Varset`,`nFB_ST`,`nEB_SR`,`nFB_SR`,`nEB_SA`
 
 where:
@@ -19,6 +20,8 @@ where:
 *	`nFB_SR` = Out of `nFB_ST`, the number of Bins that HAVE Reconstructed events.
 *	`nEB_SA` = Out of `nFB_ER` (number of Bins that are Filled by Reconstructed events in Experiment), the number
          of bins that have no Acceptance.
+
+`proc_simstats.C` is used to test the hypothesis stated below.
 
 __Hypothesis for Complete Simulation__
 
@@ -41,5 +44,5 @@ of the number of bins in `ER` data that is filled with Background events.
 Hence, once Simulation is complete:
 
 1. `nFB_ST`,`nFB_SR`,`nEB_SR`,`nEB_SA` should approach their asymptotic limits
-2. `nFB_SR` = `nFB_ST`-`nEB-SR`
+2. `nFB_ST` = `nFB_SR` + `nEB_SR`
 

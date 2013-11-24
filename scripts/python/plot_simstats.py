@@ -20,15 +20,28 @@ nFB_ST,nEB_SR,nFB_SR,nEB_SA = range(0,NSTATS)
 STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
 
 def plot_track_stats():
+    """For each q2wbin & top. therein:
+    1. plot NSTATS vs sim
+    2. plot nEB_SR/nFB_ST(=frc) vs sim"""
     for q2wbinnum in df_grpd_q2wbinnum.groups:
         df_q2wbinnum = df_grpd_q2wbinnum.get_group(q2wbinnum)
         q2wbinname = df_q2wbinnum['q2wbin'].tolist()[0]
         #print 'q2wbinname=',q2wbinname
+        
+        fig_frc=plt.figure('%d:%s'%(q2wbinnum,'frc'))
+        axs_frc = []
+        axs_frc.append(fig_frc.add_subplot(1,1,1,title='%s:%s'%('nEB_SR/nFB_ST',q2wbinname),xlabel='sim'))
+        axs_frc.append(axs_frc[MAX_TOPS].twinx())
+        axs_frc[MAX_TOPS].set_ylabel('nEB_SR/nFB_ST t2,5')
+        axs_frc[MIN_TOPS].set_ylabel('nEB_SR/nFB_ST t1,3,4',color='r')
+        for tl in axs_frc[MIN_TOPS].get_yticklabels():
+            tl.set_color('r')
+
         for stat in range(0,NSTATS):
             #print STATS_NAME[stat]
             fig=plt.figure('%d:%s'%(q2wbinnum,STATS_NAME[stat]))
             axs = []
-            axs.append(fig.add_subplot(1,1,1,title='%s:%s'%(STATS_NAME[stat],q2wbinname)))
+            axs.append(fig.add_subplot(1,1,1,title='%s:%s'%(STATS_NAME[stat],q2wbinname),xlabel='sim'))
             axs.append(axs[MAX_TOPS].twinx())
             axs[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
             axs[MIN_TOPS].set_ylabel('%s t1,3,4'%STATS_NAME[stat],color='r')
@@ -43,10 +56,19 @@ def plot_track_stats():
                     sel= (df_q2wbinnum['Top']==top)
                     lns.append(axs[MAX_TOPS].scatter(df_q2wbinnum['Sim'][sel],df_q2wbinnum[STATS_NAME[stat]][sel],color='k',
                                      marker=TOP_MARKERS[itop],label=TOP_LABELS[itop],s=50))
+                    if stat==nEB_SR:
+                        frc = df_q2wbinnum[STATS_NAME[stat]][sel]/df_q2wbinnum['nFB_ST'][sel]
+                        axs_frc[MAX_TOPS].scatter(df_q2wbinnum['Sim'][sel],frc,color='k',
+                            marker=TOP_MARKERS[itop],label=TOP_LABELS[itop],s=50)
                 else:
                    sel= (df_q2wbinnum['Top']==top)
                    lns.append(axs[MIN_TOPS].scatter(df_q2wbinnum['Sim'][sel],df_q2wbinnum[STATS_NAME[stat]][sel],color='r',
                                     marker=TOP_MARKERS[itop],label=TOP_LABELS[itop],s=50))
+                   if stat==nEB_SR:
+                        frc = df_q2wbinnum[STATS_NAME[stat]][sel]/df_q2wbinnum['nFB_ST'][sel]
+                        axs_frc[MIN_TOPS].scatter(df_q2wbinnum['Sim'][sel],frc,color='r',
+                            marker=TOP_MARKERS[itop],label=TOP_LABELS[itop],s=50)
+
             labs = [l.get_label() for l in lns]
             axs[MAX_TOPS].legend(lns, labs, loc=2)
                     
@@ -56,6 +78,9 @@ def plot_track_stats():
                 os.makedirs(outdir)
             #plt.figure(stat)
             fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))
+            if stat==nEB_SR:
+                fig_frc.savefig('%s/%s.jpg'%(outdir,'frc'))
+        
 
 def plot_latest_stats():
     for stat in range(0,NSTATS):
@@ -114,7 +139,7 @@ opts, args = getopt.getopt(sys.argv[1:],"h",["help", "e1fs1", "e1fs2", "hel="])
 
 for opt, arg in opts:
     if opt in ('-h', '--help'):
-        print 'plot_simstats.py --<e1fs1/e1fs2> --hel=<UNPOL/POS/NEG>'
+        print 'plot_simstats.py --<e1fs1/e1fs2> --hel=<POS/NEG>'
         sys.exit()
     elif opt == "--e1fs1":
         anadir = os.environ['E1F_2PI_ANADIR1']

@@ -116,7 +116,7 @@
 # * Add optional 2nd argument (set to UNPOL by default) i.e. proc_simstats("e1fs2",POS)
 # 
 # ### Plot Simstats
-# * plot_simstats.py --e1fs2 --hel=UNPOL [--help to confirm]
+# * plot_simstats.py --e1fs2 [--help to confirm]
 # 
 # ### Helicity dependent
 # * plot_simstats.py --e1fs2 --hel=POS
