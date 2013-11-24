@@ -40,7 +40,7 @@ def plot_track_stats():
             axs[MAX_TOPS].legend(lns, labs, loc=2)
                     
             #save plots
-            outdir = os.path.join(anadir,'simstats.new',q2wbinname)
+            outdir = os.path.join(anadir,outdirname,q2wbinname)
             if not os.path.isdir(outdir):
                 os.makedirs(outdir)
             #plt.figure(stat)
@@ -84,7 +84,7 @@ def plot_latest_stats():
         ax[MAX_TOPS].legend(lns, labs, loc=2)
 
         #savefig
-        outdir = os.path.join(anadir,'simstats.new','cum')
+        outdir = os.path.join(anadir,outdirname,'cum')
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
         fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))
@@ -102,8 +102,9 @@ STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
 
 #get options
 global anadir
-global outdir
+global outdirname
 global csvfname
+global csvf
 print sys.argv[1:]
 opts, args = getopt.getopt(sys.argv[1:],"h",["help", "e1fs1", "e1fs2", "hel="])
 
@@ -118,21 +119,21 @@ for opt, arg in opts:
     elif opt == "--hel":       
          if arg=='UNPOL': 
             csvfname = 'simstats_vm.csv'
-            outdir = 'simstats'
+            outdirname = 'simstats'
          elif arg=='POS': 
             csvfname = 'simstats_vm_POS.csv'
-            outdir = 'simstats_POS'
+            outdirname = 'simstats_POS'
          elif arg=='NEG': 
             csvfname = 'simstats_vm_NEG.csv'
-            outdir = 'simstats_NEG'
+            outdirname = 'simstats_NEG'
          else:
             print arg,' is not recognized'
             sys.exit()
             
-print 'anadir = ', anadir
-print 'outdir = ', outdir
-print 'csvfilename = ', csvfname
 csvf = os.path.join(anadir,csvfname)
+print 'anadir = ', anadir
+print 'outdirname = ',outdirname
+print 'csvf = ', csvf
 
 #anadir = os.environ['E1F_2PI_ANADIR1']
 #anadir = os.environ['E1F_2PI_ANADIR2']
