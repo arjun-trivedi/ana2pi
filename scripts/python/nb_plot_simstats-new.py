@@ -141,7 +141,7 @@ def plot_track_stats():
             print STATS_NAME[stat]
             fig=plt.figure(STATS_NAME[stat])
             ax = []
-            ax.append(fig.add_subplot(1,1,1,ylabel=stat,title=q2wbinname))
+            ax.append(fig.add_subplot(1,1,1,ylabel=stat,title='%s:%s'%(STATS_NAME[stat],q2wbinname)))
             ax.append(ax[MAX_TOPS].twinx())
             ax[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
             ax[MIN_TOPS].set_ylabel(('%s top1,3,4'%STATS_NAME[stat]),color='r')
@@ -162,7 +162,7 @@ def plot_track_stats():
                                      marker=top_markers[itop],label=top_labels[itop]))
             labs = [l.get_label() for l in lns]
             ax[MAX_TOPS].legend(lns, labs, loc=2)
-            #plt.show()
+             #plt.show()
         
             #save plots
             outdir = os.path.join(anadir,'simstats.new',q2wbinname)

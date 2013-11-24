@@ -1,198 +1,77 @@
-#!/usr/bin/python
-
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
 from __future__ import division
-import os, sys, getopt, shutil, datetime, time
+import numpy as npy
+import os
 from pandas import *
 import matplotlib.pyplot as plt
-
+from matplotlib.lines import Line2D
 pandas.set_printoptions(max_columns=20)
 
-#get options
-global anadir
-global outdir
-global csvfname
-print sys.argv[1:]
-opts, args = getopt.getopt(sys.argv[1:],"h",["help", "e1fs1", "e1fs2", "hel="])
-
-for opt, arg in opts:
-    if opt in ('-h', '--help'):
-        print 'plot_simstats.py --<e1fs1/e1fs2> --hel=<UNPOL/POS/NEG>'
-        sys.exit()
-    elif opt == "--e1fs1":
-        anadir = os.environ['E1F_2PI_ANADIR1']
-    elif opt == "--e1fs2":
-        anadir = os.environ['E1F_2PI_ANADIR2']
-    elif opt == "--hel":       
-         if arg=='UNPOL': 
-            csvfname = 'simstats_vm.csv'
-            outdir = 'simstats'
-         elif arg=='POS': 
-            csvfname = 'simstats_vm_POS.csv'
-            outdir = 'simstats_POS'
-         elif arg=='NEG': 
-            csvfname = 'simstats_vm_NEG.csv'
-            outdir = 'simstats_NEG'
-         else:
-            print arg,' is not recognized'
-            sys.exit()
-            
-print 'anadir = ', anadir
-print 'outdir = ', outdir
-print 'csvfilename = ', csvfname
-
-#back up old outdir if already exists, else make it 
-if os.path.isdir(os.path.join(anadir,outdir)):
-    outdir_bk = outdir+'_bk_'+datetime.now().strftime('%Y-%m-%d_%H-%M')
-    print 'going to backup', outdir, 'to', outdir_bk
-    shutil.move(os.path.join(anadir,outdir), os.path.join(anadir,outdir_bk))
-    os.makedirs(os.path.join(anadir,outdir))
-else:
-    os.makedirs(os.path.join(anadir,outdir))
-
-csvf = os.path.join(anadir,csvfname)
-dfss = pandas.read_csv(csvf, na_values=['\n'])
+anadir = os.environ['E1F_2PI_ANADIR1']
+filename = os.path.join(anadir, "simstats_vm.csv")
+df = pandas.read_csv(filename, na_values=['\n'])
 #print df
 
-# <codecell>
+#group df by q2wbinnum column
+df_q2wbinnum = df.groupby('q2wbinnum')
+nq2wbins = len(df_q2wbinnum.groups)
+print 'nq2wbins=',nq2wbins
 
-dfss_grpd_q2wbin = dfss.groupby('Q2Wbin')
-nq2wbins = len(dfss_grpd_q2wbin.groups)
-ngridx = 4
-ngridy = nq2wbins/ngridx
-print ngridx, ngridy
+#stat = columns of df [nFB_ST,nEB_SR,nFB_SR,nEB_SA]
+#tdraw(stat) plots, for each topology & latest simulation:
+#  1. stat(q2wbin) Vs. q2wbin
+#  2. frc(q2wbin) Vs. q2wbin, where frc(q2wbin)=stat(q2wbin)/nFB_ST(q2wbin)
 
-# <codecell>
+MAX_TOPS,MIN_TOPS = range(2)
+NTOPS=5
+tops = [1,2,3,4,5];
+top_labels = ['Top1','Top2','Top3','Top4','Top5']
+top_markers = ['s','<','8' ,'p','>']
+top_colors =  ['r','k','r','r','k']
 
-for q2wbin in dfss_grpd_q2wbin.groups:
-    df = dfss_grpd_q2wbin.get_group(q2wbin)
-    #if (q2wbin==1):
-    #    print df
-
-# <codecell>
-
-itops = {0,1,2,3,4} #NOTE, that these are indices of tops, not tops; vm_tops used for now
-colors = ['b','r','g','m','k']
-#markers = ['s','o','^','v','<']
-markers = ['^','s','v','<','o']
-labels = ['Top1','Top2','Top3','Top4','Top5']
-sels  = {}
-gr_Fth = {}
-gr_Fsr = {}
-gr_Esr = {}
-gr_EsrVsEac = {}
-gr_Esr_frc = {} #Esr[top]/Fth
-gr_Esr_rat = {} #Esr[top]/Esr[top=2]
-
-#gr_FthVq2wbin
-
-for q2wbin in dfss_grpd_q2wbin.groups:
-    df = dfss_grpd_q2wbin.get_group(q2wbin)
-    #print 'q2wbin:Sim', q2wbin, df['Sim']
-    
-    fg_Fth_name  = str.format('Fth_%02d'%q2wbin)
-    fg_Fth_title = str.format('Fth[Q2W=%02d]'%q2wbin)
-    fg_Fth = plt.figure(fg_Fth_name,figsize=(8,5))
-    ax_Fth = fg_Fth.add_subplot(1,1,1,title=fg_Fth_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel=df.nFth.name)
-    
-    fg_Fsr_name  = str.format('Fsr_%02d'%q2wbin)
-    fg_Fsr_title = str.format('Fsr[Q2W=%02d]'%q2wbin)
-    fg_Fsr = plt.figure(fg_Fsr_name,figsize=(8,5))
-    ax_Fsr = fg_Fsr.add_subplot(1,1,1,title=fg_Fsr_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel=df.nFsr.name)
-
-    fg_Esr_name  = str.format('Esr_%02d'%q2wbin)
-    fg_Esr_title = str.format('Esr[Q2W=%02d]'%q2wbin)
-    fg_Esr = plt.figure(fg_Esr_name,figsize=(8,5))
-    ax_Esr = fg_Esr.add_subplot(1,1,1,title=fg_Esr_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel=df.nEsr.name)
-    ax_Esr.set_ylabel(df.nEsr.name, color='k')
-    for tl in ax_Esr.get_yticklabels():
-        tl.set_color('k')
-    ax_Esr2 = ax_Esr.twinx()
-    ax_Esr2.set_ylabel(df.nEsr.name, color='r')
-    for tl in ax_Esr2.get_yticklabels():
-        tl.set_color('r')
-    
-    fg_EsrVsEac_name  = str.format('EsrVsEac_%02d'%q2wbin)
-    fg_EsrVsEac_title = str.format('EsrVsEac[Q2W=%02d]'%q2wbin)
-    fg_EsrVsEac = plt.figure(fg_EsrVsEac_name,figsize=(8,5))
-    ax_EsrVsEac = fg_EsrVsEac.add_subplot(1,1,1,title=fg_EsrVsEac_title,xlabel=df.nEac.name,ylabel=df.nEsr.name)
-
-    fg_Esr_frc_name  = str.format('Esr_frc_%02d'%q2wbin)
-    fg_Esr_frc_title = str.format('Esr_frc[Q2W=%02d]'%q2wbin)
-    fg_Esr_frc = plt.figure(fg_Esr_frc_name,figsize=(8,5))
-    ax_Esr_frc = fg_Esr_frc.add_subplot(1,1,1,title=fg_Esr_frc_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel='holes[top]/nFth')
-    for tl in ax_Esr_frc.get_yticklabels():
-        tl.set_color('k')
-    ax_Esr_frc2 = ax_Esr_frc.twinx()
-    ax_Esr_frc2.set_ylabel(df.nEsr.name, color='r')
-    for tl in ax_Esr_frc2.get_yticklabels():
-        tl.set_color('r')
-
-    fg_Esr_rat_name  = str.format('Esr_rat_%02d'%q2wbin)
-    fg_Esr_rat_title = str.format('Esr_rat[Q2W=%02d]'%q2wbin)
-    fg_Esr_rat = plt.figure(fg_Esr_rat_name,figsize=(8,5))
-    ax_Esr_rat = fg_Esr_rat.add_subplot(1,1,1,title=fg_Esr_rat_title,xticks=df.Sim, xlabel=df.Sim.name,ylabel='holes[top]/holes[2]')
-    
-
-
-    for itop in itops:
-        sels[itop] = (df['Top']==itop+1) & (df['Varset']==1)
-        dfsel = df[sels[itop]]
-        gr_Fth[itop] = ax_Fth.scatter(dfsel.Sim, dfsel.nFth,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-
-        gr_Fsr[itop] = ax_Fsr.scatter(dfsel.Sim, dfsel.nFsr,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-        if (itop==1 or itop==4):
-            gr_Esr[itop] = ax_Esr2.scatter(dfsel.Sim, dfsel.nEsr,
-                                      s=50,c='r',marker=markers[itop],label=labels[itop])
-        else:
-            gr_Esr[itop] = ax_Esr.scatter(dfsel.Sim, dfsel.nEsr,
-                                      s=50,c='k',marker=markers[itop],label=labels[itop])
-
-        gr_EsrVsEac[itop] = ax_EsrVsEac.scatter(dfsel.nEac,dfsel.nEsr,
-                                                s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-
-        if (itop==1 or itop==4):
-            gr_Esr_frc[itop] = ax_Esr_frc2.scatter(dfsel.Sim, dfsel.nEsr/dfsel.nFth,
-                                      s=50,c='r',marker=markers[itop],label=labels[itop])
-        else:
-            gr_Esr_frc[itop] = ax_Esr_frc.scatter(dfsel.Sim, dfsel.nEsr/dfsel.nFth,
-                                      s=50,c='k',marker=markers[itop],label=labels[itop])
+NSTATS=4
+nFB_ST,nEB_SR,nFB_SR,nEB_SA = range(0,NSTATS)
+STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
+def plot_track_stats():
+    for q2wbinnum in df_q2wbinnum.groups:
+        #iq2wbin = q2wbinnum-1
+        #if q2wbinnum>1: continue
+        df = df_q2wbinnum.get_group(q2wbinnum)
+        q2wbinname = df['q2wbin'].tolist()[0]
+        print 'q2wbinname=',q2wbinname
+        for stat in range(0,NSTATS):
+            print STATS_NAME[stat]
+            fig=plt.figure('%d:%s'%(q2wbinnum,STATS_NAME[stat]))
+            ax = []
+            ax.append(fig.add_subplot(1,1,1,title='%s:%s'%(STATS_NAME[stat],q2wbinname)))
+            ax.append(ax[MAX_TOPS].twinx())
+            #print len(ax)
+            ax[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
+            ax[MIN_TOPS].set_ylabel('%s t1,3,4'%STATS_NAME[stat],color='r')
+            for tl in ax[MIN_TOPS].get_yticklabels():
+                tl.set_color('r')
         
-        gr_Esr_rat[itop] = ax_Esr_rat.scatter(dfsel.Sim, dfsel.nEsr.values/df[(df['Top']==2) & (df['Varset']==1)].nEsr.values,
-                                      s=50,c=colors[itop],marker=markers[itop],label=labels[itop])
-    
-    #save plots
-    plt.figure(fg_Fth_name)
-    plt.legend(loc='lower right',prop={'size':6})
-    fg_Fth.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Fth_name))
-
-    plt.figure(fg_Fsr_name)
-    plt.legend(loc='upper left', prop={'size':6})
-    fg_Fsr.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Fsr_name))
-
-    plt.figure(fg_Esr_name)
-    plt.legend(loc='upper left', prop={'size':10})
-    fg_Esr.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Esr_name))
-
-    plt.figure(fg_EsrVsEac_name)
-    plt.legend(loc='upper right',prop={'size':6})
-    fg_EsrVsEac.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_EsrVsEac_name))
-
-    plt.figure(fg_Esr_frc_name)
-    plt.legend(loc='center',prop={'size':6})
-    fg_Esr_frc.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Esr_frc_name))
-
-    plt.figure(fg_Esr_rat_name)
-    plt.legend(loc='center',prop={'size':6})
-    fg_Esr_rat.savefig("%s/%s/%s.jpg"%(anadir,outdir,fg_Esr_rat_name))
-
-print 'plot_simstats.py::Success!'
-
-# <codecell>
-
-
+            lns = []
+            for top in tops:
+                itop=top-1
+                if top==2 or top==5:
+                    #print df['Sim'][df['Top']==top]
+                    sel= (df['Top']==top)
+                    lns.append(ax[MAX_TOPS].scatter(df['Sim'][sel],df[STATS_NAME[stat]][sel],color='k',
+                                     marker=top_markers[itop],label=top_labels[itop]))
+                else:
+                   sel= (df['Top']==top)
+                   lns.append(ax[MIN_TOPS].scatter(df['Sim'][sel],df[STATS_NAME[stat]][sel],color='r',
+                                    marker=top_markers[itop],label=top_labels[itop]))
+            labs = [l.get_label() for l in lns]
+            ax[MAX_TOPS].legend(lns, labs, loc=2)
+                    
+            #save plots
+            outdir = os.path.join(anadir,'simstats.new',q2wbinname)
+            if not os.path.isdir(outdir):
+                os.makedirs(outdir)
+            #plt.figure(stat)
+            fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))
+            del fig
+            del ax
+            
+plot_track_stats()
