@@ -19,10 +19,11 @@ NSTATS=5
 nFB_ST,nEB_SR,nFB_SR,nEB_SA,nEB_SR_div_nFB_ST = range(0,NSTATS)
 STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA','nEB_SR_div_nFB_ST']
 
-def plot_track_stats():
-    """For each q2wbin & top. therein:
-    1. plot NSTATS vs sim
-    2. plot nEB_SR/nFB_ST(=frc) vs sim"""
+def track_stats():
+    """For each q2wbin and topology, this function tracks the accumulation of Simulation statistics after every new
+    Simulation run, by plotting each of the NSTATS vs sim. The plots are used to evaluate the "Complete Simulation Hypothesis"  
+        
+    """
     for q2wbinnum in df_grpd_q2wbinnum.groups:
         df_q2wbinnum = df_grpd_q2wbinnum.get_group(q2wbinnum)
         q2wbinname = df_q2wbinnum['q2wbin'].tolist()[0]
@@ -61,6 +62,9 @@ def plot_track_stats():
             fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))                   
 
 def plot_latest_stats():
+    """Fore each topology, this function gives the final snapshot of each of the NSTATS vs q2wbinnum
+     after the latest Simulation"""
+
     for stat in range(0,NSTATS):
         fig=plt.figure('%s'%(STATS_NAME[stat]))
         ax = []
@@ -139,10 +143,9 @@ print 'anadir = ', anadir
 print 'outdirname = ',outdirname
 print 'csvf = ', csvf
 
-#anadir = os.environ['E1F_2PI_ANADIR1']
-#anadir = os.environ['E1F_2PI_ANADIR2']
 filename = os.path.join(anadir, "simstats_vm.csv")
 df = pd.read_csv(csvf, na_values=['\n'])
+#create a columns for nEB_SR/nFB_ST
 df['nEB_SR_div_nFB_ST']=df['nEB_SR']/df['nFB_ST']
 #print df
 
@@ -151,5 +154,5 @@ df_grpd_q2wbinnum = df.groupby('q2wbinnum')
 nq2wbins = len(df_grpd_q2wbinnum.groups)
 print 'nq2wbins=',nq2wbins
 
-plot_track_stats()
+track_stats()
 plot_latest_stats()
