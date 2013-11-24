@@ -8,6 +8,17 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 pd.set_printoptions(max_columns=20)
 
+MAX_TOPS,MIN_TOPS = range(2)
+NTOPS=5
+TOPS = [1,2,3,4,5];
+TOP_LABELS  = ['Top1','Top2','Top3','Top4','Top5']
+TOP_MARKERS = ['s','<','8' ,'p','>']
+TOP_COLORS  =  ['r','k','r','r','k']
+
+NSTATS=4
+nFB_ST,nEB_SR,nFB_SR,nEB_SA = range(0,NSTATS)
+STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
+
 def plot_track_stats():
     for q2wbinnum in df_grpd_q2wbinnum.groups:
         df_q2wbinnum = df_grpd_q2wbinnum.get_group(q2wbinnum)
@@ -89,23 +100,14 @@ def plot_latest_stats():
             os.makedirs(outdir)
         fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))
  
-MAX_TOPS,MIN_TOPS = range(2)
-NTOPS=5
-TOPS = [1,2,3,4,5];
-TOP_LABELS = ['Top1','Top2','Top3','Top4','Top5']
-TOP_MARKERS = ['s','<','8' ,'p','>']
-TOP_COLORS =  ['r','k','r','r','k']
 
-NSTATS=4
-nFB_ST,nEB_SR,nFB_SR,nEB_SA = range(0,NSTATS)
-STATS_NAME = ['nFB_ST','nEB_SR','nFB_SR','nEB_SA']
+#MAIN part of the program
 
 #get options
-global anadir
-global outdirname
-global csvfname
-global csvf
-print sys.argv[1:]
+# global anadir
+# global outdirname
+# global csvfname
+# global csvf
 opts, args = getopt.getopt(sys.argv[1:],"h",["help", "e1fs1", "e1fs2", "hel="])
 
 for opt, arg in opts:
