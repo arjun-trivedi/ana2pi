@@ -233,7 +233,7 @@ def makedf():
 
 	output -- ana_store.h5
 	contains DataFrame d with analysis data represented by columns:
-	q2wbinnum * q2wbin * SEQ * POL * h5 * h1{ij} * h5{p} * hR2_{p}^{ij}
+	q2wbinnum -- q2wbin -- SEQ -- POL -- h5 -- h1{ij} -- h5{p} -- hR2_{p}^{ij}
 
 	"""
 	outfile = os.path.join(ANADIR,'ana_store.h5')
