@@ -28,7 +28,25 @@ NDTYPE=2
 EXP,SIM=range(NDTYPE)
 DTYPES_COLOR=['kGreen','kRed']
 
+ANADIR = os.environ['E1F_2PI_ANADIR2']
+Q2WBNG = '1-2.000-2.400__24-1.300-1.900'
+SIMDIR = os.path.join(ANADIR,'simdir')
+
+NTOPS=5
+T1,T2,T3,T4,T5=range(NTOPS) #Actually, T2=T1+T2;T3=T1+T3;T4=T1+T4;T5=T1+T2+T3+T4
+TOPS_NAME = ['1','1:2','1:3','1:4','1:2:3:4']
+
 NVARSETS=3
+VST1,VST2,VST3=range(NVARSETS)
+
+NSEQ=9
+ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ)
+SEQ_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
+
+NPOLS=3
+POS,NEG,UNP=range(NPOLS)
+POLS_COLOR=['kRed','kBlack','kBlue']
+POLS_NAME=['POS','NEG','UNP']
 
 NVARS=5
 M1,M2,THETA,PHI,ALPHA=range(NVARS)
@@ -40,49 +58,29 @@ VARS_TITLE = [
 		   ]
 VARS_UNIT = ['GeV','GeV','#circ','#circ','#circ'] 
 
-# NSEQ_SIM=6
-# ST,SR,SA,SC,SH,SF=range(NSEQ_SIM)
-
-# NSEQ_EXP=3
-# ER,EC,EF=range(NSEQ_EXP)
-
-NSEQ=9
-ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ)
-SEQ_NAME=['ST','SR','SA','SC','SH','SF','ER','EC','EF']
-
-NPOLS=3
-POS,NEG,UNP=range(NPOLS)
-POLS_COLOR=['kRed','kBlack','kBlue']
-POLS_NAME=['POS','NEG','UNP']
-
-ANADIR = os.environ['E1F_2PI_ANADIR2']
-TOP = "1:2:3:4"
-Q2WBNG = '1-2.000-2.400__24-1.300-1.900'
-SIMDIR = os.path.join(ANADIR,'simdir')
-
-SEQ_POLS_H5FILE = np.zeros((NSEQ,NPOLS),object)
-SEQ_POLS_H5FILE[ST:SF+1,POS:NEG+1]  ='%s/%s__%s__pol__sim.root'%(SIMDIR,TOP,Q2WBNG)
-SEQ_POLS_H5FILE[ST:SF+1,UNP:]       ='%s/%s__%s__sim.root'%(SIMDIR,TOP,Q2WBNG)
-SEQ_POLS_H5FILE[ER:,POS:NEG+1]      ='%s/%s__%s__pol__exp.root'%(ANADIR,TOP,Q2WBNG)
-SEQ_POLS_H5FILE[ER:,UNP:]           ='%s/%s__%s__exp.root'%(ANADIR,TOP,Q2WBNG)
-#print SEQ_POLS_H5FILE
-
-SEQ_POLS_H5=[
-	['hY5D/Varset1/hY5D_TH',      'hY5D/Varset1/hY5D_TH',      'hY5D/Varset1/hY5D_TH'],
-	['hY5D/Varset1/hY5D_RECO',    'hY5D/Varset1/hY5D_RECO',    'hY5D/Varset1/hY5D_RECO'],
-	['hY5D/Varset1/hY5D_ACC',     'hY5D/Varset1/hY5D_ACC',     'hY5D/Varset1/hY5D_ACC'],
-	['hY5D/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR'],
-	['hY5D/Varset1/hY5D_HOLE',    'hY5D/Varset1/hY5D_HOLE',    'hY5D/Varset1/hY5D_HOLE'],
-	['hY5D/Varset1/hY5D_FULL',    'hY5D/Varset1/hY5D_FULL',    'hY5D/Varset1/hY5D_FULL'],
-	['hY5D_POS/Varset1/hY5D_RECO',    'hY5D_NEG/Varset1/hY5D_RECO',    'hY5D/Varset1/hY5D_RECO'],
-	['hY5D_POS/Varset1/hY5D_ACC_CORR','hY5D_NEG/Varset1/hY5D_ACC_CORR','hY5D/Varset1/hY5D_ACC_CORR'],
-	['hY5D_POS/Varset1/hY5D_FULL',    'hY5D_NEG/Varset1/hY5D_FULL',    'hY5D/Varset1/hY5D_FULL']
-]
 
 NPOBS=4
 A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
-#print var
+
+SEQ_POLS_H5FILE = np.zeros((NSEQ,NPOLS),object)
+SEQ_POLS_H5FILE[ST:SF+1,POS:NEG+1]  ='%s/%s__%s__pol__sim.root'#%(SIMDIR,TOP,Q2WBNG)
+SEQ_POLS_H5FILE[ST:SF+1,UNP:]       ='%s/%s__%s__sim.root'#%(SIMDIR,TOP,Q2WBNG)
+SEQ_POLS_H5FILE[ER:,POS:NEG+1]      ='%s/%s__%s__pol__exp.root'#%(ANADIR,TOP,Q2WBNG)
+SEQ_POLS_H5FILE[ER:,UNP:]           ='%s/%s__%s__exp.root'#%(ANADIR,TOP,Q2WBNG)
+#print SEQ_POLS_H5FILE
+
+SEQ_POLS_H5=[
+	['hY5D/Varset%d/hY5D_TH',      'hY5D/Varset%d/hY5D_TH',      'hY5D/Varset%d/hY5D_TH'],
+	['hY5D/Varset%d/hY5D_RECO',    'hY5D/Varset%d/hY5D_RECO',    'hY5D/Varset%d/hY5D_RECO'],
+	['hY5D/Varset%d/hY5D_ACC',     'hY5D/Varset%d/hY5D_ACC',     'hY5D/Varset%d/hY5D_ACC'],
+	['hY5D/Varset%d/hY5D_ACC_CORR','hY5D/Varset%d/hY5D_ACC_CORR','hY5D/Varset%d/hY5D_ACC_CORR'],
+	['hY5D/Varset%d/hY5D_HOLE',    'hY5D/Varset%d/hY5D_HOLE',    'hY5D/Varset%d/hY5D_HOLE'],
+	['hY5D/Varset%d/hY5D_FULL',    'hY5D/Varset%d/hY5D_FULL',    'hY5D/Varset%d/hY5D_FULL'],
+	['hY5D_POS/Varset%d/hY5D_RECO',    'hY5D_NEG/Varset%d/hY5D_RECO',    'hY5D/Varset%d/hY5D_RECO'],
+	['hY5D_POS/Varset%d/hY5D_ACC_CORR','hY5D_NEG/Varset%d/hY5D_ACC_CORR','hY5D/Varset%d/hY5D_ACC_CORR'],
+	['hY5D_POS/Varset%d/hY5D_FULL',    'hY5D_NEG/Varset%d/hY5D_FULL',    'hY5D/Varset%d/hY5D_FULL']
+]
 
 def plot1D():
 	"""On a TCanvas, plot 1D xsec"""
@@ -243,7 +241,7 @@ def makedf():
 
 	output -- DF5.h5
 	contains DataFrame d with analysis data represented by columns:
-	q2wbinnum -- q2wbin -- SEQ -- POL -- h5 -- h1{ij} -- h5{p} -- hR2_{p}^{ij}
+	TOP--VARSET--q2wbinnum--q2wbin--SEQ--POL--h5--h1{ij}--h5{p}--hR2_{p}^{ij}
 
 	"""
 	outfile = os.path.join(ANADIR,'DF5.h5')
@@ -251,6 +249,9 @@ def makedf():
 
 	norm = 50000*math.pi
 
+	for top in TOPLIST:
+		if top != '1:2:3:4':continue
+		for varset in range(0,NVARSET)
 	d = pd.DataFrame()
 	ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
 	keys = ftemplate.GetListOfKeys()
@@ -269,7 +270,7 @@ def makedf():
 				f.Close()
 									
 				#Create Data-List (dl) to be added to the DataFrame			
-				dl = [q2wbinnum,q2wdir.GetName(),seq,pol,h5]
+				dl    =[q2wbinnum,q2wdir.GetName(),seq,pol,h5]
 				rindex=['q2wbinnum','q2wbin','SEQ','POL','h5']
 				print 'len(dl)=',len(dl)
 				print 'len(rindex)=',len(rindex)
