@@ -82,12 +82,13 @@ POBS_NAME=['A','B','C','D']
 
 def plot1D():
 	"""On a TCanvas, plot 1D xsec"""
-	outdir = os.path.join(ANADIR,'1D',q2wbin)
+	outdir = os.path.join(outdir_1D_root,q2wbin)
 	if not os.path.isdir(outdir):
 		os.makedirs(outdir)
 
-	cname='1D_q2wbin_%d'%d_q2w['q2wbinnum'].tolist()[0]
-	ctitle='1D:%s'%q2wbin
+	#cname='1D_q2wbin_%d'%d_q2w['q2wbinnum'].tolist()[0]
+	#ctitle='1D:%s'%q2wbin
+	cname=ctitle='1D'
 	c1D = TCanvas(cname,ctitle)
 	c1D.Divide(3,3)
 	npads=9
@@ -108,6 +109,9 @@ def plot1D():
 
 	csavename=('%s/%s')%(outdir,c1D.GetName())
 	c1D.SaveAs(('%s.png')%(csavename))
+	print ('>>>convert %s.png %s.pdf')%(csavename,csavename)
+	rc = subprocess.call(['convert', '%s.png'%csavename, '%s.pdf'%csavename])
+	if rc!=0:print '.png to .pdf failed for %s'%csavename
 	
 
 def plotR2(seq_pol_sell):
@@ -194,6 +198,25 @@ def makepdf():
 					print '>>>cat /tmp/tmp | xargs pdfunite'
 					rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
 					if rc!=0: print 'command failed!'
+
+def make1Dpdf():
+	"""put all q2wbin/1D.pdf in a single pdf"""
+
+	pdfname='1D.pdf'
+	q2w_pdfs=('%s/*/%s')%(outdir_1D_root,pdfname)
+	out_pdf=('%s/%s')%(outdir_1D_root,pdfname)
+
+	print '>>>ls %s > /tmp/tmp'
+	rc=subprocess.call('ls %s > /tmp/tmp'%q2w_pdfs,shell=True)
+	if rc!=0: print 'command failed!'
+
+	print '>>>echo %s >> /tmp/tmp'%out_pdf
+	rc=subprocess.call('echo %s >> /tmp/tmp'%out_pdf,shell=True)
+	if rc!=0: print 'command failed!'
+
+	print '>>>cat /tmp/tmp | xargs pdfunite'
+	rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
+	if rc!=0: print 'command failed!'
 
 def makedf():
 	"""For a particular Q2W analysis range, starting at the level of h5s, put all analysis
@@ -315,6 +338,7 @@ gStyle.SetOptFit(1111);
 #INPUT data
 infile = os.path.join(ANADIR,'ana_store.h5')
 #OUTPUT data
+outdir_1D_root = os.path.join(ANADIR,'1D')
 outdir_root = os.path.join(ANADIR,'polobs.new')
 if not os.path.isdir(outdir_root):
 	os.makedirs(outdir_root)
@@ -351,3 +375,4 @@ for q2wbin in d_grpd_q2wbin.groups:
 
 #Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 #makepdf()
+make1Dpdf()
