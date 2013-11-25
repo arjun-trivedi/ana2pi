@@ -34,10 +34,12 @@ SIMDIR = os.path.join(ANADIR,'simdir')
 
 NTOPS=5
 T1,T2,T3,T4,T5=range(NTOPS) #Actually, T2=T1+T2;T3=T1+T3;T4=T1+T4;T5=T1+T2+T3+T4
+TOPS_NUMBER=[1,2,3,4,5]
 TOPS_NAME = ['1','1:2','1:3','1:4','1:2:3:4']
 
 NVARSETS=3
 VST1,VST2,VST3=range(NVARSETS)
+VARSETS_NUMBER=[1,2,3]
 
 NSEQ=9
 ST,SR,SA,SC,SH,SF,ER,EC,EF=range(NSEQ)
@@ -64,10 +66,10 @@ A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
 
 SEQ_POLS_H5FILE = np.zeros((NSEQ,NPOLS),object)
-SEQ_POLS_H5FILE[ST:SF+1,POS:NEG+1]  ='%s/%s__%s__pol__sim.root'#%(SIMDIR,TOP,Q2WBNG)
-SEQ_POLS_H5FILE[ST:SF+1,UNP:]       ='%s/%s__%s__sim.root'#%(SIMDIR,TOP,Q2WBNG)
-SEQ_POLS_H5FILE[ER:,POS:NEG+1]      ='%s/%s__%s__pol__exp.root'#%(ANADIR,TOP,Q2WBNG)
-SEQ_POLS_H5FILE[ER:,UNP:]           ='%s/%s__%s__exp.root'#%(ANADIR,TOP,Q2WBNG)
+SEQ_POLS_H5FILE[ST:SF+1,POS:NEG+1]  ='%s/%%s__%s__pol__sim.root'%(SIMDIR,Q2WBNG)
+SEQ_POLS_H5FILE[ST:SF+1,UNP:]       ='%s/%%s__%s__sim.root'%(SIMDIR,Q2WBNG)
+SEQ_POLS_H5FILE[ER:,POS:NEG+1]      ='%s/%%s__%s__pol__exp.root'%(ANADIR,Q2WBNG)
+SEQ_POLS_H5FILE[ER:,UNP:]           ='%s/%%s__%s__exp.root'%(ANADIR,Q2WBNG)
 #print SEQ_POLS_H5FILE
 
 SEQ_POLS_H5=[
@@ -249,36 +251,37 @@ def makedf():
 
 	norm = 50000*math.pi
 
-	for top in TOPLIST:
-		if top != '1:2:3:4':continue
-		for varset in range(0,NVARSET)
 	d = pd.DataFrame()
-	ftemplate = root_open(SEQ_POLS_H5FILE[0][0])
-	keys = ftemplate.GetListOfKeys()
 
 	#1. First do the "looping part" of process of creating DF
-	q2wbinnum=0
-	dl_counter=0 #counter for number of dls (=Data-Lists, defined later) insereted into DF
-	for q2wdir in keys:
-		q2wbinnum+=1
-		for seq in range(0,NSEQ):
-			for pol in range(0,NPOLS):#poll:
-				dl_counter+=1
+	for top in range(0,NTOPS):
+		if top != T5:continue
+		for varset in range(0,NVARSETS):
+			if varset != VST1:continue
+			ftemplate = root_open(SEQ_POLS_H5FILE[0][0]%TOPS_NAME[top])
+			keys = ftemplate.GetListOfKeys()
+			q2wbinnum=0
+			dl_counter=0 #counter for number of dls (=Data-Lists, defined later) insereted into DF
+			for q2wdir in keys:
+				q2wbinnum+=1
+				for seq in range(0,NSEQ):
+					for pol in range(0,NPOLS):#poll:
+						dl_counter+=1
 				
-				f=root_open(SEQ_POLS_H5FILE[seq][pol])
-				h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]))
-				f.Close()
+						f=root_open(SEQ_POLS_H5FILE[seq][pol]%TOPS_NAME[top])
+						h5=f.Get('%s/%s'%(q2wdir.GetName(),SEQ_POLS_H5[seq][pol]%VARSETS_NUMBER[varset]))
+						f.Close()
 									
-				#Create Data-List (dl) to be added to the DataFrame			
-				dl    =[q2wbinnum,q2wdir.GetName(),seq,pol,h5]
-				rindex=['q2wbinnum','q2wbin','SEQ','POL','h5']
-				print 'len(dl)=',len(dl)
-				print 'len(rindex)=',len(rindex)
-				if not d:
-					data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
-					d = d.append(data)
-				else:
-					d['s%d'%dl_counter]=dl
+						#Create Data-List (dl) to be added to the DataFrame			
+						dl    =[TOPS_NUMBER[top],VARSETS_NUMBER[varset],q2wbinnum,q2wdir.GetName(),seq,pol,h5]
+						rindex=['TOP','VARSET','q2wbinnum','q2wbin','SEQ','POL','h5']
+						print 'len(dl)=',len(dl)
+						print 'len(rindex)=',len(rindex)
+						if not d:
+							data = pd.DataFrame({'s1':dl},index=rindex) # Data for 1st. Column 
+							d = d.append(data)
+						else:
+							d['s%d'%dl_counter]=dl
 	
 	dt = d.transpose()
 	
