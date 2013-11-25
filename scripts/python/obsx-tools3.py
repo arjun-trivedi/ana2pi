@@ -36,6 +36,7 @@ VARS_TITLE = [
 			 	["M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}","#theta_{p}", "#phi_{p}", "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]"],
 			 	["M_{p#pi^{+}}", "M_{p#pi^{-}}", "#theta_{#pi^{+}}", "#phi_{#pi^{+}}", "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]"] 
 		   ]
+VARS_UNIT = ['GeV','GeV','#circ','#circ','#circ'] 
 
 # NSEQ_SIM=6
 # ST,SR,SA,SC,SH,SF=range(NSEQ_SIM)
@@ -96,6 +97,12 @@ def plot1D():
 	hname=['h1_1M1',    'h1_1M2',   'h1_3M2',#TODO: h1_1M2->h1_2M2
 	       'h1_1THETA', 'h1_2THETA','h1_3THETA',
 	       'h1_1ALPHA', 'h1_2ALPHA','h1_3ALPHA']
+	htitle=[]
+	htitle=[VARS_TITLE[0][M1],   VARS_TITLE[0][M2],   VARS_TITLE[1][M2],
+	        VARS_TITLE[0][THETA],VARS_TITLE[1][THETA],VARS_TITLE[2][THETA],
+	        VARS_TITLE[0][ALPHA],VARS_TITLE[1][ALPHA],VARS_TITLE[2][ALPHA]]
+	hxtitle=['GeV','GeV','GeV','#circ','#circ','#circ']
+	
 	activepads=[1,4,2] 
 
 
@@ -105,6 +112,8 @@ def plot1D():
 		if ipad+1 not in activepads: continue
 		c1D.cd(ipad+1)
 		h1 = d_q2w_seq_pol.iloc[0][hname[ipad]]
+		h1.SetTitle('%s:%s'%(htitle[ipad],q2wbin))
+		h1.SetXTitle('%s[%s]'%(htitle[ipad],hxtitle[ipad]))
 		h1.Draw("ep")
 
 	csavename=('%s/%s')%(outdir,c1D.GetName())
