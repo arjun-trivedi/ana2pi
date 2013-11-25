@@ -106,15 +106,22 @@ def plot1D():
 	activepads=[1,4,2] 
 
 
-	seq_pol_sel = (d_q2w['SEQ']==EF) & (d_q2w['POL']==UNP)
-	d_q2w_seq_pol = d_q2w[seq_pol_sel]
+	EF_UNP_sel = (d_q2w['SEQ']==EF) & (d_q2w['POL']==UNP)
+	SF_UNP_sel = (d_q2w['SEQ']==SF) & (d_q2w['POL']==UNP)
+	d_q2w_EF_UNP = d_q2w[EF_UNP_sel]
+	d_q2w_SF_UNP = d_q2w[SF_UNP_sel]
 	for ipad in range(0,npads):
 		if ipad+1 not in activepads: continue
 		c1D.cd(ipad+1)
-		h1 = d_q2w_seq_pol.iloc[0][hname[ipad]]
-		h1.SetTitle('%s:%s'%(htitle[ipad],q2wbin))
-		h1.SetXTitle('%s[%s]'%(htitle[ipad],hxtitle[ipad]))
-		h1.Draw("ep")
+		h1_exp = d_q2w_EF_UNP.iloc[0][hname[ipad]]
+		h1_sim = d_q2w_SF_UNP.iloc[0][hname[ipad]]
+
+		h1_exp.SetTitle('%s:%s'%(htitle[ipad],q2wbin))
+		h1_exp.SetXTitle('%s[%s]'%(htitle[ipad],hxtitle[ipad]))
+		h1_sim.SetLineColor(1)
+		
+		h1_exp.DrawNormalized("ep",10000)
+		h1_sim.DrawNormalized("ep same",10000)
 
 	csavename=('%s/%s')%(outdir,c1D.GetName())
 	c1D.SaveAs(('%s.png')%(csavename))
