@@ -8,7 +8,7 @@ This package is implemented to extract "a set of defined" Observables by analyzi
 ##### `proc_simstats.C` & `plot_simstats.py`[11-22-13]
 These two programs are used to test the hypothesis for __Complete Simulation__ (defined in the text below)
 
-`plot_simstats.py`:
+`proc_simstats.C`:
 
 Consolidates from various [top]_[q2w_range].root files, in a CSV format, store the following tabular data:
 `Sim`,`Top`,`q2wbinnum`,`q2wbin`,`Varset`,`nFB_ST`,`nEB_SR`,`nFB_SR`,`nEB_SA`
@@ -21,7 +21,7 @@ where:
 *	`nEB_SA` = Out of `nFB_ER` (number of Bins that are Filled by Reconstructed events in Experiment), the number
          of bins that have no Acceptance.
 
-`proc_simstats.C` is used to test the hypothesis stated below.
+`plot_simstats.py` is used to test the hypothesis stated below.
 
 __Hypothesis for Complete Simulation__
 
