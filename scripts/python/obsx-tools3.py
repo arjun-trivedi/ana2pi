@@ -86,7 +86,7 @@ def plot1D():
 	if not os.path.isdir(outdir):
 		os.makedirs(outdir)
 
-	cname='1D_q2wbin#%d'%d_q2w['q2wbinnum'].tolist()[0]
+	cname='1D_q2wbin_%d'%d_q2w['q2wbinnum'].tolist()[0]
 	ctitle='1D:%s'%q2wbin
 	c1D = TCanvas(cname,ctitle)
 	c1D.Divide(3,3)
