@@ -80,6 +80,36 @@ A,B,C,D=range(NPOBS) # [A,B,C,D]=[Rt+Rl,Rlt,Rtt,Rlt']
 POBS_NAME=['A','B','C','D']
 #print var
 
+def plot1D():
+	"""On a TCanvas, plot 1D xsec"""
+	outdir = os.path.join(ANADIR,'1D',q2wbin)
+	if not os.path.isdir(outdir):
+		os.makedirs(outdir)
+
+	cname='1D_q2wbin#%d'%d_q2w['q2wbinnum'].tolist()[0]
+	ctitle='1D:%s'%q2wbin
+	c1D = TCanvas(cname,ctitle)
+	c1D.Divide(3,3)
+	npads=9
+	hname=[]
+	hname=['h1_1M1',    'h1_1M2',   'h1_3M2',#TODO: h1_1M2->h1_2M2
+	       'h1_1THETA', 'h1_2THETA','h1_3THETA',
+	       'h1_1ALPHA', 'h1_2ALPHA','h1_3ALPHA']
+	activepads=[1,4,2] 
+
+
+	seq_pol_sel = (d_q2w['SEQ']==EF) & (d_q2w['POL']==UNP)
+	d_q2w_seq_pol = d_q2w[seq_pol_sel]
+	for ipad in range(0,npads):
+		if ipad+1 not in activepads: continue
+		c1D.cd(ipad+1)
+		h1 = d_q2w_seq_pol.iloc[0][hname[ipad]]
+		h1.Draw("ep")
+
+	csavename=('%s/%s')%(outdir,c1D.GetName())
+	c1D.SaveAs(('%s.png')%(csavename))
+	
+
 def plotR2(seq_pol_sell):
 	"""On a TCanvas, plot R2 for a list of particular SEQ and POL selections
 	
@@ -317,6 +347,7 @@ for q2wbin in d_grpd_q2wbin.groups:
 		]
 		
 		#plotR2(seq_pol_sell)
+		plot1D()
 
 #Now put all q2wbin/seq/R2^{ij}_{alpha} in a single pdf
 #makepdf()
