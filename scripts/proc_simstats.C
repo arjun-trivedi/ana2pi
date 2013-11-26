@@ -156,8 +156,8 @@ void proc_simstats(TString sim, hel_t hel=UNPOL,TString xsectype="vm"){
 					
 					char fout_data[100];
 					TString Q2Wdirname_csv = Q2Wdirname.Data();
-					Q2Wdirname_csv.Replace(Q2Wdirname_csv.First(","),1," ");
-					Q2Wdirname_csv.Replace(Q2Wdirname_csv.First(","),1," ");
+					Q2Wdirname_csv.Replace(Q2Wdirname_csv.First(","),1,"-");
+					Q2Wdirname_csv.Replace(Q2Wdirname_csv.First(","),1,"-");
 					sprintf(fout_data,"%d,%d,%d,%s,%d,%d,%d,%d,%d\n",iSim+1,iTop+1,iQ2Wbin+1,Q2Wdirname_csv.Data(),iVarset+1,nFB_ST,nEB_SR,nFB_SR,nEB_SA);
 					fout << fout_data;
 				}//end Varset loop

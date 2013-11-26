@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import division
-import os,sys,getopt, shutil, datetime, time
+import os,sys,getopt, shutil, datetime, time, subprocess
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,8 +34,8 @@ def track_stats():
             axs = []
             axs.append(fig.add_subplot(1,1,1,title='%s:%s'%(STATS_NAME[stat],q2wbinname),xlabel='sim'))
             axs.append(axs[MAX_TOPS].twinx())
-            axs[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
-            axs[MIN_TOPS].set_ylabel('%s t1,3,4'%STATS_NAME[stat],color='r')
+            axs[MAX_TOPS].set_ylabel('%s'%STATS_NAME[stat])
+            axs[MIN_TOPS].set_ylabel('%s'%STATS_NAME[stat],color='r')
             for tl in axs[MIN_TOPS].get_yticklabels():
                 tl.set_color('r')
         
@@ -59,7 +59,27 @@ def track_stats():
             outdir = os.path.join(anadir,outdirname,q2wbinname)
             if not os.path.isdir(outdir):
                 os.makedirs(outdir)
-            fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))                   
+            savefile = '%s/%s'%(outdir,STATS_NAME[stat])
+            fig.savefig('%s.png'%savefile)
+            rc = subprocess.call(['convert','%s.png'%savefile,'%s.pdf'%savefile])
+    #put all q2w_pdfs in one
+    for stat in range(0,NSTATS):
+        pdfname='%s.pdf'%STATS_NAME[stat]
+        q2w_pdfs=('%s/%s/*/%s')%(anadir,outdirname,pdfname)
+        out_pdf=('%s/%s/%s')%(anadir,outdirname,pdfname)
+
+        print '>>>ls %s > /tmp/tmp'%q2w_pdfs
+        rc=subprocess.call('ls %s > /tmp/tmp'%q2w_pdfs,shell=True)
+        if rc!=0: print 'command failed!'
+
+        print '>>>echo %s >> /tmp/tmp'%out_pdf
+        rc=subprocess.call('echo %s >> /tmp/tmp'%out_pdf,shell=True)
+        if rc!=0: print 'command failed!'
+
+        print '>>>cat /tmp/tmp | xargs pdfunite'
+        rc=subprocess.call('cat /tmp/tmp | xargs pdfunite',shell=True)
+        if rc!=0: print 'command failed!'
+
 
 def plot_latest_stats():
     """Fore each topology, this function gives the final snapshot of each of the NSTATS vs q2wbinnum
@@ -70,8 +90,8 @@ def plot_latest_stats():
         ax = []
         ax.append(plt.subplot(1,1,1,title=STATS_NAME[stat],xticks=np.arange(1,nq2wbins+1,1),xlabel='q2wbinnum'))
         ax.append(ax[MAX_TOPS].twinx())
-        ax[MAX_TOPS].set_ylabel('%s t2,5'%STATS_NAME[stat])
-        ax[MIN_TOPS].set_ylabel(('%s t1,3,4'%STATS_NAME[stat]),color='r')
+        ax[MAX_TOPS].set_ylabel('%s'%STATS_NAME[stat])
+        ax[MIN_TOPS].set_ylabel(('%s'%STATS_NAME[stat]),color='r')
         for tl in ax[MIN_TOPS].get_yticklabels():
             tl.set_color('r')
 
@@ -102,7 +122,7 @@ def plot_latest_stats():
         ax[MAX_TOPS].legend(lns, labs, loc=2)
 
         #savefig
-        outdir = os.path.join(anadir,outdirname,'cum')
+        outdir = os.path.join(anadir,outdirname,'latest')
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
         fig.savefig('%s/%s.jpg'%(outdir,STATS_NAME[stat]))
