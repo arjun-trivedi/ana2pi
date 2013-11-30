@@ -34,13 +34,24 @@ d = pd.DataFrame(arr)
 
 # <codecell>
 
+MASS_E = 0.000511
+MASS_P = 0.93827203
+
 e_p=[]
+qsq = []
+w = []
 for i in arange(0,len(d.p)):
-    e_p.append(d.p[i][0])
-#print e_p   
-h=numpy.histogram(e_p)
-bins=numpy.linspace(0,5,100)
-n = plt.hist(e_p,100,(0,5))
+    p = d.p[i][0]
+    px = p * d.cx[i][0]
+    py = p * d.cy[i][0]
+    pz = p * d.cz[i][0]
+    lve = ROOT.TLorentzVector(0,0,0,0)
+    e = sqrt(p*p+MASS_E*MASS_E) 
+    lve.SetPxPyPzE(px,py,pz,e)
+    qsq.append(lve.Mag())
+    #qsq
+
+n = plt.hist(qsq,20,(-0.9,0.9))
 
 #print 'bins = ',bins
 #print 'num bins = ',len(bins)
@@ -51,39 +62,6 @@ n = plt.hist(e_p,100,(0,5))
 #plt.show()
 #d.p[0][0]
 #d.hist('p[0][0]')
-
-# <codecell>
-
-#chainlist = '/e1f.2pi.anadir1/h10.lst'
-#rchain= ROOT.TChain("h10")
-#fc = ROOT.TFileCollection("fileList", "", chainlist);
-#rchain.AddFileInfoList(fc.GetList())
-#print rchain.GetEntries()
-
-#arr1 = root2array('/e1f.2pi.datadir1/h10/qskim_3860*','h10')
-
-#import rootpy
-#from rootpy.tree import Tree, TreeModel, TreeChain, FloatCol, IntCol
-#from rootpy.io import root_open
-
-import pylab as P
-
-#
-# The hist() function now has a lot more options
-#
-
-#
-# first create a single histogram
-#
-mu, sigma = 200, 25
-x = mu + sigma*P.randn(10000)
-
-# the histogram of the data with histtype='step'
-n, bins, patches = plt.hist(x, 50, normed=1, histtype='stepfilled')
-P.setp(patches, 'facecolor', 'g', 'alpha', 0.75)
-y = P.normpdf( bins, mu, sigma)
-l = P.plot(bins, y, 'k--', linewidth=1.5)
-P.show()
 
 # <codecell>
 
