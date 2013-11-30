@@ -7,4 +7,3 @@ Quick-Notes Simulation
 	 `c NOMCDATA 'ALL' vs. NOMCDATA 'ALL'`
 	1. ? Difference in __new__ `user_ana.tcl` vs. __old__ `recsis_e1fsim.tcl` 
 
-Test jobs: TrackEvtsPerSeq,TrackEvtsPerSeq2

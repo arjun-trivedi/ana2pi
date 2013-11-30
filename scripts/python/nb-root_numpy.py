@@ -49,9 +49,14 @@ for i in arange(0,len(d.p)):
     e = sqrt(p*p+MASS_E*MASS_E) 
     lve.SetPxPyPzE(px,py,pz,e)
     qsq.append(lve.Mag())
-    #qsq
+ 
+#Directly plot from qsq[]
+#n = plt.hist(qsq,20,(-0.9,0.9))
 
-n = plt.hist(qsq,20,(-0.9,0.9))
+#Or add qsq[] to DF and plot using DF
+d['qsq']=qsq 
+n=plt.hist(d.qsq,20,(-0.9,0.9))
+
 
 #print 'bins = ',bins
 #print 'num bins = ',len(bins)
