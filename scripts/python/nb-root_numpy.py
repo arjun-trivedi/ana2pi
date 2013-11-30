@@ -3,7 +3,7 @@
 
 # <rawcell>
 
-# Data in `h10 Tree` from .root files -> Structured Array -> Pandas DataFrame
+# From a list of ROOT files, gather h10 Trees -> Structured Array -> Pandas DataFrame
 
 # <codecell>
 
