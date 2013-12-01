@@ -157,6 +157,7 @@ void ProcTop::handle(DataH10* dH10) {
 		dAna->fillYields(mYields_Th, kTRUE);
 		dAna->fillHistsMM(mHistsMM_Th, kTRUE);
 		dAna->fillHistsEkin(mHistseKin_Th, kTRUE);
+		EpProcessor::handle(dH10); //atrivedi 120113
 		return; //atrivedi 051013
 	}
 	
@@ -540,7 +541,8 @@ void ProcTop::write(){
 		}
 	}
 	
-	if(dirout->cd("mc")){
+	if(mMakeOnlyMCYields){
+		dirout->cd("mc");
 		mYields_Th->Write();
 		mHistsMM_Th->Write();
 		mHistseKin_Th->Write();
