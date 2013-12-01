@@ -70,4 +70,5 @@ n=plt.hist(d.qsq,20,(-0.9,0.9))
 
 # <codecell>
 
+    
 

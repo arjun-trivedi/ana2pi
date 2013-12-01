@@ -22,8 +22,8 @@ void runSelector(Long64_t nentries=1000000000, TString fin="", TString fout = ""
  }
  //Info("runSelector", "Total number of entries in chain = %d", chain->GetEntries());
   
- /* *** determine DTYPE *** */
- TString h10type; //exp:dtype:skim
+ /* *** determine H10TYPE = (exp:dtype:skim) *** */
+ TString h10type;
  TString h10exp, h10dtype, h10skim;
  Bool_t is_h10e1f, is_h10e16, is_h10exp, is_h10sim = kFALSE;
   
