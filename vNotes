@@ -1,6 +1,0 @@
-ProcYields:
-1. All references to mc/MC --> th/TH
-2. Changed to include "hole" corrections
-3. Removed production of Beam Polarization Observables.
-4. Made some changes to output root file directory structure. Coupled with 3., the output root file
-   is now simpler.
