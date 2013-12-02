@@ -63,3 +63,21 @@ created using HTML markup.</CAPTION>
 Total time to make all yields (e1fs1/e1fd1/e1fs2/e1fd2@08-05-13): 1216.136u 108.406s 8:42:26.76 4.2%      0+0k 4613600+11032408io 3594pf+0w
 
 Total time to process all yields (e1fs1/e1fd1/e1fs2/e1fd2@08-05-13): 9710.398u 85.521s 2:44:10.30 99.4%      0+0k 5710272+3430456io 83pf+0w
+
+##[12-02-13] A TTree matter to debug
+Hi Evan, I am trying to debug a matter related to TTrees. I am unable to directly test the hypothesis of the resolution of the matter, hence am not sure if I am correct. Therefore, I want to describe to you the matter and see if you agree with my hypothesis.
+
+The matter was that I was incorrectly assigning a Branch to a TTree. For example, the `mcp` variable, that I correctly defined on disk as a an array of Floats as:
+Float_t mcp[mcnentr]
+
+was in code being assigned to a Branch with Leaf-structure defined as an array of Integers:
+ mcp[mcnentr]/I  i.e. as an Integer.
+
+The complete code:
+h10skim->Branch("mcp",mcp,"mcp[mcnentr]/I ")
+
+Now, it all seems to work out well when I fill a histogram for `mcp` within the TTree::Loop(), which involves Loading each Entry in the TTree individually (the Binding of the Tree is to the correct data structure on disk i.e. Float_t mcp[mcnentr]) and the filling it in the histogram.
+
+When it does not work is when I directly use TTree::Draw() directly. In that case, the x-axis of histogram contains "bogus" values, which I verified correspond to the incorrectly binding an array of Floats to an array of Ints (I verified this using memcopy)
+
+It is my hypothesis that the Leaf-structure specified during the Branch creation is the default Data Structure to which Branches in a Tree are loaded into and this is why the TTree::Draw() method shows incorrect values. However, in my code I finally over-ride this default Leaf-structure in my DataH10::Bind() function, where the Data Structure for `mcp` is correct and therefore, in the TTree::Loop() method it all works
