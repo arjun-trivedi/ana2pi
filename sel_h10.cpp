@@ -244,7 +244,7 @@ void SelH10::Init(TTree *tree) {
 }
 
 Bool_t SelH10::Notify() {
-	//Info("Notify", "");
+	Info("Notify", "");
 		
 	// The Notify() function is called when a new file is opened. This
 	// can be either for a new TTree in a TChain or when when a new TTree

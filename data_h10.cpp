@@ -41,7 +41,11 @@ void DataH10::Bind(TTree* tree)
 	//evthel only for e1f-exp-h10
 	if (is_e1f && is_exp) fChain->SetBranchAddress("evthel", &evthel, &b_evthel); 
 	
-	//bind the 16 branches (=The-16) that have different data-types in e1f-exp-h10 & e1f-sim-h10/e16-exp-h10/e16-sim-h10
+	/* Bind the The-16 branches that have different data-types in
+	/  e1f-sim-h10,e16-exp-h10 & e16-sim-h10 as compared to e1f-exp-h10
+	   --------------------------------------------------------
+	   The idea is to Reconcile all h10 formats to e1f-exp-h10 
+	   --------------------------------------------------------       */
 	if (is_e1f && is_exp) {
 		//Info("DataH10::Bind()", "binding The-16 e1f-exp-h10 branches\n");
 		fChain->SetBranchAddress("id", id, &b_id);
