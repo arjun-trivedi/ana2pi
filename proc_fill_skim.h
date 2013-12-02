@@ -85,10 +85,10 @@ void ProcFillSkim::handle(DataH10* dH10)
 		if(is_h10sim){
 			_tH10skim->Branch("mcnentr",&dH10->mcnentr,"mcnentr/I");
 			_tH10skim->Branch("mcid",dH10->mcid,"mcid[mcnentr]/I");
-			_tH10skim->Branch("mcp",dH10->mcp,"mcp[mcnentr]/I");
-			_tH10skim->Branch("mctheta",dH10->mctheta,"mctheta[mcnentr]/I");
-			_tH10skim->Branch("mcphi",dH10->mcphi,"mcphi[mcnentr]/I");
-			_tH10skim->Branch("mcm",dH10->mcm,"mcm[mcnentr]/I");
+			_tH10skim->Branch("mcp",dH10->mcp,"mcp[mcnentr]/F");
+			_tH10skim->Branch("mctheta",dH10->mctheta,"mctheta[mcnentr]/F");
+			_tH10skim->Branch("mcphi",dH10->mcphi,"mcphi[mcnentr]/F");
+			_tH10skim->Branch("mcm",dH10->mcm,"mcm[mcnentr]/F");
 		}
 		
 	}
