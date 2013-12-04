@@ -32,4 +32,19 @@ print 'sum(norm_sigma_naive)=',sum(norm_sigma_naive)
 
 # <codecell>
 
+q2l=np.linspace(2,5,5)
+print 'q2l = ',q2min
+
+sigma = (-1/3)*((1/(q2l+0.75)**3)-(1/q2l**3))
+print 'sigma = ',sigma
+norm_sigma = sigma/sigma[0]
+print 'norm_sigma = ',norm_sigma
+print 'sum(norm_sigma)=',sum(norm_sigma)
+
+# <codecell>
+
+20/.03
+
+# <codecell>
+
 

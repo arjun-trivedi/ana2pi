@@ -50,4 +50,12 @@ for grp in df_grpd_A.groups:
 
 # <codecell>
 
+d1 = pd.DataFrame(np.ones((2,2)))
+d2 = pd.DataFrame(np.ones((2,2)))
+print d1
+print d2
+print d1+d2
+
+# <codecell>
+
 
