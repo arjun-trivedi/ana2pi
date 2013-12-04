@@ -15,6 +15,8 @@ def at_hw():
     print 'hello world'
 
 def import_data():
+    """"return d[OLD,COOKED], d[NEW,COOKED]"""
+    print 'method'
     arr={}
     arr[OLD,COOKED] = root2array('/e1f.sim2pi.datadir/comp_old_new_sim/Q2W__1.9-2.5__1.3-1.9/cooked/1.root',
                  'h10')
@@ -27,11 +29,11 @@ def import_data():
 
     d[OLD,COOKED] = d[OLD,COOKED].ix[0:9999] #make size of dn=do
 
-    return d[OLD,COOKED],d[NEW,COOKED]
-
-    #print 'shape of old and new Tree (nrows,ncols) or (nevts,nbranches):'
-    #print d[OLD,COOKED].shape
-    #print d[NEW,COOKED].shape
+    #return d[OLD,COOKED],d[NEW,COOKED]
+    data = {'OLD':d[OLD,COOKED], 'NEW':d[NEW,COOKED]}
+    p = pd.Panel(data)
+    print p['OLD']
+    return p
 
 MASS_E = 0.000511
 MASS_P = 0.93827203

@@ -48,13 +48,21 @@ for grp in df_grpd_A.groups:
         print num1+num2
 
 
+# <rawcell>
+
+# Panel Example
+
 # <codecell>
 
 d1 = pd.DataFrame(np.ones((2,2)))
 d2 = pd.DataFrame(np.ones((2,2)))
-print d1
-print d2
-print d1+d2
+#print d1
+#print d2
+#print d1+d2
+data = {'1':d1, '2': d2}
+pan = pd.Panel(data)
+print 'df1=',pan['1']
+print 'df2=',pan['2']
 
 # <codecell>
 

@@ -5,17 +5,18 @@
 
 from comp_sim import *
 at_hw()
-d={}
+#d={}
 OLD,NEW = range(0,2)
 MCTK,COOKED = range(0,2)
-d[OLD,COOKED],d[NEW,COOKED]=import_data()
+#d[OLD,COOKED],d[NEW,COOKED]=import_data()
+p = import_data()
 
 #addcol_qsq_w(dn)
 
 # <codecell>
 
-print d[OLD,COOKED].shape
-print d[NEW,COOKED].shape
+p['OLD']
+#print d[NEW,COOKED].shape
 
 # <codecell>
 
