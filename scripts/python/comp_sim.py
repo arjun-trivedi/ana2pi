@@ -24,21 +24,19 @@ lvP0 = ROOT.TLorentzVector(0,0,0,MASS_P);
 def at_hw():
     print 'hello world'
 
-def import_data(fold, fnew):
-    """"return panel: items = OLD,NEW; rows,cols = h10 rows, cols"""
-    print 'method'
+NENTRIES=1000
+def import_data(fold,fnew,nentries=NENTRIES):
+    """"return ph10: items,rows,cols = OLD/NEW,h10-rows,h10-cols"""
+    
     global ph10
 
     arr={}
-    arr[OLD,COOKED] = root2array(fold,'h10',stop=1000)
-    arr[NEW,COOKED] = root2array(fnew,'h10',stop=1000)
+    arr[OLD,COOKED] = root2array(fold,'h10',stop=NENTRIES)
+    arr[NEW,COOKED] = root2array(fnew,'h10',stop=NENTRIES)
 
     d={}
     d[OLD,COOKED] = pd.DataFrame(arr[OLD,COOKED])
     d[NEW,COOKED] = pd.DataFrame(arr[NEW,COOKED])
-
-    #d[OLD,COOKED] = d[OLD,COOKED].ix[0:9999] #make size of dn=do
-    #d[NEW,COOKED] = d[NEW,COOKED].ix[0:9999] #make size of dn=do
 
     data = {'OLD':d[OLD,COOKED], 'NEW':d[NEW,COOKED]}
     ph10 = pd.Panel(data)
