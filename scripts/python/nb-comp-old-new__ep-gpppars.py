@@ -18,7 +18,7 @@ ph10=import_data(fold,fnew,10000)
 prep_data()
 
 comp_qsq_w()
-comp_basic()
+#comp_basic()
 
 # <codecell>
 

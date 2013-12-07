@@ -18,7 +18,7 @@ ph10 = import_data(fold,fnew,10000)
 prep_data();
 
 comp_qsq_w()
-comp_basic()
+#comp_basic()
 
 # <codecell>
 
@@ -26,9 +26,6 @@ dfn=ph10['NEW']
 dfo=ph10['OLD']
 n=plt.hist(dfo.el_cz,100,[0.9,1],histtype='step',color='black')
 n=plt.hist(dfn.el_cz,100,[0.9,1],histtype='step',color='red')
-#plt.
-
-#plt.pcolormesh(x,y,h2)
 
 # <codecell>
 
