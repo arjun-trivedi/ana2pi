@@ -17,12 +17,7 @@ fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/q2w2_ye_gpp/cooked/1.root'
 import_data(fold,fnew)
 prep_data();
 
-# <codecell>
-
 comp_qsq_w()
-
-# <codecell>
-
 comp_basic()
 
 # <codecell>

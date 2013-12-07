@@ -17,12 +17,7 @@ fnew = '/e1f.sim2pi.datadir/sim_range_study/q2w2/cooked/1.root'
 import_data(fold,fnew)
 prep_data()
 
-# <codecell>
-
 comp_qsq_w()
-
-# <codecell>
-
 comp_basic()
 
 # <codecell>

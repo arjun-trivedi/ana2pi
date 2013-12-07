@@ -30,14 +30,7 @@ print len(tarr)
 # <codecell>
 
 df = pd.DataFrame(arr)
-print df['etot']
-tarr2 = np.array(df['etot'])
-print tarr2[0]
-print tarr2.shape
-
-print df['etot']
-print df['etot'][0]
-print df['etot'][0][0]
+print df['mcp']
 
 # <codecell>
 

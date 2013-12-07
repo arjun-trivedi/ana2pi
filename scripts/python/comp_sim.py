@@ -23,10 +23,7 @@ lvP0 = ROOT.TLorentzVector(0,0,0,MASS_P);
 
 ELCOLS=['p','cx','cy','cz','etot','ec_ei','ec_eo']
 
-def at_hw():
-    print 'hello world'
-
-NENTRIES=1000
+NENTRIES=2000
 def import_data(fold,fnew,nentries=NENTRIES):
     """"return pnl_h10: items,rows,cols = OLD/NEW,h10-rows,h10-cols"""
     
@@ -55,21 +52,21 @@ def prep_data():
 
 def add_basic_elcol(col,df):
     d=[]
-    for i in np.arange(0,len(df[col])):
-        if len(df[col][i])==0:        
+    for ievt in np.arange(0,len(df[col])):
+        if len(df[col][ievt])==0:        
             d.append(-9999)
         else:
-            d.append(df[col][i][0])
+            d.append(df[col][ievt][0])
     df['el_%s'%(col)]=d
 
 def add_reco_elcols(d):
     qsq = []
     w = []
-    for i in np.arange(0,len(d.el_p)):
-        p = d.el_p[i]
-        px = p * d.el_cx[i]
-        py = p * d.el_cy[i]
-        pz = p * d.el_cz[i]
+    for ievt in np.arange(0,len(d.el_p)):
+        p = d.el_p[ievt]
+        px = p * d.el_cx[ievt]
+        py = p * d.el_cy[ievt]
+        pz = p * d.el_cz[ievt]
         lve = ROOT.TLorentzVector(0,0,0,0)
         e = math.sqrt(p*p+MASS_E*MASS_E) 
         lve.SetPxPyPzE(px,py,pz,e)
@@ -77,38 +74,68 @@ def add_reco_elcols(d):
         lvw = lvq+lvP0
         qsq.append(-lvq.Mag2())
         w.append(lvw.Mag())
-            
     d['qsq']=qsq 
     d['w']=w
 
+    mc_qsq=[]
+    mc_w=[]
+    for ievt in np.arange(0,len(d.mcnentr)):
+        for ipart in np.arange(0,d.mcnentr[ievt]):
+            if d.mcid[ievt][ipart] != 11: continue
+            p=d.mcp[ievt][ipart]
+            theta=math.radians(d.mctheta[ievt][ipart])
+            phi=math.radians(d.mcphi[ievt][ipart])
+            px=p*math.sin(theta)*math.cos(phi)
+            py=p*math.sin(theta)*math.sin(phi)
+            pz=p*math.cos(theta)
+            e=math.sqrt(p*p+MASS_E*MASS_E)
+            lve = ROOT.TLorentzVector(px,py,pz,e)
+            lvq = lvE0-lve
+            lvw = lvq+lvP0
+            mc_qsq.append(-lvq.Mag2())
+            mc_w.append(lvw.Mag())
+    d['mc_qsq']=mc_qsq 
+    d['mc_w']=mc_w
+
+
 def comp_qsq_w():
-    fig = plt.figure(figsize=(5,5))
+    fig = plt.figure(figsize=(8,8))
     fig.suptitle('old-new sim comparison: Reconstructed Q2,W')
     ax_w=fig.add_subplot(211)
     ax_w.set_title('W')
     ax_w.set_xlabel('W(GeV)')
-    n,bins,patches=plt.hist(pnl_h10['OLD'].w,100,(1.0,2.0),
-                            histtype='step',color='black',label='old')
-    n,bins,patches=plt.hist(pnl_h10['NEW'].w,100,(1.0,2.0),
-                            histtype='step',color='red',label='new')
+    plt.hist(pnl_h10['OLD'].w,100,(1.0,2.0),
+         histtype='step',color='black',label='old')
+    plt.hist(pnl_h10['NEW'].w,100,(1.0,2.0),
+         histtype='step',color='red',label='new')
+    plt.hist(pnl_h10['OLD'].mc_w,100,(1.0,2.0),
+         histtype='step',color='green',linestyle='solid',label='mc_old')
+    plt.hist(pnl_h10['NEW'].mc_w,100,(1.0,2.0),
+         histtype='step',color='green',linestyle='dashed',label='mc_new')
+
     ax_qsq=fig.add_subplot(212)
     ax_qsq.set_title('Q2')
     ax_qsq.set_xlabel('Q2(GeV)')
-    n,bins,patches=plt.hist(pnl_h10['OLD'].qsq,100,(1.0,2.0),
-                            histtype='step',color='black',label='old')
-    n,bins,patches=plt.hist(pnl_h10['NEW'].qsq,100,(1.0,2.0),
-                            histtype='step',color='red',label='new')
-    plt.legend()
+    plt.hist(pnl_h10['OLD'].qsq,100,(1.0,2.0),
+         histtype='step',color='black',label='old')
+    plt.hist(pnl_h10['NEW'].qsq,100,(1.0,2.0),
+         histtype='step',color='red',label='new')
+    plt.hist(pnl_h10['OLD'].mc_qsq,100,(1.0,2.0),
+         histtype='step',color='green',linestyle='solid',label='mc_old')
+    plt.hist(pnl_h10['NEW'].mc_qsq,100,(1.0,2.0),
+         histtype='step',color='green',linestyle='dashed',label='mc_new')
+    plt.legend(loc=2)
 
 def comp_basic():
-    fig=plt.figure()
+    fig=plt.figure(figsize=(10,10))
     fig.suptitle('old-new sim comparison: Directly measured data')
-    ax_etot=fig.add_subplot(111)
-    ax_etot.set_title('etot')
-    ax_etot.set_xlabel('etot(GeV)')
-    n,bins,patches=plt.hist(pnl_h10['OLD'].el_etot,100,(0.0,1.0),
+    for icol in np.arange(0,len(ELCOLS)):
+        ax=fig.add_subplot(len(ELCOLS),1,icol+1)
+        ax.set_title(ELCOLS[icol])
+        ax.set_xlabel(ELCOLS[icol])
+        plt.hist(pnl_h10['OLD']['el_%s'%ELCOLS[icol]],100,(0.0,1.0),
                             histtype='step',color='black',label='old')
-    n,bins,patches=plt.hist(pnl_h10['NEW'].el_etot,100,(0.0,1.0),
+        plt.hist(pnl_h10['NEW']['el_%s'%ELCOLS[icol]],100,(0.0,1.0),
                             histtype='step',color='red',label='new')
     
     plt.legend()
