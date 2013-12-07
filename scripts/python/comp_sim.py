@@ -49,29 +49,6 @@ def prep_data():
     addcols(ph10['OLD'])
     addcols(ph10['NEW'])
 
-def addcol_qsq_w(d):
-    qsq = []
-    w = []
-    for i in np.arange(0,len(d.p)):
-        if len(d.p[i])==0:
-            qsq.append(-9999)
-            w.append(-9999)
-        else:
-            p = d.p[i][0]
-            px = p * d.cx[i][0]
-            py = p * d.cy[i][0]
-            pz = p * d.cz[i][0]
-            lve = ROOT.TLorentzVector(0,0,0,0)
-            e = math.sqrt(p*p+MASS_E*MASS_E) 
-            lve.SetPxPyPzE(px,py,pz,e)
-            lvq = lvE0-lve
-            lvw = lvq+lvP0
-            qsq.append(-lvq.Mag2())
-            w.append(lvw.Mag())
-            
-    d['qsq']=qsq 
-    d['w']=w
-
 def addcols(d):
     #new cols to be added to df
     qsq = []
@@ -134,3 +111,26 @@ def comp_basic():
     n,bins,patches=plt.hist(ph10['NEW'].el_etot,100,(0.0,1.0),
                             histtype='step',color='red',label='new')
     plt.legend()
+
+def addcol_qsq_w(d):
+    qsq = []
+    w = []
+    for i in np.arange(0,len(d.p)):
+        if len(d.p[i])==0:
+            qsq.append(-9999)
+            w.append(-9999)
+        else:
+            p = d.p[i][0]
+            px = p * d.cx[i][0]
+            py = p * d.cy[i][0]
+            pz = p * d.cz[i][0]
+            lve = ROOT.TLorentzVector(0,0,0,0)
+            e = math.sqrt(p*p+MASS_E*MASS_E) 
+            lve.SetPxPyPzE(px,py,pz,e)
+            lvq = lvE0-lve
+            lvw = lvq+lvP0
+            qsq.append(-lvq.Mag2())
+            w.append(lvw.Mag())
+            
+    d['qsq']=qsq 
+    d['w']=w
