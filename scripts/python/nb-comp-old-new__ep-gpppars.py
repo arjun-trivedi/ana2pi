@@ -10,7 +10,6 @@
 # <codecell>
 
 from comp_sim import *
-at_hw()
 
 fold = '/e1f.sim2pi.datadir/comp_old_new_sim/Q2W__1.9-2.5__1.3-1.9/cooked/1.root'
 fnew = '/e1f.sim2pi.datadir/sim_range_study/q2w2/cooked/1.root'
