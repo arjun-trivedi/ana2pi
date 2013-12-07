@@ -22,7 +22,7 @@ lvE0 = ROOT.TLorentzVector(0,0,E1F_P,math.sqrt(E1F_P*E1F_P+MASS_E*MASS_E));
 lvP0 = ROOT.TLorentzVector(0,0,0,MASS_P);
 
 ELCOLS=['p','cx','cy','cz','etot','ec_ei','ec_eo']
-XMIN=[0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0]
+XMIN=[0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0]
 XMAX=[5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
 NENTRIES=2000
@@ -32,8 +32,8 @@ def import_data(fold,fnew,nentries=NENTRIES):
     global pnl_h10
 
     #arr={}
-    sar_h10[OLD] = root2array(fold,'h10',stop=NENTRIES)
-    sar_h10[NEW] = root2array(fnew,'h10',stop=NENTRIES)
+    sar_h10[OLD] = root2array(fold,'h10',stop=nentries)
+    sar_h10[NEW] = root2array(fnew,'h10',stop=nentries)
 
     df={}
     df[OLD] = pd.DataFrame(sar_h10[OLD])
@@ -43,6 +43,8 @@ def import_data(fold,fnew,nentries=NENTRIES):
     pnl_h10 = pd.Panel(dpnl)
     print "Number of rows:cols in pnl_h10['OLD']=",pnl_h10['OLD'].shape
     print "Number of rows:cols in pnl_h10['NEW']=",pnl_h10['NEW'].shape
+
+    return pnl_h10;
     
 def prep_data():
     for col in ELCOLS:
@@ -142,14 +144,14 @@ def comp_basic():
 
     plt.legend()
 
-    fig2=plt.figure(figsize=(8,8))
-    fig2.suptitle('2D')
-    ax_old=fig2.add_subplot(211)
-    h2,x,y = np.histogram2d(pnl_h10['OLD'].el_p,pnl_h10['OLD'].el_cz,100,[[0,5],[0.5,1]])
-    plt.pcolormesh(x,y,h2)
-    ax_new=fig2.add_subplot(212)
-    h2,x,y = np.histogram2d(pnl_h10['NEW'].el_p,pnl_h10['NEW'].el_cz,100,[[0,5],[0.5,1]])
-    plt.pcolormesh(x,y,h2)
+    # fig2=plt.figure(figsize=(8,8))
+    # fig2.suptitle('2D')
+    # ax_old=fig2.add_subplot(211)
+    # h2,x,y = np.histogram2d(pnl_h10['OLD'].el_p,pnl_h10['OLD'].el_cz,100,[[0,5],[0.5,1]])
+    # plt.pcolormesh(x,y,h2)
+    # ax_new=fig2.add_subplot(212)
+    # h2,x,y = np.histogram2d(pnl_h10['NEW'].el_p,pnl_h10['NEW'].el_cz,100,[[0,5],[0.5,1]])
+    # plt.pcolormesh(x,y,h2)
 
     
     
