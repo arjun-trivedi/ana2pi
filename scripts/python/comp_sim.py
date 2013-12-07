@@ -22,6 +22,8 @@ lvE0 = ROOT.TLorentzVector(0,0,E1F_P,math.sqrt(E1F_P*E1F_P+MASS_E*MASS_E));
 lvP0 = ROOT.TLorentzVector(0,0,0,MASS_P);
 
 ELCOLS=['p','cx','cy','cz','etot','ec_ei','ec_eo']
+XMIN=[0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0]
+XMAX=[5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
 NENTRIES=2000
 def import_data(fold,fnew,nentries=NENTRIES):
@@ -127,15 +129,27 @@ def comp_qsq_w():
     plt.legend(loc=2)
 
 def comp_basic():
-    fig=plt.figure(figsize=(10,10))
+    fig=plt.figure(figsize=(10,20))
     fig.suptitle('old-new sim comparison: Directly measured data')
     for icol in np.arange(0,len(ELCOLS)):
         ax=fig.add_subplot(len(ELCOLS),1,icol+1)
         ax.set_title(ELCOLS[icol])
         ax.set_xlabel(ELCOLS[icol])
-        plt.hist(pnl_h10['OLD']['el_%s'%ELCOLS[icol]],100,(0.0,1.0),
+        plt.hist(pnl_h10['OLD']['el_%s'%ELCOLS[icol]],100,(XMIN[icol],XMAX[icol]),
                             histtype='step',color='black',label='old')
-        plt.hist(pnl_h10['NEW']['el_%s'%ELCOLS[icol]],100,(0.0,1.0),
+        plt.hist(pnl_h10['NEW']['el_%s'%ELCOLS[icol]],100,(XMIN[icol],XMAX[icol]),
                             histtype='step',color='red',label='new')
-    
+
     plt.legend()
+
+    fig2=plt.figure(figsize=(8,8))
+    fig2.suptitle('2D')
+    ax_old=fig2.add_subplot(211)
+    h2,x,y = np.histogram2d(pnl_h10['OLD'].el_p,pnl_h10['OLD'].el_cz,100,[[0,5],[0.5,1]])
+    plt.pcolormesh(x,y,h2)
+    ax_new=fig2.add_subplot(212)
+    h2,x,y = np.histogram2d(pnl_h10['NEW'].el_p,pnl_h10['NEW'].el_cz,100,[[0,5],[0.5,1]])
+    plt.pcolormesh(x,y,h2)
+
+    
+    
