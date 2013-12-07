@@ -49,21 +49,7 @@ def prep_data():
     for col in ELCOLS:
         add_basic_elcol(col,pnl_h10['OLD'])
         add_basic_elcol(col,pnl_h10['NEW'])
-    # add_basic_elcol('p',pnl_h10['OLD'])
-    # add_basic_elcol('p',pnl_h10['NEW'])
-    # add_basic_elcol('cx',pnl_h10['OLD'])
-    # add_basic_elcol('cx',pnl_h10['NEW'])
-    # add_basic_elcol('cy',pnl_h10['OLD'])
-    # add_basic_elcol('cy',pnl_h10['NEW'])
-    # add_basic_elcol('cz',pnl_h10['OLD'])
-    # add_basic_elcol('cz',pnl_h10['NEW'])
-    # add_basic_elcol('etot',pnl_h10['OLD'])
-    # add_basic_elcol('etot',pnl_h10['NEW'])
-    # add_basic_elcol('ec_ei',pnl_h10['OLD'])
-    # add_basic_elcol('ec_ei',pnl_h10['NEW'])
-    # add_basic_elcol('ec_eo',pnl_h10['OLD'])
-    # add_basic_elcol('ec_eo',pnl_h10['NEW'])
-
+    
     add_reco_elcols(pnl_h10['OLD'])
     add_reco_elcols(pnl_h10['NEW'])
 
