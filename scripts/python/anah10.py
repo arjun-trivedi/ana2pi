@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from mpl_toolkits.axes_grid1 import ImageGrid
-#import matplotlib.pyplot as plt
+#from mpl_toolkits.axes_grid1 import ImageGrid
+import matplotlib.gridspec as gridspec
 
 import math
 
@@ -19,9 +19,9 @@ lvE0 = ROOT.TLorentzVector(0,0,E1F_P,math.sqrt(E1F_P*E1F_P+MASS_E*MASS_E));
 lvP0 = ROOT.TLorentzVector(0,0,0,MASS_P);
 
 EVT_COLS = ['gpart'] 
-EVT_SUB_COLS=['p','cx','cy','cz','etot','ec_ei','ec_eo']
-XMIN=[0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0]
-XMAX=[5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+EVT_SUB_COLS=['p','cx','cy','cz','etot','ec_ei','ec_eo','sc_t']
+XMIN=[0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0,0.0]
+XMAX=[5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,30]
 
 MC_COLS=['mcnentr','mcid','mcp','mctheta','mcphi']
 
@@ -102,47 +102,49 @@ def add_reco_elcols(d):
     d['mc_w']=mc_w
 
 
-def plot_qsq_w():
+def plot_qsq_w(dfs):
     fig = plt.figure(figsize=(8,8))
-    fig.suptitle('old-new sim comparison: Reconstructed Q2,W')
+    fig.suptitle('Reconstructed Q2,W')
     ax_w=fig.add_subplot(211)
     ax_w.set_title('W')
     ax_w.set_xlabel('W(GeV)')
-    plt.hist(pnl_h10['OLD'].w,100,(1.0,2.0),
-         histtype='step',color='black',label='old')
-    plt.hist(pnl_h10['NEW'].w,100,(1.0,2.0),
-         histtype='step',color='red',label='new')
-    plt.hist(pnl_h10['OLD'].mc_w,100,(1.0,2.0),
-         histtype='step',color='green',linestyle='solid',label='mc_old')
-    plt.hist(pnl_h10['NEW'].mc_w,100,(1.0,2.0),
-         histtype='step',color='green',linestyle='dashed',label='mc_new')
+    # plt.hist(pnl_h10['OLD'].w,100,(1.0,2.0),
+    #      histtype='step',color='black',label='old')
+    # plt.hist(pnl_h10['NEW'].w,100,(1.0,2.0),
+    #      histtype='step',color='red',label='new')
+    # plt.hist(pnl_h10['OLD'].mc_w,100,(1.0,2.0),
+    #      histtype='step',color='green',linestyle='solid',label='mc_old')
+    # plt.hist(pnl_h10['NEW'].mc_w,100,(1.0,2.0),
+    #      histtype='step',color='green',linestyle='dashed',label='mc_new')
 
-    ax_qsq=fig.add_subplot(212)
-    ax_qsq.set_title('Q2')
-    ax_qsq.set_xlabel('Q2(GeV)')
-    plt.hist(pnl_h10['OLD'].qsq,100,(1.0,2.0),
-         histtype='step',color='black',label='old')
-    plt.hist(pnl_h10['NEW'].qsq,100,(1.0,2.0),
-         histtype='step',color='red',label='new')
-    plt.hist(pnl_h10['OLD'].mc_qsq,100,(1.0,2.0),
-         histtype='step',color='green',linestyle='solid',label='mc_old')
-    plt.hist(pnl_h10['NEW'].mc_qsq,100,(1.0,2.0),
-         histtype='step',color='green',linestyle='dashed',label='mc_new')
-    plt.legend(loc=2)
+    # ax_qsq=fig.add_subplot(212)
+    # ax_qsq.set_title('Q2')
+    # ax_qsq.set_xlabel('Q2(GeV)')
+    # plt.hist(pnl_h10['OLD'].qsq,100,(1.0,2.0),
+    #      histtype='step',color='black',label='old')
+    # plt.hist(pnl_h10['NEW'].qsq,100,(1.0,2.0),
+    #      histtype='step',color='red',label='new')
+    # plt.hist(pnl_h10['OLD'].mc_qsq,100,(1.0,2.0),
+    #      histtype='step',color='green',linestyle='solid',label='mc_old')
+    # plt.hist(pnl_h10['NEW'].mc_qsq,100,(1.0,2.0),
+    #      histtype='step',color='green',linestyle='dashed',label='mc_new')
+    # plt.legend(loc=2)
 
 def plot_evt_sub_cols(dfs):
     #set up some cosmetics
     colors = cm.rainbow(np.linspace(0,1,len(dfs)))
     labels = ['h10_%d'%i for i in range(len(dfs))]
     
-    fig=plt.figure(figsize=(10,20))
+    fig=plt.figure(figsize=(15,10))
     fig.suptitle('Compare (electron)data from for each sub-detector')
+    gs = gridspec.GridSpec(len(EVT_SUB_COLS)/4,len(EVT_SUB_COLS)/2)
     for icol in np.arange(0,len(EVT_SUB_COLS)):
-        ax=fig.add_subplot(len(EVT_SUB_COLS),1,icol+1)
+        ax=plt.subplot(gs[icol])
         ax.set_title(EVT_SUB_COLS[icol])
         ax.set_xlabel(EVT_SUB_COLS[icol])
         for c,l,df in zip(colors,labels,dfs):
-            plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],100,(XMIN[icol],XMAX[icol]),
-                            histtype='step',color=c,label=l)
+            plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],100,[XMIN[icol],XMAX[icol]],
+                histtype='step',color=c,label=l)
             
     plt.legend() 
+    #plt.show()

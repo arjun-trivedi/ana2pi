@@ -9,16 +9,13 @@
 
 # <codecell>
 
-from comp_sim import *
+from anah10 import *
 
 fold = '/e1f.sim2pi.datadir/comp_old_new_sim/Q2W__1.9-2.5__1.3-1.9/cooked/1.root'
 fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/q2w2_ye_gpp/cooked/1.root'
 
-ph10 = import_data(fold,fnew,10000)
-prep_data();
-
-comp_qsq_w()
-#comp_basic()
+dfs = import_h10([fold,fnew])
+plot_evt_sub_cols(dfs)
 
 # <codecell>
 
