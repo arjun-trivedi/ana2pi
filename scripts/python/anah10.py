@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from mpl_toolkits.axes_grid1 import ImageGrid
 #import matplotlib.pyplot as plt
 
 import math
@@ -41,10 +42,10 @@ def import_h10(rfiles,nentries=NENTRIES,cols=COLS):
         df = pd.DataFrame(ar)
         h10dfs.append(df)
 
-    addcols(h10dfs)        
+    add_cols(h10dfs)        
     return h10dfs;
     
-def addcols(dfs):
+def add_cols(dfs):
     for df in dfs:
         for col in EVT_SUB_COLS:
             add_elcol(col,df)
@@ -101,7 +102,7 @@ def add_reco_elcols(d):
     d['mc_w']=mc_w
 
 
-def comp_qsq_w():
+def plot_qsq_w():
     fig = plt.figure(figsize=(8,8))
     fig.suptitle('old-new sim comparison: Reconstructed Q2,W')
     ax_w=fig.add_subplot(211)
@@ -129,32 +130,19 @@ def comp_qsq_w():
          histtype='step',color='green',linestyle='dashed',label='mc_new')
     plt.legend(loc=2)
 
-def comp_basic(dfs):
+def plot_evt_sub_cols(dfs):
     #set up some cosmetics
     colors = cm.rainbow(np.linspace(0,1,len(dfs)))
+    labels = ['h10_%d'%i for i in range(len(dfs))]
     
     fig=plt.figure(figsize=(10,20))
-    fig.suptitle('old-new sim comparison: Directly measured data')
+    fig.suptitle('Compare (electron)data from for each sub-detector')
     for icol in np.arange(0,len(EVT_SUB_COLS)):
         ax=fig.add_subplot(len(EVT_SUB_COLS),1,icol+1)
         ax.set_title(EVT_SUB_COLS[icol])
         ax.set_xlabel(EVT_SUB_COLS[icol])
-        for c,df in zip(colors,dfs):
+        for c,l,df in zip(colors,labels,dfs):
             plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],100,(XMIN[icol],XMAX[icol]),
-                            histtype='step',color=c,label='old')
-            # plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],100,(XMIN[icol],XMAX[icol]),
-            #                 histtype='step',color='red',label='new')
-
-    plt.legend()
-
-    # fig2=plt.figure(figsize=(8,8))
-    # fig2.suptitle('2D')
-    # ax_old=fig2.add_subplot(211)
-    # h2,x,y = np.histogram2d(pnl_h10['OLD'].el_p,pnl_h10['OLD'].el_cz,100,[[0,5],[0.5,1]])
-    # plt.pcolormesh(x,y,h2)
-    # ax_new=fig2.add_subplot(212)
-    # h2,x,y = np.histogram2d(pnl_h10['NEW'].el_p,pnl_h10['NEW'].el_cz,100,[[0,5],[0.5,1]])
-    # plt.pcolormesh(x,y,h2)
-
-    
-    
+                            histtype='step',color=c,label=l)
+            
+    plt.legend() 
