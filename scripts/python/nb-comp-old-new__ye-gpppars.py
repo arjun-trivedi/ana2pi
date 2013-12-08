@@ -24,8 +24,21 @@ comp_qsq_w()
 
 dfn=ph10['NEW']
 dfo=ph10['OLD']
-n=plt.hist(dfo.el_cz,100,[0.9,1],histtype='step',color='black')
-n=plt.hist(dfn.el_cz,100,[0.9,1],histtype='step',color='red')
+no=plt.hist(dfo.el_cz,100,[0.9,1],histtype='step',color='black')
+nn=plt.hist(dfn.el_cz,100,[0.9,1],histtype='step',color='red')
+print mean(no[0])
+print mean(nn[0])
+#val = dfo.el_cz
+#print val
+#print mean(val)
+#print mean(dfn.el_cz)
+
+# <codecell>
+
+n=plt.hist(dfo.el_cx,100,[0,1],histtype='step',color='black')
+n=plt.hist(dfn.el_cx,100,[0,1],histtype='step',color='red')
+print mean(dfo.el_cx)
+print mean(dfn.el_cx)
 
 # <codecell>
 

@@ -29,4 +29,11 @@ n=plt.hist(dfn.el_cz,100,[0.9,1],histtype='step',color='red')
 
 # <codecell>
 
+n=plt.hist(dfo.el_cx,100,[0,1],histtype='step',color='black')
+n=plt.hist(dfn.el_cx,100,[0,1],histtype='step',color='red')
+print mean(dfo.el_cx)
+print mean(dfn.el_cx)
+
+# <codecell>
+
 
