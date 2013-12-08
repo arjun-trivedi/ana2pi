@@ -102,33 +102,45 @@ def add_reco_elcols(d):
     d['mc_w']=mc_w
 
 
-def plot_qsq_w(dfs):
+def plot_qsq_w(h10dfs):
+    #cosmetics
+    colors = cm.rainbow(np.linspace(0,1,len(h10dfs)))
+    labels = ['%d'%i for i in range(len(h10dfs))]
+    
     fig = plt.figure(figsize=(8,8))
     fig.suptitle('Reconstructed Q2,W')
-    ax_w=fig.add_subplot(211)
-    ax_w.set_title('W')
+    gs = gridspec.GridSpec(2,2)
+    
+    ax_w=plt.subplot(gs[0])
+    ax_w.set_title('rec-W')
     ax_w.set_xlabel('W(GeV)')
-    # plt.hist(pnl_h10['OLD'].w,100,(1.0,2.0),
-    #      histtype='step',color='black',label='old')
-    # plt.hist(pnl_h10['NEW'].w,100,(1.0,2.0),
-    #      histtype='step',color='red',label='new')
-    # plt.hist(pnl_h10['OLD'].mc_w,100,(1.0,2.0),
-    #      histtype='step',color='green',linestyle='solid',label='mc_old')
-    # plt.hist(pnl_h10['NEW'].mc_w,100,(1.0,2.0),
-    #      histtype='step',color='green',linestyle='dashed',label='mc_new')
+    for h10df,c,l in zip(h10dfs,colors,labels):
+        plt.hist(h10df.w,100,(1.0,2.0),
+            histtype='step',color=c,label='rec_%s'%l)
+    
+    ax_qsq=plt.subplot(gs[1])
+    ax_qsq.set_title('rec-Q2')
+    ax_qsq.set_xlabel('Q2(GeV^2)')
+    for h10df,c,l in zip(h10dfs,colors,labels):
+        plt.hist(h10df.qsq,100,(1.0,2.0),
+            histtype='step',color=c,label='rec_%s'%l)
+        plt.legend(loc=2)
 
-    # ax_qsq=fig.add_subplot(212)
-    # ax_qsq.set_title('Q2')
-    # ax_qsq.set_xlabel('Q2(GeV)')
-    # plt.hist(pnl_h10['OLD'].qsq,100,(1.0,2.0),
-    #      histtype='step',color='black',label='old')
-    # plt.hist(pnl_h10['NEW'].qsq,100,(1.0,2.0),
-    #      histtype='step',color='red',label='new')
-    # plt.hist(pnl_h10['OLD'].mc_qsq,100,(1.0,2.0),
-    #      histtype='step',color='green',linestyle='solid',label='mc_old')
-    # plt.hist(pnl_h10['NEW'].mc_qsq,100,(1.0,2.0),
-    #      histtype='step',color='green',linestyle='dashed',label='mc_new')
-    # plt.legend(loc=2)
+    ax_mcw=plt.subplot(gs[2])
+    ax_mcw.set_title('mc-W')
+    ax_mcw.set_xlabel('W(GeV)')
+    for h10df,c,l in zip(h10dfs,colors,labels):
+        plt.hist(h10df.mc_w,100,(1.0,2.0),
+            histtype='step',color=c,label='mc_%s'%l,linestyle='dashed')
+        
+
+    ax_mcqsq=plt.subplot(gs[3])
+    ax_mcqsq.set_title('mc-Q2')
+    ax_mcqsq.set_xlabel('Q2(GeV^2)')
+    for h10df,c,l in zip(h10dfs,colors,labels):
+        plt.hist(h10df.mc_qsq,100,(1.0,2.0),
+            histtype='step',color=c,label='mc_%s'%l,linestyle='dashed')
+        plt.legend(loc=2)
 
 def plot_evt_sub_cols(dfs):
     #set up some cosmetics
@@ -145,6 +157,4 @@ def plot_evt_sub_cols(dfs):
         for c,l,df in zip(colors,labels,dfs):
             plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],100,[XMIN[icol],XMAX[icol]],
                 histtype='step',color=c,label=l)
-            
-    plt.legend() 
-    #plt.show()
+    plt.legend()     
