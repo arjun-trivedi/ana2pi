@@ -19,9 +19,12 @@ lvE0 = ROOT.TLorentzVector(0,0,E1F_P,math.sqrt(E1F_P*E1F_P+MASS_E*MASS_E));
 lvP0 = ROOT.TLorentzVector(0,0,0,MASS_P);
 
 EVT_COLS = ['gpart'] 
-EVT_SUB_COLS=['p','cx','cy','cz','etot','ec_ei','ec_eo','sc_t']
-XMIN=[0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0,0.0]
-XMAX=[5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,30]
+EVT_SUB_COLS=['p','cx', 'cy',  'cz','etot','ec_ei','ec_eo','sc_t']
+NBINS =      [150, 100,  100,  100,  100,   100,    100,    100]
+XMIN=        [2.0, -1.0, -1.0, 0.9,  0.0,   0.0,    0.0,    0.0]
+XMAX=        [4.0, 1.0,  1.0,  1.0,  1.0,   1.0,    1.0,    30]
+#XMIN=        [0.0, -1.0, -1.0, 0.8,  0.0,   0.0,    0.0,    0.0]
+#XMAX=        [5.0, 1.0,  1.0,  1.0,  1.0,   1.0,    1.0,    30]
 
 MC_COLS=['mcnentr','mcid','mcp','mctheta','mcphi']
 
@@ -107,8 +110,8 @@ def plot_qsq_w(h10dfs):
     colors = cm.rainbow(np.linspace(0,1,len(h10dfs)))
     labels = ['%d'%i for i in range(len(h10dfs))]
     
-    fig = plt.figure(figsize=(8,8))
-    fig.suptitle('Reconstructed Q2,W')
+    # fig = plt.figure(figsize=(8,8))
+    # fig.suptitle('Reconstructed Q2,W')
     gs = gridspec.GridSpec(2,2)
     
     ax_w=plt.subplot(gs[0])
@@ -147,14 +150,14 @@ def plot_evt_sub_cols(dfs):
     colors = cm.rainbow(np.linspace(0,1,len(dfs)))
     labels = ['h10_%d'%i for i in range(len(dfs))]
     
-    fig=plt.figure(figsize=(15,10))
-    fig.suptitle('Compare (electron)data from for each sub-detector')
+    #fig=plt.figure(figsize=(10,8))
+    #fig.suptitle('Compare (electron)data from for each sub-detector')
     gs = gridspec.GridSpec(len(EVT_SUB_COLS)/4,len(EVT_SUB_COLS)/2)
     for icol in np.arange(0,len(EVT_SUB_COLS)):
         ax=plt.subplot(gs[icol])
         ax.set_title(EVT_SUB_COLS[icol])
         ax.set_xlabel(EVT_SUB_COLS[icol])
         for c,l,df in zip(colors,labels,dfs):
-            plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],100,[XMIN[icol],XMAX[icol]],
+            plt.hist(df['el_%s'%EVT_SUB_COLS[icol]],NBINS[icol],[XMIN[icol],XMAX[icol]],
                 histtype='step',color=c,label=l)
     plt.legend()     

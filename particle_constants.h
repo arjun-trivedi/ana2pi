@@ -52,7 +52,7 @@ namespace ParticleConstants {
 		return PARTMAP[pdgId];
 	}
 
-    static const Float_t E1F_P = 5.499; //changed from 5.479 --> 5.499
+    static const Float_t E1F_P = 5.499; 
     static const TLorentzVector E1F_4vE0(0,0,E1F_P,TMath::Sqrt(E1F_P*E1F_P+MASS_E*MASS_E));
 	static const TLorentzVector E1F_4vP0(0,0,0,MASS_P);
 
