@@ -110,8 +110,6 @@ def plot_qsq_w(h10dfs):
     colors = cm.rainbow(np.linspace(0,1,len(h10dfs)))
     labels = ['%d'%i for i in range(len(h10dfs))]
     
-    # fig = plt.figure(figsize=(8,8))
-    # fig.suptitle('Reconstructed Q2,W')
     gs = gridspec.GridSpec(2,2)
     
     ax_w=plt.subplot(gs[0])
@@ -150,8 +148,6 @@ def plot_evt_sub_cols(dfs):
     colors = cm.rainbow(np.linspace(0,1,len(dfs)))
     labels = ['h10_%d'%i for i in range(len(dfs))]
     
-    #fig=plt.figure(figsize=(10,8))
-    #fig.suptitle('Compare (electron)data from for each sub-detector')
     gs = gridspec.GridSpec(len(EVT_SUB_COLS)/4,len(EVT_SUB_COLS)/2)
     for icol in np.arange(0,len(EVT_SUB_COLS)):
         ax=plt.subplot(gs[icol])
