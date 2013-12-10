@@ -46,9 +46,9 @@ def run_q2w2_mQ2W(): #DOES MATCH old Q2,W distributions
 
 def plot(runtitle):
 	dfs = import_h10([fold,fnew],nentries)
-	fig = plt.figure('q2w_%s'%runtitle,figsize=(8,8))
+	fig = plt.figure('q2w_%s'%runtitle,figsize=(8,6))
 	fig.suptitle('Reconstructed Q2,W')
 	plot_qsq_w(dfs)
-	fig=plt.figure('det_%s'%runtitle,figsize=(10,8))
+	fig=plt.figure('det_%s'%runtitle,figsize=(10,6))
 	fig.suptitle('Compare (electron)data from for each sub-detector')
 	plot_evt_sub_cols(dfs)

@@ -1,12 +1,14 @@
 Simulation Notes
-======================
+==================
 
 [10-10-13]Starting new Simulation run
 =====================================
+!BEFORE STARTING, Verify following!:
 + Verify why after adding `reconhbook` mcnentr = 499 (out of 500) after Reconstruction.
 + Make sure beam energy for e1f is 5.497 EVERYWHERE (genev.inp, particle_constants, analysisconstants and other scripts)
 
 Potential Issues for Q2,W distributions not matching old-sim:
+-------------------------------------------------------------
 + gpp-pars
 + user_ana.tcl
 + addition of splitbos
@@ -32,6 +34,8 @@ Should match `ep_nosplitbos_noreconhbook`/q2w2 conditions:
 Same as q2w2_mQ2W, but with
 	+ gpp: 
 		+ ADDED `splitbos`
+
+
 
 Miscellaneous Notes
 ===================
