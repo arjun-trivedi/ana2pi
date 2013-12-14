@@ -97,6 +97,9 @@ def add_cols(dfs):
         for col in EC['COLS']:
             add_elcol(col,df)
             add_elcol(col,df)
+        for col in SC['COLS']:
+            add_elcol(col,df)
+            add_elcol(col,df)
     
         add_reco_elcols(df)
         add_reco_elcols(df)

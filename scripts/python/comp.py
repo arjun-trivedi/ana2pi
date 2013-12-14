@@ -63,6 +63,12 @@ def run_test3_gpp_121513(): #[DC-NoMatch:EC-OK]
 	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/test3-gpp_121513/cooked/1.root'
 	plot("run_test3_gpp_121513")
 
+def run_rdcls_gpp_121513(): #[DC-NoMatch:EC-OK]
+	#run_q2w2_mQ2W + splitbos
+	global fnew
+	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/rdcls-gpp_121513/cooked/1.root'
+	plot("run_rdcls_gpp_121513")
+
 def plot(runtitle):
 	dfs = import_h10([fold,fnew],nentries)
 	
@@ -81,3 +87,7 @@ def plot(runtitle):
 	fig=plt.figure('%s_EC'%runtitle,figsize=(10,6))
 	fig.suptitle('Electron data from EC')
 	hists(EL_EC,dfs)
+
+	fig=plt.figure('%s_SC'%runtitle,figsize=(10,6))
+	fig.suptitle('Electron data from SC')
+	hists(EL_SC,dfs)
