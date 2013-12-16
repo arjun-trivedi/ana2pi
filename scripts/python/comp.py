@@ -69,6 +69,12 @@ def run_rdcls_gpp_121513(): #[DC-NoMatch:EC-OK]
 	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/rdcls-gpp_121513/cooked/1.root'
 	plot("run_rdcls_gpp_121513")
 
+def run_test_2pi_VII(): 
+	#test run post addition of elast_gen in `subsim` & `runsim`
+	global fnew
+	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/test_2pi_VII/cooked/1.root'
+	plot("run_test_2pi_VII")
+
 def plot(runtitle):
 	dfs = import_h10([fold,fnew],nentries)
 	
