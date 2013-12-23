@@ -28,7 +28,7 @@ Observations for MM distribtions:
 
 Factors affecting MM distributions
 -----------------------------------
-Momenta of e',p',pip.pim affect MM distributions. To check the Reconstruction + "Correction" of the momenta of the particles:
+Momenta of e',p',pip,pim affect MM distributions. To check the Reconstruction + "Correction" of the momenta of the particles:
 - e': Use Elastic Events 
 - p': ?Use Elastic Events
 - pim,pip: Use Alignment of MM distributions in Data and Sim.

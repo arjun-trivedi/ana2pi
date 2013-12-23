@@ -75,6 +75,12 @@ def run_test_2pi_VII():
 	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/test_2pi_VII/cooked/1.root'
 	plot("run_test_2pi_VII")
 
+#[12-19-13]
+def run_test_atsim(): 
+	global fnew
+	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/test_atsim/cooked/1.root'
+	plot("run_test_atsim")
+
 def plot(runtitle):
 	dfs = import_h10([fold,fnew],nentries)
 	

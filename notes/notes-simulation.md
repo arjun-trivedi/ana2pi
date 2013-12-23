@@ -48,4 +48,5 @@ So far it seems like that the "new-gpp":
 
 Miscellaneous Notes
 ===================
-+ WALLTIME for 5K 2pi-sim-jobs ~ 120 (check log for exact time taken)
++ WALLTIME for 5K 2pi-sim jobs ~ 120 (check log for exact time taken)
++ WALLTIME for 25K elastic-sim jobs ~15. Therefore, 100K jobs = 60 min ?
