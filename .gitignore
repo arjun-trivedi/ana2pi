@@ -7,3 +7,10 @@
 *.ipynb_checkpoints*
 
 *bk*
+
+*latexmk
+*.out
+*.gz
+*.aux
+*.log
+*.toc
