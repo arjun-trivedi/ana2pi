@@ -1,13 +1,26 @@
-*.pyc
-*.h5
+###########
+# general #
+###########
+*bk*
+*.log
 *test*
 *scratch*
 
+###################
+# python specific #
+###################
+*.pyc
+*.h5
+
+##################
+# ipynb specific #
+##################
 *Untitled0*
 *.ipynb_checkpoints*
 
-*bk*
-
+##################
+# latex specific #
+##################
 *latexmk
 *.out
 *.gz
