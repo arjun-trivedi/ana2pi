@@ -103,6 +103,8 @@ public:
 	Float_t mcvy[_MAX_PARTS]; //[mcnentr]
 	Float_t mcvz[_MAX_PARTS]; //[mcnentr]
 	Float_t mctof[_MAX_PARTS]; //[mcnentr]
+
+	//PART Banks
 	
 	//for some Branches of SEB' Banks that are different
 	struct tmp{
@@ -193,6 +195,8 @@ public:
 	TBranch *b_mcvy; //!
 	TBranch *b_mcvz; //!
 	TBranch *b_mctof; //!
+
+	//PART Brances
 };
 
 #endif // DATAH10
