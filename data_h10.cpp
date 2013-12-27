@@ -37,35 +37,10 @@ DataH10::DataH10(TString h10type)
 void DataH10::Bind(TTree* tree)
 {
 	fChain = tree;
-	/* Reconstructed Branches*/
-	//evthel only for e1f-exp-h10
-	if (is_e1f && is_exp) fChain->SetBranchAddress("evthel", &evthel, &b_evthel); 
-	
-	/* Bind the The-16 branches that have different data-types in
-	/  e1f-sim-h10,e16-exp-h10 & e16-sim-h10 as compared to e1f-exp-h10
-	   --------------------------------------------------------
-	   The idea is to Reconcile all h10 formats to e1f-exp-h10 
-	   --------------------------------------------------------       */
-	if (is_e1f && is_exp) {
-		//Info("DataH10::Bind()", "binding The-16 e1f-exp-h10 branches\n");
-		fChain->SetBranchAddress("id", id, &b_id);
-		fChain->SetBranchAddress("stat", stat, &b_stat);
-		fChain->SetBranchAddress("dc", dc, &b_dc);
-		fChain->SetBranchAddress("cc", cc, &b_cc);
-		fChain->SetBranchAddress("sc", sc, &b_sc);
-		fChain->SetBranchAddress("ec", ec, &b_ec);
-		fChain->SetBranchAddress("q", q, &b_q);
-		fChain->SetBranchAddress("dc_sect", dc_sect, &b_dc_sect);
-		fChain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
-		fChain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
-		fChain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
-		fChain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
-		fChain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
-		fChain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
-		fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
-		fChain->SetBranchAddress("nphe", nphe, &b_nphe);
-	}else{ 
-		//Info("DataH10::Bind()", "binding The-16 e1f-sim-h10/e16-exp-h10/e16-sim-h10 branches\n");
+	//Bind SEB Branches
+	if (_h10typ.exp=="e1f" && _h10typ.dtype=="exp") fChain->SetBranchAddress("evthel", &evthel, &b_evthel); 
+	if (_h10typ.rctn=="2pi_userana" || _h10typ.rctn=="elas_userana" ||
+		(_h10typ.exp=="e16" && _h10typ.dtype=="exp")) {//Bind SEB' Branches
 		fChain->SetBranchAddress("id", tmpVars.id, &b_id);
 		fChain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
 		fChain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
@@ -82,6 +57,23 @@ void DataH10::Bind(TTree* tree)
 		fChain->SetBranchAddress("sc_stat", tmpVars.sc_stat, &b_sc_stat);
 		fChain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
 		fChain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
+	}else{//Bind SEB Branches 
+		fChain->SetBranchAddress("id", id, &b_id);
+		fChain->SetBranchAddress("stat", stat, &b_stat);
+		fChain->SetBranchAddress("dc", dc, &b_dc);
+		fChain->SetBranchAddress("cc", cc, &b_cc);
+		fChain->SetBranchAddress("sc", sc, &b_sc);
+		fChain->SetBranchAddress("ec", ec, &b_ec);
+		fChain->SetBranchAddress("q", q, &b_q);
+		fChain->SetBranchAddress("dc_sect", dc_sect, &b_dc_sect);
+		fChain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
+		fChain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
+		fChain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
+		fChain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
+		fChain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
+		fChain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
+		fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
+		fChain->SetBranchAddress("nphe", nphe, &b_nphe);
 	}
 	fChain->SetBranchAddress("evntid", &evntid, &b_evntid);
 	fChain->SetBranchAddress("npart", &npart, &b_npart);
@@ -118,8 +110,8 @@ void DataH10::Bind(TTree* tree)
 	fChain->SetBranchAddress("cc_part", &cc_part, &b_cc_part);
 	fChain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
 	
-	/* Generated events branches */
-	if (is_sim) {
+	//MCTK Branches
+	if (_h10typ.dtyp=="sim" && _h10typ.rctn="2pi") {
 		fChain->SetBranchAddress("vidmvrt", &vidmvrt, &b_vidmvrt);
 		fChain->SetBranchAddress("ntrmvrt", &ntrmvrt, &b_ntrmvrt);
 		fChain->SetBranchAddress("xmvrt", &xmvrt, &b_xmvrt);
@@ -146,37 +138,37 @@ void DataH10::Bind(TTree* tree)
 		fChain->SetBranchAddress("mcvz", mcvz, &b_mcvz);
 		fChain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
+	//PART Branches
+	if (_h10typ.dtyp=="sim" && _h10typ.rctn="elas") {
+	}
 }
 
 void DataH10::Reconcile() {
-	//Info("DataH10::Reconcile()", "\n");
-	if ( (is_e1f && is_sim) || is_e16 ) {
-		for (int i = 0; i < gpart; i++) {
-			id[i] = tmpVars.id[i];
-			stat[i] = tmpVars.stat[i];
-			dc[i] = tmpVars.dc[i];
-			cc[i] = tmpVars.cc[i];
-			sc[i] = tmpVars.sc[i];
-			ec[i] = tmpVars.ec[i];
-			q[i] = tmpVars.q[i];
-		}
-		for (int i = 0; i < dc_part; i++) {
-			dc_sect[i] = tmpVars.dc_sect[i];
-			dc_stat[i] = tmpVars.dc_stat[i];
-		}
-		for (int i = 0; i < ec_part; i++) {
-			ec_stat[i] = tmpVars.ec_stat[i];
-			ec_sect[i] = tmpVars.ec_sect[i];
-		}
-		for (int i = 0; i < sc_part; i++) {
-			sc_stat[i] = tmpVars.sc_stat[i];
-			sc_sect[i] = tmpVars.sc_sect[i];
-			sc_pd[i] = tmpVars.sc_pd[i];
-		}
-		for (int i = 0; i < cc_part; i++) {
-			cc_sect[i] = tmpVars.cc_sect[i];
-			nphe[i] = tmpVars.nphe[i];
-		}
+	for (int i = 0; i < gpart; i++) {
+		id[i] = tmpVars.id[i];
+		stat[i] = tmpVars.stat[i];
+		dc[i] = tmpVars.dc[i];
+		cc[i] = tmpVars.cc[i];
+		sc[i] = tmpVars.sc[i];
+		ec[i] = tmpVars.ec[i];
+		q[i] = tmpVars.q[i];
+	}
+	for (int i = 0; i < dc_part; i++) {
+		dc_sect[i] = tmpVars.dc_sect[i];
+		dc_stat[i] = tmpVars.dc_stat[i];
+	}
+	for (int i = 0; i < ec_part; i++) {
+		ec_stat[i] = tmpVars.ec_stat[i];
+		ec_sect[i] = tmpVars.ec_sect[i];
+	}
+	for (int i = 0; i < sc_part; i++) {
+		sc_stat[i] = tmpVars.sc_stat[i];
+		sc_sect[i] = tmpVars.sc_sect[i];
+		sc_pd[i] = tmpVars.sc_pd[i];
+	}
+	for (int i = 0; i < cc_part; i++) {
+		cc_sect[i] = tmpVars.cc_sect[i];
+		nphe[i] = tmpVars.nphe[i];
 	}
 }
 

@@ -1,3 +1,9 @@
+/**********************************/
+/* Class that holds data structures
+   to which the Branches of h10-Trees are Bound.
+   For more on Branches/Banks and Binding read:
+   at-h10/formats/README
+*/
 #ifndef DATAH10
 #define DATAH10
 
@@ -29,7 +35,8 @@ public:
 
 	static const int _MAX_PARTS = 40;
 	
-	//common
+	/* *** Data Structures for Binding Branches *** */
+	// SEB Banks
 	UInt_t evntid;
 	Char_t evthel;
 	UChar_t npart;
@@ -82,19 +89,7 @@ public:
 	Int_t cc_segm[_MAX_PARTS]; //[cc_part]
 	UShort_t nphe[_MAX_PARTS]; //[cc_part]
 	
-	//thrown physics values (mctk)
-	Int_t vidmvrt;
-	Int_t ntrmvrt;
-	Float_t xmvrt;
-	Float_t ymvrt;
-	Float_t zmvrt;
-	Float_t ch2mvrt;
-	Float_t cxxmvrt;
-	Float_t cxymvrt;
-	Float_t cxzmvrt;
-	Float_t cyymvrt;
-	Float_t cyzmvrt;
-	Int_t stamvrt;
+	//MCTK Banks
 	Int_t mcnentr;
 	UChar_t mcnpart;
 	Int_t mcst[_MAX_PARTS]; //[mcnentr]
@@ -109,9 +104,7 @@ public:
 	Float_t mcvz[_MAX_PARTS]; //[mcnentr]
 	Float_t mctof[_MAX_PARTS]; //[mcnentr]
 	
-	/*tmp variables for making e1f-sim-h10, e16-exp-h10, e16-sim-h10 compatible with e1f-exp-h10 binding.
-	  The following array-variables serve for binding e1f-sim-h10, e16-exp-h10, e16-sim-h10 tree variables
-	  that are different from e1f-exp-h10 tree variables. They are later "Reconciled" with e1f-exp-h10 tree binding array-variables.  */
+	//for some Branches of SEB' Banks that are different
 	struct tmp{
 		Int_t id[_MAX_PARTS]; //[gpart]
 		Int_t stat[_MAX_PARTS]; //[gpart]
@@ -131,42 +124,11 @@ public:
 		Int_t nphe[_MAX_PARTS]; //[cc_part]
 	} tmpVars;
 	
-	// List of branches
-	/* ***** ANA_USER FROM GSIM BRANCHES ***** */
-	TBranch *b_dc_vx; //!
-	TBranch *b_dc_vy; //!
-	TBranch *b_dc_vz; //!
-	TBranch *b_vidmvrt; //!
-	TBranch *b_ntrmvrt; //!
-	TBranch *b_xmvrt; //!
-	TBranch *b_ymvrt; //!
-	TBranch *b_zmvrt; //!
-	TBranch *b_ch2mvrt; //!
-	TBranch *b_cxxmvrt; //!
-	TBranch *b_cxymvrt; //!
-	TBranch *b_cxzmvrt; //!
-	TBranch *b_cyymvrt; //!
-	TBranch *b_cyzmvrt; //!
-	TBranch *b_stamvrt; //!
-	TBranch *b_mcnentr; //!
-	TBranch *b_mcnpart; //!
-	TBranch *b_mcst; //!
-	TBranch *b_mcid; //!
-	TBranch *b_mcpid; //!
-	TBranch *b_mctheta; //!
-	TBranch *b_mcphi; //!
-	TBranch *b_mcp; //!
-	TBranch *b_mcm; //!
-	TBranch *b_mcvx; //!
-	TBranch *b_mcvy; //!
-	TBranch *b_mcvz; //!
-	TBranch *b_mctof; //!
-	
-	/* ***** EXP SPECIFIC BRANCHES ***** */
-	TBranch *b_evthel;
-
-	/* ***** COMMON BRANCHES ****** */
+		
+	/* *** Branches in h10 Trees *** */
+	//SEB (=SEB') Branches
 	TBranch *b_evntid; //!
+	TBranch *b_evthel;
 	TBranch *b_npart; //!
 	TBranch *b_q_l; //!
 	TBranch *b_t_l; //!
@@ -216,6 +178,21 @@ public:
 	TBranch *b_cc_sect; //!
 	TBranch *b_cc_segm; //!
 	TBranch *b_nphe; //!
+
+	//MCTK Branches 
+	TBranch *b_mcnentr; //!
+	TBranch *b_mcnpart; //!
+	TBranch *b_mcst; //!
+	TBranch *b_mcid; //!
+	TBranch *b_mcpid; //!
+	TBranch *b_mctheta; //!
+	TBranch *b_mcphi; //!
+	TBranch *b_mcp; //!
+	TBranch *b_mcm; //!
+	TBranch *b_mcvx; //!
+	TBranch *b_mcvy; //!
+	TBranch *b_mcvz; //!
+	TBranch *b_mctof; //!
 };
 
 #endif // DATAH10
