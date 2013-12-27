@@ -164,6 +164,7 @@ DataH10::~DataH10()
 
 void DataH10::Clear()
 {	
+	//SEB
 	evntid = 0;
 	evthel = 0;
 	npart = 0;;
@@ -216,6 +217,7 @@ void DataH10::Clear()
 	memset(cc_segm, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(nphe, 0, sizeof(UShort_t) * _MAX_PARTS);
 
+	//MCTK
 	mcnentr = mcnpart = 0;
 	memset(mcid, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(mcst, 0, sizeof(Int_t) * _MAX_PARTS);
