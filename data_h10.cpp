@@ -11,16 +11,14 @@ DataH10::DataH10(TString h10type)
 	h10typ.dtyp = h10type_tokens->At(1)->GetName();
 	h10typ.rctn = h10type_tokens->At(2)->GetName();
 
-	if (h10type.exp=="e1f") {
-		is_e1f = kTRUE;
+	if (h10typ.exp=="e1f") {
 		lvE0 = E1F_lvE0;
 		lvP0 = E1F_lvP0;
-	}else if (h10type.exp=="e16") {
-		is_e16 = kTRUE;
+	}else if (h10typ.exp=="e16") {
 		lvE0 = E16_lvE0;
 		lvP0 = E16_lvP0;
 	}
-	else Info("DataH10::DataH10()", "Could not determine h10type.exp!\n");
+	else Info("DataH10::DataH10()", "Could not determine h10typ.exp!\n");
 		
 	run = 0;
 	memset(fn, 0, 256);
@@ -30,9 +28,9 @@ void DataH10::Bind(TTree* tree)
 {
 	h10chain = tree;
 	//Bind SEB Branches
-	if (_h10typ.exp=="e1f" && _h10typ.dtype=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel); 
-	if (_h10typ.rctn=="2pi_userana" || _h10typ.rctn=="elas_userana" ||
-		(_h10typ.exp=="e16" && _h10typ.dtype=="exp")) {//Bind SEB' Branches
+	if (h10typ.exp=="e1f" && h10typ.dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel); 
+	if (h10typ.rctn=="2pi_userana" || h10typ.rctn=="elas_userana" ||
+		(h10typ.exp=="e16" && h10typ.dtyp=="exp")) {//Bind SEB' Branches
 		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
 		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
 		h10chain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
@@ -103,19 +101,7 @@ void DataH10::Bind(TTree* tree)
 	h10chain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
 	
 	//MCTK Branches
-	if (_h10typ.dtyp=="sim" && _h10typ.rctn="2pi") {
-		h10chain->SetBranchAddress("vidmvrt", &vidmvrt, &b_vidmvrt);
-		h10chain->SetBranchAddress("ntrmvrt", &ntrmvrt, &b_ntrmvrt);
-		h10chain->SetBranchAddress("xmvrt", &xmvrt, &b_xmvrt);
-		h10chain->SetBranchAddress("ymvrt", &ymvrt, &b_ymvrt);
-		h10chain->SetBranchAddress("zmvrt", &zmvrt, &b_zmvrt);
-		h10chain->SetBranchAddress("ch2mvrt", &ch2mvrt, &b_ch2mvrt);
-		h10chain->SetBranchAddress("cxxmvrt", &cxxmvrt, &b_cxxmvrt);
-		h10chain->SetBranchAddress("cxymvrt", &cxymvrt, &b_cxymvrt);
-		h10chain->SetBranchAddress("cxzmvrt", &cxzmvrt, &b_cxzmvrt);
-		h10chain->SetBranchAddress("cyymvrt", &cyymvrt, &b_cyymvrt);
-		h10chain->SetBranchAddress("cyzmvrt", &cyzmvrt, &b_cyzmvrt);
-		h10chain->SetBranchAddress("stamvrt", &stamvrt, &b_stamvrt);
+	if (h10typ.dtyp=="sim" && h10typ.rctn=="2pi") {
 		h10chain->SetBranchAddress("mcnentr", &mcnentr, &b_mcnentr);
 		h10chain->SetBranchAddress("mcnpart", &mcnpart, &b_mcnpart);
 		h10chain->SetBranchAddress("mcst", mcst, &b_mcst);
@@ -131,7 +117,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
-	if (_h10typ.dtyp=="sim" && _h10typ.rctn="elas") {
+	if (h10typ.dtyp=="sim" && h10typ.rctn=="elas") {
 	}
 }
 

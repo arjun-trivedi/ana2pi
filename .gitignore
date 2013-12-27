@@ -2,7 +2,7 @@
 # general #
 ###########
 *bk*
-*.log
+*log
 *test*
 *scratch*
 
