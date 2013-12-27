@@ -11,25 +11,30 @@
 #include <TChain.h>
 #include <TLorentzVector.h>
 
+struct H10Typ{
+	TString exp;
+	TString dtyp;
+	TString rctn;
+};
+
 class DataH10
 {
 
 public:
 
-	TTree* fChain;
-	Bool_t is_e1f,is_e16,is_exp,is_sim;
-	TString exp,dtype,skim;
-		
-	Int_t run;
-	Char_t fn[256];
-	Char_t bn[64];
-		
 	DataH10(TString h10type);
 	~DataH10();
 	void Bind(TTree* tree);
 	void Reconcile();
 	void Clear();
 	
+	H10Typ h10typ;
+	TTree* h10chain;
+			
+	Int_t run;
+	Char_t fn[256];
+	Char_t bn[64];
+		
 	TLorentzVector lvE0;
 	TLorentzVector lvP0;
 

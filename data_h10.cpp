@@ -3,8 +3,14 @@
 
 using namespace ParticleConstants;
 
-DataH10::DataH10(H10Typ h10typ)
+DataH10::DataH10(TString h10type)
 {
+	//Determint h10typ
+	TObjArray *h10type_tokens = h10type.Tokenize(":");
+	h10typ.exp  = h10type_tokens->At(0)->GetName();
+	h10typ.dtyp = h10type_tokens->At(1)->GetName();
+	h10typ.rctn = h10type_tokens->At(2)->GetName();
+
 	if (h10type.exp=="e1f") {
 		is_e1f = kTRUE;
 		lvE0 = E1F_lvE0;
@@ -22,107 +28,107 @@ DataH10::DataH10(H10Typ h10typ)
 }
 void DataH10::Bind(TTree* tree)
 {
-	fChain = tree;
+	h10chain = tree;
 	//Bind SEB Branches
-	if (_h10typ.exp=="e1f" && _h10typ.dtype=="exp") fChain->SetBranchAddress("evthel", &evthel, &b_evthel); 
+	if (_h10typ.exp=="e1f" && _h10typ.dtype=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel); 
 	if (_h10typ.rctn=="2pi_userana" || _h10typ.rctn=="elas_userana" ||
 		(_h10typ.exp=="e16" && _h10typ.dtype=="exp")) {//Bind SEB' Branches
-		fChain->SetBranchAddress("id", tmpVars.id, &b_id);
-		fChain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
-		fChain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
-		fChain->SetBranchAddress("cc", tmpVars.cc, &b_cc);
-		fChain->SetBranchAddress("sc", tmpVars.sc, &b_sc);
-		fChain->SetBranchAddress("ec", tmpVars.ec, &b_ec);
-		fChain->SetBranchAddress("q", tmpVars.q, &b_q);
-		fChain->SetBranchAddress("dc_sect", tmpVars.dc_sect, &b_dc_sect);
-		fChain->SetBranchAddress("dc_stat", tmpVars.dc_stat, &b_dc_stat);
-		fChain->SetBranchAddress("ec_stat", tmpVars.ec_stat, &b_ec_stat);
-		fChain->SetBranchAddress("ec_sect", tmpVars.ec_sect, &b_ec_sect);
-		fChain->SetBranchAddress("sc_sect", tmpVars.sc_sect, &b_sc_sect);
-		fChain->SetBranchAddress("sc_pd", tmpVars.sc_pd, &b_sc_pd);
-		fChain->SetBranchAddress("sc_stat", tmpVars.sc_stat, &b_sc_stat);
-		fChain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
-		fChain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
+		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
+		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
+		h10chain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
+		h10chain->SetBranchAddress("cc", tmpVars.cc, &b_cc);
+		h10chain->SetBranchAddress("sc", tmpVars.sc, &b_sc);
+		h10chain->SetBranchAddress("ec", tmpVars.ec, &b_ec);
+		h10chain->SetBranchAddress("q", tmpVars.q, &b_q);
+		h10chain->SetBranchAddress("dc_sect", tmpVars.dc_sect, &b_dc_sect);
+		h10chain->SetBranchAddress("dc_stat", tmpVars.dc_stat, &b_dc_stat);
+		h10chain->SetBranchAddress("ec_stat", tmpVars.ec_stat, &b_ec_stat);
+		h10chain->SetBranchAddress("ec_sect", tmpVars.ec_sect, &b_ec_sect);
+		h10chain->SetBranchAddress("sc_sect", tmpVars.sc_sect, &b_sc_sect);
+		h10chain->SetBranchAddress("sc_pd", tmpVars.sc_pd, &b_sc_pd);
+		h10chain->SetBranchAddress("sc_stat", tmpVars.sc_stat, &b_sc_stat);
+		h10chain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
+		h10chain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
 	}else{//Bind SEB Branches 
-		fChain->SetBranchAddress("id", id, &b_id);
-		fChain->SetBranchAddress("stat", stat, &b_stat);
-		fChain->SetBranchAddress("dc", dc, &b_dc);
-		fChain->SetBranchAddress("cc", cc, &b_cc);
-		fChain->SetBranchAddress("sc", sc, &b_sc);
-		fChain->SetBranchAddress("ec", ec, &b_ec);
-		fChain->SetBranchAddress("q", q, &b_q);
-		fChain->SetBranchAddress("dc_sect", dc_sect, &b_dc_sect);
-		fChain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
-		fChain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
-		fChain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
-		fChain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
-		fChain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
-		fChain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
-		fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
-		fChain->SetBranchAddress("nphe", nphe, &b_nphe);
+		h10chain->SetBranchAddress("id", id, &b_id);
+		h10chain->SetBranchAddress("stat", stat, &b_stat);
+		h10chain->SetBranchAddress("dc", dc, &b_dc);
+		h10chain->SetBranchAddress("cc", cc, &b_cc);
+		h10chain->SetBranchAddress("sc", sc, &b_sc);
+		h10chain->SetBranchAddress("ec", ec, &b_ec);
+		h10chain->SetBranchAddress("q", q, &b_q);
+		h10chain->SetBranchAddress("dc_sect", dc_sect, &b_dc_sect);
+		h10chain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
+		h10chain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
+		h10chain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
+		h10chain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
+		h10chain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
+		h10chain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
+		h10chain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
+		h10chain->SetBranchAddress("nphe", nphe, &b_nphe);
 	}
-	fChain->SetBranchAddress("evntid", &evntid, &b_evntid);
-	fChain->SetBranchAddress("npart", &npart, &b_npart);
-	fChain->SetBranchAddress("q_l", &q_l, &b_q_l);
-	fChain->SetBranchAddress("t_l", &t_l, &b_t_l);
-	fChain->SetBranchAddress("tr_time", &tr_time, &b_tr_time);
-	fChain->SetBranchAddress("gpart", &gpart, &b_gpart);
-	fChain->SetBranchAddress("p", p, &b_p);
-	fChain->SetBranchAddress("m", m, &b_m);
-	fChain->SetBranchAddress("b", b, &b_b);
-	fChain->SetBranchAddress("cx", cx, &b_cx);
-	fChain->SetBranchAddress("cy", cy, &b_cy);
-	fChain->SetBranchAddress("cz", cz, &b_cz);
-	fChain->SetBranchAddress("vx", vx, &b_vx);
-	fChain->SetBranchAddress("vy", vy, &b_vy);
-	fChain->SetBranchAddress("vz", vz, &b_vz);
-	fChain->SetBranchAddress("dc_part", &dc_part, &b_dc_part);
-	fChain->SetBranchAddress("dc_xsc", dc_xsc, &b_dc_xsc);
-	fChain->SetBranchAddress("dc_ysc", dc_ysc, &b_dc_ysc);
-	fChain->SetBranchAddress("dc_zsc", dc_zsc, &b_dc_zsc);
-	fChain->SetBranchAddress("dc_cxsc", dc_cxsc, &b_dc_cxsc);
-	fChain->SetBranchAddress("dc_cysc", dc_cysc, &b_dc_cysc);
-	fChain->SetBranchAddress("dc_czsc", dc_czsc, &b_dc_czsc);
-	fChain->SetBranchAddress("ec_part", &ec_part, &b_ec_part);
-	fChain->SetBranchAddress("etot", etot, &b_etot);
-	fChain->SetBranchAddress("ec_ei", ec_ei, &b_ec_ei);
-	fChain->SetBranchAddress("ec_eo", ec_eo, &b_ec_eo);
-	fChain->SetBranchAddress("ech_x", ech_x, &b_ech_x);
-	fChain->SetBranchAddress("ech_y", ech_y, &b_ech_y);
-	fChain->SetBranchAddress("ech_z", ech_z, &b_ech_z);
-	fChain->SetBranchAddress("sc_part", &sc_part, &b_sc_part);
-	fChain->SetBranchAddress("sc_t", sc_t, &b_sc_t);
-	fChain->SetBranchAddress("sc_r", sc_r, &b_sc_r);
-	fChain->SetBranchAddress("cc_part", &cc_part, &b_cc_part);
-	fChain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
+	h10chain->SetBranchAddress("evntid", &evntid, &b_evntid);
+	h10chain->SetBranchAddress("npart", &npart, &b_npart);
+	h10chain->SetBranchAddress("q_l", &q_l, &b_q_l);
+	h10chain->SetBranchAddress("t_l", &t_l, &b_t_l);
+	h10chain->SetBranchAddress("tr_time", &tr_time, &b_tr_time);
+	h10chain->SetBranchAddress("gpart", &gpart, &b_gpart);
+	h10chain->SetBranchAddress("p", p, &b_p);
+	h10chain->SetBranchAddress("m", m, &b_m);
+	h10chain->SetBranchAddress("b", b, &b_b);
+	h10chain->SetBranchAddress("cx", cx, &b_cx);
+	h10chain->SetBranchAddress("cy", cy, &b_cy);
+	h10chain->SetBranchAddress("cz", cz, &b_cz);
+	h10chain->SetBranchAddress("vx", vx, &b_vx);
+	h10chain->SetBranchAddress("vy", vy, &b_vy);
+	h10chain->SetBranchAddress("vz", vz, &b_vz);
+	h10chain->SetBranchAddress("dc_part", &dc_part, &b_dc_part);
+	h10chain->SetBranchAddress("dc_xsc", dc_xsc, &b_dc_xsc);
+	h10chain->SetBranchAddress("dc_ysc", dc_ysc, &b_dc_ysc);
+	h10chain->SetBranchAddress("dc_zsc", dc_zsc, &b_dc_zsc);
+	h10chain->SetBranchAddress("dc_cxsc", dc_cxsc, &b_dc_cxsc);
+	h10chain->SetBranchAddress("dc_cysc", dc_cysc, &b_dc_cysc);
+	h10chain->SetBranchAddress("dc_czsc", dc_czsc, &b_dc_czsc);
+	h10chain->SetBranchAddress("ec_part", &ec_part, &b_ec_part);
+	h10chain->SetBranchAddress("etot", etot, &b_etot);
+	h10chain->SetBranchAddress("ec_ei", ec_ei, &b_ec_ei);
+	h10chain->SetBranchAddress("ec_eo", ec_eo, &b_ec_eo);
+	h10chain->SetBranchAddress("ech_x", ech_x, &b_ech_x);
+	h10chain->SetBranchAddress("ech_y", ech_y, &b_ech_y);
+	h10chain->SetBranchAddress("ech_z", ech_z, &b_ech_z);
+	h10chain->SetBranchAddress("sc_part", &sc_part, &b_sc_part);
+	h10chain->SetBranchAddress("sc_t", sc_t, &b_sc_t);
+	h10chain->SetBranchAddress("sc_r", sc_r, &b_sc_r);
+	h10chain->SetBranchAddress("cc_part", &cc_part, &b_cc_part);
+	h10chain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
 	
 	//MCTK Branches
 	if (_h10typ.dtyp=="sim" && _h10typ.rctn="2pi") {
-		fChain->SetBranchAddress("vidmvrt", &vidmvrt, &b_vidmvrt);
-		fChain->SetBranchAddress("ntrmvrt", &ntrmvrt, &b_ntrmvrt);
-		fChain->SetBranchAddress("xmvrt", &xmvrt, &b_xmvrt);
-		fChain->SetBranchAddress("ymvrt", &ymvrt, &b_ymvrt);
-		fChain->SetBranchAddress("zmvrt", &zmvrt, &b_zmvrt);
-		fChain->SetBranchAddress("ch2mvrt", &ch2mvrt, &b_ch2mvrt);
-		fChain->SetBranchAddress("cxxmvrt", &cxxmvrt, &b_cxxmvrt);
-		fChain->SetBranchAddress("cxymvrt", &cxymvrt, &b_cxymvrt);
-		fChain->SetBranchAddress("cxzmvrt", &cxzmvrt, &b_cxzmvrt);
-		fChain->SetBranchAddress("cyymvrt", &cyymvrt, &b_cyymvrt);
-		fChain->SetBranchAddress("cyzmvrt", &cyzmvrt, &b_cyzmvrt);
-		fChain->SetBranchAddress("stamvrt", &stamvrt, &b_stamvrt);
-		fChain->SetBranchAddress("mcnentr", &mcnentr, &b_mcnentr);
-		fChain->SetBranchAddress("mcnpart", &mcnpart, &b_mcnpart);
-		fChain->SetBranchAddress("mcst", mcst, &b_mcst);
-		fChain->SetBranchAddress("mcid", mcid, &b_mcid);
-		fChain->SetBranchAddress("mcpid", mcpid, &b_mcpid);
-		fChain->SetBranchAddress("mctheta", mctheta, &b_mctheta);
-		fChain->SetBranchAddress("mcphi", mcphi, &b_mcphi);
-		fChain->SetBranchAddress("mcp", mcp, &b_mcp);
-		fChain->SetBranchAddress("mcm", mcm, &b_mcm);
-		fChain->SetBranchAddress("mcvx", mcvx, &b_mcvx);
-		fChain->SetBranchAddress("mcvy", mcvy, &b_mcvy);
-		fChain->SetBranchAddress("mcvz", mcvz, &b_mcvz);
-		fChain->SetBranchAddress("mctof", mctof, &b_mctof);
+		h10chain->SetBranchAddress("vidmvrt", &vidmvrt, &b_vidmvrt);
+		h10chain->SetBranchAddress("ntrmvrt", &ntrmvrt, &b_ntrmvrt);
+		h10chain->SetBranchAddress("xmvrt", &xmvrt, &b_xmvrt);
+		h10chain->SetBranchAddress("ymvrt", &ymvrt, &b_ymvrt);
+		h10chain->SetBranchAddress("zmvrt", &zmvrt, &b_zmvrt);
+		h10chain->SetBranchAddress("ch2mvrt", &ch2mvrt, &b_ch2mvrt);
+		h10chain->SetBranchAddress("cxxmvrt", &cxxmvrt, &b_cxxmvrt);
+		h10chain->SetBranchAddress("cxymvrt", &cxymvrt, &b_cxymvrt);
+		h10chain->SetBranchAddress("cxzmvrt", &cxzmvrt, &b_cxzmvrt);
+		h10chain->SetBranchAddress("cyymvrt", &cyymvrt, &b_cyymvrt);
+		h10chain->SetBranchAddress("cyzmvrt", &cyzmvrt, &b_cyzmvrt);
+		h10chain->SetBranchAddress("stamvrt", &stamvrt, &b_stamvrt);
+		h10chain->SetBranchAddress("mcnentr", &mcnentr, &b_mcnentr);
+		h10chain->SetBranchAddress("mcnpart", &mcnpart, &b_mcnpart);
+		h10chain->SetBranchAddress("mcst", mcst, &b_mcst);
+		h10chain->SetBranchAddress("mcid", mcid, &b_mcid);
+		h10chain->SetBranchAddress("mcpid", mcpid, &b_mcpid);
+		h10chain->SetBranchAddress("mctheta", mctheta, &b_mctheta);
+		h10chain->SetBranchAddress("mcphi", mcphi, &b_mcphi);
+		h10chain->SetBranchAddress("mcp", mcp, &b_mcp);
+		h10chain->SetBranchAddress("mcm", mcm, &b_mcm);
+		h10chain->SetBranchAddress("mcvx", mcvx, &b_mcvx);
+		h10chain->SetBranchAddress("mcvy", mcvy, &b_mcvy);
+		h10chain->SetBranchAddress("mcvz", mcvz, &b_mcvz);
+		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
 	if (_h10typ.dtyp=="sim" && _h10typ.rctn="elas") {
