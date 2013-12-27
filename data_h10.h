@@ -30,8 +30,8 @@ public:
 	void Reconcile();
 	void Clear();
 	
-	TLorentzVector _4vE0;
-	TLorentzVector _4vP0;
+	TLorentzVector lvE0;
+	TLorentzVector lvP0;
 
 	static const int _MAX_PARTS = 40;
 	

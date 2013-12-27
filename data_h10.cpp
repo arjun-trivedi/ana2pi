@@ -3,33 +3,19 @@
 
 using namespace ParticleConstants;
 
-DataH10::DataH10(TString h10type)
+DataH10::DataH10(H10Typ h10typ)
 {
-	/* Determint h10type */
-	is_e1f = is_e16 = is_exp = is_sim = kFALSE;
-	TObjArray *h10type_tokens = h10type.Tokenize(":");
-	exp   = h10type_tokens->At(0)->GetName();
-	dtype = h10type_tokens->At(1)->GetName();
-	if (h10type_tokens->GetEntries() == 3) skim = h10type_tokens->At(2)->GetName();
-	
-	if (exp.EqualTo("e1f")) {
+	if (h10type.exp=="e1f") {
 		is_e1f = kTRUE;
-		_4vE0 = E1F_4vE0;
-		_4vP0 = E1F_4vP0;
-	}else if (exp.EqualTo("e16")) {
+		lvE0 = E1F_lvE0;
+		lvP0 = E1F_lvP0;
+	}else if (h10type.exp=="e16") {
 		is_e16 = kTRUE;
-		_4vE0 = E16_4vE0;
-		_4vP0 = E16_4vP0;
+		lvE0 = E16_lvE0;
+		lvP0 = E16_lvP0;
 	}
-	else Info("DataH10::DataH10()", "Could not determine h10type.experiment!\n");
-	
-	if (dtype.EqualTo("exp")) is_exp = kTRUE;
-	else if (dtype.EqualTo("sim")) is_sim = kTRUE;
-	else Info("DataH10::DataH10()", "Could not determine h10type.dtype!\n");
-	
-	Info("DataH10::DataH10()", "DataH10 intitialized with following h10type: %s:%s:%s\n", exp.Data(), dtype.Data(), skim.Data());
-	/* *** */
-	
+	else Info("DataH10::DataH10()", "Could not determine h10type.exp!\n");
+		
 	run = 0;
 	memset(fn, 0, 256);
 	memset(bn, 0, 64);
@@ -191,7 +177,6 @@ void DataH10::Clear()
 	memset(cc, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(sc, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(ec, 0, sizeof(UChar_t) * _MAX_PARTS);
-//	memset(lec, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(p, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(m, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(q, 0, sizeof(Char_t) * _MAX_PARTS);
@@ -204,7 +189,6 @@ void DataH10::Clear()
 	memset(vz, 0, sizeof(Float_t) * _MAX_PARTS);
 	dc_part = 0;
 	memset(dc_sect, 0, sizeof(UChar_t) * _MAX_PARTS);
-//	memset(dc_trk, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(dc_stat, 0, sizeof(Char_t) * _MAX_PARTS);
 	memset(dc_xsc, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(dc_ysc, 0, sizeof(Float_t) * _MAX_PARTS);
@@ -212,62 +196,27 @@ void DataH10::Clear()
 	memset(dc_cxsc, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(dc_cysc, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(dc_czsc, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(dc_xec, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(dc_yec, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(dc_zec, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(dc_thcc, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(dc_c2, 0, sizeof(Float_t) * _MAX_PARTS);
 	ec_part = 0;
 	memset(ec_stat, 0, sizeof(UShort_t) * _MAX_PARTS);
 	memset(ec_sect, 0, sizeof(UChar_t) * _MAX_PARTS);
-//	memset(ec_whol, 0, sizeof(Int_t) * _MAX_PARTS);
-//	memset(ec_inst, 0, sizeof(Int_t) * _MAX_PARTS);
-//	memset(ec_oust, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(etot, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(ec_ei, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(ec_eo, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(ech_x, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(ech_y, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(ech_z, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ec_t, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ec_r, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ech_x, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ech_y, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ech_z, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ec_m2, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ec_m3, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ec_m4, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(ec_c2, 0, sizeof(Float_t) * _MAX_PARTS);
 	sc_part = 0;
 	memset(sc_sect, 0, sizeof(UChar_t) * _MAX_PARTS);
-//	memset(sc_hit, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(sc_pd, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(sc_stat, 0, sizeof(UChar_t) * _MAX_PARTS);
-//	memset(edep, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(sc_t, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(sc_r, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(sc_c2, 0, sizeof(Float_t) * _MAX_PARTS);
 	cc_part = 0;
 	memset(cc_sect, 0, sizeof(UChar_t) * _MAX_PARTS);
-//	memset(cc_hit, 0, sizeof(UChar_t) * _MAX_PARTS);
 	memset(cc_segm, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(nphe, 0, sizeof(UShort_t) * _MAX_PARTS);
-//	memset(cc_t, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(cc_r, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(cc_c2, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_sect, 0, sizeof(Int_t) * _MAX_PARTS);
-//	memset(lec_hit, 0, sizeof(Int_t) * _MAX_PARTS);
-//	memset(lec_stat, 0, sizeof(Int_t) * _MAX_PARTS);
-//	memset(lec_etot, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_t, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_r, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_x, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_y, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_z, 0, sizeof(Float_t) * _MAX_PARTS);
-//	memset(lec_c2, 0, sizeof(Float_t) * _MAX_PARTS);
 
-	mcnpart = mcnentr = stamvrt = cyzmvrt = cyymvrt = cxzmvrt = cxymvrt
-	= cxxmvrt = ch2mvrt = zmvrt = ymvrt = xmvrt = ntrmvrt = vidmvrt = 0;
+	mcnentr = mcnpart = 0;
 	memset(mcid, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(mcst, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(mcpid, 0, sizeof(Int_t) * _MAX_PARTS);
@@ -280,7 +229,7 @@ void DataH10::Clear()
 	memset(mcvz, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(mctof, 0, sizeof(Float_t) * _MAX_PARTS);
     
-    //tmp variables for data type compatibility
+    //SEB'
 	memset(tmpVars.id, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(tmpVars.stat, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(tmpVars.dc, 0, sizeof(Int_t) * _MAX_PARTS); 
