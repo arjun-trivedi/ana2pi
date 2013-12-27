@@ -1,1 +1,0 @@
-geany -i proc_eid.h proc_efid.h proc_skim_q.h proc_mom_cor.h proc_pid.h proc_top.h proc_fill_skim.h  ep_processor.h ep_processor.cpp&
