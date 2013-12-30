@@ -18,19 +18,19 @@ TString outfname;
 
 int main(int argc,  char* const argv[])
 {
-	Info("ana2pi::main()", "Could not determine h10typ.exp!\n");
+	Info("ana2pi::main()", "\n");
 	parseArgs(argc, argv);
 	
 	TChain *chain = new TChain("h10");
 	if (make_delast){
 		h10type="e1f:sim:elas";
-		TFileCollection fc("fileList", "", inflst.Data());
-		chain->AddFileInfoList((TCollection*) fc.GetList());
+		//TFileCollection fc("fileList", "", inflst.Data());
+		//chain->AddFileInfoList((TCollection*) fc.GetList());
 	} 
 
 	DataH10* dH10 = new DataH10(h10type);
 			
-	delete chain;
+	//delete chain;
 	
 	return 0;
 }
@@ -41,7 +41,7 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, ":e:i:o:")) != -1) {
+	while ((c = getopt(argc, argv, ":ei:o:")) != -1) {
 		switch(c) {
 		case 'e':
 			printf("Going to make DElast\n");

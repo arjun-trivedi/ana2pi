@@ -117,7 +117,18 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
-	if (h10typ.dtyp=="sim" && h10typ.rctn=="elas") {
+	if (h10typ.dtyp=="sim" && h10typ.rctn=="elas") { 
+		h10chain->SetBranchAddress("nprt", &nprt, &b_nprt);
+		h10chain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
+		h10chain->SetBranchAddress("xpart", xpart, &b_xpart);
+		h10chain->SetBranchAddress("ypart", ypart, &b_ypart);
+		h10chain->SetBranchAddress("zpart", zpart, &b_zpart);
+		h10chain->SetBranchAddress("epart", epart, &b_epart);
+		h10chain->SetBranchAddress("pxpart", pxpart, &b_pxpart);
+		h10chain->SetBranchAddress("pypart", pypart, &b_pypart);
+		h10chain->SetBranchAddress("pzpart", pzpart, &b_pzpart);
+		h10chain->SetBranchAddress("qpart", qpart, &b_qpart);
+		h10chain->SetBranchAddress("flagspart", flagspart, &b_flagspart);
 	}
 }
 
@@ -223,6 +234,19 @@ void DataH10::Clear()
 	memset(mcvz, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(mctof, 0, sizeof(Float_t) * _MAX_PARTS);
     
+    //PART
+	nprt=0;
+	memset(pidpart, 0, sizeof(Int_t) * _MAX_PARTS);
+	memset(xpart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(ypart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(zpart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(epart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(pxpart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(pypart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(pzpart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(qpart, 0, sizeof(Float_t) * _MAX_PARTS);
+	memset(flagspart, 0, sizeof(Int_t) * _MAX_PARTS);
+
     //SEB'
 	memset(tmpVars.id, 0, sizeof(Int_t) * _MAX_PARTS);
 	memset(tmpVars.stat, 0, sizeof(Int_t) * _MAX_PARTS);

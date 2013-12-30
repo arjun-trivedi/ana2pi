@@ -27,7 +27,7 @@ public:
 	void Bind(TTree* tree);
 	void Reconcile();
 	void Clear();
-	
+
 	H10Typ h10typ;
 	TTree* h10chain;
 			
@@ -110,6 +110,17 @@ public:
 	Float_t mctof[_MAX_PARTS]; //[mcnentr]
 
 	//PART Banks
+	Int_t nprt;
+	Int_t pidpart[_MAX_PARTS];   //[nprt]
+	Float_t xpart[_MAX_PARTS];   //[nprt]
+	Float_t ypart[_MAX_PARTS];   //[nprt]
+	Float_t zpart[_MAX_PARTS];   //[nprt]
+	Float_t epart[_MAX_PARTS];   //[nprt]
+	Float_t pxpart[_MAX_PARTS];   //[nprt]
+	Float_t pypart[_MAX_PARTS];   //[nprt]
+	Float_t pzpart[_MAX_PARTS];   //[nprt]
+	Float_t qpart[_MAX_PARTS];   //[nprt]
+	Int_t flagspart[_MAX_PARTS];   //[nprt]
 	
 	//for some Branches of SEB' Banks that are different
 	struct tmp{
@@ -201,7 +212,19 @@ public:
 	TBranch *b_mcvz; //!
 	TBranch *b_mctof; //!
 
-	//PART Brances
+	//PART Branches
+	TBranch *b_nprt;   //!
+	TBranch *b_pidpart;   //!
+	TBranch *b_xpart;   //!
+	TBranch *b_ypart;   //!
+	TBranch *b_zpart;   //!
+	TBranch *b_epart;   //!
+	TBranch *b_pxpart;   //!
+	TBranch *b_pypart;   //!
+	TBranch *b_pzpart;   //!
+	TBranch *b_qpart;   //!
+	TBranch *b_flagspart;   //!
+
 };
 
 #endif // DATAH10
