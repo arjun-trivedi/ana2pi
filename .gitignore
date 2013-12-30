@@ -3,6 +3,7 @@
 ###########
 ana2pi
 *.o
+*.so
 *bk*
 *log
 *test*
