@@ -8,6 +8,19 @@
 #ifndef h10looper_h
 #define h10looper_h
 
+#include "data_h10.h"
+#include "ep_processor.h"
+/*#include "proc_eid.h"
+#include "proc_efid.h"
+#include "proc_pid.h"
+#include "proc_skim_q.h"
+#include "proc_mom_cor.h"
+#include "proc_top.h"
+#include "proc_skim_q2w.h"
+#include "proc_fill_skim.h"
+#include "proc_copy_h10.h"*/
+
+
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -21,8 +34,12 @@ public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
+   DataH10* dH10;
+   //TString proc_list;
+   EpProcessor* proc_chain;
+
    // Declaration of leaf types
-   UChar_t         npart;
+   /*UChar_t         npart;
    UInt_t          evntid;
    Char_t          evthel;
    Float_t         q_l;
@@ -125,9 +142,9 @@ public :
    TBranch        *b_cc_part;   //!
    TBranch        *b_cc_sect;   //!
    TBranch        *b_cc_segm;   //!
-   TBranch        *b_nphe;   //!
+   TBranch        *b_nphe;   //!*/
 
-   h10looper(TTree *tree=0);
+   h10looper(TTree *tree=0,DataH10* dataH10,EpProcessor* processor_chain);
    virtual ~h10looper();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -136,12 +153,13 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   //void SetupProcs();
 };
 
 #endif
 
 #ifdef h10looper_cxx
-h10looper::h10looper(TTree *tree) : fChain(0) 
+h10looper::h10looper(TTree *tree, DataH10* dataH10, EpProcessor* processor_chain) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -153,6 +171,11 @@ h10looper::h10looper(TTree *tree) : fChain(0)
       f->GetObject("h10",tree);
 
    }
+   dH10 = dataH10;
+
+   proc_chain = processor_chain;
+   //SetupProcs();
+
    Init(tree);
 }
 
@@ -197,7 +220,9 @@ void h10looper::Init(TTree *tree)
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("npart", &npart, &b_npart);
+
+   dH10->Bind(fChain);
+   /*fChain->SetBranchAddress("npart", &npart, &b_npart);
    fChain->SetBranchAddress("evntid", &evntid, &b_evntid);
    fChain->SetBranchAddress("evthel", &evthel, &b_evthel);
    fChain->SetBranchAddress("q_l", &q_l, &b_q_l);
@@ -247,7 +272,7 @@ void h10looper::Init(TTree *tree)
    fChain->SetBranchAddress("cc_part", &cc_part, &b_cc_part);
    fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
    fChain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
-   fChain->SetBranchAddress("nphe", nphe, &b_nphe);
+   fChain->SetBranchAddress("nphe", nphe, &b_nphe);*/
    Notify();
 }
 
@@ -276,4 +301,53 @@ Int_t h10looper::Cut(Long64_t entry)
 // returns -1 otherwise.
    return 1;
 }
+
+/*void h10looper::SetupProcs(){
+   //Get list of processors
+   TCollection *proc_list_tokens = proc_list.Tokenize(":");
+   Info("SetupProcs", "List of processors received:\n");
+   proc_list_tokens->Print();
+         
+   //instantiate topProc; by design, topProc "builds" a cascaded chain of Procs
+   top_proc = new EpProcessor();
+            
+   if (proc_list_tokens->IsEmpty()) {
+      Info("SetupProcs", "no processors specified; building default pipeline\n");
+      EpProcessor *proc;
+      proc = new ProcEid(fFileOut->mkdir("eid"), dAna, h10type->GetTitle());
+      //procs.push_back(proc);
+      top_proc->add(proc);
+      //lastProcName= new TObjString("eid");
+      //Info("SlaveBegin","last processor = %s", lastProcName->GetName());
+   } else {
+      TIter iter(proc_list_tokens);
+      while(TObjString *obj_str = (TObjString*)iter.Next()) {
+         EpProcessor *proc;
+         TString str = obj_str->GetString();
+         if (str.EqualTo("eid"))            proc = new ProcEid(mkdir("eid"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"), dAna, h10type->GetTitle(),kTRUE);
+         else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"), dAna, h10type->GetTitle(),kTRUE,kTRUE);
+         else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("fid"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"), dAna, h10type->GetTitle(),kTRUE);
+         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"), dAna, h10type->GetTitle(),kTRUE,kTRUE);
+         else if (str.EqualTo("qskim"))       proc = new ProcSkimQ(mkdir("qskim"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("mom"))      proc = new ProcMomCor(mkdir("mom"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("pid"))      proc = new ProcPid(mkdir("pid"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"), dAna, h10type->GetTitle(),kTRUE);
+         else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"), dAna, h10type->GetTitle(),kTRUE,kTRUE);
+         else if (str.EqualTo("top"))      proc = new ProcTop(mkdir("top"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("fillskim"))   proc = new ProcFillSkim(mkdir("skim"), dAna, h10type->GetTitle());
+         else if (str.EqualTo("copyh10")) proc = new ProcCopyH10(fFileOut, dAna, h10type->GetTitle());
+         else {
+            Info("Init","%s unrecognized processor\n",str.Data());
+            continue;
+         }
+         //procs.push_back(proc);
+         top_proc->add(proc);
+         lastProcName = obj_str; //works because after last iteration, lastProcName is not updated
+      }
+      //Info("SlaveBegin","last processor = %s", lastProcName->GetName());
+   }
+}*/
 #endif // #ifdef h10looper_cxx

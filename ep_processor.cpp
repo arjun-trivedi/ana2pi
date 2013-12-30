@@ -3,7 +3,7 @@
 
 #include "ep_processor.h"
 
-EpProcessor::EpProcessor(TDirectory *td, DataAna* dataAna, TString h10type, Bool_t mon, Bool_t monOnly /*= kFALSE*/) {
+EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t mon, Bool_t monOnly /*= kFALSE*/) {
 	_isFirstProc = kFALSE;
 	pass = kFALSE;
 	mMon = mon;
@@ -28,24 +28,9 @@ EpProcessor::EpProcessor(TDirectory *td, DataAna* dataAna, TString h10type, Bool
 	if (dirMother!=NULL && dirMother->GetListOfKeys()->GetEntries() == 1) _isFirstProc=kTRUE;
 	if (_isFirstProc) Info("EpProcessor::EpProcessor()", "%s isFirstProc!\n", td->GetName());
 				
+	dH10 = dataH10;
 	if (dataAna != NULL) dAna = dataAna;
 	
-	/* Determint h10type */
-	is_h10e1f = is_h10e16 = is_h10exp = is_h10sim = kFALSE;
-	TObjArray *h10type_tokens = h10type.Tokenize(":");
-	h10exp   = h10type_tokens->At(0)->GetName();
-	h10dtype = h10type_tokens->At(1)->GetName();
-	if (h10type_tokens->GetEntries() == 3) h10skim = h10type_tokens->At(2)->GetName();
-	
-	if (h10exp.EqualTo("e1f")) is_h10e1f = kTRUE;
-	else if (h10exp.EqualTo("e16")) is_h10e16 = kTRUE;
-	else Info("EpProcessor::EpProcessor()", "Could not determine h10type.experiment!\n");
-	
-	if (h10dtype.EqualTo("exp")) is_h10exp = kTRUE;
-	else if (h10dtype.EqualTo("sim")) is_h10sim = kTRUE;
-	else Info("EpProcessor::EpProcessor()", "Could not determine h10type.dtype!\n");
-	
-	Info("EpProcessor::EpProcessor()", "EpProcessor intitialized with following h10type: %s:%s:%s\n", h10exp.Data(), h10dtype.Data(), h10skim.Data());
 	/* *** */
 		
 	next = 0;
@@ -80,9 +65,9 @@ Bool_t EpProcessor::isFirstProc(){
 	return _isFirstProc;
 }
 
-void EpProcessor::handle(DataH10* dH10) {
+void EpProcessor::handle() {
 	//printf("In EpProcessor::handle\n");
-	if (next) next->handle(dH10);
+	if (next) next->handle();
 }
 
 void EpProcessor::write(){

@@ -38,6 +38,7 @@ public:
 	TObjArray** hists[nPROCMODE][nEVTSEL];
 	TObjArray** histsEkin[nPROCMODE][nEVTSEL];
 	
+	DataH10* dH10;
 	DataAna* dAna;
 	
 	Bool_t is_h10e1f,is_h10e16,is_h10exp,is_h10sim;
@@ -47,13 +48,13 @@ public:
 		pass = kFALSE;
 		next = 0;
 	}
-	EpProcessor(TDirectory *td, DataAna* dataAna, TString h10type, Bool_t mon = kFALSE, Bool_t monOnly = kFALSE);
+	EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t mon = kFALSE, Bool_t monOnly = kFALSE);
 	~EpProcessor();
 		
 	void add(EpProcessor *n);
 	void setNext(EpProcessor *n);
 	Bool_t isFirstProc();
-	virtual void handle(DataH10* dH10);
+	virtual void handle();
 	virtual void write();
 };
 

@@ -28,9 +28,8 @@ void DataH10::Bind(TTree* tree)
 {
 	h10chain = tree;
 	//Bind SEB Branches
-	if (h10typ.exp=="e1f" && h10typ.dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel); 
 	if (h10typ.rctn=="2pi_userana" || h10typ.rctn=="elas_userana" ||
-		(h10typ.exp=="e16" && h10typ.dtyp=="exp")) {//Bind SEB' Branches
+	   (h10typ.exp=="e16" && h10typ.dtyp=="exp")) {//Bind SEB' Branches
 		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
 		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
 		h10chain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
@@ -48,6 +47,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
 		h10chain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
 	}else{//Bind SEB Branches 
+		if (h10typ.exp=="e1f" && h10typ.dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel);
 		h10chain->SetBranchAddress("id", id, &b_id);
 		h10chain->SetBranchAddress("stat", stat, &b_stat);
 		h10chain->SetBranchAddress("dc", dc, &b_dc);
@@ -65,6 +65,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
 		h10chain->SetBranchAddress("nphe", nphe, &b_nphe);
 	}
+	//Rest of SEB Branches
 	h10chain->SetBranchAddress("evntid", &evntid, &b_evntid);
 	h10chain->SetBranchAddress("npart", &npart, &b_npart);
 	h10chain->SetBranchAddress("q_l", &q_l, &b_q_l);
