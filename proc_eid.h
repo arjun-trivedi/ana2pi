@@ -45,15 +45,15 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
                  Bool_t mon/* = kFALSE*/,Bool_t monOnly /*= kFALSE*/)
                  :EpProcessor(td, dataH10, dataAna, mon, monOnly)
 {
-	if      (dH10->h10typ.exp=="e1f" && dH10->h10typ.dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
-	else if (dH10->h10typ.exp=="e1f" && dH10->h10typ.dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
+	if      (dH10->exp=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
+	else if (dH10->exp=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
 
-    if      (dH10->h10typ.exp=="e1f" && _eidTool->eidParFileFound) {
+    if      (dH10->exp=="e1f" && _eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "is_h10e1f=true && eidParFileFound=true. Will use goodE()"); 
-    }else if (dH10->h10typ.exp=="e1f" && !_eidTool->eidParFileFound) {
+    }else if (dH10->exp=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "is_h10e1f=true && eidParFileFound=false. Will use goodE_bos()");
-    }else if (dH10->h10typ.exp=="e16") {
+    }else if (dH10->exp=="e16") {
     	Info("ProcEid::ProcEid()", "is_h10e16=true. Will use goodE_bos()");; //pars for e1-6 not yet obtained
     }
 	
@@ -147,7 +147,7 @@ void ProcEid::handle() {
 Bool_t ProcEid::goodE(DataH10* dH10){
 	Bool_t retval = kFALSE;
 	
-	if (dH10->h10typ.dtyp!="sim") { //atrivedi 020313 till _eidTool is fixed to use eid.mc.out
+	if (dH10->dtyp!="sim") { //atrivedi 020313 till _eidTool is fixed to use eid.mc.out
 		if (dH10->id[0]==ELECTRON) hevtsum->Fill(EVT_BOS11);
 	}
 	if (dH10->gpart>1) {
@@ -162,7 +162,7 @@ Bool_t ProcEid::goodE(DataH10* dH10){
 						hevtsum->Fill(EVT_DC1);
 						if (dH10->ec[0]>0) {
 							hevtsum->Fill(EVT_EC1);
-							if (dH10->cc[0]>0 || dH10->h10typ.dtyp=="sim") {
+							if (dH10->cc[0]>0 || dH10->dtyp=="sim") {
 								hevtsum->Fill(EVT_CC1);
 								if (dH10->dc_stat[dH10->dc[0]-1]>0) {
 									hevtsum->Fill(EVT_DCSTAT1);
@@ -205,7 +205,7 @@ Bool_t ProcEid::goodE_bos(DataH10* dH10){
 						hevtsum->Fill(EVT_DC1);
 						if (dH10->ec[0]>0) {
 							hevtsum->Fill(EVT_EC1);
-							if (dH10->cc[0]>0 || dH10->h10typ.dtyp=="sim") {
+							if (dH10->cc[0]>0 || dH10->dtyp=="sim") {
 								hevtsum->Fill(EVT_CC1);
 								//if (dH10->dc_stat[dH10->dc[0]-1]>0) {
 									//hevtsum->Fill(EVT_DCSTAT1);

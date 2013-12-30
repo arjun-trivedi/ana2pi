@@ -24,7 +24,7 @@ bool make_delast;
 
 //user input
 TString fin; //h10 or h10.lst
-TString fout_name;
+TString fout_name; //name of output file
 TString h10type;
 TString procorder;
 

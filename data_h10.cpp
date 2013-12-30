@@ -7,14 +7,14 @@ DataH10::DataH10(TString h10type)
 {
 	//Determint h10typ
 	TObjArray *h10type_tokens = h10type.Tokenize(":");
-	h10typ.exp  = h10type_tokens->At(0)->GetName();
-	h10typ.dtyp = h10type_tokens->At(1)->GetName();
-	h10typ.rctn = h10type_tokens->At(2)->GetName();
+	exp  = h10type_tokens->At(0)->GetName();
+	dtyp = h10type_tokens->At(1)->GetName();
+	rctn = h10type_tokens->At(2)->GetName();
 
-	if (h10typ.exp=="e1f") {
+	if (exp=="e1f") {
 		lvE0 = E1F_lvE0;
 		lvP0 = E1F_lvP0;
-	}else if (h10typ.exp=="e16") {
+	}else if (exp=="e16") {
 		lvE0 = E16_lvE0;
 		lvP0 = E16_lvP0;
 	}
@@ -28,8 +28,8 @@ void DataH10::Bind(TTree* tree)
 {
 	h10chain = tree;
 	//Bind SEB Branches
-	if (h10typ.rctn=="2pi_userana" || h10typ.rctn=="elas_userana" ||
-	   (h10typ.exp=="e16" && h10typ.dtyp=="exp")) {//Bind SEB' Branches
+	if (rctn=="2pi_userana" || rctn=="elas_userana" ||
+	   (exp=="e16" && dtyp=="exp")) {//Bind SEB' Branches
 		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
 		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
 		h10chain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
@@ -47,7 +47,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
 		h10chain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
 	}else{//Bind SEB Branches 
-		if (h10typ.exp=="e1f" && h10typ.dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel);
+		if (exp=="e1f" && dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel);
 		h10chain->SetBranchAddress("id", id, &b_id);
 		h10chain->SetBranchAddress("stat", stat, &b_stat);
 		h10chain->SetBranchAddress("dc", dc, &b_dc);
@@ -102,7 +102,7 @@ void DataH10::Bind(TTree* tree)
 	h10chain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
 	
 	//MCTK Branches
-	if (h10typ.dtyp=="sim" && h10typ.rctn=="2pi") {
+	if (dtyp=="sim" && rctn=="2pi") {
 		h10chain->SetBranchAddress("mcnentr", &mcnentr, &b_mcnentr);
 		h10chain->SetBranchAddress("mcnpart", &mcnpart, &b_mcnpart);
 		h10chain->SetBranchAddress("mcst", mcst, &b_mcst);
@@ -118,7 +118,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
-	if (h10typ.dtyp=="sim" && h10typ.rctn=="elas") { 
+	if (dtyp=="sim" && rctn=="elas") { 
 		h10chain->SetBranchAddress("nprt", &nprt, &b_nprt);
 		h10chain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
 		h10chain->SetBranchAddress("xpart", xpart, &b_xpart);

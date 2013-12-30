@@ -11,11 +11,11 @@
 #include <TChain.h>
 #include <TLorentzVector.h>
 
-struct H10Typ{
+/*struct H10Typ{
 	TString exp;
 	TString dtyp;
 	TString rctn;
-};
+};*/
 
 class DataH10
 {
@@ -28,7 +28,7 @@ public:
 	void Reconcile();
 	void Clear();
 
-	H10Typ h10typ;
+	TString exp,dtyp,rctn;
 	TTree* h10chain;
 			
 	Int_t run;
