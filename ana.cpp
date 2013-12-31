@@ -84,7 +84,7 @@ int main(int argc,  char* const argv[])
 	h10looper = new H10Looper(h10chain,dH10,proc_chain);
 	h10looper->Loop(nentries);
 
-	//fout->Write();
+	fout->Write();
 	
 	return 0;
 }

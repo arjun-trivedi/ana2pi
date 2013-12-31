@@ -17,5 +17,6 @@ void H10Looper::Loop(Long64_t nentries)
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
       Info("Loop", "Processing entry# %d\n",jentry);
+      proc_chain->handle();
    }
 }

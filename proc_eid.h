@@ -121,9 +121,9 @@ void ProcEid::handle() {
 	
 	Bool_t gE = kFALSE;
 
-    if      (is_h10e1f && _eidTool->eidParFileFound)  gE =  goodE(dH10);
-    else if (is_h10e1f && !_eidTool->eidParFileFound) gE =  goodE_bos(dH10);
-    else if (is_h10e16)                               gE =  goodE_bos(dH10); //pars for e1-6 not yet obtained
+    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE(dH10);
+    else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  goodE_bos(dH10);
+    else if (dH10->expt=="e16")                               gE =  goodE_bos(dH10); //pars for e1-6 not yet obtained
     
 	if (gE) {	
 		
