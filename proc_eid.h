@@ -86,15 +86,15 @@ void ProcEid::handle() {
 	
 	if (mMon||mMonOnly)
 	{
-		if (dAna->top==0 && hists[iMODE_MON][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
+		if (dAna->top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 			TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
-			dAna->makeHistsEid(hists[iMODE_MON][EVTINC], dirmon);
-			dAna->makeHistsEkin(histsEkin[iMODE_MON][EVTINC], dirmon);
-		}else if(dAna->top!=0 && hists[iMODE_MON][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+			dAna->makeHistsEid(hists[MONMODE][EVTINC], dirmon);
+			dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
+		}else if(dAna->top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
 				TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
-				dAna->makeHistsEid(hists[iMODE_MON][iTop], dirmon);
-				dAna->makeHistsEkin(histsEkin[iMODE_MON][iTop], dirmon);
+				dAna->makeHistsEid(hists[MONMODE][iTop], dirmon);
+				dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirmon);
 			}
 		}
 		
@@ -104,11 +104,11 @@ void ProcEid::handle() {
 		//if ( (dAna->eKin.W < 1.5) ) return;
 		
 		if (dAna->top == 0) { //i.e inclusive event
-			dAna->fillHistsEid(hists[iMODE_MON][EVTINC]);
-			dAna->fillHistsEkin(histsEkin[iMODE_MON][EVTINC]);
+			dAna->fillHistsEid(hists[MONMODE][EVTINC]);
+			dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsEid(hists[iMODE_MON][dAna->top]);
-			dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top]);
+			dAna->fillHistsEid(hists[MONMODE][dAna->top]);
+			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top]);
 		}
 	}
 	
@@ -129,13 +129,13 @@ void ProcEid::handle() {
 		
 		if (mMon)
 		{
-			if (hists[iMODE_CUT][EVTINC][SECTOR0]==NULL) {
+			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-				dAna->makeHistsEid(hists[iMODE_CUT][EVTINC], dircut);
-				dAna->makeHistsEkin(histsEkin[iMODE_CUT][EVTINC], dircut);
+				dAna->makeHistsEid(hists[CUTMODE][EVTINC], dircut);
+				dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
 			}
-			dAna->fillHistsEid(hists[iMODE_CUT][EVTINC]);
-			dAna->fillHistsEkin(histsEkin[iMODE_CUT][EVTINC]);
+			dAna->fillHistsEid(hists[CUTMODE][EVTINC]);
+			dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC]);
 		}
 		
 		dH10->id[0] = ELECTRON;

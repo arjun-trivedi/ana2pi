@@ -44,15 +44,15 @@ void ProcMomCor::handle(DataH10* dH10)
 	//Info("ProcMomCor::handle()", "");
 	pass = kFALSE;
 	
-	if (dAna->top==0 && hists[iMODE_MON][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
+	if (dAna->top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 		TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
-		dAna->makeHistsMomCor(hists[iMODE_MON][EVTINC], dirmon);
-		dAna->makeHistsEkin(histsEkin[iMODE_MON][EVTINC], dirmon);
-	}else if(dAna->top!=0 && hists[iMODE_MON][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+		dAna->makeHistsMomCor(hists[MONMODE][EVTINC], dirmon);
+		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
+	}else if(dAna->top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
 			TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
-			dAna->makeHistsMomCor(hists[iMODE_MON][iTop], dirmon);
-			dAna->makeHistsEkin(histsEkin[iMODE_MON][iTop], dirout);
+			dAna->makeHistsMomCor(hists[MONMODE][iTop], dirmon);
+			dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirout);
 		}
 	}
 	
@@ -60,11 +60,11 @@ void ProcMomCor::handle(DataH10* dH10)
 		updateMomCor(dH10);		
 		updateEkin(dH10);
 		if (dAna->top == 0) { //i.e inclusive event
-			dAna->fillHistsMomCor(hists[iMODE_MON][EVTINC]);
-			dAna->fillHistsEkin(histsEkin[iMODE_MON][EVTINC]);
+			dAna->fillHistsMomCor(hists[MONMODE][EVTINC]);
+			dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsMomCor(hists[iMODE_MON][dAna->top]);
-			dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top]);
+			dAna->fillHistsMomCor(hists[MONMODE][dAna->top]);
+			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top]);
 		}
 	}
 	pass = kTRUE; //atrivedi

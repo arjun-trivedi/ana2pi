@@ -23,11 +23,11 @@ using namespace AnalysisConstants;
 
 class EpProcessor
 {
-	EpProcessor *next;
-	Bool_t _isFirstProc;
+	EpProcessor *_next_proc;
+	Bool_t _is_first_proc;
 public:
-	static const Int_t nPROCMODE = 2;
-	enum{iMODE_MON, iMODE_CUT};
+	static const Int_t NPROCMODES = 2;
+	enum{MONMODE, CUTMODE};
 	Bool_t mMon;
 	Bool_t mMonOnly;
 	
@@ -35,8 +35,8 @@ public:
 	
     TDirectory *dirout;
     TH1D* hevtsum;
-	TObjArray** hists[nPROCMODE][NEVTSELS];
-	TObjArray** histsEkin[nPROCMODE][NEVTSELS];
+	TObjArray** hists[NPROCMODES][NEVTSELS];
+	TObjArray** histsEkin[NPROCMODES][NEVTSELS];
 	
 	DataH10* dH10;
 	DataAna* dAna;
@@ -46,7 +46,7 @@ public:
 	
 	EpProcessor(){
 		pass = kFALSE;
-		next = 0;
+		_next_proc = 0;
 	}
 	EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t mon = kFALSE, Bool_t monOnly = kFALSE);
 	~EpProcessor();

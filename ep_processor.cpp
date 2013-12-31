@@ -4,12 +4,12 @@
 #include "ep_processor.h"
 
 EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t mon, Bool_t monOnly /*= kFALSE*/) {
-	_isFirstProc = kFALSE;
+	_is_first_proc = kFALSE;
 	pass = kFALSE;
 	mMon = mon;
 	mMonOnly = monOnly;
 
-	for(Int_t iProcMode=0;iProcMode<nPROCMODE;iProcMode++){
+	for(Int_t iProcMode=0;iProcMode<NPROCMODES;iProcMode++){
 		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
 			//hists[iProcMode][iEvtSel] = NULL;
 			//histsEkin[iProcMode][iEvtSel] = NULL;
@@ -25,20 +25,20 @@ EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Boo
 	if (td != NULL) dirout = td;
 	else dirout = gDirectory;
 	TDirectory* dirMother = (TDirectory*)dirout->GetMother();
-	if (dirMother!=NULL && dirMother->GetListOfKeys()->GetEntries() == 1) _isFirstProc=kTRUE;
-	if (_isFirstProc) Info("EpProcessor::EpProcessor()", "%s isFirstProc!\n", td->GetName());
+	if (dirMother!=NULL && dirMother->GetListOfKeys()->GetEntries() == 1) _is_first_proc=kTRUE;
+	if (_is_first_proc) Info("EpProcessor::EpProcessor()", "%s isFirstProc!\n", td->GetName());
 				
 	dH10 = dataH10;
 	if (dataAna != NULL) dAna = dataAna;
 	
 	/* *** */
 		
-	next = 0;
+	_next_proc = 0;
 }
 
 EpProcessor::~EpProcessor(){
 	Info("~EpProcessor()", "");
-	for(Int_t iProcMode=0;iProcMode<nPROCMODE;iProcMode++){
+	for(Int_t iProcMode=0;iProcMode<NPROCMODES;iProcMode++){
 		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
 			//dAna->deleteHists(hists[iProcMode][iEvtSel]);
 			//dAna->deleteHists(histsEkin[iProcMode][iEvtSel]);
@@ -53,21 +53,21 @@ EpProcessor::~EpProcessor(){
 }
 
 void EpProcessor::add(EpProcessor *n) {
-	if (next) next->add(n);
-	else next = n;
+	if (_next_proc) _next_proc->add(n);
+	else _next_proc = n;
 }
 
 void EpProcessor::setNext(EpProcessor *n) {
-	next = n;
+	_next_proc = n;
 }
 
 Bool_t EpProcessor::isFirstProc(){
-	return _isFirstProc;
+	return _is_first_proc;
 }
 
 void EpProcessor::handle() {
 	//printf("In EpProcessor::handle\n");
-	if (next) next->handle();
+	if (_next_proc) _next_proc->handle();
 }
 
 void EpProcessor::write(){
@@ -77,16 +77,16 @@ void EpProcessor::write(){
 		hevtsum->Write();
 	}
 	TDirectory* _dirout;
-	for(Int_t iProcMode=0;iProcMode<nPROCMODE;iProcMode++){
+	for(Int_t iProcMode=0;iProcMode<NPROCMODES;iProcMode++){
 		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
 			for(Int_t iSector=0;iSector<NSECTORS;iSector++){
-				if (iProcMode == iMODE_MON && iEvtSel == EVTINC){
+				if (iProcMode == MONMODE && iEvtSel == EVTINC){
 					_dirout = dirout->GetDirectory(TString::Format("mon/sector%d", iSector));
 					if (_dirout != NULL) _dirout->cd();
-				}else if (iProcMode == iMODE_MON && iEvtSel != EVTINC){
+				}else if (iProcMode == MONMODE && iEvtSel != EVTINC){
 					_dirout = dirout->GetDirectory(TString::Format("mon%d/sector%d", iEvtSel, iSector));
 					if (_dirout != NULL) _dirout->cd();
-				}else if (iProcMode == iMODE_CUT){
+				}else if (iProcMode == CUTMODE){
 					_dirout = dirout->GetDirectory(TString::Format("cut/sector%d", iSector));
 					if (_dirout != NULL) _dirout->cd();
 				}
