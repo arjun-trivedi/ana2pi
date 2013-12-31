@@ -28,7 +28,7 @@ void DataH10::Bind(TTree* tree)
 {
 	h10chain = tree;
 	//Bind SEB Branches
-	if (rctn=="2pi_userana" || rctn=="elas_userana" ||
+	if (rctn=="2pi_userana" || rctn=="elast_userana" ||
 	   (expt=="e16" && dtyp=="exp")) {//Bind SEB' Branches
 		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
 		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
@@ -118,7 +118,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
-	if (dtyp=="sim" && rctn=="elas") { 
+	if (dtyp=="sim" && rctn=="elast") { 
 		h10chain->SetBranchAddress("nprt", &nprt, &b_nprt);
 		h10chain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
 		h10chain->SetBranchAddress("xpart", xpart, &b_xpart);

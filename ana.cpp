@@ -3,6 +3,7 @@
 #include "h10looper.h"
 #include "ep_processor.h"
 #include "proc_eid.h"
+#include "proc_delast.h"
 /*#include "proc_efid.h"
 #include "proc_pid.h"
 #include "proc_skim_q.h"
@@ -20,8 +21,6 @@
 #include <stdio.h>
 
 using namespace std;
-
-bool make_delast;
 
 //user input
 TString fin=""; //h10.lst
@@ -63,7 +62,7 @@ int main(int argc,  char* const argv[])
 		printf("Incorrect dtyp entered: %s\n", dtyp.Data());
 		return 0;
 	}
-	if (rctn!="2pi" && rctn!="elas"){
+	if (rctn!="2pi" && rctn!="elast"){
 		printf("Incorrect rctn entered: %s\n", rctn.Data());
 		return 0;
 	}
@@ -101,7 +100,7 @@ void parseArgs(int argc, char* const argv[]){
 			printf("ana2pi -i <h10.lst> -e <expt> -d <dtyp> -r <rctn> -p <procorder> -n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
-			printf("<rctn>=2pi/elas\n");
+			printf("<rctn>=2pi/elast\n");
 			break;
 		case 'i':
 			fin = optarg;
@@ -158,6 +157,7 @@ EpProcessor* SetupProcs(){
          if (str.EqualTo("eid"))            proc = new ProcEid(fout->mkdir("eid"),dH10,dAna);
          else if (str.EqualTo("eidmon"))     proc = new ProcEid(fout->mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(fout->mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
+         if (str.EqualTo("delast"))            proc = new ProcDelast(fout->mkdir("delast"),dH10,dAna);
          /*else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("fid"),dH10,dAna);
          else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
