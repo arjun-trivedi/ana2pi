@@ -81,7 +81,7 @@ int main(int argc,  char* const argv[])
 	dH10 = new DataH10(h10type);
 	dAna = new DataAna();
 	proc_chain = SetupProcs();
-	h10looper = new H10Looper(h10chain,dH10,proc_chain);
+	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain);
 	h10looper->Loop(nentries);
 
 	fout->Write();

@@ -16,7 +16,16 @@ void H10Looper::Loop(Long64_t nentries)
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
+      
       Info("Loop", "Processing entry# %d\n",jentry);
+      
+      //Reset proc_chain
+
+      //Call proc_chain
       proc_chain->handle();
+
+      //Clear event data
+      dH10->Clear();
+      dAna->Clear();
    }
 }

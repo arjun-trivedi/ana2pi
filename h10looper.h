@@ -21,9 +21,10 @@ public :
    Int_t           fCurrent; //!current Tree number in a TChain
 
    DataH10* dH10;
+   DataAna* dAna;
    EpProcessor* proc_chain;
 
-   H10Looper(TTree *tree=0,DataH10* dataH10=0,EpProcessor* processor_chain=0);
+   H10Looper(TTree *tree=0,DataH10* dataH10=0,DataAna* dataAna=0,EpProcessor* processor_chain=0);
    virtual ~H10Looper();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -37,7 +38,7 @@ public :
 #endif
 
 #ifdef H10Looper_cxx
-H10Looper::H10Looper(TTree *tree, DataH10* dataH10, EpProcessor* processor_chain) : fChain(0) 
+H10Looper::H10Looper(TTree *tree, DataH10* dataH10, DataAna* dataAna, EpProcessor* processor_chain) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -50,6 +51,7 @@ H10Looper::H10Looper(TTree *tree, DataH10* dataH10, EpProcessor* processor_chain
 
    }
    dH10 = dataH10;
+   dAna = dataAna;
 
    proc_chain = processor_chain;
    //SetupProcs();

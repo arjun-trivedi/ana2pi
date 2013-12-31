@@ -41,9 +41,6 @@ public:
 	DataH10* dH10;
 	DataAna* dAna;
 	
-	/*Bool_t is_h10e1f,is_h10e16,is_h10exp,is_h10sim;
-	TString h10exp,h10dtype,h10skim;*/
-	
 	EpProcessor(){
 		pass = kFALSE;
 		_next_proc = 0;

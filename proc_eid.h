@@ -34,10 +34,10 @@ protected:
 	       EVT_DCSTAT1, EVT_ECLOW1, EVT_SF, EVT_BOS11
 	     };
 	
-	Bool_t goodE(DataH10* dH10);
-	Bool_t goodE_bos(DataH10* dH10);
-	void updateEid(DataH10* dH10);
-	void updateEkin(DataH10* dH10, Bool_t useMc = kFALSE);
+	Bool_t goodE();
+	Bool_t goodE_bos();
+	void updateEid();
+	void updateEkin(Bool_t useMc = kFALSE);
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 };
 
@@ -49,7 +49,7 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
 
-    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
+    if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
     }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
@@ -98,8 +98,8 @@ void ProcEid::handle() {
 			}
 		}
 		
-		updateEid(dH10);
-		updateEkin(dH10);
+		updateEid();
+		updateEkin();
 	
 		//if ( (dAna->eKin.W < 1.5) ) return;
 		
@@ -121,14 +121,12 @@ void ProcEid::handle() {
 	
 	Bool_t gE = kFALSE;
 
-    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE(dH10);
-    else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  goodE_bos(dH10);
-    else if (dH10->expt=="e16")                               gE =  goodE_bos(dH10); //pars for e1-6 not yet obtained
+    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE();
+    else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  goodE_bos();
+    else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained
     
 	if (gE) {	
-		
-		if (mon)
-		{
+		if (mon){
 			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
 				dAna->makeHistsEid(hists[CUTMODE][EVTINC], dircut);
@@ -144,7 +142,7 @@ void ProcEid::handle() {
 	}
 }
 
-Bool_t ProcEid::goodE(DataH10* dH10){
+Bool_t ProcEid::goodE(){
 	Bool_t retval = kFALSE;
 	
 	if (dH10->dtyp!="sim") { //atrivedi 020313 till _eidTool is fixed to use eid.mc.out
@@ -190,7 +188,7 @@ Bool_t ProcEid::goodE(DataH10* dH10){
 	return retval;
 }
 
-Bool_t ProcEid::goodE_bos(DataH10* dH10){
+Bool_t ProcEid::goodE_bos(){
 	Bool_t retval = kFALSE;
 	
 	//if (dH10->gpart>1) {
@@ -224,7 +222,7 @@ Bool_t ProcEid::goodE_bos(DataH10* dH10){
 	return retval;
 }
 
-void ProcEid::updateEid(DataH10* dH10){
+void ProcEid::updateEid(){
 		
 	Float_t p = dH10->p[0];
 	Float_t l_e = dH10->sc_r[dH10->sc[0]-1];
@@ -260,7 +258,7 @@ void ProcEid::updateEid(DataH10* dH10){
 	dAna->eid.cc_theta = getCCtheta(dc_xsc, dc_ysc, dc_zsc, dc_cxsc, dc_cysc, dc_czsc);
 }
 
-void ProcEid::updateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
+void ProcEid::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	const TLorentzVector _4vE0 = dH10->lvE0;
 	const TLorentzVector _4vP0 = dH10->lvP0;
 	TLorentzVector _4vE1;
