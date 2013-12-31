@@ -5,8 +5,8 @@
 // found on file: qskim_38751.root
 //////////////////////////////////////////////////////////
 
-#ifndef h10looper_h
-#define h10looper_h
+#ifndef H10Looper_h
+#define H10Looper_h
 
 #include "data_h10.h"
 #include "ep_processor.h"
@@ -15,7 +15,7 @@
 #include <TChain.h>
 #include <TFile.h>
 
-class h10looper {
+class H10Looper {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -23,8 +23,8 @@ public :
    DataH10* dH10;
    EpProcessor* proc_chain;
 
-   h10looper(TTree *tree=0,DataH10* dataH10,EpProcessor* processor_chain);
-   virtual ~h10looper();
+   H10Looper(TTree *tree=0,DataH10* dataH10=0,EpProcessor* processor_chain=0);
+   virtual ~H10Looper();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -36,8 +36,8 @@ public :
 
 #endif
 
-#ifdef h10looper_cxx
-h10looper::h10looper(TTree *tree, DataH10* dataH10, EpProcessor* processor_chain) : fChain(0) 
+#ifdef H10Looper_cxx
+H10Looper::H10Looper(TTree *tree, DataH10* dataH10, EpProcessor* processor_chain) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -57,19 +57,19 @@ h10looper::h10looper(TTree *tree, DataH10* dataH10, EpProcessor* processor_chain
    Init(tree);
 }
 
-h10looper::~h10looper()
+H10Looper::~H10Looper()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t h10looper::GetEntry(Long64_t entry)
+Int_t H10Looper::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t h10looper::LoadTree(Long64_t entry)
+Long64_t H10Looper::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -82,7 +82,7 @@ Long64_t h10looper::LoadTree(Long64_t entry)
    return centry;
 }
 
-void h10looper::Init(TTree *tree)
+void H10Looper::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -102,7 +102,7 @@ void h10looper::Init(TTree *tree)
    Notify();
 }
 
-Bool_t h10looper::Notify()
+Bool_t H10Looper::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -113,14 +113,14 @@ Bool_t h10looper::Notify()
    return kTRUE;
 }
 
-void h10looper::Show(Long64_t entry)
+void H10Looper::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t h10looper::Cut(Long64_t entry)
+Int_t H10Looper::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
@@ -128,4 +128,4 @@ Int_t h10looper::Cut(Long64_t entry)
    return 1;
 }
 
-#endif // #ifdef h10looper_cxx
+#endif // #ifdef H10Looper_cxx

@@ -8,7 +8,7 @@ CXX = g++
 C_FLAGS =
 CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -Wno-deprecated
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
-OBJS =          epconfig.o ep_processor.o data_h10.o data_ana.o eid.o data_eid.o data_ekin.o data_efid.o data_skim_q.o data_mom.o data_pid.o data_top.o 
+OBJS =          epconfig.o h10looper.o ep_processor.o data_h10.o data_ana.o eid.o data_eid.o data_ekin.o data_efid.o data_skim_q.o data_mom.o data_pid.o data_top.o 
 LIBS =          $(shell root-config --glibs)
 LIBOUT =        libAna2pi.so
 TARGET = ana2pi

@@ -1,10 +1,10 @@
-#define h10looper_cxx
+#define H10Looper_cxx
 #include "h10looper.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 
-void h10looper::Loop()
+void H10Looper::Loop()
 {
    if (fChain == 0) return;
 

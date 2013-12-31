@@ -1,5 +1,6 @@
 #include "data_h10.h"
 #include "data_ana.h"
+#include "h10looper.h"
 #include "ep_processor.h"
 #include "proc_eid.h"
 /*#include "proc_efid.h"
@@ -35,7 +36,8 @@ TChain* h10chain;
 TFile* fout;
 DataH10* dH10;
 DataAna* dAna;
-EpProcessor* top_proc;
+EpProcessor* proc_chain;
+H10Looper* h10looper;
 
 void parseArgs(int argc, char* const argv[]);
 EpProcessor* SetupProcs();
@@ -75,10 +77,9 @@ int main(int argc,  char* const argv[])
 
 	h10type=TString::Format("%s:%s:%s",expt.Data(),dtyp.Data(),rctn.Data());
 	dH10 = new DataH10(h10type);
-
 	dAna = new DataAna();
-
-	top_proc = SetupProcs();
+	proc_chain = SetupProcs();
+	h10looper = new H10Looper(h10chain,dH10,proc_chain);
 	
 	return 0;
 }
@@ -130,14 +131,14 @@ EpProcessor* SetupProcs(){
    procorder_tokens->Print();
          
    //instantiate topProc; by design, topProc "builds" a cascaded chain of Procs
-   EpProcessor* top_proc = new EpProcessor();
+   EpProcessor* proc_chain = new EpProcessor();
             
    if (procorder_tokens->IsEmpty()) {
       Info("SetupProcs", "no processors specified; building default pipeline\n");
       EpProcessor *proc;
       proc = new ProcEid(fout->mkdir("eid"),dH10,dAna);
       //procs.push_back(proc);
-      top_proc->add(proc);
+      proc_chain->add(proc);
       //lastProcName= new TObjString("eid");
       //Info("SlaveBegin","last processor = %s", lastProcName->GetName());
    } else {
@@ -165,12 +166,12 @@ EpProcessor* SetupProcs(){
             continue;
          }
          //procs.push_back(proc);
-         top_proc->add(proc);
+         proc_chain->add(proc);
          //lastProcName = obj_str; //works because after last iteration, lastProcName is not updated
       }
       //Info("SlaveBegin","last processor = %s", lastProcName->GetName());
    }
-   return top_proc;
+   return proc_chain;
 }
 
 
