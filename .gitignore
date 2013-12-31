@@ -1,10 +1,11 @@
 ###########
 # general #
 ###########
-ana2pi
+ana
 *.o
 *.so
 *.d
+*.root
 *bk*
 *log
 *test*

@@ -10,19 +10,19 @@ CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -W
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
 OBJS =          epconfig.o h10looper.o ep_processor.o data_h10.o data_ana.o eid.o data_eid.o data_ekin.o data_efid.o data_skim_q.o data_mom.o data_pid.o data_top.o 
 LIBS =          $(shell root-config --glibs)
-LIBOUT =        libAna2pi.so
-TARGET = ana2pi
+LIBOUT =        libana.so
+TARGET = ana
 
 %.o: %.cpp
 	$(CXX) $(INCS) $(CXXFLAGS) -c $< -o $@
 
-$(TARGET):	lib ana2pi.o 
-	$(CXX) -o $(TARGET) $(CXXFLAGS) ana2pi.o $(INCS) $(LIBS) -L. libAna2pi.so
+$(TARGET):	lib ana.o 
+	$(CXX) -o $(TARGET) $(CXXFLAGS) ana.o $(INCS) $(LIBS) -L. libana.so
 
 all: lib $(TARGET) 
 
 clean:
-	-rm -f $(OBJS) $(LIBOUT) ana2pi ana2pi.o
+	-rm -f $(OBJS) $(LIBOUT) ana ana.o
 
 lib:	$(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $(LIBOUT)
