@@ -7,18 +7,18 @@ DataH10::DataH10(TString h10type)
 {
 	//Determint h10typ
 	TObjArray *h10type_tokens = h10type.Tokenize(":");
-	exp  = h10type_tokens->At(0)->GetName();
+	expt  = h10type_tokens->At(0)->GetName();
 	dtyp = h10type_tokens->At(1)->GetName();
 	rctn = h10type_tokens->At(2)->GetName();
 
-	if (exp=="e1f") {
+	if (expt=="e1f") {
 		lvE0 = E1F_lvE0;
 		lvP0 = E1F_lvP0;
-	}else if (exp=="e16") {
+	}else if (expt=="e16") {
 		lvE0 = E16_lvE0;
 		lvP0 = E16_lvP0;
 	}
-	else Info("DataH10::DataH10()", "Could not determine h10typ.exp!\n");
+	else Info("DataH10::DataH10()", "Could not determine h10typ.expt!\n");
 		
 	run = 0;
 	memset(fn, 0, 256);
@@ -29,7 +29,7 @@ void DataH10::Bind(TTree* tree)
 	h10chain = tree;
 	//Bind SEB Branches
 	if (rctn=="2pi_userana" || rctn=="elas_userana" ||
-	   (exp=="e16" && dtyp=="exp")) {//Bind SEB' Branches
+	   (expt=="e16" && dtyp=="exp")) {//Bind SEB' Branches
 		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
 		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
 		h10chain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
@@ -47,7 +47,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
 		h10chain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
 	}else{//Bind SEB Branches 
-		if (exp=="e1f" && dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel);
+		if (expt=="e1f" && dtyp=="exp") h10chain->SetBranchAddress("evthel", &evthel, &b_evthel);
 		h10chain->SetBranchAddress("id", id, &b_id);
 		h10chain->SetBranchAddress("stat", stat, &b_stat);
 		h10chain->SetBranchAddress("dc", dc, &b_dc);

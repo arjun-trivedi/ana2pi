@@ -12,7 +12,7 @@
 #include <TLorentzVector.h>
 
 /*struct H10Typ{
-	TString exp;
+	TString expt;
 	TString dtyp;
 	TString rctn;
 };*/
@@ -28,7 +28,7 @@ public:
 	void Reconcile();
 	void Clear();
 
-	TString exp,dtyp,rctn;
+	TString expt,dtyp,rctn;
 	TTree* h10chain;
 			
 	Int_t run;

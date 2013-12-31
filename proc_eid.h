@@ -45,15 +45,15 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
                  Bool_t mon/* = kFALSE*/,Bool_t monOnly /*= kFALSE*/)
                  :EpProcessor(td, dataH10, dataAna, mon, monOnly)
 {
-	if      (dH10->exp=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
-	else if (dH10->exp=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
+	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
+	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
 
-    if      (dH10->exp=="e1f" && _eidTool->eidParFileFound) {
+    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "is_h10e1f=true && eidParFileFound=true. Will use goodE()"); 
-    }else if (dH10->exp=="e1f" && !_eidTool->eidParFileFound) {
+    }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "is_h10e1f=true && eidParFileFound=false. Will use goodE_bos()");
-    }else if (dH10->exp=="e16") {
+    }else if (dH10->expt=="e16") {
     	Info("ProcEid::ProcEid()", "is_h10e16=true. Will use goodE_bos()");; //pars for e1-6 not yet obtained
     }
 	

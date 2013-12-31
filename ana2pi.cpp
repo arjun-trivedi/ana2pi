@@ -23,12 +23,15 @@ using namespace std;
 bool make_delast;
 
 //user input
-TString fin; //h10 or h10.lst
-TString fout_name; //name of output file
-TString h10type;
-TString procorder;
+TString fin=""; //h10.lst
+TString procorder="";
+TString expt="";
+TString dtyp="";
+TString rctn=""; //h10 or h10.lst
 
 //objects setup by ana2pi
+TString h10type;
+TChain* h10chain;
 TFile* fout;
 DataH10* dH10;
 DataAna* dAna;
@@ -44,18 +47,38 @@ int main(int argc,  char* const argv[])
 	Info("ana2pi::main()", "\n");
 	parseArgs(argc, argv);
 	
-	TChain *chain = new TChain("h10");
-	if (make_delast){
-		h10type="e1f:sim:elas";
-		//TFileCollection fc("fileList", "", inflst.Data());
-		//chain->AddFileInfoList((TCollection*) fc.GetList());
-	} 
+	if (fin==""||procorder==""||expt==""||dtyp==""||rctn==""){
+		printf("Not all arguments entered\n");
+		return 0;
+	}
+	if (expt!="e1f" && expt!="e16"){
+		printf("Incorrect expt entered: %s\n", expt.Data());
+		return 0;
+	}
+	if (dtyp!="exp" && dtyp!="sim"){
+		printf("Incorrect dtyp entered: %s\n", dtyp.Data());
+		return 0;
+	}
+	if (rctn!="2pi" && rctn!="elas"){
+		printf("Incorrect rctn entered: %s\n", rctn.Data());
+		return 0;
+	}
+
+
+	h10chain = new TChain("h10");
+	TFileCollection fc("fileList", "", fin.Data());
+	h10chain->AddFileInfoList((TCollection*) fc.GetList());
+		
+	TString fout_name;
+	if (rctn=="elas") fout_name = "DElas.root";
 	fout = new TFile(fout_name,"RECREATE");
+
+	h10type=TString::Format("%s:%s:%s",expt.Data(),dtyp.Data(),rctn.Data());
 	dH10 = new DataH10(h10type);
+
 	dAna = new DataAna();
+
 	top_proc = SetupProcs();
-			
-	//delete chain;
 	
 	return 0;
 }
@@ -66,26 +89,31 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, ":ei:o:p:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:e:d:r:p:")) != -1) {
 		switch(c) {
-		case 'e':
-			printf("Going to make DElast\n");
-			make_delast = true;
-			break;
-		case 'p':
-			procorder = optarg;
-			printf("Processor list = %s", procorder.Data());
+		case 'h':
+			printf("ana2pi -i <h10.lst> -e <expt> -d <dtyp> -r <rctn> -p <procorder>\n");
+			printf("<expt>=e1f/e16\n");
+			printf("<dtyp>=exp/sim\n");
+			printf("<rctn>=2pi/elas\n");
 			break;
 		case 'i':
 			fin = optarg;
-			printf("input filename is %s\n", fin.Data());
+			break;	
+		case 'p':
+			procorder = optarg;
 			break;
-		case 'o':
-			fout_name = optarg;
-			printf("output filename is %s\n", fout_name.Data());
+		case 'e':
+			expt = optarg;
+			break;
+		case 'd':
+			dtyp = optarg;
+			break;
+		case 'r':
+			rctn = optarg;
 			break;
 		case ':':
-			printf("-%c without filename\n", optopt);
+			printf("-%c without options\n", optopt);
 			break;
 		case '?':
 			printf("unknown arg %c\n", optopt);
@@ -98,7 +126,7 @@ void parseArgs(int argc, char* const argv[]){
 EpProcessor* SetupProcs(){
    //Get list of processors
    TCollection *procorder_tokens = procorder.Tokenize(":");
-   Info("ana2pi::SetupProcs()", "List of processors received:\n");
+   Info("ana2pi::SetupProcs()", "procorder = %s\n", procorder.Data());
    procorder_tokens->Print();
          
    //instantiate topProc; by design, topProc "builds" a cascaded chain of Procs
