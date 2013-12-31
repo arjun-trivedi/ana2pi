@@ -3,11 +3,11 @@
 
 #include "ep_processor.h"
 
-EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t mon, Bool_t monOnly /*= kFALSE*/) {
+EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t monitor, Bool_t monitorOnly /*= kFALSE*/) {
 	_is_first_proc = kFALSE;
 	pass = kFALSE;
-	mMon = mon;
-	mMonOnly = monOnly;
+	mon = monitor;
+	mononly = monitorOnly;
 
 	for(Int_t iProcMode=0;iProcMode<NPROCMODES;iProcMode++){
 		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
@@ -81,10 +81,10 @@ void EpProcessor::write(){
 		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
 			for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 				if (iProcMode == MONMODE && iEvtSel == EVTINC){
-					_dirout = dirout->GetDirectory(TString::Format("mon/sector%d", iSector));
+					_dirout = dirout->GetDirectory(TString::Format("monitor/sector%d", iSector));
 					if (_dirout != NULL) _dirout->cd();
 				}else if (iProcMode == MONMODE && iEvtSel != EVTINC){
-					_dirout = dirout->GetDirectory(TString::Format("mon%d/sector%d", iEvtSel, iSector));
+					_dirout = dirout->GetDirectory(TString::Format("monitor%d/sector%d", iEvtSel, iSector));
 					if (_dirout != NULL) _dirout->cd();
 				}else if (iProcMode == CUTMODE){
 					_dirout = dirout->GetDirectory(TString::Format("cut/sector%d", iSector));

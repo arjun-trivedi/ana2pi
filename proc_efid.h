@@ -12,7 +12,7 @@ class ProcEFid : public EpProcessor {
 
 public:
 	ProcEFid(TDirectory *td,DataAna* dataAna,TString h10type, 
-		     Bool_t mon=kFALSE,Bool_t monOnly=kFALSE);
+		     Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
 	~ProcEFid();
 	
 	void handle(DataH10* dH10);
@@ -24,8 +24,8 @@ protected:
 };
 
 ProcEFid::ProcEFid(TDirectory *td, DataAna* dataAna, TString h10type, 
-                   Bool_t mon/* = kFALSE*/,Bool_t monOnly /*= kFALSE*/)
-                   :EpProcessor(td, dataAna, h10type, mon, monOnly)
+                   Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
+                   :EpProcessor(td, dataAna, h10type, monitor, monitorOnly)
 {
 	
 }
@@ -40,14 +40,14 @@ void ProcEFid::handle(DataH10* dH10)
 	//Info("ProcEFid::handle()", "");
 	pass = kFALSE;
 	
-	if (mMon||mMonOnly)
+	if (mon||mononly)
 	{
 		if (dAna->top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-			TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 			dAna->makeHistsEFid(hists[MONMODE][EVTINC], dirmon);
 		}else if(dAna->top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-				TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
+				TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
 				dAna->makeHistsEFid(hists[MONMODE][iTop], dirmon);
 			}
 		}
@@ -61,7 +61,7 @@ void ProcEFid::handle(DataH10* dH10)
 	}
 	
 		
-	if (mMonOnly){
+	if (mononly){
 		pass = kTRUE;
 		EpProcessor::handle(dH10);
 		return;
@@ -70,7 +70,7 @@ void ProcEFid::handle(DataH10* dH10)
 	dAna->efid.fidE = inFid(dH10);
 	if (dAna->efid.fidE)
 	{
-		if (mMon)
+		if (mon)
 		{
 			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));

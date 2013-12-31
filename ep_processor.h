@@ -28,8 +28,8 @@ class EpProcessor
 public:
 	static const Int_t NPROCMODES = 2;
 	enum{MONMODE, CUTMODE};
-	Bool_t mMon;
-	Bool_t mMonOnly;
+	Bool_t mon;
+	Bool_t mononly;
 	
 	Bool_t pass;
 	
@@ -48,7 +48,7 @@ public:
 		pass = kFALSE;
 		_next_proc = 0;
 	}
-	EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t mon = kFALSE, Bool_t monOnly = kFALSE);
+	EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t monitor = kFALSE, Bool_t monitorOnly = kFALSE);
 	~EpProcessor();
 		
 	void add(EpProcessor *n);

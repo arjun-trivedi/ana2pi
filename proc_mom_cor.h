@@ -45,12 +45,12 @@ void ProcMomCor::handle(DataH10* dH10)
 	pass = kFALSE;
 	
 	if (dAna->top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-		TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
+		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 		dAna->makeHistsMomCor(hists[MONMODE][EVTINC], dirmon);
 		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
 	}else if(dAna->top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-			TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
 			dAna->makeHistsMomCor(hists[MONMODE][iTop], dirmon);
 			dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirout);
 		}

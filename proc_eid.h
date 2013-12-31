@@ -19,7 +19,7 @@ class ProcEid : public EpProcessor
 {
 public:
 	ProcEid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-		    Bool_t mon=kFALSE,Bool_t monOnly=kFALSE);
+		    Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
 	~ProcEid();
 	
 	void handle();
@@ -42,8 +42,8 @@ protected:
 };
 
 ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna, 
-                 Bool_t mon/* = kFALSE*/,Bool_t monOnly /*= kFALSE*/)
-                 :EpProcessor(td, dataH10, dataAna, mon, monOnly)
+                 Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
+                 :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
 {
 	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
@@ -84,15 +84,15 @@ void ProcEid::handle() {
 	
 	hevtsum->Fill(EVT_TRIG);
 	
-	if (mMon||mMonOnly)
+	if (mon||mononly)
 	{
 		if (dAna->top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-			TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 			dAna->makeHistsEid(hists[MONMODE][EVTINC], dirmon);
 			dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
 		}else if(dAna->top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-				TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
+				TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
 				dAna->makeHistsEid(hists[MONMODE][iTop], dirmon);
 				dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirmon);
 			}
@@ -113,7 +113,7 @@ void ProcEid::handle() {
 	}
 	
 		
-	if (mMonOnly){
+	if (mononly){
 		pass = kTRUE;
 		EpProcessor::handle();
 		return;
@@ -127,7 +127,7 @@ void ProcEid::handle() {
     
 	if (gE) {	
 		
-		if (mMon)
+		if (mon)
 		{
 			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));

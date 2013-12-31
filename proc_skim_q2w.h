@@ -46,11 +46,11 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	hevtsum->Fill(EVT);
 	
 	if (dAna->top==0 && histsEkin[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-		TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
+		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
 	}else if(dAna->top!=0 && histsEkin[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-			TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
 			dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirmon);
 		}
 	}

@@ -12,7 +12,7 @@ class ProcPid : public EpProcessor
 
 public:
 	ProcPid(TDirectory *td,DataAna* dataAna,TString h10type, 
-		    Bool_t mon=kFALSE,Bool_t monOnly=kFALSE);
+		    Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
 	~ProcPid();
 
 	void handle(DataH10* dH10);
@@ -38,8 +38,8 @@ protected:
 };
 
 ProcPid::ProcPid(TDirectory *td, DataAna* dataAna, TString h10type, 
-                 Bool_t mon/* = kFALSE*/,Bool_t monOnly /*= kFALSE*/)
-                 :EpProcessor(td, dataAna, h10type, mon, monOnly)
+                 Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
+                 :EpProcessor(td, dataAna, h10type, monitor, monitorOnly)
 {
 	td->cd();	
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
@@ -76,14 +76,14 @@ void ProcPid::handle(DataH10* dH10)
 	
 	hevtsum->Fill(EVT);
 	
-	if (mMon||mMonOnly)
+	if (mon||mononly)
 	{
 		if (dAna->top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-			TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 			dAna->makeHistsPid(hists[MONMODE][EVTINC], dirmon);
 		}else if(dAna->top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-				TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
+				TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
 				dAna->makeHistsPid(hists[MONMODE][iTop], dirmon);
 			}
 		}
@@ -98,7 +98,7 @@ void ProcPid::handle(DataH10* dH10)
 	}
 	
 		
-	if (mMonOnly){
+	if (mononly){
 		pass = kTRUE;
 		EpProcessor::handle(dH10);
 		return;
@@ -163,7 +163,7 @@ void ProcPid::handle(DataH10* dH10)
 	}
 	
 	if (pass) {
-		if (mMon)
+		if (mon)
 		{
 			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
