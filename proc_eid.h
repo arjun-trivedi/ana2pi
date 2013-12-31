@@ -50,11 +50,11 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
 
     if      (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "is_h10e1f=true && eidParFileFound=true. Will use goodE()"); 
+    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
     }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "is_h10e1f=true && eidParFileFound=false. Will use goodE_bos()");
+    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
     }else if (dH10->expt=="e16") {
-    	Info("ProcEid::ProcEid()", "is_h10e16=true. Will use goodE_bos()");; //pars for e1-6 not yet obtained
+    	Info("ProcEid::ProcEid()", "dH10.expt==e16. Will use goodE_bos()");; //pars for e1-6 not yet obtained
     }
 	
 	td->cd();

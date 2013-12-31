@@ -29,6 +29,8 @@ TString procorder="";
 TString expt="";
 TString dtyp="";
 TString rctn=""; //h10 or h10.lst
+TString str_nentries="";
+Long64_t nentries=1000000000;
 
 //objects setup by ana2pi
 TString h10type;
@@ -80,6 +82,7 @@ int main(int argc,  char* const argv[])
 	dAna = new DataAna();
 	proc_chain = SetupProcs();
 	h10looper = new H10Looper(h10chain,dH10,proc_chain);
+	h10looper->Loop(nentries);
 	
 	return 0;
 }
@@ -90,10 +93,10 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, "hi:e:d:r:p:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:e:d:r:p:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("ana2pi -i <h10.lst> -e <expt> -d <dtyp> -r <rctn> -p <procorder>\n");
+			printf("ana2pi -i <h10.lst> -e <expt> -d <dtyp> -r <rctn> -p <procorder> -n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<rctn>=2pi/elas\n");
@@ -112,6 +115,10 @@ void parseArgs(int argc, char* const argv[]){
 			break;
 		case 'r':
 			rctn = optarg;
+			break;
+		case 'n':
+			str_nentries = optarg;
+			nentries = str_nentries.Atoll();
 			break;
 		case ':':
 			printf("-%c without options\n", optopt);

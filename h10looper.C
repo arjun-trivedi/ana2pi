@@ -4,11 +4,11 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
-void H10Looper::Loop()
+void H10Looper::Loop(Long64_t nentries)
 {
    if (fChain == 0) return;
 
-   Long64_t nentries = fChain->GetEntriesFast();
+   //Long64_t nentries = fChain->GetEntriesFast();
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -16,5 +16,6 @@ void H10Looper::Loop()
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
+      Info("Loop", "Processing entry# %d\n",jentry);
    }
 }
