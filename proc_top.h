@@ -33,9 +33,9 @@ protected:
     
     Bool_t mMakeOnlyMCYields; //atrivedi 051013
     TObjArray* mHistsAnaMM;    // for 't1a || t2a || t3a || t4a'. For technical reasons, "hists" was used in place of histsMM
-    TObjArray* mYields[nTOP];
-	TObjArray* mHistsMM[nTOP];
-	TObjArray* mHistseKin[nTOP];
+    TObjArray* mYields[NTOPS];
+	TObjArray* mHistsMM[NTOPS];
+	TObjArray* mHistseKin[NTOPS];
 	TObjArray* mYields_Th;
 	TObjArray* mHistsMM_Th;
 	TObjArray* mHistseKin_Th;
@@ -45,7 +45,7 @@ protected:
 	TLorentzVector mLvP;
 	TLorentzVector mLvPip;
 	TLorentzVector mLvPim;
-	TLorentzVector mLvMM[nTOP];
+	TLorentzVector mLvMM[NTOPS];
 	TLorentzVector mLvQCMS;
 	TLorentzVector mLvP0CMS;
 	TLorentzVector mLvPCMS;
@@ -66,7 +66,7 @@ ProcTop::ProcTop(TDirectory *td, DataAna* dAna, TString h10type) : EpProcessor(t
 	if (is_h10sim && EpProcessor::isFirstProc()) mMakeOnlyMCYields = kTRUE;
 	
 	mHistsAnaMM = NULL; //for techincal reasons, hists was used
-	for (int iTop = 0; iTop < nTOP; ++iTop)
+	for (int iTop = 0; iTop < NTOPS; ++iTop)
 	{
 		mYields[iTop]   =NULL;
 		mHistsMM[iTop]  =NULL;
@@ -99,7 +99,7 @@ ProcTop::ProcTop(TDirectory *td, DataAna* dAna, TString h10type) : EpProcessor(t
 ProcTop::~ProcTop() {
 	delete hevtsum;
 	delete mHistsAnaMM;
-	for (int iTop = 0; iTop < nTOP; ++iTop)
+	for (int iTop = 0; iTop < NTOPS; ++iTop)
     {
     	delete mYields[iTop];
     	delete mHistsMM[iTop];
@@ -125,10 +125,10 @@ void ProcTop::handle(DataH10* dH10) {
 	mLvP.SetXYZT(0,0,0,0);
 	mLvPip.SetXYZT(0,0,0,0);
 	mLvPim.SetXYZT(0,0,0,0);
-	mLvMM[iTOP1].SetXYZT(0,0,0,0);
-	mLvMM[iTOP2].SetXYZT(0,0,0,0);
-	mLvMM[iTOP3].SetXYZT(0,0,0,0);
-	mLvMM[iTOP4].SetXYZT(0,0,0,0);
+	mLvMM[TOP1].SetXYZT(0,0,0,0);
+	mLvMM[TOP2].SetXYZT(0,0,0,0);
+	mLvMM[TOP3].SetXYZT(0,0,0,0);
+	mLvMM[TOP4].SetXYZT(0,0,0,0);
 	mLvQCMS.SetXYZT(0,0,0,0);
 	mLvP0CMS.SetXYZT(0,0,0,0);
 	mLvPCMS.SetXYZT(0,0,0,0);
@@ -138,7 +138,7 @@ void ProcTop::handle(DataH10* dH10) {
 	if (mHistsAnaMM==NULL && !mMakeOnlyMCYields) {
 		dirout->cd();
 		mHistsAnaMM = dAna->makeHistsMM();
-		for (int iTop = 0; iTop < nTOP; ++iTop)
+		for (int iTop = 0; iTop < NTOPS; ++iTop)
 		{
 			dirout->mkdir(TString::Format("top%d",iTop+1))->cd();
 			mYields[iTop]   =dAna->makeYields();
@@ -219,14 +219,14 @@ void ProcTop::handle(DataH10* dH10) {
 	        dAna->dTop.Q2 = -1*(mLvQ.Mag2());
 	        dAna->dTop.W = mLvW.Mag();
 	        
-	        /* *** mLvP, mLvPip, mLvPim, mLvMM[iTOP1/2/3/4] *** */
+	        /* *** mLvP, mLvPip, mLvPim, mLvMM[TOP1/2/3/4] *** */
 	        setLabFrame4vecHadrons(dH10);
 	              
 	        /* *** MM *** */   
-	        Float_t mm2ppippim = mLvMM[iTOP1].Mag2();
-			Float_t mm2ppip    = mLvMM[iTOP2].Mag2();
-			Float_t mm2ppim    = mLvMM[iTOP3].Mag2();
-			Float_t mm2pippim  = mLvMM[iTOP4].Mag2();
+	        Float_t mm2ppippim = mLvMM[TOP1].Mag2();
+			Float_t mm2ppip    = mLvMM[TOP2].Mag2();
+			Float_t mm2ppim    = mLvMM[TOP3].Mag2();
+			Float_t mm2pippim  = mLvMM[TOP4].Mag2();
 						
 			Bool_t t1a = gP && gPip && gPim;// && dH10->gpart == 4; //atrivedi: 071613
 			Bool_t t1b = TMath::Abs(mm2ppippim) < 0.0005;
@@ -258,15 +258,15 @@ void ProcTop::handle(DataH10* dH10) {
 				}else if (t2) {
 					hevtsum->Fill(EVT_T2);
 					dAna->top = 2;
-					mLvPim = mLvMM[iTOP2];
+					mLvPim = mLvMM[TOP2];
 				}else if (t3) {
 					hevtsum->Fill(EVT_T3);
 					dAna->top = 3;
-					mLvPip = mLvMM[iTOP3];
+					mLvPip = mLvMM[TOP3];
 				}else if (t4) {
 					hevtsum->Fill(EVT_T4);
 					dAna->top = 4;
-					mLvP = mLvMM[iTOP4];
+					mLvP = mLvMM[TOP4];
 				}
 				UpdateVarsets(dH10);
 				dAna->fillYields(mYields[dAna->top-1]);
@@ -412,23 +412,23 @@ void ProcTop::setLabFrame4vecHadrons(DataH10* dH10){
 		mLvPim.SetPxPyPzE(px,py,pz,energy);
 	}
 	
-	mLvMM[iTOP1] = (mLvW-(mLvP+mLvPip+mLvPim));
-	mLvMM[iTOP2] = (mLvW-(mLvP+mLvPip));
-    mLvMM[iTOP3] = (mLvW-(mLvP+mLvPim));  
-	mLvMM[iTOP4] = (mLvW-(mLvPip+mLvPim)); 
+	mLvMM[TOP1] = (mLvW-(mLvP+mLvPip+mLvPim));
+	mLvMM[TOP2] = (mLvW-(mLvP+mLvPip));
+    mLvMM[TOP3] = (mLvW-(mLvP+mLvPim));  
+	mLvMM[TOP4] = (mLvW-(mLvPip+mLvPim)); 
 }
 
 void ProcTop::UpdateMM(Bool_t ismc /* = kFALSE */) {
 	DataTop *tp = &(dAna->dTop);
 	if (ismc) tp = &(dAna->dTop_mc);
-	tp->mm2ppippim = mLvMM[iTOP1].Mag2();
-	tp->mmppippim  = mLvMM[iTOP1].Mag();
-	tp->mm2ppip    = mLvMM[iTOP2].Mag2();
-	tp->mmppip     = mLvMM[iTOP2].Mag();
-	tp->mm2ppim    = mLvMM[iTOP3].Mag2();
-	tp->mmppim     = mLvMM[iTOP3].Mag();
-	tp->mm2pippim  = mLvMM[iTOP4].Mag2();
-	tp->mmpippim   = mLvMM[iTOP4].Mag();
+	tp->mm2ppippim = mLvMM[TOP1].Mag2();
+	tp->mmppippim  = mLvMM[TOP1].Mag();
+	tp->mm2ppip    = mLvMM[TOP2].Mag2();
+	tp->mmppip     = mLvMM[TOP2].Mag();
+	tp->mm2ppim    = mLvMM[TOP3].Mag2();
+	tp->mmppim     = mLvMM[TOP3].Mag();
+	tp->mm2pippim  = mLvMM[TOP4].Mag2();
+	tp->mmpippim   = mLvMM[TOP4].Mag();
 }
 
 void ProcTop::UpdateVarsets(DataH10* dH10, Bool_t ismc /* = kFALSE */){
@@ -532,7 +532,7 @@ void ProcTop::write(){
 		dirout->cd();
 		hevtsum->Write();
 		mHistsAnaMM->Write();
-		for (int iTop = 0; iTop < nTOP; ++iTop)
+		for (int iTop = 0; iTop < NTOPS; ++iTop)
 		{
 			dirout->cd(TString::Format("top%d",iTop+1));
 			mYields[iTop]->Write();

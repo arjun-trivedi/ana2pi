@@ -45,11 +45,11 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
 	
-	if (dAna->top==0 && histsEkin[iMODE_MON][iEVTINC][iSECTOR0]==NULL) { //i.e. inclusive event
+	if (dAna->top==0 && histsEkin[iMODE_MON][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 		TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
-		dAna->makeHistsEkin(histsEkin[iMODE_MON][iEVTINC], dirmon);
-	}else if(dAna->top!=0 && histsEkin[iMODE_MON][iTOP1][iSECTOR0]==NULL){ //i.e. 2pi event
-		for(Int_t iTop=iTOP1;iTop<nTOP;iTop++){
+		dAna->makeHistsEkin(histsEkin[iMODE_MON][EVTINC], dirmon);
+	}else if(dAna->top!=0 && histsEkin[iMODE_MON][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
 			TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
 			dAna->makeHistsEkin(histsEkin[iMODE_MON][iTop], dirmon);
 		}
@@ -58,7 +58,7 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	updateEkin(dH10);
 	
 	if (dAna->top == 0) { //i.e inclusive event
-		dAna->fillHistsEkin(histsEkin[iMODE_MON][iEVTINC]);
+		dAna->fillHistsEkin(histsEkin[iMODE_MON][EVTINC]);
 	}else{ //i.e 2pi event
 		dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top]);
 	}
@@ -66,11 +66,11 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	
 	//if ( (dAna->eKin.Q2 >= 1.3 && dAna->eKin.Q2 <= 1.6 && dAna->eKin.W >=1.5 && dAna->eKin.W <= 1.9) ) { //!q2w range 1
 	if ( (dAna->eKin.Q2 >= 1.9 && dAna->eKin.Q2 <= 2.5 && dAna->eKin.W >=1.3 && dAna->eKin.W <= 1.9) ) { //!q2w range 2; Evgeny Isupov	 
-		if (histsEkin[iMODE_CUT][iEVTINC][iSECTOR0]==NULL) {
+		if (histsEkin[iMODE_CUT][EVTINC][SECTOR0]==NULL) {
 			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-			dAna->makeHistsEkin(histsEkin[iMODE_CUT][iEVTINC], dircut);
+			dAna->makeHistsEkin(histsEkin[iMODE_CUT][EVTINC], dircut);
 		}
-		dAna->fillHistsEkin(histsEkin[iMODE_CUT][iEVTINC]);
+		dAna->fillHistsEkin(histsEkin[iMODE_CUT][EVTINC]);
 		
 		hevtsum->Fill(EVT_PASS);
 		pass = kTRUE;

@@ -62,13 +62,13 @@ namespace ParticleConstants {
 }
 
 namespace AnalysisConstants{
-	static const Int_t nTOP    = 4;
-	static const Int_t nEVTSEL = 5; //nTOP(2pi evt)+EVTINC(ep->X)
-	enum {iTOP1, iTOP2, iTOP3, iTOP4, iEVTINC}; //NOTE: iEVTINC not in logical progression
+	static const Int_t NTOPS    = 4;
+	static const Int_t NEVTSELS = 5; //NTOPS(2pi evt)+EVTINC(ep->X)
+	enum {TOP1, TOP2, TOP3, TOP4, EVTINC}; //NOTE: EVTINC not in logical progression
 																		   //
 
-	static const Int_t nSECTOR = 7;
-	enum {iSECTOR0, iSECTOR1, iSECTOR2, iSECTOR3, iSECTOR4, iSECTOR5, iSECTOR6};
+	static const Int_t NSECTORS = 7;
+	enum {SECTOR0, SECTOR1, SECTOR2, SECTOR3, SECTOR4, SECTOR5, SECTOR6};
         
 }
 

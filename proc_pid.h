@@ -78,11 +78,11 @@ void ProcPid::handle(DataH10* dH10)
 	
 	if (mMon||mMonOnly)
 	{
-		if (dAna->top==0 && hists[iMODE_MON][iEVTINC][iSECTOR0]==NULL) { //i.e. inclusive event
+		if (dAna->top==0 && hists[iMODE_MON][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 			TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
-			dAna->makeHistsPid(hists[iMODE_MON][iEVTINC], dirmon);
-		}else if(dAna->top!=0 && hists[iMODE_MON][iTOP1][iSECTOR0]==NULL){ //i.e. 2pi event
-			for(Int_t iTop=iTOP1;iTop<nTOP;iTop++){
+			dAna->makeHistsPid(hists[iMODE_MON][EVTINC], dirmon);
+		}else if(dAna->top!=0 && hists[iMODE_MON][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
 				TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
 				dAna->makeHistsPid(hists[iMODE_MON][iTop], dirmon);
 			}
@@ -91,7 +91,7 @@ void ProcPid::handle(DataH10* dH10)
 	
 		updatePid(dH10);
 		if (dAna->top == 0) { //i.e inclusive event
-			dAna->fillHistsPid(hists[iMODE_MON][iEVTINC]);
+			dAna->fillHistsPid(hists[iMODE_MON][EVTINC]);
 		}else { //i.e 2pi event
 			dAna->fillHistsPid(hists[iMODE_MON][dAna->top]);
 		}
@@ -165,11 +165,11 @@ void ProcPid::handle(DataH10* dH10)
 	if (pass) {
 		if (mMon)
 		{
-			if (hists[iMODE_CUT][iEVTINC][iSECTOR0]==NULL) {
+			if (hists[iMODE_CUT][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-				dAna->makeHistsPid(hists[iMODE_CUT][iEVTINC], dircut);
+				dAna->makeHistsPid(hists[iMODE_CUT][EVTINC], dircut);
 			}
-			dAna->fillHistsPid(hists[iMODE_CUT][iEVTINC]);
+			dAna->fillHistsPid(hists[iMODE_CUT][EVTINC]);
 		}
 		
 		EpProcessor::handle(dH10);

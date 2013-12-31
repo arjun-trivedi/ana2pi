@@ -35,8 +35,8 @@ public:
 	
     TDirectory *dirout;
     TH1D* hevtsum;
-	TObjArray** hists[nPROCMODE][nEVTSEL];
-	TObjArray** histsEkin[nPROCMODE][nEVTSEL];
+	TObjArray** hists[nPROCMODE][NEVTSELS];
+	TObjArray** histsEkin[nPROCMODE][NEVTSELS];
 	
 	DataH10* dH10;
 	DataAna* dAna;

@@ -10,12 +10,12 @@ EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Boo
 	mMonOnly = monOnly;
 
 	for(Int_t iProcMode=0;iProcMode<nPROCMODE;iProcMode++){
-		for(Int_t iEvtSel=0;iEvtSel<nEVTSEL;iEvtSel++){
+		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
 			//hists[iProcMode][iEvtSel] = NULL;
 			//histsEkin[iProcMode][iEvtSel] = NULL;
-			hists[iProcMode][iEvtSel] = new TObjArray*[nSECTOR];
-			histsEkin[iProcMode][iEvtSel] = new TObjArray*[nSECTOR];
-			for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+			hists[iProcMode][iEvtSel] = new TObjArray*[NSECTORS];
+			histsEkin[iProcMode][iEvtSel] = new TObjArray*[NSECTORS];
+			for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 				hists[iProcMode][iEvtSel][iSector] = NULL;
 				histsEkin[iProcMode][iEvtSel][iSector] = NULL;
 			}
@@ -39,10 +39,10 @@ EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Boo
 EpProcessor::~EpProcessor(){
 	Info("~EpProcessor()", "");
 	for(Int_t iProcMode=0;iProcMode<nPROCMODE;iProcMode++){
-		for(Int_t iEvtSel=0;iEvtSel<nEVTSEL;iEvtSel++){
+		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
 			//dAna->deleteHists(hists[iProcMode][iEvtSel]);
 			//dAna->deleteHists(histsEkin[iProcMode][iEvtSel]);
-			for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+			for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 				delete hists[iProcMode][iEvtSel][iSector];
 				delete histsEkin[iProcMode][iEvtSel][iSector];
 			}
@@ -78,12 +78,12 @@ void EpProcessor::write(){
 	}
 	TDirectory* _dirout;
 	for(Int_t iProcMode=0;iProcMode<nPROCMODE;iProcMode++){
-		for(Int_t iEvtSel=0;iEvtSel<nEVTSEL;iEvtSel++){
-			for(Int_t iSector=0;iSector<nSECTOR;iSector++){
-				if (iProcMode == iMODE_MON && iEvtSel == iEVTINC){
+		for(Int_t iEvtSel=0;iEvtSel<NEVTSELS;iEvtSel++){
+			for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+				if (iProcMode == iMODE_MON && iEvtSel == EVTINC){
 					_dirout = dirout->GetDirectory(TString::Format("mon/sector%d", iSector));
 					if (_dirout != NULL) _dirout->cd();
-				}else if (iProcMode == iMODE_MON && iEvtSel != iEVTINC){
+				}else if (iProcMode == iMODE_MON && iEvtSel != EVTINC){
 					_dirout = dirout->GetDirectory(TString::Format("mon%d/sector%d", iEvtSel, iSector));
 					if (_dirout != NULL) _dirout->cd();
 				}else if (iProcMode == iMODE_CUT){

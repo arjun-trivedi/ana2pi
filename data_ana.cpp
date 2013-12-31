@@ -39,9 +39,9 @@ void DataAna::Clear()
 void DataAna::makeHistsEid(TObjArray** hists, TDirectory* dirout)
 {
 	//TObjArray *ret = new TObjArray(5);
-	//TObjArray* ret[nSECTOR];
+	//TObjArray* ret[NSECTORS];
 	//TDirectory* direid = dirout->mkdir("eid");
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
 		
@@ -55,7 +55,7 @@ void DataAna::makeHistsEid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hbetaVp",TString::Format("#beta vs p(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
 		hists[iSector]->Add(new TH2F("hdtIfVp",TString::Format("#Deltat vs p(sector%d)", iSector),100, 0, 4, 100, -80, 120));
 	}
-	/*for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	/*for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		Info("DataAna::makeHistsEid()", "sector%d = %d", iSector, hists[iSector]->GetEntriesFast());
 		//Info("DataAna::makeHistsEid()", "sector%d = %s", iSector, hists[iSector]->At(0)->GetTitle());
 		Info("DataAna::makeHistsEid()", "sector%d = %s", iSector, hists[iSector]->At(0)->GetTitle());
@@ -75,7 +75,7 @@ void DataAna::makeHistsEFid(TObjArray** hists, TDirectory* dirout)
 	//TObjArray *ret = new TObjArray(6);
 	//TObjArray* ret[7];
 	//TDirectory* direfid = dirout->mkdir("efid");
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
 			
@@ -100,7 +100,7 @@ void DataAna::makeHistsMomCor(TObjArray** hists, TDirectory* dirout)
 	//TObjArray *ret = new TObjArray(5);
 	//TObjArray* ret[7];
 	//TDirectory* dirmomcor = dirout->mkdir("momcor");
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
 			
@@ -121,7 +121,7 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 	//TObjArray *ret = new TObjArray(21);
 	TObjArray* ret[7];
 	//TDirectory* dirpid = dirout->mkdir("pid");
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
 			
@@ -158,9 +158,9 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 void DataAna::makeHistsEkin(TObjArray** hists, TDirectory* dirout)
 {
 	//TObjArray *ret = new TObjArray(4);
-	//TObjArray* ret[nSECTOR];
+	//TObjArray* ret[NSECTORS];
 	//TDirectory* direkin = dirout->mkdir("ekin");
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
 			
@@ -283,7 +283,7 @@ TObjArray* DataAna::makeYields()
 
 void DataAna::writeHists(TObjArray** hists, TDirectory *dirout)
 {
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if (iSector>0) continue;
 		Info("DataAna::writeHists()", "here1");
 		Info("DataAna::writeHists()", "cd(sector%d)", iSector);
@@ -297,7 +297,7 @@ void DataAna::writeHists(TObjArray** hists, TDirectory *dirout)
 
 void DataAna::deleteHists(TObjArray** hists)
 {
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		Info("DataAna::deleteHists()", "here1");
 		//delete hists[iSector];
 		Info("DataAna::deleteHists()", "here2");
@@ -308,7 +308,7 @@ void DataAna::deleteHists(TObjArray** hists)
 void DataAna::fillHistsEid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
 	//Int_t iSector = dAna->eid.sector;
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (iSector == 0) || (iSector == eid.sector) ) {
 						
 			TH2* h1 = (TH2*)hists[iSector]->At(0);
@@ -357,7 +357,7 @@ void DataAna::fillHistsEid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 
 void DataAna::fillHistsEFid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (iSector == 0) || (iSector == efid.sector) ) {
 		
 			TH2* h1 = (TH2*)hists[iSector]->At(0);
@@ -374,7 +374,7 @@ void DataAna::fillHistsEFid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 
 void DataAna::fillHistsMomCor(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (iSector == 0) || (iSector == mom.sector) ) {
 		
 			TH2* h1 = (TH2*)hists[iSector]->At(0);
@@ -400,7 +400,7 @@ void DataAna::fillHistsPid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	Int_t hIdx = 0;
 	if(pid.h10IdxP > 0){
 		hIdx = 0;
-		for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+		for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 				if ( (iSector == 0) || (iSector == pid.sectorP) ) {
 			
 				TH2* h1 = (TH2*)hists[iSector]->At(hIdx);
@@ -423,7 +423,7 @@ void DataAna::fillHistsPid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	}
 	if(pid.h10IdxPip > 0){
 		hIdx = 7;
-		for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+		for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 			if ( (iSector == 0) || (iSector == pid.sectorPip) ) {
 			
 				TH2* h1 = (TH2*)hists[iSector]->At(hIdx);
@@ -446,7 +446,7 @@ void DataAna::fillHistsPid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	}
 	if(pid.h10IdxPim > 0){
 		hIdx = 14;
-		for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+		for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 			if ( (iSector == 0) || (iSector == pid.sectorPim) ) {
 			
 				TH2* h1 = (TH2*)hists[iSector]->At(hIdx);
@@ -474,7 +474,7 @@ void DataAna::fillHistsEkin(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	DataEkin *ekin = &eKin;
 	if (useMc) ekin = &eKin_mc;
 	
-	for(Int_t iSector=0;iSector<nSECTOR;iSector++){
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (iSector != 0) && (iSector != ekin->sector) ) continue;
 		
 		TH1* h1 = (TH1*)hists[iSector]->At(0);

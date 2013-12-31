@@ -42,11 +42,11 @@ void ProcEFid::handle(DataH10* dH10)
 	
 	if (mMon||mMonOnly)
 	{
-		if (dAna->top==0 && hists[iMODE_MON][iEVTINC][iSECTOR0]==NULL) { //i.e. inclusive event
+		if (dAna->top==0 && hists[iMODE_MON][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 			TDirectory* dirmon = dirout->mkdir(TString::Format("mon"));
-			dAna->makeHistsEFid(hists[iMODE_MON][iEVTINC], dirmon);
-		}else if(dAna->top!=0 && hists[iMODE_MON][iTOP1][iSECTOR0]==NULL){ //i.e. 2pi event
-			for(Int_t iTop=iTOP1;iTop<nTOP;iTop++){
+			dAna->makeHistsEFid(hists[iMODE_MON][EVTINC], dirmon);
+		}else if(dAna->top!=0 && hists[iMODE_MON][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
 				TDirectory* dirmon = dirout->mkdir(TString::Format("mon%d",iTop));
 				dAna->makeHistsEFid(hists[iMODE_MON][iTop], dirmon);
 			}
@@ -54,7 +54,7 @@ void ProcEFid::handle(DataH10* dH10)
 
 		updateEFid(dH10);
 		if (dAna->top == 0) { //i.e inclusive event
-			dAna->fillHistsEFid(hists[iMODE_MON][iEVTINC]);
+			dAna->fillHistsEFid(hists[iMODE_MON][EVTINC]);
 		}else { //i.e 2pi event
 			dAna->fillHistsEFid(hists[iMODE_MON][dAna->top]);
 		}
@@ -72,11 +72,11 @@ void ProcEFid::handle(DataH10* dH10)
 	{
 		if (mMon)
 		{
-			if (hists[iMODE_CUT][iEVTINC][iSECTOR0]==NULL) {
+			if (hists[iMODE_CUT][EVTINC][SECTOR0]==NULL) {
 				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-				dAna->makeHistsEFid(hists[iMODE_CUT][iEVTINC], dircut);
+				dAna->makeHistsEFid(hists[iMODE_CUT][EVTINC], dircut);
 			}
-			dAna->fillHistsEFid(hists[iMODE_CUT][iEVTINC]);/* code */
+			dAna->fillHistsEFid(hists[iMODE_CUT][EVTINC]);/* code */
 		}
 
 		pass = kTRUE;
