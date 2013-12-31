@@ -4,6 +4,7 @@
 ana2pi
 *.o
 *.so
+*.d
 *bk*
 *log
 *test*
