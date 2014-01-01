@@ -14,24 +14,25 @@ void H10Looper::Loop(Long64_t nentries)
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
+      // if (Cut(ientry) < 0) continue;
 
-      //Clear event data
+      // 1.Clear event data
       dH10->Clear();
       dAna->Clear();
 
-      //GetEntry
+      // 2.Load Branches into dH10
       nb = fChain->GetEntry(jentry);   nbytes += nb;
-      //If needed, Reconcile dH10
+      // 2.1 If needed, Reconcile dH10
       if (dH10->rctn=="2pi_userana" || 
           dH10->rctn=="elast_userana" ||
           (dH10->expt=="e16" && dH10->dtyp=="exp")) {
          dH10->Reconcile();
       }
-      // if (Cut(ientry) < 0) continue;
+      
       
       Info("Loop", "Processing entry# %d\n",jentry);
       //Reset proc_chain
-      //Call proc_chain
+      //3. Call proc_chain
       proc_chain->handle();
    }
 }
