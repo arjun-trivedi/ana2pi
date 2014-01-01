@@ -14,22 +14,23 @@ using namespace ParticleConstants;
 class ProcMomCor : public EpProcessor
 {
 public:
-	ProcMomCor(TDirectory *td, DataAna* dataAna, TString h10type);
+	ProcMomCor(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
 	~ProcMomCor();
 	
-	void handle(DataH10* dH10);
+	void handle();
 	//virtual void write(); 
 	
 protected:
-	void updateMomCor(DataH10* dH10);
-	void updateEkin(DataH10* dH10, Bool_t useMc = kFALSE);
+	void updateMomCor();
+	void updateEkin(Bool_t useMc = kFALSE);
 	
 	class MomCorr_e1f *_pcorr;
 	//TH1F *hdcx, *hdcy, *hdcz, *hdp;
 	//TH2F *hdpVp;
 };
 
-ProcMomCor::ProcMomCor(TDirectory *td, DataAna* dataAna, TString h10type) : EpProcessor(td, dataAna, h10type)
+ProcMomCor::ProcMomCor(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
+						 :EpProcessor(td, dataH10, dataAna)
 {
 	_pcorr = new MomCorr_e1f("/home/trivedia/CLAS/workspace/ana2pi/MomCorr");
 }
@@ -39,7 +40,7 @@ ProcMomCor::~ProcMomCor()
 	
 }
 
-void ProcMomCor::handle(DataH10* dH10)
+void ProcMomCor::handle()
 {
 	//Info("ProcMomCor::handle()", "");
 	pass = kFALSE;
@@ -57,8 +58,8 @@ void ProcMomCor::handle(DataH10* dH10)
 	}
 	
 	if ( dH10->id[0] == ELECTRON && dH10->p[0] > 0 ) {
-		updateMomCor(dH10);		
-		updateEkin(dH10);
+		updateMomCor();		
+		updateEkin();
 		if (dAna->top == 0) { //i.e inclusive event
 			dAna->fillHistsMomCor(hists[MONMODE][EVTINC]);
 			dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
@@ -68,10 +69,10 @@ void ProcMomCor::handle(DataH10* dH10)
 		}
 	}
 	pass = kTRUE; //atrivedi
-	EpProcessor::handle(dH10);
+	EpProcessor::handle();
 }
 
-void ProcMomCor::updateMomCor(DataH10* dH10) {
+void ProcMomCor::updateMomCor() {
 		
 	TLorentzVector *pin = new TLorentzVector();
 	Float_t cx = dH10->cx[0];
@@ -99,10 +100,10 @@ void ProcMomCor::updateMomCor(DataH10* dH10) {
 	delete pin;
 }
 
-void ProcMomCor::updateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
-	const TLorentzVector _4vE0 = dH10->_4vE0;
-	const TLorentzVector _4vP0 = dH10->_4vP0;
-	TLorentzVector _4vE1;
+void ProcMomCor::updateEkin(Bool_t useMc /*= kFALSE*/) {
+	const TLorentzVector lvE0 = dH10->lvE0;
+	const TLorentzVector lvP0 = dH10->lvP0;
+	TLorentzVector lvE1;
 		
 	DataEkin *ekin = &dAna->eKin;
 	if (useMc) ekin = &dAna->eKin_mc;
@@ -116,7 +117,7 @@ void ProcMomCor::updateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
 		px = mom*dH10->cx[0];
 		py = mom*dH10->cy[0];
 		pz = mom*dH10->cz[0];
-		_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
+		lvE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
 	} else{
 		for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
 			Int_t _id = dH10->mcid[idx];
@@ -127,22 +128,22 @@ void ProcMomCor::updateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
 			px = mom*Cos(_phi)*Sin(_theta);
 			py = mom*Sin(_phi)*Sin(_theta);
 			pz = mom*Cos(_theta);
-			_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
+			lvE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
 		}
 	}
 	
-	TLorentzVector _4vQ = _4vE0-_4vE1;
+	TLorentzVector lvQ = lvE0-lvE1;
 	if (!useMc) {ekin->sector = dH10->sc_sect[dH10->sc[0]-1];}
-	ekin->W = (_4vQ+_4vP0).Mag();
-	ekin->Q2 = -1*_4vQ.Mag2();
-	ekin->nu = _4vQ.E();
+	ekin->W = (lvQ+lvP0).Mag();
+	ekin->Q2 = -1*lvQ.Mag2();
+	ekin->nu = lvQ.E();
 	ekin->xb = ekin->Q2/(2*MASS_P*ekin->nu);
-	ekin->E1 = _4vE1.E();
-	ekin->theta1 = _4vE1.Theta()*RadToDeg();
-	Double_t phitmp = _4vE1.Phi()*RadToDeg();
+	ekin->E1 = lvE1.E();
+	ekin->theta1 = lvE1.Theta()*RadToDeg();
+	Double_t phitmp = lvE1.Phi()*RadToDeg();
 	ekin->phi1 = phitmp<-30 ? phitmp+360 : phitmp;
-	ekin->theta = _4vQ.Theta()*RadToDeg();
-	phitmp = _4vQ.Phi()*RadToDeg();
+	ekin->theta = lvQ.Theta()*RadToDeg();
+	phitmp = lvQ.Phi()*RadToDeg();
 	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
 }
 

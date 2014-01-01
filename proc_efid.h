@@ -11,21 +11,21 @@ using namespace TMath;
 class ProcEFid : public EpProcessor {
 
 public:
-	ProcEFid(TDirectory *td,DataAna* dataAna,TString h10type, 
+	ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
 		     Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
 	~ProcEFid();
 	
-	void handle(DataH10* dH10);
+	void handle();
 	//void write();
 	
 protected:	
-	Bool_t inFid(DataH10* dAna);
-	void updateEFid(DataH10* dH10);
+	Bool_t inFid();
+	void updateEFid();
 };
 
-ProcEFid::ProcEFid(TDirectory *td, DataAna* dataAna, TString h10type, 
+ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
                    Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
-                   :EpProcessor(td, dataAna, h10type, monitor, monitorOnly)
+                   :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
 {
 	
 }
@@ -35,7 +35,7 @@ ProcEFid::~ProcEFid()
 	
 }
 
-void ProcEFid::handle(DataH10* dH10)
+void ProcEFid::handle()
 {
 	//Info("ProcEFid::handle()", "");
 	pass = kFALSE;
@@ -52,7 +52,7 @@ void ProcEFid::handle(DataH10* dH10)
 			}
 		}
 
-		updateEFid(dH10);
+		updateEFid();
 		if (dAna->top == 0) { //i.e inclusive event
 			dAna->fillHistsEFid(hists[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
@@ -63,11 +63,11 @@ void ProcEFid::handle(DataH10* dH10)
 		
 	if (mononly){
 		pass = kTRUE;
-		EpProcessor::handle(dH10);
+		EpProcessor::handle();
 		return;
 	}
 	
-	dAna->efid.fidE = inFid(dH10);
+	dAna->efid.fidE = inFid();
 	if (dAna->efid.fidE)
 	{
 		if (mon)
@@ -80,11 +80,11 @@ void ProcEFid::handle(DataH10* dH10)
 		}
 
 		pass = kTRUE;
-		EpProcessor::handle(dH10);
+		EpProcessor::handle();
 	}
 }
 
-Bool_t ProcEFid::inFid(DataH10* dH10) {
+Bool_t ProcEFid::inFid() {
 		
 	Int_t id = dH10->id[0];
 	Double_t p = dH10->p[0];
@@ -101,7 +101,7 @@ Bool_t ProcEFid::inFid(DataH10* dH10) {
 	return inFid;
 }
 
-void ProcEFid::updateEFid(DataH10* dH10) {
+void ProcEFid::updateEFid() {
 	TLorentzVector _4vE1;
 		
 	Float_t mom;

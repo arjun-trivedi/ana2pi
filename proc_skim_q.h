@@ -12,17 +12,18 @@ class ProcSkimQ : public EpProcessor
 {
 
 public:
-	ProcSkimQ(TDirectory *td, DataAna* dataAna, TString h10type);
+	ProcSkimQ(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
 	~ProcSkimQ();
 	
-	void handle(DataH10* dH10);
+	void handle();
 	
 protected:
 	static const Int_t NUM_EVTCUTS = 8;
 	enum { EVT_NULL, EVT, EVT_1ST_NEG, EVT_LT8, EVT_1ST_E, EVT_1POS, EVT_2POS_EX, EVT_1POS1NEG_EX, EVT_2POS1NEG_EX };
 };
 
-ProcSkimQ::ProcSkimQ(TDirectory *td, DataAna* dataAna, TString h10type) : EpProcessor(td, dataAna, h10type)
+ProcSkimQ::ProcSkimQ(TDirectory *td,DataH10* dataH10,DataAna* dataAna) 
+					:EpProcessor(td, dataH10, dataAna)
 {
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
@@ -44,7 +45,7 @@ ProcSkimQ::~ProcSkimQ()
 	delete hists;
 }
 
-void ProcSkimQ::handle(DataH10* dH10)
+void ProcSkimQ::handle()
 {
 	//Info("ProcSkimQ::handle()", "");
 	pass = kFALSE;
@@ -84,7 +85,7 @@ void ProcSkimQ::handle(DataH10* dH10)
 				}
 				if ( binNum > 0 ) {
 					pass = kTRUE;
-					EpProcessor::handle(dH10);
+					EpProcessor::handle();
 				}
 			}
 		} 

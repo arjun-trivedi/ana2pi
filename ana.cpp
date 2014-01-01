@@ -4,11 +4,11 @@
 #include "ep_processor.h"
 #include "proc_eid.h"
 #include "proc_delast.h"
-/*#include "proc_efid.h"
-#include "proc_pid.h"
+#include "proc_efid.h"
+//#include "proc_pid.h"
 #include "proc_skim_q.h"
 #include "proc_mom_cor.h"
-#include "proc_top.h"
+/*#include "proc_top.h"
 #include "proc_skim_q2w.h"
 #include "proc_fill_skim.h"
 #include "proc_copy_h10.h"*/
@@ -157,13 +157,13 @@ EpProcessor* SetupProcs(){
          if (str.EqualTo("eid"))            proc = new ProcEid(fout->mkdir("eid"),dH10,dAna);
          else if (str.EqualTo("eidmon"))     proc = new ProcEid(fout->mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(fout->mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
-         if (str.EqualTo("delast"))            proc = new ProcDelast(fout->mkdir("delast"),dH10,dAna);
-         /*else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("fid"),dH10,dAna);
-         else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("qskim"))       proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
-         else if (str.EqualTo("mom"))      proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
-         else if (str.EqualTo("pid"))      proc = new ProcPid(mkdir("pid"),dH10,dAna);
+         else if (str.EqualTo("efid"))       proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna);
+         else if (str.EqualTo("delast"))     proc = new ProcDelast(fout->mkdir("delast"),dH10,dAna);
+         else if (str.EqualTo("efidmon"))    proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("qskim"))       proc = new ProcSkimQ(fout->mkdir("qskim"),dH10,dAna);
+         else if (str.EqualTo("mom"))      proc = new ProcMomCor(fout->mkdir("mom"),dH10,dAna);
+         /*else if (str.EqualTo("pid"))      proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("top"))      proc = new ProcTop(mkdir("top"),dH10,dAna);
