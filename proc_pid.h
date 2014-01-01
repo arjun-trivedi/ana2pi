@@ -11,11 +11,11 @@ class ProcPid : public EpProcessor
 {
 
 public:
-	ProcPid(TDirectory *td,DataAna* dataAna,TString h10type, 
+	ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
 		    Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
 	~ProcPid();
 
-	void handle(DataH10* dH10);
+	void handle();
 	//void write();
 				
 protected:
@@ -33,13 +33,13 @@ protected:
 	       EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_PPIPPIM_EX
 	};     
 	     
-	void updatePid(DataH10* dH10);
+	void updatePid();
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 };
 
-ProcPid::ProcPid(TDirectory *td, DataAna* dataAna, TString h10type, 
+ProcPid::ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
                  Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
-                 :EpProcessor(td, dataAna, h10type, monitor, monitorOnly)
+                 :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
 {
 	td->cd();	
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
@@ -69,7 +69,7 @@ ProcPid::~ProcPid()
 	
 }
 
-void ProcPid::handle(DataH10* dH10)
+void ProcPid::handle()
 {
 	//Info("ProcPid::handle()", "");
 	pass = kFALSE;
@@ -89,7 +89,7 @@ void ProcPid::handle(DataH10* dH10)
 		}
 	
 	
-		updatePid(dH10);
+		updatePid();
 		if (dAna->top == 0) { //i.e inclusive event
 			dAna->fillHistsPid(hists[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
@@ -100,7 +100,7 @@ void ProcPid::handle(DataH10* dH10)
 		
 	if (mononly){
 		pass = kTRUE;
-		EpProcessor::handle(dH10);
+		EpProcessor::handle();
 		return;
 	}	
 	
@@ -172,11 +172,11 @@ void ProcPid::handle(DataH10* dH10)
 			dAna->fillHistsPid(hists[CUTMODE][EVTINC]);
 		}
 		
-		EpProcessor::handle(dH10);
+		EpProcessor::handle();
 	}
 }
 
-void ProcPid::updatePid(DataH10* dH10)
+void ProcPid::updatePid()
 {
 	Float_t l_e = dH10->sc_r[dH10->sc[0]-1];
 	Float_t t_e = dH10->sc_t[dH10->sc[0]-1];

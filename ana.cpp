@@ -5,11 +5,11 @@
 #include "proc_eid.h"
 #include "proc_delast.h"
 #include "proc_efid.h"
-//#include "proc_pid.h"
+#include "proc_pid.h"
 #include "proc_skim_q.h"
 #include "proc_mom_cor.h"
-/*#include "proc_top.h"
-#include "proc_skim_q2w.h"
+#include "proc_top.h"
+/*#include "proc_skim_q2w.h"
 #include "proc_fill_skim.h"
 #include "proc_copy_h10.h"*/
 
@@ -163,11 +163,11 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))       proc = new ProcSkimQ(fout->mkdir("qskim"),dH10,dAna);
          else if (str.EqualTo("mom"))      proc = new ProcMomCor(fout->mkdir("mom"),dH10,dAna);
-         /*else if (str.EqualTo("pid"))      proc = new ProcPid(mkdir("pid"),dH10,dAna);
-         else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("top"))      proc = new ProcTop(mkdir("top"),dH10,dAna);
-         else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
+         else if (str.EqualTo("pid"))      proc = new ProcPid(fout->mkdir("pid"),dH10,dAna);
+         else if (str.EqualTo("pidmon"))     proc = new ProcPid(fout->mkdir("pid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("pidmononly")) proc = new ProcPid(fout->mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("top"))      proc = new ProcTop(fout->mkdir("top"),dH10,dAna);
+         /*else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
          else if (str.EqualTo("fillskim"))   proc = new ProcFillSkim(mkdir("skim"),dH10,dAna);
          else if (str.EqualTo("copyh10")) proc = new ProcCopyH10(fFileOut,dH10,dAna);*/
          else {

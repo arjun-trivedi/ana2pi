@@ -14,18 +14,18 @@ using namespace ParticleConstants;
 class ProcTop : public EpProcessor {
 
 public:
-	ProcTop(TDirectory *td, DataAna* dataAna, TString h10type);
+	ProcTop(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
 	~ProcTop();
-	void handle(DataH10* dH10);
+	void handle();
 	void write();
 protected:
-	void McKin(DataH10 *dH10);
+	void McKin();
 	
-	void UpdateEkin(DataH10* dH10, Bool_t useMc = kFALSE);
+	void UpdateEkin(Bool_t useMc = kFALSE);
 	
-	void setLabFrame4vecHadrons(DataH10* dH10);
+	void setLabFrame4vecHadrons();
 	void UpdateMM(Bool_t ismc  = kFALSE);
-	void UpdateVarsets(DataH10* dH10, Bool_t ismc = kFALSE);
+	void UpdateVarsets(Bool_t ismc = kFALSE);
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and mLvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
@@ -59,11 +59,12 @@ protected:
 	     };
 };
 
-ProcTop::ProcTop(TDirectory *td, DataAna* dAna, TString h10type) : EpProcessor(td, dAna, h10type) {
+ProcTop::ProcTop(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
+				 :EpProcessor(td, dataH10, dataAna) {
 	//atrivedi 051013 mMakeOnlyMCYields if: 
 	//if 'is_h10sim' & 'procorder = top'
 	mMakeOnlyMCYields = kFALSE;
-	if (is_h10sim && EpProcessor::isFirstProc()) mMakeOnlyMCYields = kTRUE;
+	if (dH10->dtyp=="sim" && EpProcessor::isFirstProc()) mMakeOnlyMCYields = kTRUE;
 	
 	mHistsAnaMM = NULL; //for techincal reasons, hists was used
 	for (int iTop = 0; iTop < NTOPS; ++iTop)
@@ -110,12 +111,12 @@ ProcTop::~ProcTop() {
 	delete mHistseKin_Th;
 }
 
-void ProcTop::handle(DataH10* dH10) {
+void ProcTop::handle() {
 	//Info("In ProcTop::handle()");
 	pass = kFALSE;
 	
-	const TLorentzVector _4vE0 = dH10->_4vE0;
-	const TLorentzVector _4vP0 = dH10->_4vP0;
+	const TLorentzVector lvE0 = dH10->lvE0;
+	const TLorentzVector lvP0 = dH10->lvP0;
 	
 	hevtsum->Fill(EVT);
 	
@@ -153,11 +154,11 @@ void ProcTop::handle(DataH10* dH10) {
 		mHistseKin_Th=dAna->makeHistsEkin();
 	}
 	if (mMakeOnlyMCYields) {
-		McKin(dH10);
+		McKin();
 		dAna->fillYields(mYields_Th, kTRUE);
 		dAna->fillHistsMM(mHistsMM_Th, kTRUE);
 		dAna->fillHistsEkin(mHistseKin_Th, kTRUE);
-		EpProcessor::handle(dH10); //atrivedi 120113
+		EpProcessor::handle(); //atrivedi 120113
 		return; //atrivedi 051013
 	}
 	
@@ -214,13 +215,13 @@ void ProcTop::handle(DataH10* dH10) {
 	        Double_t pz = mom*dH10->cz[dAna->h10idxE];
 	        Double_t energy = Sqrt(mom*mom+MASS_E*MASS_E);
 	        mLvE.SetPxPyPzE(px,py,pz,energy);
-	        mLvQ = _4vE0-mLvE;
-	        mLvW = mLvQ+_4vP0;
+	        mLvQ = lvE0-mLvE;
+	        mLvW = mLvQ+lvP0;
 	        dAna->dTop.Q2 = -1*(mLvQ.Mag2());
 	        dAna->dTop.W = mLvW.Mag();
 	        
 	        /* *** mLvP, mLvPip, mLvPim, mLvMM[TOP1/2/3/4] *** */
-	        setLabFrame4vecHadrons(dH10);
+	        setLabFrame4vecHadrons();
 	              
 	        /* *** MM *** */   
 	        Float_t mm2ppippim = mLvMM[TOP1].Mag2();
@@ -246,7 +247,7 @@ void ProcTop::handle(DataH10* dH10) {
 				UpdateMM();
 				dAna->fillHistsMM(mHistsAnaMM);
 								
-				UpdateEkin(dH10);
+				UpdateEkin();
 				
 			}
 			if ( t1 || t2 || t3 || t4) { //final top selection post MM cut
@@ -268,7 +269,7 @@ void ProcTop::handle(DataH10* dH10) {
 					dAna->top = 4;
 					mLvP = mLvMM[TOP4];
 				}
-				UpdateVarsets(dH10);
+				UpdateVarsets();
 				dAna->fillYields(mYields[dAna->top-1]);
 				dAna->fillHistsMM(mHistsMM[dAna->top-1]);
 				dAna->fillHistsEkin(mHistseKin[dAna->top-1]);
@@ -276,13 +277,13 @@ void ProcTop::handle(DataH10* dH10) {
 		}
 	}
 	if (pass) {
-		EpProcessor::handle(dH10);
+		EpProcessor::handle();
 	}
 }
 
-void ProcTop::McKin(DataH10 *dH10) {
-	const TLorentzVector _4vE0 = dH10->_4vE0;
-	const TLorentzVector _4vP0 = dH10->_4vP0;
+void ProcTop::McKin() {
+	const TLorentzVector lvE0 = dH10->lvE0;
+	const TLorentzVector lvP0 = dH10->lvP0;
 	
 	mLvQ.SetXYZT(0,0,0,0);
 	mLvW.SetXYZT(0,0,0,0);
@@ -328,20 +329,20 @@ void ProcTop::McKin(DataH10 *dH10) {
 		}
 	}
 
-	mLvQ = _4vE0-mLvE;
-	mLvW = mLvQ+_4vP0;
+	mLvQ = lvE0-mLvE;
+	mLvW = mLvQ+lvP0;
 	dAna->dTop_mc.Q2 = -1*(mLvQ.Mag2());
 	dAna->dTop_mc.W = mLvW.Mag();
 	
-	UpdateEkin(dH10, kTRUE);
+	UpdateEkin(kTRUE);
 	UpdateMM(kTRUE);
-	UpdateVarsets(dH10, kTRUE);
+	UpdateVarsets(kTRUE);
 }
 
-void ProcTop::UpdateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
-	const TLorentzVector _4vE0 = dH10->_4vE0;
-	const TLorentzVector _4vP0 = dH10->_4vP0;
-	TLorentzVector _4vE1;
+void ProcTop::UpdateEkin(Bool_t useMc /*= kFALSE*/) {
+	const TLorentzVector lvE0 = dH10->lvE0;
+	const TLorentzVector lvP0 = dH10->lvP0;
+	TLorentzVector lvE1;
 		
 	DataEkin *ekin = &dAna->eKin;
 	if (useMc) ekin = &dAna->eKin_mc;
@@ -355,7 +356,7 @@ void ProcTop::UpdateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
 		px = mom*dH10->cx[0];
 		py = mom*dH10->cy[0];
 		pz = mom*dH10->cz[0];
-		_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
+		lvE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
 	} else{
 		for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
 			Int_t _id = dH10->mcid[idx];
@@ -366,26 +367,26 @@ void ProcTop::UpdateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
 			px = mom*Cos(_phi)*Sin(_theta);
 			py = mom*Sin(_phi)*Sin(_theta);
 			pz = mom*Cos(_theta);
-			_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
+			lvE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
 		}
 	}
 	
-	TLorentzVector _4vQ = _4vE0-_4vE1;
-	ekin->W = (_4vQ+_4vP0).Mag();
-	ekin->Q2 = -1*_4vQ.Mag2();
-	ekin->nu = _4vQ.E();
+	TLorentzVector lvQ = lvE0-lvE1;
+	ekin->W = (lvQ+lvP0).Mag();
+	ekin->Q2 = -1*lvQ.Mag2();
+	ekin->nu = lvQ.E();
 	ekin->xb = ekin->Q2/(2*MASS_P*ekin->nu);
-	ekin->E1 = _4vE1.E();
-	ekin->theta1 = _4vE1.Theta()*RadToDeg();
-	Double_t phitmp = _4vE1.Phi()*RadToDeg();
+	ekin->E1 = lvE1.E();
+	ekin->theta1 = lvE1.Theta()*RadToDeg();
+	Double_t phitmp = lvE1.Phi()*RadToDeg();
 	ekin->phi1 = phitmp<-30 ? phitmp+360 : phitmp;
-	ekin->theta = _4vQ.Theta()*RadToDeg();
-	phitmp = _4vQ.Phi()*RadToDeg();
+	ekin->theta = lvQ.Theta()*RadToDeg();
+	phitmp = lvQ.Phi()*RadToDeg();
 	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
 	//if (!useMc) {ekin->eSector = dH10->.sc_sect[dH10->.sc[0]-1];}
 }
 
-void ProcTop::setLabFrame4vecHadrons(DataH10* dH10){
+void ProcTop::setLabFrame4vecHadrons(){
 	//Track Identified as hadrons
 	if (dAna->h10idxP>0) {
 		Double_t mom = dH10->p[dAna->h10idxP];
@@ -431,16 +432,16 @@ void ProcTop::UpdateMM(Bool_t ismc /* = kFALSE */) {
 	tp->mmpippim   = mLvMM[TOP4].Mag();
 }
 
-void ProcTop::UpdateVarsets(DataH10* dH10, Bool_t ismc /* = kFALSE */){
-	const TLorentzVector _4vE0 = dH10->_4vE0;
-	const TLorentzVector _4vP0 = dH10->_4vP0;
+void ProcTop::UpdateVarsets(Bool_t ismc /* = kFALSE */){
+	const TLorentzVector lvE0 = dH10->lvE0;
+	const TLorentzVector lvP0 = dH10->lvP0;
 	
 	DataTop *tp = &(dAna->dTop);
 	if (ismc) tp = &(dAna->dTop_mc);
 
 	//Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
 	TVector3 uz = mLvQ.Vect().Unit();
-    TVector3 ux = (_4vE0.Vect().Cross(mLvE.Vect())).Unit();
+    TVector3 ux = (lvE0.Vect().Cross(mLvE.Vect())).Unit();
     ux.Rotate(-TMath::Pi()/2,uz);
     TRotation r3;// = new TRotation();
     r3.SetZAxis(uz,ux).Invert();
@@ -450,7 +451,7 @@ void ProcTop::UpdateVarsets(DataH10* dH10, Bool_t ismc /* = kFALSE */){
     r4 *= boost; //*_3rot;
 	
 	mLvQCMS   = mLvQ;
-	mLvP0CMS  = _4vP0;
+	mLvP0CMS  = lvP0;
 	mLvPCMS   = mLvP;
 	mLvPipCMS = mLvPip;
 	mLvPimCMS = mLvPim;
