@@ -41,6 +41,7 @@ EpProcessor* proc_chain;
 H10Looper* h10looper;
 
 void parseArgs(int argc, char* const argv[]);
+TDirectory* mkdir(const char* dirname);
 EpProcessor* SetupProcs();
 
 
@@ -132,6 +133,19 @@ void parseArgs(int argc, char* const argv[]){
 	return;
 }
 
+
+TDirectory* mkdir(const char* dirname)
+{
+	TString dname = dirname;
+	TDirectory *ret = 0;
+	Int_t numTries = 0;
+	while ( ret == 0 && numTries++<10 ) {
+		if (numTries>1) dname += numTries;
+		ret = fout->mkdir(dname.Data());
+	}
+	return ret;
+}
+
 EpProcessor* SetupProcs(){
    //Get list of processors
    TCollection *procorder_tokens = procorder.Tokenize(":");
@@ -144,7 +158,7 @@ EpProcessor* SetupProcs(){
    if (procorder_tokens->IsEmpty()) {
       Info("SetupProcs", "no processors specified; building default pipeline\n");
       EpProcessor *proc;
-      proc = new ProcEid(fout->mkdir("eid"),dH10,dAna);
+      proc = new ProcEid(mkdir("eid"),dH10,dAna);
       //procs.push_back(proc);
       proc_chain->add(proc);
       //lastProcName= new TObjString("eid");
@@ -154,19 +168,19 @@ EpProcessor* SetupProcs(){
       while(TObjString *obj_str = (TObjString*)iter.Next()) {
          EpProcessor *proc;
          TString str = obj_str->GetString();
-         if (str.EqualTo("eid"))            proc = new ProcEid(fout->mkdir("eid"),dH10,dAna);
-         else if (str.EqualTo("eidmon"))     proc = new ProcEid(fout->mkdir("eid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("eidmononly")) proc = new ProcEid(fout->mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("efid"))       proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna);
-         else if (str.EqualTo("delast"))     proc = new ProcDelast(fout->mkdir("delast"),dH10,dAna);
-         else if (str.EqualTo("efidmon"))    proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(fout->mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("qskim"))       proc = new ProcSkimQ(fout->mkdir("qskim"),dH10,dAna);
-         else if (str.EqualTo("mom"))      proc = new ProcMomCor(fout->mkdir("mom"),dH10,dAna);
-         else if (str.EqualTo("pid"))      proc = new ProcPid(fout->mkdir("pid"),dH10,dAna);
-         else if (str.EqualTo("pidmon"))     proc = new ProcPid(fout->mkdir("pid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("pidmononly")) proc = new ProcPid(fout->mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("top"))      proc = new ProcTop(fout->mkdir("top"),dH10,dAna);
+         if (str.EqualTo("eid"))             proc = new ProcEid(mkdir("eid"),dH10,dAna);
+         else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("fid"),dH10,dAna);
+         else if (str.EqualTo("delast"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna);
+         else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
+         else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
+         else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
+         else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("top"))        proc = new ProcTop(mkdir("top"),dH10,dAna);
          /*else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
          else if (str.EqualTo("fillskim"))   proc = new ProcFillSkim(mkdir("skim"),dH10,dAna);
          else if (str.EqualTo("copyh10")) proc = new ProcCopyH10(fFileOut,dH10,dAna);*/
