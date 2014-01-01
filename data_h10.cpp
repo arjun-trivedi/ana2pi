@@ -104,7 +104,7 @@ void DataH10::Bind(TTree* tree)
 	h10chain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
 	
 	//MCTK Branches
-	if (dtyp=="sim" && rctn=="2pi") {
+	if (dtyp=="sim" && (rctn=="2pi"||rctn=="2pi_userana")) {
 		h10chain->SetBranchAddress("mcnentr", &mcnentr, &b_mcnentr);
 		h10chain->SetBranchAddress("mcnpart", &mcnpart, &b_mcnpart);
 		h10chain->SetBranchAddress("mcst", mcst, &b_mcst);
@@ -120,7 +120,7 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
-	if (dtyp=="sim" && rctn=="elast") { 
+	if (dtyp=="sim" && (rctn=="elast"||rctn=="elast_userana")) { 
 		h10chain->SetBranchAddress("nprt", &nprt, &b_nprt);
 		h10chain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
 		h10chain->SetBranchAddress("xpart", xpart, &b_xpart);

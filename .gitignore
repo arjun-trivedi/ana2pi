@@ -1,15 +1,20 @@
 ###########
 # general #
 ###########
-ana
-*.o
-*.so
-*.d
 *.root
 *bk*
 *log
 *test*
 *scratch*
+################################
+# specific to compiler objects #
+################################
+obj
+sobj
+ana
+*.o
+*.so
+*.d
 
 ###################
 # python specific #
