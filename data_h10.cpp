@@ -27,9 +27,11 @@ DataH10::DataH10(TString h10type)
 void DataH10::Bind(TTree* tree)
 {
 	h10chain = tree;
-	//Bind SEB Branches
-	if (rctn=="2pi_userana" || rctn=="elast_userana" ||
-	   (expt=="e16" && dtyp=="exp")) {//Bind SEB' Branches
+	// Bind SEB Branches
+	// Remember that SEB branch format can differ! (at-h10/formats/README)
+	if (rctn=="2pi_userana" || 
+		rctn=="elast_userana" ||
+		(expt=="e16" && dtyp=="exp")) {//Bind SEB' Branches
 		h10chain->SetBranchAddress("id", tmpVars.id, &b_id);
 		h10chain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
 		h10chain->SetBranchAddress("dc", tmpVars.dc, &b_dc);

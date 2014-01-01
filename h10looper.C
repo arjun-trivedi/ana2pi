@@ -21,6 +21,12 @@ void H10Looper::Loop(Long64_t nentries)
 
       //GetEntry
       nb = fChain->GetEntry(jentry);   nbytes += nb;
+      //If needed, Reconcile dH10
+      if (dH10->rctn=="2pi_userana" || 
+          dH10->rctn=="elast_userana" ||
+          (dH10->expt=="e16" && dH10->dtyp=="exp")) {
+         dH10->Reconcile();
+      }
       // if (Cut(ientry) < 0) continue;
       
       Info("Loop", "Processing entry# %d\n",jentry);

@@ -63,7 +63,7 @@ int main(int argc,  char* const argv[])
 		printf("Incorrect dtyp entered: %s\n", dtyp.Data());
 		return 0;
 	}
-	if (rctn!="2pi" && rctn!="elast"){
+	if (rctn!="2pi" && rctn!="elast" && rctn!="2pi_userana" && rctn!="elast_userana"){
 		printf("Incorrect rctn entered: %s\n", rctn.Data());
 		return 0;
 	}
