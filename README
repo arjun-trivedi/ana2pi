@@ -1,0 +1,4 @@
++ Please read at-h10/formats/README to understand:
+	+ `h10typ` understood by ana.cpp and therefore the, rest of the analysis objects
+	+  the nuances of Bind-ing h10 TTrees of different `h10typ` to DataH10
+
