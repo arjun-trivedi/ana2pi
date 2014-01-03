@@ -22,7 +22,7 @@ obj/%.o: %.cpp
 $(TARGET):	lib obj/ana.o 
 	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/ana.o $(INCS) $(LIBS) -L. $(LIBOUT)
 
-all: lib $(TARGET) 
+all: dict lib $(TARGET) 
 
 clean:
 	-rm -f $(OBJS) $(LIBOUT) ana obj/ana.o
@@ -36,10 +36,10 @@ sobj:
 	@mkdir -p $@
 
 lib:	sobj $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $(LIBOUT)
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) ep_dict.o $(LIBS) -o $(LIBOUT)
 
-# dict: particle_constants.h data_h10.h data_ana.h data_eid.h data_ekin.h 
-# 	-rm ep_dict.*
-# 	@echo ${LD_LIBRARY_PATH}
-# 	rootcint particle_constants.h ep_dict.cpp -c data_h10.h LinkDef.h
-# 	$(CXX) $(INCS) $(CXXFLAGS) -c ep_dict.cpp -o ep_dict.o
+dict: data_h10.h data_ana.h data_eid.h data_efid.h data_skim_q.h data_mom.h data_pid.h data_ekin.h data_top.h h10looper.h particle_constants.h data_elastic.h
+	-rm ep_dict.*
+	@echo ${LD_LIBRARY_PATH}
+	rootcint ep_dict.cpp -c data_h10.h data_ana.h data_eid.h data_efid.h data_skim_q.h data_mom.h data_pid.h data_ekin.h data_top.h h10looper.h particle_constants.h data_elastic.h LinkDef.h
+	$(CXX) $(INCS) $(CXXFLAGS) -c ep_dict.cpp -o ep_dict.o
