@@ -36,10 +36,10 @@ sobj:
 	@mkdir -p $@
 
 lib:	sobj $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) ep_dict.o $(LIBS) -o $(LIBOUT)
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) obj/ep_dict.o $(LIBS) -o $(LIBOUT)
 
 dict: data_h10.h data_ana.h data_eid.h data_efid.h data_skim_q.h data_mom.h data_pid.h data_ekin.h data_top.h h10looper.h particle_constants.h data_elastic.h
-	-rm ep_dict.*
+	-rm obj/ep_dict.*
 	@echo ${LD_LIBRARY_PATH}
-	rootcint ep_dict.cpp -c data_h10.h data_ana.h data_eid.h data_efid.h data_skim_q.h data_mom.h data_pid.h data_ekin.h data_top.h h10looper.h particle_constants.h data_elastic.h LinkDef.h
-	$(CXX) $(INCS) $(CXXFLAGS) -c ep_dict.cpp -o ep_dict.o
+	rootcint obj/ep_dict.cpp -c data_h10.h data_ana.h data_eid.h data_efid.h data_skim_q.h data_mom.h data_pid.h data_ekin.h data_top.h h10looper.h particle_constants.h data_elastic.h LinkDef.h
+	$(CXX) $(INCS) $(CXXFLAGS) -c obj/ep_dict.cpp -o obj/ep_dict.o
