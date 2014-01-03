@@ -29,8 +29,9 @@ void H10Looper::Loop(Long64_t nentries)
          dH10->Reconcile();
       }
       
-      
-      Info("Loop", "Processing entry# %d\n",jentry);
+      if (jentry%10000==0) {
+         Info("Loop", "Processing entry# %d\n",jentry);
+      }
       //Reset proc_chain
       //3. Call proc_chain
       proc_chain->handle();
