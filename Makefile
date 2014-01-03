@@ -10,7 +10,7 @@ CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -W
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
 #OBJDIR = obj
 #OBJS =          $(OBJDIR)/epconfig.o $(OBJDIR)/h10looper.o $(OBJDIR)/ep_processor.o $(OBJDIR)/data_h10.o $(OBJDIR)/data_ana.o $(OBJDIR)/eid.o $(OBJDIR)/data_eid.o $(OBJDIR)/data_ekin.o $(OBJDIR)/data_efid.o $(OBJDIR)/data_skim_q.o $(OBJDIR)/data_mom.o $(OBJDIR)/data_pid.o $(OBJDIR)/data_top.o 
-SRC = epconfig.cpp h10looper.cpp ep_processor.cpp data_h10.cpp data_ana.cpp eid.cpp data_eid.cpp data_ekin.cpp data_efid.cpp data_skim_q.cpp data_mom.cpp data_pid.cpp data_top.cpp
+SRC = epconfig.cpp h10looper.cpp ep_processor.cpp data_h10.cpp data_ana.cpp eid.cpp data_eid.cpp data_ekin.cpp data_efid.cpp data_skim_q.cpp data_mom.cpp data_pid.cpp data_top.cpp data_elastic.cpp
 OBJS = $(patsubst %.cpp,obj/%.o,$(SRC)) 
 LIBS =          $(shell root-config --glibs)
 LIBOUT =        $(WORKSPACE)/ana2pi/sobj/libana.so

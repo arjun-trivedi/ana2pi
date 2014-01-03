@@ -10,6 +10,7 @@
 #include "data_ekin.h"
 #include "data_top.h"
 #include "data_h10.h"
+#include "data_elastic.h"
 #include <TObjArray.h>
 
 class DataAna
@@ -34,6 +35,7 @@ public:
 	DataEkin eKin_mc;
 	DataTop dTop;
 	DataTop dTop_mc;
+	DataElastic dElast;
 	
 	struct h8Dbng{
 		Int_t bins;

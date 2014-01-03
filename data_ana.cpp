@@ -34,6 +34,7 @@ void DataAna::Clear()
 	eKin_mc.Clear();
 	dTop.Clear();
 	dTop_mc.Clear();
+	dElast.Clear();
 }
 
 void DataAna::makeHistsEid(TObjArray** hists, TDirectory* dirout)
