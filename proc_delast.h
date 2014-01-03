@@ -25,8 +25,8 @@ protected:
 	TLorentzVector _lvP0;
 	DataElastic* _dElast;
 	TTree* _tr;
-	static const Int_t NUM_EVTCUTS = 16;
-	enum { EVT_NULL, EVT};//, EVT_GPART, EVT_NE, EVT_NP};
+	static const Int_t NUM_EVTCUTS = 2;
+	enum { EVT_NULL, EVT,EVT_PASS};//, EVT_GPART, EVT_NE, EVT_NP};
 
 	void UpdateDataElastic();
 };
@@ -36,10 +36,8 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpPro
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"nevts");
-	/*hevtsum->GetXaxis()->SetBinLabel(EVT_GPART,"gpart");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_NE,"n_e");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_NP,"n_p");*/
-
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"passed");
+	
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 	_dElast = &dAna->dElast;
@@ -66,7 +64,7 @@ void ProcDelast::handle() {
 	bool det_e=kFALSE;
 	bool det_p=kFALSE;
 		
-	//if (dH10->gpart>4) return;
+	if (dH10->gpart>4) return;
 	for (int igpart = 0; igpart < dH10->gpart; igpart++)	{
 		if (igpart==0 && dH10->id[igpart]==ELECTRON){
 			_ne+=1;	
@@ -81,15 +79,16 @@ void ProcDelast::handle() {
 	if (det_e && det_p)pass=kTRUE;
 
 	if (pass) {
-		Info("In ProcDelast::handle()","pass\n");
+		//Info("In ProcDelast::handle()","pass\n");
+		hevtsum->Fill(EVT_PASS);
 		UpdateDataElastic();
 		_tr->Fill();
 		EpProcessor::handle();
-	}else{
+	}/*else{
 		Info("In ProcDelast::handle()","not pass\n");
 		UpdateDataElastic();
 		_tr->Fill();
-	}
+	}*/
 }
 
 void ProcDelast::UpdateDataElastic(){
@@ -113,11 +112,15 @@ void ProcDelast::UpdateDataElastic(){
 	_dElast->lvE = lvE;
 	_dElast->lvP = lvP;
 
-	//Q2,W,MMp
+	//Q2,W
 	TLorentzVector lvQ = _lvE0-lvE;
 	TLorentzVector lvW = lvQ+_lvP0;
 	_dElast->Q2 = -1*(lvQ.Mag2());
 	_dElast->W = lvW.Mag();
+
+	//MMp
+	TLorentzVector lvMMp = lvQ+_lvP0-lvP;
+	_dElast->MMp = lvMMp.Mag();
 }
 
 
