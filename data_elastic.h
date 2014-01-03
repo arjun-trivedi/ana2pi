@@ -3,6 +3,7 @@
 
 #include <TROOT.h>
 #include <TObject.h>
+#include <TLorentzVector.h>
 class DataElastic:public TObject
 {
 
@@ -17,10 +18,12 @@ public:
 	Float_t Q2;
 	Float_t W;
 	Float_t MMp;
-	Float_t p[2];
+	TLorentzVector lvE;
+	TLorentzVector lvP;
+	/*Float_t p[2];
 	Float_t px[2];
 	Float_t py[2];
-	Float_t pz[2];
+	Float_t pz[2];*/
 };
 
 #endif // DATAELASTIC_H

@@ -96,6 +96,28 @@ void ProcDelast::UpdateDataElastic(){
 	_dElast->gpart=dH10->gpart;
 	_dElast->ne=_ne;
 	_dElast->np=_np;
+
+	//create lvE,lvP
+	Float_t p_e = dH10->p[0];
+	Float_t px_e = p_e*dH10->cx[0];
+	Float_t py_e = p_e*dH10->cy[0];
+	Float_t pz_e = p_e*dH10->cz[0];
+	TLorentzVector lvE(px_e,py_e,pz_e,TMath::Sqrt(p_e*p_e+MASS_E*MASS_E));
+
+	Float_t p_p = dH10->p[_h10idx_p];
+	Float_t px_p = p_p*dH10->cx[_h10idx_p];
+	Float_t py_p = p_p*dH10->cy[_h10idx_p];
+	Float_t pz_p = p_p*dH10->cz[_h10idx_p];
+	TLorentzVector lvP(px_p,py_p,pz_p,TMath::Sqrt(p_p*p_p+MASS_P*MASS_P));
+
+	_dElast->lvE = lvE;
+	_dElast->lvP = lvP;
+
+	//Q2,W,MMp
+	TLorentzVector lvQ = _lvE0-lvE;
+	TLorentzVector lvW = lvQ+_lvP0;
+	_dElast->Q2 = -1*(lvQ.Mag2());
+	_dElast->W = lvW.Mag();
 }
 
 
