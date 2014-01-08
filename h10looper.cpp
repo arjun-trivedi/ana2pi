@@ -29,7 +29,7 @@ void H10Looper::Loop(Long64_t nentries)
          dH10->Reconcile();
       }
       
-      if (jentry%10000==0) {
+      if (jentry%100000==0) {
          Info("Loop", "Processing entry# %d\n",jentry);
       }
       //Reset proc_chain
