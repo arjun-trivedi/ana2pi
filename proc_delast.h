@@ -24,7 +24,7 @@ protected:
 	TLorentzVector _lvE0;
 	TLorentzVector _lvP0;
 	DataElastic* _dElast;
-	TTree* _tr;
+	TTree* _t;
 	static const Int_t NUM_EVTCUTS = 2;
 	enum { EVT_NULL, EVT,EVT_PASS};//, EVT_GPART, EVT_NE, EVT_NP};
 
@@ -42,8 +42,8 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpPro
 	_lvP0 = dH10->lvP0;
 	_dElast = &dAna->dElast;
 
-	 _tr = new TTree("t_el","TTree containing data for Elastic events");
-	 _tr->Branch("d_el","DataElastic",_dElast,32000,0);
+	 _t = new TTree("t","TTree containing data for Elastic events");
+	 _t->Branch("d","DataElastic",_dElast,32000,0);
 }
 
 ProcDelast::~ProcDelast() {
@@ -82,12 +82,12 @@ void ProcDelast::handle() {
 		//Info("In ProcDelast::handle()","pass\n");
 		hevtsum->Fill(EVT_PASS);
 		UpdateDataElastic();
-		_tr->Fill();
+		_t->Fill();
 		EpProcessor::handle();
 	}/*else{
 		Info("In ProcDelast::handle()","not pass\n");
 		UpdateDataElastic();
-		_tr->Fill();
+		_t->Fill();
 	}*/
 }
 
