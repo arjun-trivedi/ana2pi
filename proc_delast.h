@@ -18,17 +18,21 @@ public:
 	void handle();
 	void write();
 protected:
+	Bool_t _handle_ST;
 	Int_t _ne;
 	Int_t _np;
 	Int_t _h10idx_p;
 	TLorentzVector _lvE0;
 	TLorentzVector _lvP0;
 	DataElastic* _dElast;
+	DataElastic* _dElast_ST;
 	TTree* _t;
+	TTree* _t_ST;
 	static const Int_t NUM_EVTCUTS = 2;
 	enum { EVT_NULL, EVT,EVT_PASS};//, EVT_GPART, EVT_NE, EVT_NP};
 
 	void UpdateDataElastic();
+	void UpdateDataElastic_ST();
 };
 
 ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpProcessor(td, dataH10, dataAna) {
@@ -37,13 +41,23 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpPro
 	hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"nevts");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"passed");
+
+	_handle_ST=kFALSE;
+	if(dH10->dtyp=="sim" && EpProcessor::isFirstProc())
+		_handle_ST=kTRUE;
 	
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 	_dElast = &dAna->dElast;
+	_dElast_ST = &dAna->dElast_ST;
 
 	 _t = new TTree("t","TTree containing data for Elastic events");
 	 _t->Branch("d","DataElastic",_dElast,32000,0);
+	 if(_handle_ST){
+	 	_t_ST = new TTree("t_ST","TTree containing ST data for Elastic events");
+	 	_t_ST->Branch("d","DataElastic",_dElast_ST,32000,0);
+	 }
+
 }
 
 ProcDelast::~ProcDelast() {
@@ -53,8 +67,12 @@ ProcDelast::~ProcDelast() {
 
 void ProcDelast::handle() {
 	//Info("In ProcDelast::handle()");
-	pass = kFALSE;
+	if(_handle_ST){
+		UpdateDataElastic_ST();
+		_t_ST->Fill();
+	}
 
+	pass = kFALSE;
 	hevtsum->Fill(EVT);
 
 	//elastic event selection
@@ -84,11 +102,7 @@ void ProcDelast::handle() {
 		UpdateDataElastic();
 		_t->Fill();
 		EpProcessor::handle();
-	}/*else{
-		Info("In ProcDelast::handle()","not pass\n");
-		UpdateDataElastic();
-		_t->Fill();
-	}*/
+	}
 }
 
 void ProcDelast::UpdateDataElastic(){
@@ -121,6 +135,45 @@ void ProcDelast::UpdateDataElastic(){
 	//MMp
 	TLorentzVector lvMMp = lvQ+_lvP0-lvP;
 	_dElast->MMp = lvMMp.Mag();
+}
+
+void ProcDelast::UpdateDataElastic_ST(){
+	_dElast_ST->gpart=0;
+	_dElast_ST->ne=0;
+	_dElast_ST->np=0;
+
+	//create lvE,lvP
+	TLorentzVector lvE(0,0,0,0);
+	TLorentzVector lvP(0,0,0,0);
+	for (int inprt=0; inprt<dH10->nprt;inprt++)	{
+		if (dH10->pidpart[inprt]==3){
+			Float_t px=dH10->pxpart[inprt];
+			Float_t py=dH10->pypart[inprt];
+			Float_t pz=dH10->pzpart[inprt];
+			Float_t e=dH10->epart[inprt];
+			lvE.SetPxPyPzE(px,py,pz,TMath::Sqrt(e*e+MASS_E*MASS_E));
+		}
+		if (dH10->pidpart[inprt]==14){
+			Float_t px=dH10->pxpart[inprt];
+			Float_t py=dH10->pypart[inprt];
+			Float_t pz=dH10->pzpart[inprt];
+			Float_t e=dH10->epart[inprt];
+			lvP.SetPxPyPzE(px,py,pz,TMath::Sqrt(e*e+MASS_P*MASS_P));
+		}
+	}
+	
+	_dElast_ST->lvE = lvE;
+	_dElast_ST->lvP = lvP;
+
+	//Q2,W
+	TLorentzVector lvQ = _lvE0-lvE;
+	TLorentzVector lvW = lvQ+_lvP0;
+	_dElast_ST->Q2 = -1*(lvQ.Mag2());
+	_dElast_ST->W = lvW.Mag();
+
+	//MMp
+	TLorentzVector lvMMp = lvQ+_lvP0-lvP;
+	_dElast_ST->MMp = lvMMp.Mag();
 }
 
 

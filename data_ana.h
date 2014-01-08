@@ -36,6 +36,7 @@ public:
 	DataTop dTop;
 	DataTop dTop_mc;
 	DataElastic dElast;
+	DataElastic dElast_ST;
 	
 	struct h8Dbng{
 		Int_t bins;
