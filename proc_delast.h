@@ -145,20 +145,20 @@ void ProcDelast::UpdateDataElastic_ST(){
 	//create lvE,lvP
 	TLorentzVector lvE(0,0,0,0);
 	TLorentzVector lvP(0,0,0,0);
-	for (int inprt=0; inprt<dH10->nprt;inprt++)	{
+	for (Int_t inprt=0; inprt<dH10->nprt;inprt++)	{
 		if (dH10->pidpart[inprt]==3){
 			Float_t px=dH10->pxpart[inprt];
 			Float_t py=dH10->pypart[inprt];
 			Float_t pz=dH10->pzpart[inprt];
 			Float_t e=dH10->epart[inprt];
-			lvE.SetPxPyPzE(px,py,pz,TMath::Sqrt(e*e+MASS_E*MASS_E));
+			lvE.SetPxPyPzE(px,py,pz,e);
 		}
 		if (dH10->pidpart[inprt]==14){
 			Float_t px=dH10->pxpart[inprt];
 			Float_t py=dH10->pypart[inprt];
 			Float_t pz=dH10->pzpart[inprt];
 			Float_t e=dH10->epart[inprt];
-			lvP.SetPxPyPzE(px,py,pz,TMath::Sqrt(e*e+MASS_P*MASS_P));
+			lvP.SetPxPyPzE(px,py,pz,e);
 		}
 	}
 	
