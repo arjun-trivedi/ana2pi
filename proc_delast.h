@@ -110,19 +110,23 @@ void ProcDelast::UpdateDataElastic(){
 	_dElast->ne=_ne;
 	_dElast->np=_np;
 
-	//create lvE,lvP
+	//create vxE,vxP,lvE,lvP
+	TVector3 vxE(dH10->vx[0],dH10->vy[0],dH10->vz[0]);
 	Float_t p_e = dH10->p[0];
 	Float_t px_e = p_e*dH10->cx[0];
 	Float_t py_e = p_e*dH10->cy[0];
 	Float_t pz_e = p_e*dH10->cz[0];
 	TLorentzVector lvE(px_e,py_e,pz_e,TMath::Sqrt(p_e*p_e+MASS_E*MASS_E));
 
+	TVector3 vxP(dH10->vx[_h10idx_p],dH10->vy[_h10idx_p],dH10->vz[_h10idx_p]);
 	Float_t p_p = dH10->p[_h10idx_p];
 	Float_t px_p = p_p*dH10->cx[_h10idx_p];
 	Float_t py_p = p_p*dH10->cy[_h10idx_p];
 	Float_t pz_p = p_p*dH10->cz[_h10idx_p];
 	TLorentzVector lvP(px_p,py_p,pz_p,TMath::Sqrt(p_p*p_p+MASS_P*MASS_P));
 
+	_dElast->vxE = vxE;
+	_dElast->vxP = vxP;
 	_dElast->lvE = lvE;
 	_dElast->lvP = lvP;
 
@@ -142,11 +146,14 @@ void ProcDelast::UpdateDataElastic_ST(){
 	_dElast_ST->ne=0;
 	_dElast_ST->np=0;
 
-	//create lvE,lvP
+	//create vxE,vxP,lvE,lvP
+	TVector3 vxE(0,0,0);
+	TVector3 vxP(0,0,0);
 	TLorentzVector lvE(0,0,0,0);
 	TLorentzVector lvP(0,0,0,0);
 	for (Int_t inprt=0; inprt<dH10->nprt;inprt++)	{
 		if (dH10->pidpart[inprt]==3){
+			vxE.SetXYZ(dH10->xpart[inprt],dH10->ypart[inprt],dH10->zpart[inprt]);
 			Float_t px=dH10->pxpart[inprt];
 			Float_t py=dH10->pypart[inprt];
 			Float_t pz=dH10->pzpart[inprt];
@@ -154,6 +161,7 @@ void ProcDelast::UpdateDataElastic_ST(){
 			lvE.SetPxPyPzE(px,py,pz,e);
 		}
 		if (dH10->pidpart[inprt]==14){
+			vxP.SetXYZ(dH10->xpart[inprt],dH10->ypart[inprt],dH10->zpart[inprt]);
 			Float_t px=dH10->pxpart[inprt];
 			Float_t py=dH10->pypart[inprt];
 			Float_t pz=dH10->pzpart[inprt];
@@ -162,6 +170,8 @@ void ProcDelast::UpdateDataElastic_ST(){
 		}
 	}
 	
+	_dElast_ST->vxE = vxE;
+	_dElast_ST->vxP = vxP;
 	_dElast_ST->lvE = lvE;
 	_dElast_ST->lvP = lvP;
 
