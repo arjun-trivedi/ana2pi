@@ -6,6 +6,7 @@
 *log
 *test*
 *scratch*
+
 ################################
 # specific to compiler objects #
 ################################
@@ -15,6 +16,11 @@ ana
 *.o
 *.so
 *.d
+#########################
+# specific to rootcint #
+#########################
+ep_dict.h
+ep_dict.cpp
 
 ###################
 # python specific #
