@@ -93,7 +93,7 @@ void ProcPid::handle(DataH10* dH10)
 		if (dAna->top == 0) { //i.e inclusive event
 			dAna->fillHistsPid(hists[iMODE_MON][iEVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsPid(hists[iMODE_MON][dAna->top]);
+			dAna->fillHistsPid(hists[iMODE_MON][dAna->top-1]);
 		}
 	}
 	

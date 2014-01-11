@@ -60,7 +60,7 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	if (dAna->top == 0) { //i.e inclusive event
 		dAna->fillHistsEkin(histsEkin[iMODE_MON][iEVTINC]);
 	}else{ //i.e 2pi event
-		dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top]);
+		dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top-1]);
 	}
 	
 	

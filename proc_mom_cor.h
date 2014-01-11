@@ -63,8 +63,8 @@ void ProcMomCor::handle(DataH10* dH10)
 			dAna->fillHistsMomCor(hists[iMODE_MON][iEVTINC]);
 			dAna->fillHistsEkin(histsEkin[iMODE_MON][iEVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsMomCor(hists[iMODE_MON][dAna->top]);
-			dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top]);
+			dAna->fillHistsMomCor(hists[iMODE_MON][dAna->top-1]);
+			dAna->fillHistsEkin(histsEkin[iMODE_MON][dAna->top-1]);
 		}
 	}
 	pass = kTRUE; //atrivedi
