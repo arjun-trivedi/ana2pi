@@ -43,7 +43,7 @@ Eid::Eid(char* eidParFileName)
 		_f >> _cutParMap;
 		//get EC momentum threshold
 		char str_ec_threshold[100];
-		sprintf(str_ec_threshold, "ec_threshold");
+		sprintf(str_ec_threshold, "EC_min_p");// "ec_threshold");
 		sscanf(_cutParMap[str_ec_threshold].c_str(),"%lf",&_ecThreshold);
 		//get SFcut parameters
 		for (Int_t iSector = 0; iSector < 6; iSector++) {
