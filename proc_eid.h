@@ -107,8 +107,8 @@ void ProcEid::handle() {
 			dAna->fillHistsEid(hists[MONMODE][EVTINC]);
 			dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsEid(hists[MONMODE][dAna->top]);
-			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top]);
+			dAna->fillHistsEid(hists[MONMODE][dAna->top-1]);
+			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top-1]);
 		}
 	}
 	

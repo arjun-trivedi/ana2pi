@@ -93,7 +93,7 @@ void ProcPid::handle()
 		if (dAna->top == 0) { //i.e inclusive event
 			dAna->fillHistsPid(hists[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsPid(hists[MONMODE][dAna->top]);
+			dAna->fillHistsPid(hists[MONMODE][dAna->top-1]);
 		}
 	}
 	

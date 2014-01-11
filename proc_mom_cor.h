@@ -64,8 +64,8 @@ void ProcMomCor::handle()
 			dAna->fillHistsMomCor(hists[MONMODE][EVTINC]);
 			dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsMomCor(hists[MONMODE][dAna->top]);
-			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top]);
+			dAna->fillHistsMomCor(hists[MONMODE][dAna->top-1]);
+			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top-1]);
 		}
 	}
 	pass = kTRUE; //atrivedi

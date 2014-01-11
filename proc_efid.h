@@ -56,7 +56,7 @@ void ProcEFid::handle()
 		if (dAna->top == 0) { //i.e inclusive event
 			dAna->fillHistsEFid(hists[MONMODE][EVTINC]);
 		}else { //i.e 2pi event
-			dAna->fillHistsEFid(hists[MONMODE][dAna->top]);
+			dAna->fillHistsEFid(hists[MONMODE][dAna->top-1]);
 		}
 	}
 	
