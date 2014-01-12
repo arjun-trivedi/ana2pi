@@ -117,13 +117,9 @@ def elastic_study(nentries=1000000000):
 
 
 	hW=[]
-	hpx=[]
-	hpy=[]
-	hpz=[]
-	hvx=[]
-	hvy=[]
-	hvz=[]
-	
+	hp=[[],[],[]]
+	hv=[[],[],[]]
+		
 	t=""
 	for i in range(DTYPS):
 		print "iteration #:",i
@@ -143,78 +139,60 @@ def elastic_study(nentries=1000000000):
 		t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
 		t.Draw("lvE.X()>>hpx(100,-1,1)","","",nentries)
 		t.Draw("lvE.Y()>>hpy(100,-1,1)","","",nentries)
-		t.Draw("lvE.Z()>>hpz(100,0,5)","","",nentries)
+		t.Draw("lvE.Z()>>hpz(100,0,6)","","",nentries)
 		t.Draw("vxE.X()>>hvx(100,-1,1)","","",nentries)
 		t.Draw("vxE.Y()>>hvy(100,-1,1)","","",nentries)
 		t.Draw("vxE.Z()>>hvz(100,-50,0)","","",nentries)
 		hW.append(ROOT.gDirectory.Get("hW"))
-		hpx.append(ROOT.gDirectory.Get("hpx"))
-		hpy.append(ROOT.gDirectory.Get("hpy"))
-		hpz.append(ROOT.gDirectory.Get("hpz"))
-		hvx.append(ROOT.gDirectory.Get("hvx"))
-		hvy.append(ROOT.gDirectory.Get("hvy"))
-		hvz.append(ROOT.gDirectory.Get("hvz"))
+		hp[0].append(ROOT.gDirectory.Get("hpx"))
+		hp[1].append(ROOT.gDirectory.Get("hpy"))
+		hp[2].append(ROOT.gDirectory.Get("hpz"))
+		hv[0].append(ROOT.gDirectory.Get("hvx"))
+		hv[1].append(ROOT.gDirectory.Get("hvy"))
+		hv[2].append(ROOT.gDirectory.Get("hvz"))
 		# print "pwd:"
 		# ROOT.gDirectory.pwd()
 		# print "---- gDirectory Content ---- :"
 		# ROOT.gDirectory.ls()
 		
 	c_hW = Canvas(name="hW",title="hW")
-	c_hW.Divide(1,4)
-	c_hpx = Canvas(name="hpx",title="hpx")
-	c_hpy = Canvas(name="hpy",title="hpy")
-	c_hpz = Canvas(name="hpz",title="hpz")
-	c_hvx = Canvas(name="hvx",title="hvx")
-	c_hvy = Canvas(name="hvy",title="hvy")
-	c_hvz = Canvas(name="hvz",title="hvz")
+	c_hW.Divide(2,2)
+	c_DC=Canvas(name="DC",title="DC")
+	c_DC.Divide(3,2);
 	for i in range(DTYPS):
 		print "iteration #:",i
 		c_hW.cd(i+1)
+		hW[i].SetName(DTYPS_NAME[i]+"_"+hW[i].GetName())
 		hW[i].Draw()
-		#hW[i].Fit("gaus","","",0.90,0.98)
+		hW[i].Fit("gaus","","",0.90,0.98)
 
-		c_hpx.cd()
-		hpx[i].SetLineColor(i+1)
-		if i==0:
-			hpx[i].Draw()
-		else:
-			hpx[i].Draw("sames")
+		for j in range(3):
+			#pad=c_hp[j].cd()
+			pad=c_DC.cd(j+1)
+			hp[j][i].SetLineColor(i+1)
+			hp[j][i].SetName(DTYPS_NAME[i]+"_"+hp[j][i].GetName())
+			if i==0:
+				hp[j][i].Draw()
+			else:
+				hp[j][i].Draw("sames")
+			pad.Update();
+			st=hp[j][i].GetListOfFunctions().FindObject("stats");
+			st.SetTextColor(i+1);
+			st.Draw()
 
-		c_hpy.cd()
-		hpy[i].SetLineColor(i+1)
-		if i==0:
-			hpy[i].Draw()
-		else:
-			hpy[i].Draw("sames")
-
-		c_hpz.cd()
-		hpz[i].SetLineColor(i+1)
-		if i==0:
-			hpz[i].Draw()
-		else:
-			hpz[i].Draw("sames")
-
-		c_hvx.cd()
-		hvx[i].SetLineColor(i+1)
-		if i==0:
-			hvx[i].Draw()
-		else:
-			hvx[i].Draw("sames")
-
-		c_hvy.cd()
-		hvy[i].SetLineColor(i+1)
-		if i==0:
-			hvy[i].Draw()
-		else:
-			hvy[i].Draw("sames")
-
-		c_hvz.cd()
-		hvz[i].SetLineColor(i+1)
-		if i==0:
-			hvz[i].Draw()
-		else:
-			hvz[i].Draw("sames")
-	
+		for j in range(3):
+			#pad=c_hv[j].cd()
+			pad=c_DC.cd(j+1+3)
+			hv[j][i].SetLineColor(i+1)
+			hv[j][i].SetName(DTYPS_NAME[i]+"_"+hv[j][i].GetName())
+			if i==0:
+				hv[j][i].Draw()
+			else:
+				hv[j][i].Draw("sames")
+			pad.Update();
+			st=hv[j][i].GetListOfFunctions().FindObject("stats");
+			st.SetTextColor(i+1);
+			st.Draw()
 
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
