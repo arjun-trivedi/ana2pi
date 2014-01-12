@@ -1,4 +1,5 @@
-from ROOT import TFile, TCanvas, TF1, gROOT, gStyle,TMath
+import ROOT as ROOT
+#from ROOT import TFile, TCanvas, TF1, gROOT, gStyle,TMath, gDirectory
 from rootpy.io import root_open
 from rootpy.plotting import Hist, HistStack
 import rootpy.plotting.root2matplotlib as rplt
@@ -9,18 +10,15 @@ DTYPS=2
 EXP,SIM = range(DTYPS)
 DTYPS_NAME=['exp','sim']
 
-f=[]
-f.append(root_open('/e1f.2pi.anadir2/yield.root'))
-f.append(root_open('/e1f.2pi.anadir2/simdir/yield.root'))
-# f.append(TFile('/e1f.2pi.anadir2/yield.root'))
-# f.append(TFile('/e1f.2pi.anadir2/simdir/yield.root'))
-
 def plotMM():
 	gStyle.SetOptFit(1111)
 	NMM=4
 	hmms=[[],[]]
 	hmm2s=[[],[]]
 
+	f=[]
+	f.append(root_open('/e1f.2pi.anadir2/yield.root'))
+	f.append(root_open('/e1f.2pi.anadir2/simdir/yield.root'))
 	#f = TF1("gaus","gaus",)
 
 	for idt in range(DTYPS):
@@ -95,6 +93,60 @@ def plotMM():
 			pad.Update()
 
 	if not gROOT.IsBatch():
+		plt.show()
+		# wait for you to close the ROOT canvas before exiting
+		wait(True)
+
+def elastic_study():
+	ROOT.gStyle.SetOptFit(1111)
+	
+	DTYPS=4
+	ER,SR_NGPP,SR_YGPP,ST = range(DTYPS)
+	DTYPS_NAME=['exp-recon','sim-recon-nogpp','sim-recon-yesgpp','sim-thrown']
+
+	f=[]
+	# f.append(root_open('/datadir2/e1f/ana-elast/exp/delast.root'))
+	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-no_011014/delast.root'))
+	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root'))
+	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root'))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
+
+
+	hW=hpx=hpy=hpz=hvx=hvy=hvz=[]
+	
+	#f = TF1("gaus","gaus",)
+
+	for i in range(1):
+		print i
+		t=""
+		if i==ER: 
+			t=f[i].Get("/delast2/t")#;delast2.t#Get("/delast2/t");
+		# elif i==ST:
+		# 	t=f[i].delast.t_ST#Get("/delast/t_ST");
+		# else:
+		# 	t=f[i].delast.t#Get("/delast/t");
+
+		#h=ROOT.TH1F("test","test",100,0.6,1.2)
+		print t.GetTitle()
+		print t.GetEntries()
+		#print t.Scan("W")
+		c=ROOT.TCanvas();
+		t.Draw("W>>h(100,0.6,1.2)")
+		#h=ROOT.TH1F("test","test",100,0.6,1.2)
+		#t.Draw("W>>h")
+		#c = TCanvas();
+		#h.Draw()
+		print ROOT.gDirectory.ls()
+		hW.append(ROOT.gDirectory.Get("h"))
+
+	c_hW = ROOT.TCanvas("hW","hW")
+	c_hW.Divide(1,3)
+	for i in range(1):
+		pad = c_hW.cd(i+1)
+		hW[i].Draw()
+	
+
+	if not ROOT.gROOT.IsBatch():
 		plt.show()
 		# wait for you to close the ROOT canvas before exiting
 		wait(True)
