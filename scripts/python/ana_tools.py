@@ -106,10 +106,6 @@ def elastic_study(nentries=1000000000):
 	DTYPS_NAME=['exp-recon','sim-recon-nogpp','sim-recon-yesgpp','sim-thrown']
 
 	f=[]
-	# f.append(root_open('/datadir2/e1f/ana-elast/exp/delast.root'))
-	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-no_011014/delast.root'))
-	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root'))
-	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root'))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-no_011014/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root"))
