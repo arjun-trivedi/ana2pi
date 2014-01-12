@@ -98,7 +98,7 @@ def plotMM():
 		# wait for you to close the ROOT canvas before exiting
 		wait(True)
 
-def elastic_study():
+def elastic_study(nentries=1000000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
 	DTYPS=4
@@ -116,19 +116,20 @@ def elastic_study():
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root"))
 
 
-	hW=hpx=hpy=hpz=hvx=hvy=hvz=[]
+	hW=[]
+	hpx=[]
+	hpy=[]
+	hpz=[]
+	hvx=[]
+	hvy=[]
+	hvz=[]
 	
-	#f = TF1("gaus","gaus",)
-
 	t=""
 	for i in range(DTYPS):
 		print "iteration #:",i
-		#t=""
 		f[i].cd()
 		if i==ER: 
 			print "i=ER"
-			#f[i].cd()
-			#t=ROOT.gDirectory.Get("/delast2/t")#;delast2.t#Get("/delast2/t");
 			t=f[i].Get("/delast2/t")#;delast2.t#Get("/delast2/t");
 		elif i==ST:
 			print "i=ST"
@@ -137,32 +138,82 @@ def elastic_study():
 			print "i=SR"
 			t=f[i].Get("/delast/t");
 
-		print "Tree title:",t.GetTitle()
-		print "Tree entries:",t.GetEntries()
-		#c=ROOT.TCanvas("c","c");
-		c=Canvas(name="c",title="c")
-		t.Draw("W>>h(100,0.6,1.2)")
-		#pwd=ROOT.gDirectory.pwd()
-		print "pwd:"
-		ROOT.gDirectory.pwd()
-		print "---- gDirectory Content ---- :"
-		ROOT.gDirectory.ls()
-		ht=ROOT.gDirectory.Get("h")
-		print "htest name=",ht.GetName()
-		#ct=ROOT.TCanvas("test","test")
-		ct=Canvas(name="test",title="test")
-		ht.Draw();
-		hW.append(ht)
-
-	#print "#hWs:",len(hW)
-
+		# print "Tree title:",t.GetTitle()
+		# print "Tree entries:",t.GetEntries()
+		t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
+		t.Draw("lvE.X()>>hpx(100,-1,1)","","",nentries)
+		t.Draw("lvE.Y()>>hpy(100,-1,1)","","",nentries)
+		t.Draw("lvE.Z()>>hpz(100,0,5)","","",nentries)
+		t.Draw("vxE.X()>>hvx(100,-1,1)","","",nentries)
+		t.Draw("vxE.Y()>>hvy(100,-1,1)","","",nentries)
+		t.Draw("vxE.Z()>>hvz(100,-50,0)","","",nentries)
+		hW.append(ROOT.gDirectory.Get("hW"))
+		hpx.append(ROOT.gDirectory.Get("hpx"))
+		hpy.append(ROOT.gDirectory.Get("hpy"))
+		hpz.append(ROOT.gDirectory.Get("hpz"))
+		hvx.append(ROOT.gDirectory.Get("hvx"))
+		hvy.append(ROOT.gDirectory.Get("hvy"))
+		hvz.append(ROOT.gDirectory.Get("hvz"))
+		# print "pwd:"
+		# ROOT.gDirectory.pwd()
+		# print "---- gDirectory Content ---- :"
+		# ROOT.gDirectory.ls()
+		
 	c_hW = Canvas(name="hW",title="hW")
 	c_hW.Divide(1,4)
+	c_hpx = Canvas(name="hpx",title="hpx")
+	c_hpy = Canvas(name="hpy",title="hpy")
+	c_hpz = Canvas(name="hpz",title="hpz")
+	c_hvx = Canvas(name="hvx",title="hvx")
+	c_hvy = Canvas(name="hvy",title="hvy")
+	c_hvz = Canvas(name="hvz",title="hvz")
 	for i in range(DTYPS):
 		print "iteration #:",i
 		c_hW.cd(i+1)
 		hW[i].Draw()
-		hW[i].Fit("gaus")
+		#hW[i].Fit("gaus","","",0.90,0.98)
+
+		c_hpx.cd()
+		hpx[i].SetLineColor(i+1)
+		if i==0:
+			hpx[i].Draw()
+		else:
+			hpx[i].Draw("sames")
+
+		c_hpy.cd()
+		hpy[i].SetLineColor(i+1)
+		if i==0:
+			hpy[i].Draw()
+		else:
+			hpy[i].Draw("sames")
+
+		c_hpz.cd()
+		hpz[i].SetLineColor(i+1)
+		if i==0:
+			hpz[i].Draw()
+		else:
+			hpz[i].Draw("sames")
+
+		c_hvx.cd()
+		hvx[i].SetLineColor(i+1)
+		if i==0:
+			hvx[i].Draw()
+		else:
+			hvx[i].Draw("sames")
+
+		c_hvy.cd()
+		hvy[i].SetLineColor(i+1)
+		if i==0:
+			hvy[i].Draw()
+		else:
+			hvy[i].Draw("sames")
+
+		c_hvz.cd()
+		hvz[i].SetLineColor(i+1)
+		if i==0:
+			hvz[i].Draw()
+		else:
+			hvz[i].Draw("sames")
 	
 
 	if not ROOT.gROOT.IsBatch():
