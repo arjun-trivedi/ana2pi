@@ -111,7 +111,6 @@ def elastic_study(nentries=1000000000):
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root"))
 
-
 	hW=[]
 	hp=[[],[],[]]
 	hv=[[],[],[]]
@@ -133,12 +132,12 @@ def elastic_study(nentries=1000000000):
 		# print "Tree title:",t.GetTitle()
 		# print "Tree entries:",t.GetEntries()
 		t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
-		t.Draw("lvE.X()>>hpx(100,-1,1)","","",nentries)
-		t.Draw("lvE.Y()>>hpy(100,-1,1)","","",nentries)
-		t.Draw("lvE.Z()>>hpz(100,0,6)","","",nentries)
-		t.Draw("vxE.X()>>hvx(100,-1,1)","","",nentries)
-		t.Draw("vxE.Y()>>hvy(100,-1,1)","","",nentries)
-		t.Draw("vxE.Z()>>hvz(100,-50,0)","","",nentries)
+		t.Draw("lvE.X()>>hpx(100,-1,1)","W<1.1","",nentries)
+		t.Draw("lvE.Y()>>hpy(100,-1,1)","W<1.1","",nentries)
+		t.Draw("lvE.Z()>>hpz(100,0,6)","W<1.1","",nentries)
+		t.Draw("vxE.X()>>hvx(100,-1,1)","W<1.1","",nentries)
+		t.Draw("vxE.Y()>>hvy(100,-1,1)","W<1.1","",nentries)
+		t.Draw("vxE.Z()>>hvz(100,-50,0)","W<1.1","",nentries)
 		hW.append(ROOT.gDirectory.Get("hW"))
 		hp[0].append(ROOT.gDirectory.Get("hpx"))
 		hp[1].append(ROOT.gDirectory.Get("hpy"))
@@ -155,6 +154,7 @@ def elastic_study(nentries=1000000000):
 	c_hW.Divide(2,2)
 	c_DC=Canvas(name="DC",title="DC")
 	c_DC.Divide(3,2);
+	norm=1000;
 	for i in range(DTYPS):
 		print "iteration #:",i
 		c_hW.cd(i+1)
@@ -168,11 +168,12 @@ def elastic_study(nentries=1000000000):
 			hp[j][i].SetLineColor(i+1)
 			hp[j][i].SetName(DTYPS_NAME[i]+"_"+hp[j][i].GetName())
 			if i==0:
-				hp[j][i].Draw()
+				hn=hp[j][i].DrawNormalized("",norm)
 			else:
-				hp[j][i].Draw("sames")
+				hn=hp[j][i].DrawNormalized("sames",norm)
 			pad.Update();
-			st=hp[j][i].GetListOfFunctions().FindObject("stats");
+			#st=hp[j][i].GetListOfFunctions().FindObject("stats");
+			st=hn.GetListOfFunctions().FindObject("stats");
 			st.SetTextColor(i+1);
 			st.Draw()
 
@@ -182,11 +183,12 @@ def elastic_study(nentries=1000000000):
 			hv[j][i].SetLineColor(i+1)
 			hv[j][i].SetName(DTYPS_NAME[i]+"_"+hv[j][i].GetName())
 			if i==0:
-				hv[j][i].Draw()
+				hn=hv[j][i].DrawNormalized("",norm)
 			else:
-				hv[j][i].Draw("sames")
+				hn=hv[j][i].DrawNormalized("sames",norm)
 			pad.Update();
-			st=hv[j][i].GetListOfFunctions().FindObject("stats");
+			#st=hv[j][i].GetListOfFunctions().FindObject("stats");
+			st=hn.GetListOfFunctions().FindObject("stats");
 			st.SetTextColor(i+1);
 			st.Draw()
 
