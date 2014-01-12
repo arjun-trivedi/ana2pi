@@ -1,8 +1,9 @@
 import ROOT as ROOT
 #from ROOT import TFile, TCanvas, TF1, gROOT, gStyle,TMath, gDirectory
 from rootpy.io import root_open
-from rootpy.plotting import Hist, HistStack
+from rootpy.plotting import Hist, HistStack,Legend, Canvas
 import rootpy.plotting.root2matplotlib as rplt
+from rootpy.interactive import wait
 
 import matplotlib.pyplot as plt
 
@@ -110,40 +111,58 @@ def elastic_study():
 	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root'))
 	# f.append(root_open('/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root'))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-no_011014/delast.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root"))
 
 
 	hW=hpx=hpy=hpz=hvx=hvy=hvz=[]
 	
 	#f = TF1("gaus","gaus",)
 
-	for i in range(1):
-		print i
-		t=""
+	t=""
+	for i in range(DTYPS):
+		print "iteration #:",i
+		#t=""
+		f[i].cd()
 		if i==ER: 
+			print "i=ER"
+			#f[i].cd()
+			#t=ROOT.gDirectory.Get("/delast2/t")#;delast2.t#Get("/delast2/t");
 			t=f[i].Get("/delast2/t")#;delast2.t#Get("/delast2/t");
-		# elif i==ST:
-		# 	t=f[i].delast.t_ST#Get("/delast/t_ST");
-		# else:
-		# 	t=f[i].delast.t#Get("/delast/t");
+		elif i==ST:
+			print "i=ST"
+			t=f[i].Get("/delast/t_ST");
+		else:
+			print "i=SR"
+			t=f[i].Get("/delast/t");
 
-		#h=ROOT.TH1F("test","test",100,0.6,1.2)
-		print t.GetTitle()
-		print t.GetEntries()
-		#print t.Scan("W")
-		c=ROOT.TCanvas();
+		print "Tree title:",t.GetTitle()
+		print "Tree entries:",t.GetEntries()
+		#c=ROOT.TCanvas("c","c");
+		c=Canvas(name="c",title="c")
 		t.Draw("W>>h(100,0.6,1.2)")
-		#h=ROOT.TH1F("test","test",100,0.6,1.2)
-		#t.Draw("W>>h")
-		#c = TCanvas();
-		#h.Draw()
-		print ROOT.gDirectory.ls()
-		hW.append(ROOT.gDirectory.Get("h"))
+		#pwd=ROOT.gDirectory.pwd()
+		print "pwd:"
+		ROOT.gDirectory.pwd()
+		print "---- gDirectory Content ---- :"
+		ROOT.gDirectory.ls()
+		ht=ROOT.gDirectory.Get("h")
+		print "htest name=",ht.GetName()
+		#ct=ROOT.TCanvas("test","test")
+		ct=Canvas(name="test",title="test")
+		ht.Draw();
+		hW.append(ht)
 
-	c_hW = ROOT.TCanvas("hW","hW")
-	c_hW.Divide(1,3)
-	for i in range(1):
-		pad = c_hW.cd(i+1)
+	#print "#hWs:",len(hW)
+
+	c_hW = Canvas(name="hW",title="hW")
+	c_hW.Divide(1,4)
+	for i in range(DTYPS):
+		print "iteration #:",i
+		c_hW.cd(i+1)
 		hW[i].Draw()
+		hW[i].Fit("gaus")
 	
 
 	if not ROOT.gROOT.IsBatch():
