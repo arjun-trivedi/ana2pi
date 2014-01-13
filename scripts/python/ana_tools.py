@@ -131,13 +131,17 @@ def elastic_study(nentries=1000000000):
 
 		# print "Tree title:",t.GetTitle()
 		# print "Tree entries:",t.GetEntries()
-		t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
-		t.Draw("lvE.X()>>hpx(100,-1,1)","W<1.1","",nentries)
-		t.Draw("lvE.Y()>>hpy(100,-1,1)","W<1.1","",nentries)
-		t.Draw("lvE.Z()>>hpz(100,0,6)","W<1.1","",nentries)
-		t.Draw("vxE.X()>>hvx(100,-1,1)","W<1.1","",nentries)
-		t.Draw("vxE.Y()>>hvy(100,-1,1)","W<1.1","",nentries)
-		t.Draw("vxE.Z()>>hvz(100,-50,0)","W<1.1","",nentries)
+		if i==ST:
+			t.Draw("W>>hW(600,0.6,1.2)","","",nentries)
+		else:
+			t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
+		cut=ROOT.TCut("W<1.1 && lvE.Theta()*TMath::RadToDeg()>15")
+		t.Draw("lvE.X()>>hpx(100,-2,2)",cut,"",nentries)
+		t.Draw("lvE.Y()>>hpy(100,-2,2)",cut,"",nentries)
+		t.Draw("lvE.Z()>>hpz(100,0,6)",cut,"",nentries)
+		t.Draw("vxE.X()>>hvx(100,-1,1)",cut,"",nentries)
+		t.Draw("vxE.Y()>>hvy(100,-1,1)",cut,"",nentries)
+		t.Draw("vxE.Z()>>hvz(100,-50,0)",cut,"",nentries)
 		hW.append(ROOT.gDirectory.Get("hW"))
 		hp[0].append(ROOT.gDirectory.Get("hpx"))
 		hp[1].append(ROOT.gDirectory.Get("hpy"))
@@ -157,20 +161,23 @@ def elastic_study(nentries=1000000000):
 	norm=1000;
 	for i in range(DTYPS):
 		print "iteration #:",i
+		ROOT.gStyle.SetOptStat("nemMrRiuo")
 		c_hW.cd(i+1)
 		hW[i].SetName(DTYPS_NAME[i]+"_"+hW[i].GetName())
 		hW[i].Draw()
-		hW[i].Fit("gaus","","",0.90,0.98)
+		if i!=ST:
+			hW[i].Fit("gaus","","",0.90,0.98)
 
+		ROOT.gStyle.SetOptStat("nemMrR")
 		for j in range(3):
 			#pad=c_hp[j].cd()
 			pad=c_DC.cd(j+1)
 			hp[j][i].SetLineColor(i+1)
 			hp[j][i].SetName(DTYPS_NAME[i]+"_"+hp[j][i].GetName())
 			if i==0:
-				hn=hp[j][i].DrawNormalized("",norm)
+				hn=hp[j][i].DrawNormalized("HIST",norm)
 			else:
-				hn=hp[j][i].DrawNormalized("sames",norm)
+				hn=hp[j][i].DrawNormalized("HIST sames",norm)
 			pad.Update();
 			#st=hp[j][i].GetListOfFunctions().FindObject("stats");
 			st=hn.GetListOfFunctions().FindObject("stats");
@@ -181,11 +188,12 @@ def elastic_study(nentries=1000000000):
 			#pad=c_hv[j].cd()
 			pad=c_DC.cd(j+1+3)
 			hv[j][i].SetLineColor(i+1)
+			hv[j][i].SetOption("")
 			hv[j][i].SetName(DTYPS_NAME[i]+"_"+hv[j][i].GetName())
 			if i==0:
-				hn=hv[j][i].DrawNormalized("",norm)
+				hn=hv[j][i].DrawNormalized("HIST",norm)
 			else:
-				hn=hv[j][i].DrawNormalized("sames",norm)
+				hn=hv[j][i].DrawNormalized("HIST sames",norm)
 			pad.Update();
 			#st=hv[j][i].GetListOfFunctions().FindObject("stats");
 			st=hn.GetListOfFunctions().FindObject("stats");
