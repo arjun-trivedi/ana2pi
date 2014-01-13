@@ -154,7 +154,7 @@ def elastic_study(nentries=1000000000):
 		# print "---- gDirectory Content ---- :"
 		# ROOT.gDirectory.ls()
 		
-	c_hW = Canvas(name="hW",title="hW")
+	c_hW = Canvas(name="W",title="W")
 	c_hW.Divide(2,2)
 	c_DC=Canvas(name="DC",title="DC")
 	c_DC.Divide(3,2);
