@@ -1,0 +1,5 @@
+cp delast.root delast.root.bk
+ana -i mch10.lst -t e1f:sim:elast -p delast
+cp delast.root delast_ST.root
+cp delast.root.bk delast.root
+rm delast.root.bk
