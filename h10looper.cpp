@@ -35,7 +35,7 @@ void H10Looper::Loop(Long64_t nentries)
          Info("H10Looper::Loop", "Processing entry# %d\n",jentry);
          Int_t nentries_to_proc=0;
          nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
-         Info("H10Looper::Loop", "%5.2f\% entries processed\n",jentry/nentries_to_proc*100);  
+         Info("H10Looper::Loop", "%5.2f%% entries processed\n",jentry/nentries_to_proc*100);  
       }
       //Reset proc_chain
       //3. Call proc_chain

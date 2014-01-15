@@ -101,11 +101,12 @@ def plotMM():
 def elastic_study(nentries=1000000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
-	DTYPS=4
-	ER,SR_NGPP,SR_YGPP,ST = range(DTYPS)
-	DTYPS_NAME=['exp-recon','sim-recon-nogpp','sim-recon-yesgpp','sim-thrown']
+	DTYPS=5
+	ER_NMCR,ER_YMCR,SR_NGPP,SR_YGPP,ST = range(DTYPS)
+	DTYPS_NAME=['ER-nomcorr','ER-yesmcorr','SR-nogpp','SR-yesgpp','ST']
 
 	f=[]
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-no_011014/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root"))
@@ -118,10 +119,14 @@ def elastic_study(nentries=1000000000):
 	t=""
 	for i in range(DTYPS):
 		print "iteration #:",i
+		if i==ST: break
 		f[i].cd()
-		if i==ER: 
-			print "i=ER"
-			t=f[i].Get("/delast2/t")#;delast2.t#Get("/delast2/t");
+		if i==ER_NMCR: 
+			print "i=ER_NMCR"
+			t=f[i].Get("/delast/t")
+		elif i==ER_YMCR: 
+			print "i=ER_YMCR"
+			t=f[i].Get("/delast2/t")
 		elif i==ST:
 			print "i=ST"
 			t=f[i].Get("/delast/t_ST");
@@ -135,7 +140,7 @@ def elastic_study(nentries=1000000000):
 			t.Draw("W>>hW(600,0.6,1.2)","","",nentries)
 		else:
 			t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
-		cut=ROOT.TCut("W<1.1 && lvE.Theta()*TMath::RadToDeg()>15")
+		cut=ROOT.TCut("W<1.1");# && lvE.Theta()*TMath::RadToDeg()>15")
 		t.Draw("lvE.X()>>hpx(100,-2,2)",cut,"",nentries)
 		t.Draw("lvE.Y()>>hpy(100,-2,2)",cut,"",nentries)
 		t.Draw("lvE.Z()>>hpz(100,0,6)",cut,"",nentries)
@@ -155,12 +160,13 @@ def elastic_study(nentries=1000000000):
 		# ROOT.gDirectory.ls()
 		
 	c_hW = Canvas(name="W",title="W")
-	c_hW.Divide(2,2)
+	c_hW.Divide(3,2)
 	c_DC=Canvas(name="DC",title="DC")
 	c_DC.Divide(3,2);
 	norm=1000;
 	for i in range(DTYPS):
 		print "iteration #:",i
+		if i==ST: break
 		ROOT.gStyle.SetOptStat("nemMrRiuo")
 		c_hW.cd(i+1)
 		hW[i].SetName(DTYPS_NAME[i]+"_"+hW[i].GetName())
