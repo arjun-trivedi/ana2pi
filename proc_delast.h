@@ -3,6 +3,7 @@
 
 #include "ep_processor.h" // Base class: EpProcessor
 #include "data_h10.h"
+#include "cuts.h"
 #include "particle_constants.h"
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
@@ -33,6 +34,10 @@ protected:
 
 	void UpdateDataElastic();
 	void UpdateDataElastic_ST();
+	//** Following 2 functions used to apply efid to ST-electrons
+	bool inFid(); 
+	float GetPhi(TLorentzVector lv);
+	int GetSector(TLorentzVector lv); 
 };
 
 ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpProcessor(td, dataH10, dataAna) {
@@ -67,7 +72,7 @@ ProcDelast::~ProcDelast() {
 
 void ProcDelast::handle() {
 	//Info("In ProcDelast::handle()");
-	if(_handle_ST){
+	if(_handle_ST && inFid()){
 		UpdateDataElastic_ST();
 		_t_ST->Fill();
 	}
@@ -184,6 +189,64 @@ void ProcDelast::UpdateDataElastic_ST(){
 	//MMp
 	TLorentzVector lvMMp = lvQ+_lvP0-lvP;
 	_dElast_ST->MMp = lvMMp.Mag();
+}
+
+bool ProcDelast::inFid() {
+	TLorentzVector lvE(0,0,0,0);
+	for (Int_t inprt=0; inprt<dH10->nprt;inprt++)	{
+		if (dH10->pidpart[inprt]==3){
+			Float_t px=dH10->pxpart[inprt];
+			Float_t py=dH10->pypart[inprt];
+			Float_t pz=dH10->pzpart[inprt];
+			Float_t e=dH10->epart[inprt];
+			lvE.SetPxPyPzE(px,py,pz,e);
+		}
+	}
+	Int_t id = 11;
+	Double_t p = lvE.P();
+	Float_t theta = lvE.Theta()*RadToDeg();
+	Float_t phi = lvE.Phi()*RadToDeg(); //phitmp = [-180,180]
+	Int_t sector=GetSector(lvE);
+	Int_t paddle=0;
+	Bool_t inFid = Cuts::Fiducial(id,p,theta,phi,sector,paddle);
+	return inFid;
+}
+
+int ProcDelast::GetSector(TLorentzVector lv){
+	float phi = GetPhi(lv);
+
+	int sector = -9999;
+	if( (330 < phi && phi <= 360) || (0 <= phi && phi <= 30) ){
+		sector = 1;
+	}
+	if(30 < phi && phi <= 90){
+		sector = 2;
+	}
+	if(90 < phi && phi <= 150){
+		sector = 3;
+	}
+	if(150 < phi && phi <= 210){
+		sector = 4;
+	}
+	if(210 < phi && phi <= 270){
+		sector = 5;
+	}
+	if(270 < phi && phi <= 330){
+		sector = 6;
+	}
+	return sector;
+}
+
+float ProcDelast::GetPhi(TLorentzVector lv){
+	double phi = -9999;
+	/* TLorentzVector Phi() returns angle between -pi and pi using ATan2(y,x)
+	   The following transforms [-pi,pi]-->[0,2pi] */
+	if(lv.Phi()*(180/TMath::Pi()) < 0){
+		phi = lv.Phi()*(180/TMath::Pi()) + 360;
+	} else {
+		phi = lv.Phi()*(180/TMath::Pi());
+	}
+	return phi;
 }
 
 
