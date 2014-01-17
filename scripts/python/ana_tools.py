@@ -7,7 +7,7 @@ from rootpy.interactive import wait
 
 import matplotlib.pyplot as plt
 
-def plotMM():
+def plot_ana2pi_MMs():
 	DTYPS=2
 	EXP,SIM = range(DTYPS)
 	DTYPS_NAME=['exp','sim']
@@ -91,7 +91,7 @@ def plotMM():
 		# wait for you to close the ROOT canvas before exiting
 		wait(True)
 
-def elastic_study(nentries=1000000000):
+def plot_elastic_W(nentries=1000000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
 	DTYPS=5
