@@ -18,22 +18,13 @@ def plotMM():
 	hmm2s=[[],[]]
 
 	f=[]
-	# f.append(root_open('/datadir2/e1f/ana-2pi/exp/q2w1/d2pi.root'))
-	# f.append(root_open('/e1f.2pi.anadir2/simdir/yield.root'))
-	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w1/d2pi.root"))
+	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w1/d2pi.root"))
+	# f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
 	
 
 	for idt in range(DTYPS):
-		# hmms[idt].append(f[idt].top.hmmppippimVw.ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
-		# hmms[idt].append(f[idt].top.hmmppipVw.ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
-		# hmms[idt].append(f[idt].top.hmmppimVw.ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
-		# hmms[idt].append(f[idt].top.hmmpippimVw.ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
-		# hmm2s[idt].append(f[idt].top.hmm2ppippimVw.ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
-		# hmm2s[idt].append(f[idt].top.hmm2ppipVw.ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
-		# hmm2s[idt].append(f[idt].top.hmm2ppimVw.ProjectionY('hmm2ppim_%s'%DTYPS_NAME[idt]))
-		# hmm2s[idt].append(f[idt].top.hmm2pippimVw.ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
-		
 		hmms[idt].append(f[idt].Get("/top/hmmppippimVw").ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
 		hmms[idt].append(f[idt].Get("/top/hmmppimVw").ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
 		hmms[idt].append(f[idt].Get("/top/hmmppipVw").ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
@@ -48,8 +39,6 @@ def plotMM():
 	fsimc=[]
 	for imm in range(NMM):
 		pad = cmm.cd(imm+1)
-		# hmms[EXP][imm].SetLineColor(gROOT.ProcessLine("kBlue"))
-		# hmms[EXP][imm].DrawNormalized("",10000)
 		hmms[SIM][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 		hmms[SIM][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
 		hsim = hmms[SIM][imm].DrawNormalized("",10000)
@@ -79,8 +68,6 @@ def plotMM():
 	cmm2.Divide(2,2)
 	for imm in range(NMM):
 		pad = cmm2.cd(imm+1)
-		# hmms[EXP][imm].SetLineColor(gROOT.ProcessLine("kBlue"))
-		# hmms[EXP][imm].DrawNormalized("",10000)
 		hmm2s[SIM][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 		hmm2s[SIM][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
 		hsim = hmm2s[SIM][imm].DrawNormalized("",10000)
