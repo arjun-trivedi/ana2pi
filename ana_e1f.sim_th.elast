@@ -1,5 +1,7 @@
+#!/bin/bash
+nentries=${1:-1000000000}
 cp delast.root delast.root.bk
-ana -i mch10.lst -t e1f:sim:elast -p delast
+ana -i mch10.lst -t e1f:sim:elast -p delast -n $nentries
 cp delast.root delast_ST.root
 cp delast.root.bk delast.root
 rm delast.root.bk

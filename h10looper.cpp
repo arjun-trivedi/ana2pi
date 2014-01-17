@@ -10,10 +10,13 @@ void H10Looper::Loop(Long64_t nentries)
 
    //Long64_t nentries = fChain->GetEntriesFast();
    Int_t nentries_chain = fChain->GetEntries();
+   Int_t nentries_to_proc=0;
+   nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
    Info("H10Looper::Loop", "Number of entries in Chain =  %d\n",nentries_chain);
+   Info("H10Looper::Loop", "Number of entries to processess =  %d\n",nentries_to_proc);
 
    Long64_t nbytes = 0, nb = 0;
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
+   for (Long64_t jentry=0; jentry<nentries_to_proc;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       // if (Cut(ientry) < 0) continue;
@@ -33,9 +36,7 @@ void H10Looper::Loop(Long64_t nentries)
       
       if (jentry%100000==0) {
          Info("H10Looper::Loop", "Processing entry# %d\n",jentry);
-         Int_t nentries_to_proc=0;
-         nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
-         Info("H10Looper::Loop", "%5.2f%% entries processed\n",jentry/nentries_to_proc*100);  
+         Info("H10Looper::Loop", "%5.2f%% entries processed\n",(float)jentry/nentries_to_proc*100);  
       }
       //Reset proc_chain
       //3. Call proc_chain

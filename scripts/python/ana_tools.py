@@ -18,10 +18,10 @@ def plotMM():
 	hmm2s=[[],[]]
 
 	f=[]
-	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w1/d2pi.root"))
-	# f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
-	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
-	f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w1/d2pi.root"))
+	f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
+	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
+	# f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
 	
 
 	for idt in range(DTYPS):
@@ -36,7 +36,7 @@ def plotMM():
 
 	cmm = ROOT.TCanvas("mm","mm")
 	cmm.Divide(2,2)
-	fsimc=[]
+	# fsimc=[]
 	for imm in range(NMM):
 		pad = cmm.cd(imm+1)
 		hmms[SIM][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
@@ -54,14 +54,14 @@ def plotMM():
 			hexp.Fit("gaus","","",0.9,0.96)
 		if imm!=0:
 			fsim = hsim.GetFunction("gaus")
-			fsim.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+			fsim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 			fexp = hexp.GetFunction("gaus")
-			fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+			fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 			pad.Update()
-			fsimc.append(ROOT.TF1(fsim))
-			fsimc[imm-1].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
-			fsimc[imm-1].SetRange(hmms[SIM][imm].GetXaxis().GetXmin(),hmms[SIM][imm].GetXaxis().GetXmax())
-			fsimc[imm-1].Draw("same")
+			# fsimc.append(ROOT.TF1(fsim))
+			# fsimc[imm-1].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
+			# fsimc[imm-1].SetRange(hmms[SIM][imm].GetXaxis().GetXmin(),hmms[SIM][imm].GetXaxis().GetXmax())
+			# fsimc[imm-1].Draw("same")
 			#pad.Update()
 
 	cmm2 = ROOT.TCanvas("mm2","mm2")
