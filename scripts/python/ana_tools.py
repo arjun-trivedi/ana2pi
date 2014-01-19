@@ -19,20 +19,27 @@ def plot_ana2pi_MMs():
 
 	f=[]
 	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w1/d2pi.root"))
-	f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
+	#f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
+	f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/test_sim/q2wf_gpp-ep_011714/recon/d2pi.root"))
+	
 	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	# f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
 	
 
 	for idt in range(DTYPS):
-		hmms[idt].append(f[idt].Get("/top/hmmppippimVw").ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/top/hmmppimVw").ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/top/hmmppipVw").ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/top/hmmpippimVw").ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/top/hmm2ppippimVw").ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/top/hmm2ppimVw").ProjectionY('hmm2ppim_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/top/hmm2ppipVw").ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/top/hmm2pippimVw").ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
+		topdir=""
+		if idt==EXP:
+			topdir="top"
+		elif idt==SIM:
+			topdir="top2"
+		hmms[idt].append(f[idt].Get("/%s/hmmppippimVw"%topdir).ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
+		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
+		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppimVw"%topdir).ProjectionY('hmm2ppim_%s'%DTYPS_NAME[idt]))
+		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppipVw"%topdir).ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
+		hmm2s[idt].append(f[idt].Get("/%s/hmm2pippimVw"%topdir).ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
 
 	cmm = ROOT.TCanvas("mm","mm")
 	cmm.Divide(2,2)
