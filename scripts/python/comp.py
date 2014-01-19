@@ -81,6 +81,12 @@ def run_test_atsim():
 	fnew = '/e1f.sim2pi.datadir/comp_old_new_sim/test_atsim/cooked/1.root'
 	plot("run_test_atsim")
 
+#[01-17-14]
+def run_q2w2_011714():
+	global fnew
+	fnew = '/data/trivedia/e1f/simulation_2pi/comp_old_new_sim/2pi_q2w2_gpp-ep_011714/recon/1.root'
+	plot("test_ep_011714");
+
 def plot(runtitle):
 	dfs = import_h10([fold,fnew],nentries)
 	
