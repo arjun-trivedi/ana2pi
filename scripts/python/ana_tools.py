@@ -8,9 +8,6 @@ from rootpy.interactive import wait
 import matplotlib.pyplot as plt
 
 def plot_ana2pi_MMs():
-	# DTYPS=2
-	# EXP,SIM = range(DTYPS)
-	# DTYPS_NAME=['exp','sim']
 	sim_name=[]
 	gpppars=[0.0,1.4,4.0]
 	for i in range(len(gpppars)):
@@ -23,8 +20,6 @@ def plot_ana2pi_MMs():
 
 
 	DTYPS=28
-	# ER,SR = range(DTYPS)
-	# DTYPS_NAME=['ER','']
 	ER=0
 	DTYPS_NAME=[]
 	for i in range(DTYPS):
@@ -85,12 +80,8 @@ def plot_ana2pi_MMs():
 		cmm.append(ROOT.TCanvas("mm_%s"%(sim_name[icvs]),"mm_%s"%(sim_name[icvs])))
 	#print cmm[0].GetName()
 	for idt in range(1,28):
-		#cmm.append(ROOT.TCanvas("mm%d"%(i+1),"mm"))
-		# cmm[icvs-1].Divide(2,2)
-		# idt=icvs;
 		icvs=idt-1;
 		cmm[icvs].Divide(2,2)
-		# fsimc=[]
 		for imm in range(NMM):
 			pad = cmm[icvs].cd(imm+1)
 			hmms[idt][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
