@@ -106,57 +106,66 @@ a HDF5 file
 Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytables
 
 """
-import numpy as np
-randn = np.random.randn
-import pandas as pd
+# import numpy as np
+# randn = np.random.randn
+# import pandas as pd
 
-from ROOT import TH1D
+# from ROOT import TH1D
 
-def make_test_hdf5():
-	""" Create a DF with just one Column of N TH1Ds,
-    indexed by [0,...,N] and store it in a HDF5 file.
-    Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytables
+# def make_test_hdf5():
+# 	""" Create a DF with just one Column of N TH1Ds,
+#     indexed by [0,...,N] and store it in a HDF5 file.
+#     Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytables
 
-    """
-	print 'Going to create store.h5:'
-	#1. If store.hdf5 exists, delete it
-	if os.path.isfile('store.h5'):
-		os.remove('store.h5')
-	#2. Create HDF5 store & see what it contains
-	store = pd.HDFStore('store.h5')
-	print 'store =',store
+#     """
+# 	print 'Going to create store.h5:'
+# 	#1. If store.hdf5 exists, delete it
+# 	if os.path.isfile('store.h5'):
+# 		os.remove('store.h5')
+# 	#2. Create HDF5 store & see what it contains
+# 	store = pd.HDFStore('store.h5')
+# 	print 'store =',store
 
-	#3. Create Histograms to store
-	NHISTS=10
-	hl = []
-	for i in range(0,NHISTS):
-		name = 'h%d'%(i+1)
-		hl.append(TH1D(name,name,100,0,5))
+# 	#3. Create Histograms to store
+# 	NHISTS=10
+# 	hl = []
+# 	for i in range(0,NHISTS):
+# 		name = 'h%d'%(i+1)
+# 		hl.append(TH1D(name,name,100,0,5))
 		
-	#4. Insert 1st columns into df
-	index = np.arange(0,NHISTS)
-	df = pd.DataFrame()
-	if not df:
-		data = pd.DataFrame({'H1':hl},index=index) # Data for 1st. Column 
-		df = df.append(data)
+# 	#4. Insert 1st columns into df
+# 	index = np.arange(0,NHISTS)
+# 	df = pd.DataFrame()
+# 	if not df:
+# 		data = pd.DataFrame({'H1':hl},index=index) # Data for 1st. Column 
+# 		df = df.append(data)
 
-	#5. Add df to store
-	store['df']=df
-	#6. See the stored data type 
-	print 'Type of stored data = ',store.root.df._v_attrs.pandas_type
-	#7. See what the file finally contains
-	print 'store=',store
+# 	#5. Add df to store
+# 	store['df']=df
+# 	#6. See the stored data type 
+# 	print 'Type of stored data = ',store.root.df._v_attrs.pandas_type
+# 	#7. See what the file finally contains
+# 	print 'store=',store
 
-def read_test_hdf5():
-	print 'Going to read contents of store.h5:'
-	if os.path.isfile('store.h5'):
-		store = pd.HDFStore('store.h5')
-		print 'store =',store
-		print store['df']
-	else:
-		print 'store.h5 does not exist!'
+# def read_test_hdf5():
+# 	print 'Going to read contents of store.h5:'
+# 	if os.path.isfile('store.h5'):
+# 		store = pd.HDFStore('store.h5')
+# 		print 'store =',store
+# 		print store['df']
+# 	else:
+# 		print 'store.h5 does not exist!'
 	
 
-make_test_hdf5()
-read_test_hdf5()
+# make_test_hdf5()
+# read_test_hdf5()
 #print store['df']
+
+""" Use Case for creating multi-dimensional list
+"""
+#y = [[[] for i in range(1)] for i in range(1)]
+y = [[] for i in range(10)]
+print y
+
+for i in range(1,28):
+	print i
