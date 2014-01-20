@@ -96,10 +96,22 @@ def plot_ana2pi_MMs():
 			hmms[idt][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 			hmms[idt][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
 			hsim = hmms[idt][imm].DrawNormalized("",10000)
+			pad.Update();
+			st=hsim.GetListOfFunctions().FindObject("stats")
+			st.SetX1NDC(0.65)
+			st.SetX2NDC(1.00)
+			st.SetY1NDC(1.00)
+			st.SetY2NDC(0.625)
 			print "hsim[%d][%d]"%(idt+1,imm+1),hsim.GetName()
 			hmms[ER][imm].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 			hmms[ER][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
 			hexp=hmms[ER][imm].DrawNormalized("sames",10000)
+			pad.Update();
+			st=hexp.GetListOfFunctions().FindObject("stats")
+			st.SetX1NDC(0.65)
+			st.SetX2NDC(1.00)
+			st.SetY1NDC(0.625)
+			st.SetY2NDC(0.250)
 			print "hexp=",hexp.GetName()
 			
 			
@@ -120,6 +132,7 @@ def plot_ana2pi_MMs():
 				# fsimc[imm-1].SetRange(hmms[SIM][imm].GetXaxis().GetXmin(),hmms[SIM][imm].GetXaxis().GetXmax())
 				# fsimc[imm-1].Draw("same")
 				#pad.Update()
+			cmm[icvs].SaveAs("/tmp/atrivedi/%s.png"%cmm[icvs].GetName())
 
 	# cmm2 = ROOT.TCanvas("mm2","mm2")
 	# cmm2.Divide(2,2)
