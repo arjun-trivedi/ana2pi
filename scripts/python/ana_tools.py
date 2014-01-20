@@ -14,10 +14,7 @@ def plot_ana2pi_MMs():
 		for j in range(len(gpppars)):
 			for k in range(len(gpppars)):
 				sim_name.append("%4.2f_%4.2f_%4.2f"%(gpppars[i],gpppars[j],gpppars[k]))
-	print len(sim_name)
-
-
-
+	#print len(sim_name)
 
 	DTYPS=28
 	ER=0
@@ -29,20 +26,23 @@ def plot_ana2pi_MMs():
 			#DTYPS_NAME.append("SR%d"%(i))
 			DTYPS_NAME.append(sim_name[i-1])
 
-	ROOT.gStyle.SetOptFit(1111)
 	NMM=4
 	# hmms=[[],[]]
 	# hmm2s=[[],[]]
 	hmms=[[] for i in range(28)]
 	hmm2s=[[] for i in range(28)]
-	print hmms
+	#print hmms
+
+	ROOT.gStyle.SetOptFit(1111)
+	CWIDTH=1000
+	CHEIGHT=800	
 
 	f=[]
 	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	#f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
-	#f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/test_new-sim/q2wf_gpp-ep_011714/recon/d2pi.root"))
+	#f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2wf_gpp-ep_011714/recon/d2pi.root"))
 	for i in range(27):
-		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/test_new-sim/q2w2_gpptest_%d_011914/recon/d2pi.root"%(i+1)))
+		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2w2_gpptest_%d_011914/recon/d2pi.root"%(i+1)))
 
 	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	# f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
@@ -71,22 +71,25 @@ def plot_ana2pi_MMs():
 			print "hmm[%d][%d]"%(idt+1,imm+1),hmms[idt][imm].GetName()
 			#hmm2s[idt].append(f[idt].Get("/%s/hmm2pippimVw"%topdir).ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
 
-	cmm=[]
-	for icvs in range(27):
-		#cmm.append(ROOT.TCanvas("mm%d"%(icvs+1),"mm%d"%(icvs+1)))
-		cmm.append(ROOT.TCanvas("mm_%s"%(sim_name[icvs]),"mm_%s"%(sim_name[icvs])))
+	# cmm=[]
+	# for icvs in range(27):
+	# 	#cmm.append(ROOT.TCanvas("mm%d"%(icvs+1),"mm%d"%(icvs+1)))
+	# 	cmm.append(ROOT.TCanvas("mm_%s"%(sim_name[icvs]),"mm_%s"%(sim_name[icvs])))#,CWIDTH,CHEIGHT))
 	#print cmm[0].GetName()
 	for idt in range(1,28):
-		icvs=idt-1;
-		cmm[icvs].Divide(2,2)
+		#icvs=idt-1;
+		cmm = ROOT.TCanvas("mm_%s"%(sim_name[idt-1]),"mm_%s"%(sim_name[idt-1]),CWIDTH,CHEIGHT)
+		#icvs=idt-1;
+		#idt=icvs-1
+		cmm.Divide(2,2)
 		for imm in range(NMM):
-			pad = cmm[icvs].cd(imm+1)
+			pad = cmm.cd(imm+1)
 			hmms[idt][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 			hmms[idt][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
 			hsim = hmms[idt][imm].DrawNormalized("",10000)
 			pad.Update();
 			st=hsim.GetListOfFunctions().FindObject("stats")
-			st.SetX1NDC(0.65)
+			st.SetX1NDC(0.50)
 			st.SetX2NDC(1.00)
 			st.SetY1NDC(1.00)
 			st.SetY2NDC(0.625)
@@ -96,7 +99,7 @@ def plot_ana2pi_MMs():
 			hexp=hmms[ER][imm].DrawNormalized("sames",10000)
 			pad.Update();
 			st=hexp.GetListOfFunctions().FindObject("stats")
-			st.SetX1NDC(0.65)
+			st.SetX1NDC(0.50)
 			st.SetX2NDC(1.00)
 			st.SetY1NDC(0.625)
 			st.SetY2NDC(0.250)
@@ -115,12 +118,9 @@ def plot_ana2pi_MMs():
 				fexp = hexp.GetFunction("gaus")
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 				pad.Update()
-				# fsimc.append(ROOT.TF1(fsim))
-				# fsimc[imm-1].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
-				# fsimc[imm-1].SetRange(hmms[SIM][imm].GetXaxis().GetXmin(),hmms[SIM][imm].GetXaxis().GetXmax())
-				# fsimc[imm-1].Draw("same")
-				#pad.Update()
-			cmm[icvs].SaveAs("/tmp/atrivedi/%s.png"%cmm[icvs].GetName())
+
+		cmm.SaveAs("/e1f.sim2pi.datadir/ana_new-sim/%s.png"%cmm.GetName())
+		cmm.Close()	
 
 	# cmm2 = ROOT.TCanvas("mm2","mm2")
 	# cmm2.Divide(2,2)
