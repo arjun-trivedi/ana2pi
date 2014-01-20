@@ -44,9 +44,6 @@ def plot_ana2pi_MMs():
 	for i in range(27):
 		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/test_new-sim/q2w2_gpptest_%d_011914/recon/d2pi.root"%(i+1)))
 
-	print len(f)
-	print f[0].GetName();
-	print f[27].GetName();
 	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	# f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
 	
@@ -110,7 +107,7 @@ def plot_ana2pi_MMs():
 				hsim.Fit("gaus","","",0.1,0.17)
 				hexp.Fit("gaus","","",0.1,0.17)
 			elif imm==3:
-				hsim.Fit("gaus","","",0.9,1.0)
+				hsim.Fit("gaus","","",0.9,0.96)
 				hexp.Fit("gaus","","",0.9,0.96)
 			if imm!=0:
 				fsim = hsim.GetFunction("gaus")
