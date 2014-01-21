@@ -8,8 +8,9 @@ from rootpy.interactive import wait
 import matplotlib.pyplot as plt
 import numpy as np
 from array import *
+import os
 
-def plot_ana2pi_MMs():
+def plot_ana2pi_MMs(be):#be=beam energy
 	gpppars_name=[]
 	gpppars=[0.0,1.4,4.0]
 	for i in range(len(gpppars)):
@@ -39,12 +40,17 @@ def plot_ana2pi_MMs():
 	CWIDTH=1000
 	CHEIGHT=800	
 
+	OUTDIR_ROOT=os.path.join(os.environ['E1F_SIM2PI_DATADIR'],'ana_new-sim')
+	OUTDIR=os.path.join(OUTDIR_ROOT,'be%d'%be)
+	if not os.path.isdir(OUTDIR):
+		os.mkdir(OUTDIR)
+
 	f=[]
 	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	#f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
 	#f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2wf_gpp-ep_011714/recon/d2pi.root"))
 	for i in range(27):
-		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2w2_gpptest_%d_011914/recon/d2pi.root"%(i+1)))
+		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2w2_gpptest_%d_011914/recon/d2pi_%d.root"%(i+1,be)))
 
 	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	# f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
@@ -122,7 +128,7 @@ def plot_ana2pi_MMs():
 				mm_fitpars[1][imm-1][idt-1]=fsim.GetParameter(2)
 				mm_fitpars_exp[0][imm-1]=fexp.GetParameter(1)
 				mm_fitpars_exp[1][imm-1]=fexp.GetParameter(2)
-		cmm.SaveAs("/e1f.sim2pi.datadir/ana_new-sim/%s.png"%cmm.GetName())
+		cmm.SaveAs("%s/%s.png"%(OUTDIR,cmm.GetName()))
 		cmm.Close()	
 	cmm_fitpars = ROOT.TCanvas("fit_pars","fit_pars",CWIDTH,CHEIGHT)
 	cmm_fitpars.Divide(1,2)
@@ -152,6 +158,7 @@ def plot_ana2pi_MMs():
 			gfpVgp[i].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
 		cmm_fitpars.cd(i+1)	
 		gfpVgp[i].Draw("ALP")	
+	cmm_fitpars.SaveAs("%s/%s.png"%(OUTDIR,cmm_fitpars.GetName()))
 
 	# cmm2 = ROOT.TCanvas("mm2","mm2")
 	# cmm2.Divide(2,2)

@@ -59,10 +59,9 @@
 #print varTitle[0][M1]
 
 """Test walking directory structure"""
-import os
-#print os.__file__
-anadir =  os.environ['E1F_2PI_ANADIR2']
-outdir = os.path.join(anadir,'polobs.new')
+# import os
+# anadir =  os.environ['E1F_2PI_ANADIR2']
+# outdir = os.path.join(anadir,'polobs.new')
 
 # for root, subfolders, files in os.walk(outdir):
 # 	print 'root=',root
@@ -186,3 +185,9 @@ print arr
 # print np.subtract(x1,8)
 
 
+import os
+outdir=os.path.join('/','tmp','test')
+if not os.path.isdir(outdir):
+	print 'not exists'
+else:
+	print 'exists'
