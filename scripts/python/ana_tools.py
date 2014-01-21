@@ -47,10 +47,8 @@ def plot_ana2pi_MMs(be):#be=beam energy
 
 	f=[]
 	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
-	#f.append(ROOT.TFile("/e1f.2pi.anadir1/simdir/yield.root"))
-	#f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2wf_gpp-ep_011714/recon/d2pi.root"))
 	for i in range(27):
-		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2w2_gpptest_%d_011914/recon/d2pi_%d.root"%(i+1,be)))
+		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2w2_gpptest_%d_011914/recon/d2pi_be%d.root"%(i+1,be)))
 
 	# f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	# f.append(ROOT.TFile("/e1f.2pi.anadir2/simdir/yield.root"))
@@ -130,7 +128,8 @@ def plot_ana2pi_MMs(be):#be=beam energy
 				mm_fitpars_exp[1][imm-1]=fexp.GetParameter(2)
 		cmm.SaveAs("%s/%s.png"%(OUTDIR,cmm.GetName()))
 		cmm.Close()	
-	cmm_fitpars = ROOT.TCanvas("fit_pars","fit_pars",CWIDTH,CHEIGHT)
+
+	cmm_fitpars = ROOT.TCanvas("fit_pars","fit_pars",2*CWIDTH,2*CHEIGHT)
 	cmm_fitpars.Divide(1,2)
 	# gpppars_cmbns=range(27)
 	gpppars_cmbns=np.zeros((27),'d')
@@ -156,31 +155,15 @@ def plot_ana2pi_MMs(be):#be=beam energy
 		gfpVgp[i].GetHistogram().GetXaxis().Set(len(tx),-0.5,26.5)#x1,x2);
 		for j in range(len(tx)):
 			gfpVgp[i].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		gfpVgp[i].GetXaxis().SetTitle("gpp-pars")
+		if i ==0:
+			gfpVgp[i].GetYaxis().SetTitle("delta-mean")
+		elif i==1:
+			gfpVgp[i].GetYaxis().SetTitle("delta-sigma")
 		cmm_fitpars.cd(i+1)	
 		gfpVgp[i].Draw("ALP")	
 	cmm_fitpars.SaveAs("%s/%s.png"%(OUTDIR,cmm_fitpars.GetName()))
-
-	# cmm2 = ROOT.TCanvas("mm2","mm2")
-	# cmm2.Divide(2,2)
-	# for imm in range(NMM):
-	# 	pad = cmm2.cd(imm+1)
-	# 	hmm2s[SIM][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-	# 	hmm2s[SIM][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
-	# 	hsim = hmm2s[SIM][imm].DrawNormalized("",10000)
-	# 	hmm2s[EXP][imm].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-	# 	hmm2s[EXP][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
-	# 	hexp=hmm2s[EXP][imm].DrawNormalized("sames",10000)
-
-	# 	if imm==1 or imm==2:
-	# 		hsim.Fit("gaus","","",0.1,0.17)
-	# 		hexp.Fit("gaus","","",0.1,0.17)
-	# 	elif imm==3:
-	# 		hsim.Fit("gaus","","",0.9,1.0)
-	# 		hexp.Fit("gaus","","",0.9,0.96)
-	# 	if imm!=0:
-	# 		hsim.GetFunction("gaus").SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-	# 		hexp.GetFunction("gaus").SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-	# 		pad.Update()
+	cmm_fitpars.Close()
 
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
