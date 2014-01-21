@@ -164,8 +164,25 @@ Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytable
 """ Use Case for creating multi-dimensional list
 """
 #y = [[[] for i in range(1)] for i in range(1)]
-y = [[] for i in range(10)]
-print y
+# y = [[[] for j in range(4)] for i in range(10)]
+# print y
 
-for i in range(1,28):
-	print i
+# mm_fitpars=[[[[]for i in range(5)] for i in range(3)],[[[]for i in range(5)] for i in range(3)]]
+# print mm_fitpars
+
+import numpy as np
+arrnd = np.zeros((2,3,5),'i')
+print arrnd
+
+from array import *
+arr=array('i',arrnd[0][0])
+arr = np.subtract(arr,10)
+print arr
+
+# x1 = np.arange(9.0).reshape((3, 3))
+# print x1
+# x2 = np.arange(3.0)
+# print x2
+# print np.subtract(x1,8)
+
+

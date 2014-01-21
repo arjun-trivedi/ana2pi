@@ -6,15 +6,17 @@ import rootpy.plotting.root2matplotlib as rplt
 from rootpy.interactive import wait
 
 import matplotlib.pyplot as plt
+import numpy as np
+from array import *
 
 def plot_ana2pi_MMs():
-	sim_name=[]
+	gpppars_name=[]
 	gpppars=[0.0,1.4,4.0]
 	for i in range(len(gpppars)):
 		for j in range(len(gpppars)):
 			for k in range(len(gpppars)):
-				sim_name.append("%4.2f_%4.2f_%4.2f"%(gpppars[i],gpppars[j],gpppars[k]))
-	#print len(sim_name)
+				gpppars_name.append("%4.2f_%4.2f_%4.2f"%(gpppars[i],gpppars[j],gpppars[k]))
+	#print len(gpppars_name)
 
 	DTYPS=28
 	ER=0
@@ -24,7 +26,7 @@ def plot_ana2pi_MMs():
 			DTYPS_NAME.append("ER")
 		else:
 			#DTYPS_NAME.append("SR%d"%(i))
-			DTYPS_NAME.append(sim_name[i-1])
+			DTYPS_NAME.append(gpppars_name[i-1])
 
 	NMM=4
 	# hmms=[[],[]]
@@ -66,21 +68,16 @@ def plot_ana2pi_MMs():
 		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppipVw"%topdir).ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
 		hmm2s[idt].append(f[idt].Get("/%s/hmm2pippimVw"%topdir).ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
 
-	for idt in range(DTYPS):
-		for imm in range(NMM):
-			print "hmm[%d][%d]"%(idt+1,imm+1),hmms[idt][imm].GetName()
-			#hmm2s[idt].append(f[idt].Get("/%s/hmm2pippimVw"%topdir).ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
-
-	# cmm=[]
-	# for icvs in range(27):
-	# 	#cmm.append(ROOT.TCanvas("mm%d"%(icvs+1),"mm%d"%(icvs+1)))
-	# 	cmm.append(ROOT.TCanvas("mm_%s"%(sim_name[icvs]),"mm_%s"%(sim_name[icvs])))#,CWIDTH,CHEIGHT))
-	#print cmm[0].GetName()
+	# for idt in range(DTYPS):
+	# 	for imm in range(NMM):
+	# 		print "hmm[%d][%d]"%(idt+1,imm+1),hmms[idt][imm].GetName()
+	
+	#mm_fitpars=[[[] for j in range(3)] for i in range(27)]
+	#mm_fitpars=[[[[]for i in range(27)] for i in range(3)],[[[]for i in range(27)] for i in range(3)]]
+	mm_fitpars=np.zeros((2,3,27),'d')
+	mm_fitpars_exp=np.zeros((2,3),'d')
 	for idt in range(1,28):
-		#icvs=idt-1;
-		cmm = ROOT.TCanvas("mm_%s"%(sim_name[idt-1]),"mm_%s"%(sim_name[idt-1]),CWIDTH,CHEIGHT)
-		#icvs=idt-1;
-		#idt=icvs-1
+		cmm = ROOT.TCanvas("mm_%s"%(gpppars_name[idt-1]),"mm_%s"%(gpppars_name[idt-1]),CWIDTH,CHEIGHT)
 		cmm.Divide(2,2)
 		for imm in range(NMM):
 			pad = cmm.cd(imm+1)
@@ -112,15 +109,49 @@ def plot_ana2pi_MMs():
 			elif imm==3:
 				hsim.Fit("gaus","","",0.9,0.96)
 				hexp.Fit("gaus","","",0.9,0.96)
+			
 			if imm!=0:
 				fsim = hsim.GetFunction("gaus")
 				fsim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 				fexp = hexp.GetFunction("gaus")
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 				pad.Update()
-
+				# mm_fitpars[idt-1][imm-1].append(fsim.GetParameter(1))
+				# mm_fitpars[idt-1][imm-1].append(fsim.GetParameter(2))
+				mm_fitpars[0][imm-1][idt-1]=fsim.GetParameter(1)
+				mm_fitpars[1][imm-1][idt-1]=fsim.GetParameter(2)
+				mm_fitpars_exp[0][imm-1]=fexp.GetParameter(1)
+				mm_fitpars_exp[1][imm-1]=fexp.GetParameter(2)
 		cmm.SaveAs("/e1f.sim2pi.datadir/ana_new-sim/%s.png"%cmm.GetName())
 		cmm.Close()	
+	cmm_fitpars = ROOT.TCanvas("fit_pars","fit_pars",CWIDTH,CHEIGHT)
+	cmm_fitpars.Divide(1,2)
+	# gpppars_cmbns=range(27)
+	gpppars_cmbns=np.zeros((27),'d')
+	gpppars_cmbns=np.arange(27)
+	# print len(gpppars_cmbns),len(mm_fitpars[0][0])
+	# print gpppars_cmbns
+	# print mm_fitpars[0][0]
+	tx=array('d',gpppars_cmbns)
+	tmean=array('d',mm_fitpars[0][0])
+	tmean_diff=np.subtract(tmean,mm_fitpars_exp[0][0])
+	tsigma=array('d',mm_fitpars[1][0])
+	tsigma_diff=np.subtract(tsigma,mm_fitpars_exp[1][0])
+	#gfpVgp = ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,mm_fitpars[0][0])
+	print len(tx),len(tmean)
+	print tx
+	print tmean
+	gfpVgp=[]
+	gfpVgp.append(ROOT.TGraph(len(tx),tx,tmean_diff))
+	gfpVgp.append(ROOT.TGraph(len(tx),tx,tsigma_diff))
+	for i in range(2):
+		x1=gfpVgp[i].GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+		x2=gfpVgp[i].GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+		gfpVgp[i].GetHistogram().GetXaxis().Set(len(tx),-0.5,26.5)#x1,x2);
+		for j in range(len(tx)):
+			gfpVgp[i].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		cmm_fitpars.cd(i+1)	
+		gfpVgp[i].Draw("ALP")	
 
 	# cmm2 = ROOT.TCanvas("mm2","mm2")
 	# cmm2.Divide(2,2)
