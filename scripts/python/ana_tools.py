@@ -13,13 +13,13 @@ import os
 from math import *
 
 
-def gauss_ppi(v, par):
+def gauss_ppi_hack(v, par):
     arg = 0;
     if (par[2] != 0): arg = (v[0] - par[1])/par[2];
     binw=((0.40-0.00)/100)
     fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
     return fitval;
-def gauss_pippim(v, par):
+def gauss_pippim_hack(v, par):
     arg = 0;
     if (par[2] != 0): arg = (v[0] - par[1])/par[2];
     binw=((1.40-0.60)/100)
@@ -105,7 +105,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			
 			fexp=None
 			if imm==1 or imm==2:
-				fgauss = ROOT.TF1("fgauss",gauss_ppi,0.0,0.2,3);
+				fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,0.0,0.2,3);
 				fgauss.SetParameters(1,0,1);
 				hmms[ER][imm].Fit("fgauss","","",0.1,0.17)
 				fexp=hmms[ER][imm].GetFunction("fgauss")
@@ -113,7 +113,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				# fexp=hmms[ER][imm].GetFunction("gaus")
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 			elif imm==3:
-				fgauss = ROOT.TF1("fgauss",gauss_pippim,0.6,2.0,3);
+				fgauss = ROOT.TF1("fgauss",gauss_pippim_hack,0.6,2.0,3);
 				fgauss.SetParameters(1,0,1);
 				hmms[ER][imm].Fit("fgauss","","",0.9,0.96)
 				fexp=hmms[ER][imm].GetFunction("fgauss")

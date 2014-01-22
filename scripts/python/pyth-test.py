@@ -1,3 +1,5 @@
+from __future__ import division
+from math import *
 """Testing dict"""
 # h = {}
 # h['T'] = 'Thrown'
@@ -169,25 +171,28 @@ Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytable
 # mm_fitpars=[[[[]for i in range(5)] for i in range(3)],[[[]for i in range(5)] for i in range(3)]]
 # print mm_fitpars
 
-import numpy as np
-arrnd = np.zeros((2,3,5),'i')
-print arrnd
+# import numpy as np
+# arrnd = np.zeros((2,3,5),'i')
+# print arrnd
 
-from array import *
-arr=array('i',arrnd[0][0])
-arr = np.subtract(arr,10)
-print arr
-
-# x1 = np.arange(9.0).reshape((3, 3))
-# print x1
-# x2 = np.arange(3.0)
-# print x2
-# print np.subtract(x1,8)
+# from array import *
+# arr=array('i',arrnd[0][0])
+# arr = np.subtract(arr,10)
+# print arr
 
 
-import os
-outdir=os.path.join('/','tmp','test')
-if not os.path.isdir(outdir):
-	print 'not exists'
-else:
-	print 'exists'
+
+""" Misc. Use Cases
+"""
+import ROOT as ROOT
+def gausst(v, par):
+    arg = 0;
+    if (par[2] != 0): arg = (v[0] - par[1])/par[2];
+    fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg);
+    return fitval;
+
+fgausst = ROOT.TF1("fgauss_test",gausst,-3,3,3);
+fgausst.SetParameters(100,0,1);
+c3=ROOT.TCanvas("c3","c3",400,400)
+fgausst.Draw()
+print fgausst.Integral(-10,10)
