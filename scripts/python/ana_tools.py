@@ -13,6 +13,11 @@ import os
 from math import *
 
 
+def gauss(v, par):
+    arg = 0;
+    if (par[2] != 0): arg = (v[0] - par[1])/par[2];
+    fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)
+    return fitval
 def gauss_ppi_hack(v, par):
     arg = 0;
     if (par[2] != 0): arg = (v[0] - par[1])/par[2];
@@ -88,6 +93,8 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	#mm_fitpars=[[[[]for i in range(27)] for i in range(3)],[[[]for i in range(27)] for i in range(3)]]
 	mm_fitpars=np.zeros((2,3,27),'d')
 	mm_fitpars_exp=np.zeros((2,3),'d')
+	yields_SRcut=np.zeros((3,27),'d')
+	yields_ERcut=np.zeros((3,27),'d')
 	for idt in range(1,DTYPS):#8):
 		cmm = ROOT.TCanvas("mm_%s"%(gpppars_name[idt-1]),"mm_%s"%(gpppars_name[idt-1]),CWIDTH,CHEIGHT)
 		cmm.Divide(2,2)
@@ -158,8 +165,22 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				mm_fitpars[1][imm-1][idt-1]=fsim.GetParameter(2)
 				mm_fitpars_exp[0][imm-1]=fexp.GetParameter(1)
 				mm_fitpars_exp[1][imm-1]=fexp.GetParameter(2)
+
+				fsim_pdf = ROOT.TF1("fsim_pdf",gauss,0.0,0.2,3);
+				fsim_pdf.SetParameters(1,fsim.GetParameter(1),fsim.GetParameter(2))
+				fexp_pdf = ROOT.TF1("fexp_pdf",gauss,0.0,0.2,3);
+				fexp_pdf.SetParameters(1,fexp.GetParameter(1),fexp.GetParameter(2))
+
+				if imm==1 or imm==2:
+					yields_SRcut[imm-1][idt-1]=fsim_pdf.Integral(0,0.2)
+					yields_ERcut[imm-1][idt-1]=fexp_pdf.Integral(0,0.2)
+				elif imm==3:
+					yields_SRcut[imm-1][idt-1]=fsim_pdf.Integral(sqrt(0.8),1)
+					yields_ERcut[imm-1][idt-1]=fexp_pdf.Integral(sqrt(0.8),1)
+				
+
 		cmm.SaveAs("%s/%s.png"%(OUTDIR,cmm.GetName()))
-		#cmm.Close()	
+		cmm.Close()	
 
 	cmm_fitpars = ROOT.TCanvas("fit_pars","fit_pars",2*CWIDTH,2*CHEIGHT)
 	cmm_fitpars.Divide(1,2)
@@ -170,6 +191,14 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	tmean_diff=np.subtract(tmean,mm_fitpars_exp[0][0])
 	tsigma=array('d',mm_fitpars[1][0])
 	tsigma_diff=np.subtract(tsigma,mm_fitpars_exp[1][0])
+
+	#calculated dyield for imm=1 i.e. Top 2
+	dyields_EC=array('d',yields_ERcut[0])
+	dyields_EC=np.divide(dyields_EC,yields_SRcut[0])
+	dyields_EC=np.multiply(dyields_EC,-1)
+	dyields_EC=np.add(dyields_EC,1)
+
+
 	# print len(tx),len(tmean)
 	# print tx
 	# print tmean
@@ -187,10 +216,26 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			gfpVgp[i].GetYaxis().SetTitle("delta-mean")
 		elif i==1:
 			gfpVgp[i].GetYaxis().SetTitle("delta-sigma")
-		cmm_fitpars.cd(i+1)	
-		gfpVgp[i].Draw("ALP")	
+		pad=cmm_fitpars.cd(i+1)
+		pad.SetGridx()	
+		gfpVgp[i].Draw("ALP")
 	cmm_fitpars.SaveAs("%s/%s.png"%(OUTDIR,cmm_fitpars.GetName()))
 	cmm_fitpars.Close()
+
+	cdyields = ROOT.TCanvas("dyields","dyields",4*CWIDTH,2*CHEIGHT)
+	cdyields.SetGridx()
+	gdyVgp=ROOT.TGraph(len(tx),tx,dyields_EC)
+	x1=gdyVgp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+	x2=gdyVgp.GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+	gdyVgp.GetHistogram().GetXaxis().Set(len(tx),-0.5,26.5)#x1,x2);
+	for j in range(len(tx)):
+		gdyVgp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+	gdyVgp.GetXaxis().SetTitle("gpp-pars")
+	gdyVgp.GetYaxis().SetTitle("dyields")
+	gdyVgp.Draw("ALP")
+	cdyields.SaveAs("%s/%s.png"%(OUTDIR,cdyields.GetName()))
+	cdyields.Close()
+	
 
 	if not ROOT.gROOT.IsBatch():
 		plt.show()

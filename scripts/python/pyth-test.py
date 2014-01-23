@@ -184,15 +184,27 @@ Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytable
 
 """ Misc. Use Cases
 """
-import ROOT as ROOT
-def gausst(v, par):
-    arg = 0;
-    if (par[2] != 0): arg = (v[0] - par[1])/par[2];
-    fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg);
-    return fitval;
+# import ROOT as ROOT
+# def gausst(v, par):
+#     arg = 0;
+#     if (par[2] != 0): arg = (v[0] - par[1])/par[2];
+#     fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg);
+#     return fitval;
 
-fgausst = ROOT.TF1("fgauss_test",gausst,-3,3,3);
-fgausst.SetParameters(100,0,1);
-c3=ROOT.TCanvas("c3","c3",400,400)
-fgausst.Draw()
-print fgausst.Integral(-10,10)
+# fgausst = ROOT.TF1("fgauss_test",gausst,-3,3,3);
+# fgausst.SetParameters(100,0,1);
+# c3=ROOT.TCanvas("c3","c3",400,400)
+# fgausst.Draw()
+# print fgausst.Integral(-10,10)
+
+import numpy as np
+arrnd = np.zeros((2.),'i')
+print arrnd
+arrnd=np.add(arrnd,100)
+print arrnd
+arrnd=np.divide(arrnd,50)
+print arrnd
+arrnd=np.multiply(arrnd,-1)
+print arrnd
+arrnd=np.add(arrnd,2)
+print arrnd
