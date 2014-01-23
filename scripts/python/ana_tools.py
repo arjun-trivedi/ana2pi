@@ -191,7 +191,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		gdmeanVgpp.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)
 		for j in range(len(gpppars_cmbns)):
 			gdmeanVgpp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
-		gdmeanVgpp.GetYaxis().SetTitle("#mu_{ER}-#mu_{SR}")
+		gdmeanVgpp.GetYaxis().SetTitle("#mu_{ER}-#mu_{SR}(GeV)")
 		gdmeanVgpp.Draw("AP")
 		pad=c.cd(2)
 		pad.SetGridx()
@@ -204,7 +204,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		gdsgmaVgpp.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)
 		for j in range(len(gpppars_cmbns)):
 			gdsgmaVgpp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
-		gdsgmaVgpp.GetYaxis().SetTitle("#sigma_{ER}-#sigma_{SR}")
+		gdsgmaVgpp.GetYaxis().SetTitle("#sigma_{ER}-#sigma_{SR}(GeV)")
 		gdsgmaVgpp.Draw("AP")
 		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 		c.Close()
@@ -221,7 +221,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		c.SetGridx()
 		dy=array('d',dyields[imm])
 		g=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy)
-		g.SetTitle("#Delta exp-yield(top%d) Vs. gpp-pars"%(imm+2))
+		g.SetTitle("#Deltaexp-yield(top%d) Vs. gpp-pars"%(imm+2))
 		g.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 		g.SetMarkerSize(MARKER_SIZE)
 		x1=g.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
@@ -229,6 +229,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		g.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)#x1,x2);
 		for j in range(len(gpppars_cmbns)):
 			g.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		g.GetYaxis().SetTitle("#Deltaexp-yield(%)")
 		g.Draw("AP")
 		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 		c.Close()
