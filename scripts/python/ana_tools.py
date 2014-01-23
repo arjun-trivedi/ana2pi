@@ -170,12 +170,8 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		cmm.SaveAs("%s/%s.png"%(OUTDIR,cmm.GetName()))
 		cmm.Close()	
 	
-	##--Plot [Mean&Sigma of SR-MM distributions] -[Mean&Sigma of ER-MM distributions] Vs. gpppars
-	# gpppars_cmbns=np.zeros((27),'d')
-	# gpppars_cmbns=np.arange(27)
-	# x=array('d',gpppars_cmbns)
+	##--Plot [Mean&Sigma of SR-MM distributions]-[Mean&Sigma of ER-MM distributions] Vs. gpppars
 	gpppars_cmbns=array('d',range(27))
-
 	delta_mm_fitpars=np.subtract(mm_fitpars_exp,mm_fitpars_sim)
 
 	for imm in range(3):
@@ -187,7 +183,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		pad=c.cd(1)
 		pad.SetGridx()
 		gdmeanVgpp=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_mean)
-		gdmeanVgpp.SetTitle("#mu_{ER}-#mu_{SR}(MM_top%d)"%(imm+2))
+		gdmeanVgpp.SetTitle("#mu_{ER}-#mu_{SR}(MM_top%d) Vs. gpp-pars"%(imm+2))
 		gdmeanVgpp.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 		gdmeanVgpp.SetMarkerSize(MARKER_SIZE)
 		x1=gdmeanVgpp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
@@ -200,7 +196,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		pad=c.cd(2)
 		pad.SetGridx()
 		gdsgmaVgpp=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_sgma)
-		gdsgmaVgpp.SetTitle("#sgma_{ER}-#sgma_{SR}(MM_top%d)"%(imm+2))
+		gdsgmaVgpp.SetTitle("#sigma_{ER}-#sigma_{SR}(MM_top%d) Vs. gpp-pars"%(imm+2))
 		gdsgmaVgpp.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 		gdsgmaVgpp.SetMarkerSize(MARKER_SIZE)
 		x1=gdsgmaVgpp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
@@ -213,10 +209,29 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 		c.Close()
 
-
-
-
-	# #calculated dyield for imm=1 i.e. Top 2
+	##-- Plot dyield(%) vs gpppars	
+	##   dyield = [EC(from EA)-EC(from SA)]/EC(from EA) = 1-[ER(mmcut)/SR(mmcut)]
+	dyields=np.divide(yields_ER_mmcut,yields_SR_mmcut)
+	dyields=np.multiply(dyields,-1)
+	dyields=np.add(dyields,1)
+	dyields=np.multiply(dyields,100)
+	for imm in range(3):
+		cname="dyields_top%d"%(imm+2) #Note addition of '2', since top1 mm is not analyzed
+		c=ROOT.TCanvas(cname,cname,4*CWIDTH,2*CHEIGHT)
+		c.SetGridx()
+		dy=array('d',dyields[imm])
+		g=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy)
+		g.SetTitle("#Delta exp-yield(top%d) Vs. gpp-pars"%(imm+2))
+		g.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+		g.SetMarkerSize(MARKER_SIZE)
+		x1=g.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+		x2=g.GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+		g.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)#x1,x2);
+		for j in range(len(gpppars_cmbns)):
+			g.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		g.Draw("AP")
+		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
+		c.Close()
 	# dyields_EC=array('d',yields_ER_mmcut[0])
 	# dyields_EC=np.divide(dyields_EC,yields_SR_mmcut[0])
 	# dyields_EC=np.multiply(dyields_EC,-1)
