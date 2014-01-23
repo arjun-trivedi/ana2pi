@@ -197,14 +197,18 @@ Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytable
 # fgausst.Draw()
 # print fgausst.Integral(-10,10)
 
-import numpy as np
-arrnd = np.zeros((2.),'i')
-print arrnd
-arrnd=np.add(arrnd,100)
-print arrnd
-arrnd=np.divide(arrnd,50)
-print arrnd
-arrnd=np.multiply(arrnd,-1)
-print arrnd
-arrnd=np.add(arrnd,2)
-print arrnd
+# import numpy as np
+# arrnd = np.zeros((2.),'i')
+# print arrnd
+# arrnd=np.add(arrnd,100)
+# print arrnd
+# arrnd=np.divide(arrnd,50)
+# print arrnd
+# arrnd=np.multiply(arrnd,-1)
+# print arrnd
+# arrnd=np.add(arrnd,2)
+# print arrnd
+
+from array import *
+gpppars_cmbns=array('d',range(27))
+print gpppars_cmbns
