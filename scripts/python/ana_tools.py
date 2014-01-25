@@ -72,10 +72,14 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		topdir=""
 		if idt==ER:	topdir="top"
 		else:       topdir="top2"
-		hmms[idt].append(f[idt].Get("/%s/top1/hmmppippimVw"%topdir).ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/%s/top2/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/%s/top3/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/%s/top4/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmppippimVw"%topdir).ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
+		# hmms[idt].append(f[idt].Get("/%s/top1/hmmppippimVw"%topdir).ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
+		# hmms[idt].append(f[idt].Get("/%s/top2/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
+		# hmms[idt].append(f[idt].Get("/%s/top3/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
+		# hmms[idt].append(f[idt].Get("/%s/top4/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
 		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
 		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppipVw"%topdir).ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
 		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppimVw"%topdir).ProjectionY('hmm2ppim_%s'%DTYPS_NAME[idt]))
@@ -110,7 +114,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				fgauss.SetParameters(1,0,1);
 				fgauss.SetParName(0,"Entries")
 				fgauss.SetParName(1,"Mean")
-				fgauss.SetParName(0,"Sigma")
+				fgauss.SetParName(2,"Sigma")
 				hmms[ER][imm].Fit("fgauss","","",0.1,0.17)
 				fexp=hmms[ER][imm].GetFunction("fgauss")
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
@@ -119,18 +123,36 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				fgauss.SetParameters(1,0,1);
 				fgauss.SetParName(0,"Entries")
 				fgauss.SetParName(1,"Mean")
-				fgauss.SetParName(0,"Sigma")
+				fgauss.SetParName(2,"Sigma")
 				hmms[ER][imm].Fit("fgauss","","",0.9,0.96)
 				fexp=hmms[ER][imm].GetFunction("fgauss")
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 						
-			norm=None
-			if fexp is None:norm=1000
-			else:			norm=fexp.GetParameter(0)
+			nsignal_exp=None
+			if fexp is None:nsignal_exp=1000
+			else:			nsignal_exp=fexp.GetParameter(0)
 			#print "imm,norm=",imm,norm
 			
 			hmms[idt][imm].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 			hmms[idt][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
+			#estimate signal to background ratio, used to determine norm
+			fsim=None
+			if imm==1 or imm==2:
+				fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,0.0,0.2,3);
+				fgauss.SetParameters(1,0,1);
+				hmms[idt][imm].Fit("fgauss","0","",0.1,0.17)
+				fsim=hmms[idt][imm].GetFunction("fgauss")
+			elif imm==3:
+				fgauss = ROOT.TF1("fgauss",gauss_pippim_hack,0.6,2.0,3);
+				fgauss.SetParameters(1,0,1);
+				hmms[idt][imm].Fit("fgauss","0","",0.9,0.96)
+				fsim=hmms[idt][imm].GetFunction("fgauss")
+
+			nsignal_sim=None
+			if fsim is None:nsignal_sim=1000
+			else:			nsignal_sim=fsim.GetParameter(0)
+				
+			norm=nsignal_exp*(hmms[idt][imm].GetEntries()/nsignal_sim)
 			hsim=hmms[idt][imm].DrawNormalized("sames",norm)
 			pad.Update();
 			st=hsim.GetListOfFunctions().FindObject("stats")
@@ -171,6 +193,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		cmm.Close()	
 	
 	##--Plot [Mean&Sigma of SR-MM distributions]-[Mean&Sigma of ER-MM distributions] Vs. gpppars
+	lgpp_sel=ROOT.TLine(13,0,13,0)
 	gpppars_cmbns=array('d',range(27))
 	delta_mm_fitpars=np.subtract(mm_fitpars_exp,mm_fitpars_sim)
 
@@ -193,6 +216,10 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			gdmeanVgpp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
 		gdmeanVgpp.GetYaxis().SetTitle("#mu_{ER}-#mu_{SR}(GeV)")
 		gdmeanVgpp.Draw("AP")
+		pad.Update()
+		lgpp_sel.SetY1(pad.GetUymin())
+		lgpp_sel.SetY2(pad.GetUymax())
+		lgpp_sel.Draw("same")
 		pad=c.cd(2)
 		pad.SetGridx()
 		gdsgmaVgpp=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_sgma)
@@ -206,6 +233,10 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			gdsgmaVgpp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
 		gdsgmaVgpp.GetYaxis().SetTitle("#sigma_{ER}-#sigma_{SR}(GeV)")
 		gdsgmaVgpp.Draw("AP")
+		pad.Update()
+		lgpp_sel.SetY1(pad.GetUymin())
+		lgpp_sel.SetY2(pad.GetUymax())
+		lgpp_sel.Draw("same")
 		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 		c.Close()
 
@@ -231,29 +262,13 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			g.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
 		g.GetYaxis().SetTitle("#Deltaexp-yield(%)")
 		g.Draw("AP")
+		c.Update()
+		lgpp_sel.SetY1(c.GetUymin())
+		lgpp_sel.SetY2(c.GetUymax())
+		lgpp_sel.Draw("same")
 		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 		c.Close()
-	# dyields_EC=array('d',yields_ER_mmcut[0])
-	# dyields_EC=np.divide(dyields_EC,yields_SR_mmcut[0])
-	# dyields_EC=np.multiply(dyields_EC,-1)
-	# dyields_EC=np.add(dyields_EC,1)
-
-
-	# cdyields = ROOT.TCanvas("dyields","dyields",4*CWIDTH,2*CHEIGHT)
-	# cdyields.SetGridx()
-	# gdyVgp=ROOT.TGraph(len(tx),tx,dyields_EC)
-	# x1=gdyVgp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
-	# x2=gdyVgp.GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
-	# gdyVgp.GetHistogram().GetXaxis().Set(len(tx),-0.5,26.5)#x1,x2);
-	# for j in range(len(tx)):
-	# 	gdyVgp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
-	# gdyVgp.GetXaxis().SetTitle("gpp-pars")
-	# gdyVgp.GetYaxis().SetTitle("dyields")
-	# gdyVgp.Draw("ALP")
-	# cdyields.SaveAs("%s/%s.png"%(OUTDIR,cdyields.GetName()))
-	# cdyields.Close()
 	
-
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
 		# wait for you to close the ROOT canvas before exiting
