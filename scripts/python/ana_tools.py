@@ -127,7 +127,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				hmms[ER][imm].Fit("fgauss","","",0.9,0.96)
 				fexp=hmms[ER][imm].GetFunction("fgauss")
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-						
+
 			nsignal_exp=None
 			if fexp is None:nsignal_exp=1000
 			else:			nsignal_exp=fexp.GetParameter(0)
