@@ -27,7 +27,7 @@ def gauss_ppi_hack(v, par):
 def gauss_pippim_hack(v, par):
     arg = 0;
     if (par[2] != 0): arg = (v[0] - par[1])/par[2];
-    binw=((1.40-0.60)/100)
+    binw=((1.20-0.80)/100)#((1.40-0.60)/100)
     fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
     return fitval;
 
@@ -63,16 +63,22 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	if not os.path.isdir(OUTDIR):
 		os.mkdir(OUTDIR)
 
-	ROOT.gStyle.SetOptFit(1111)
+	ROOT.gStyle.SetOptStat("n")
+	ROOT.gStyle.SetOptFit(1011)
+	# ROOT.gStyle.SetStatY(0.9);
+	# ROOT.gStyle.SetStatX(0.9);	
+	# ROOT.gStyle.SetStatW(0.4);
+	# ROOT.gStyle.SetStatH(0.5);
 	CWIDTH=1000
 	CHEIGHT=800	
 	MARKER_SIZE=2
+	ERMAXS=[4000,10000,3000,4000]
 
 	for idt in range(DTYPS):
 		topdir=""
 		if idt==ER:	topdir="top"
 		else:       topdir="top2"
-		hmms[idt].append(f[idt].Get("/%s/hmmppippimVw"%topdir).ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
+		hmms[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
 		hmms[idt].append(f[idt].Get("/%s/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
 		hmms[idt].append(f[idt].Get("/%s/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
 		hmms[idt].append(f[idt].Get("/%s/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
@@ -80,10 +86,11 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		# hmms[idt].append(f[idt].Get("/%s/top2/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
 		# hmms[idt].append(f[idt].Get("/%s/top3/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
 		# hmms[idt].append(f[idt].Get("/%s/top4/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppipVw"%topdir).ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/%s/hmm2ppimVw"%topdir).ProjectionY('hmm2ppim_%s'%DTYPS_NAME[idt]))
-		hmm2s[idt].append(f[idt].Get("/%s/hmm2pippimVw"%topdir).ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
+
+		# hmm2s[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
+		# hmm2s[idt].append(f[idt].Get("/%s/hmm2ppipVw"%topdir).ProjectionY('hmm2ppip_%s'%DTYPS_NAME[idt]))
+		# hmm2s[idt].append(f[idt].Get("/%s/hmm2ppimVw"%topdir).ProjectionY('hmm2ppim_%s'%DTYPS_NAME[idt]))
+		# hmm2s[idt].append(f[idt].Get("/%s/hmm2pippimVw"%topdir).ProjectionY('hmm2pippim_%s'%DTYPS_NAME[idt]))
 
 	NFITPARS=2
 	MEAN,SGMA=range(NFITPARS)
@@ -93,6 +100,8 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	yields_SR_mmcut=np.zeros((3,27),'d')
 	yields_ER_mmcut=np.zeros((3,27),'d')#3rd index is redundant EXP, but kept for code readability
 
+	lcut_t2t3=ROOT.TLine(0.2,0,0.2,50000)
+	lcut_t4=ROOT.TLine(1,0,1,50000)
 	for idt in range(1,DTYPS):
 		cmm = ROOT.TCanvas("mm_%s"%(gpppars_name[idt-1]),"mm_%s"%(gpppars_name[idt-1]),CWIDTH,CHEIGHT)
 		cmm.Divide(2,2)
@@ -100,13 +109,17 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			pad = cmm.cd(imm+1)
 			hmms[ER][imm].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 			hmms[ER][imm].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
+			hmms[ER][imm].SetMaximum(ERMAXS[imm])
 			hmms[ER][imm].Draw()
 			pad.Update();
 			st=hmms[ER][imm].GetListOfFunctions().FindObject("stats")
-			st.SetX1NDC(0.50)
+			st.SetX1NDC(0.60)
 			st.SetX2NDC(1.00)
 			st.SetY1NDC(0.625)
-			st.SetY2NDC(0.250)
+			st.SetY2NDC(0.350)
+			st.SetFillStyle(4000)
+			st.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"));
+			
 			
 			fexp=None
 			if imm==1 or imm==2:
@@ -149,17 +162,26 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				fsim=hmms[idt][imm].GetFunction("fgauss")
 
 			nsignal_sim=None
-			if fsim is None:nsignal_sim=1000
+			if fsim is None:nsignal_sim=nsignal_exp
 			else:			nsignal_sim=fsim.GetParameter(0)
 				
 			norm=nsignal_exp*(hmms[idt][imm].GetEntries()/nsignal_sim)
 			hsim=hmms[idt][imm].DrawNormalized("sames",norm)
 			pad.Update();
+			if imm==1 or imm==2:
+				# lcut_t2t3.SetY1(pad.GetUymin())
+				# lcut_t2t3.SetY2(pad.GetUymax())
+				lcut_t2t3.Draw("same")
+			elif imm==3:
+				# lcut_t4.SetY1(pad.GetUymin())
+				# lcut_t4.SetY2(pad.GetUymax())
+				lcut_t4.Draw("same")
 			st=hsim.GetListOfFunctions().FindObject("stats")
-			st.SetX1NDC(0.50)
+			st.SetX1NDC(0.60)
 			st.SetX2NDC(1.00)
-			st.SetY1NDC(1.00)
-			st.SetY2NDC(0.625)
+			st.SetY1NDC(0.900)
+			st.SetY2NDC(0.625)#(0.625)
+			st.SetTextColor(ROOT.gROOT.ProcessLine("kRed"));
 			
 			fsim=0
 			if imm==1 or imm==2:
@@ -170,8 +192,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				hsim.Fit("gaus","","",0.9,0.96)
 				fsim = hsim.GetFunction("gaus")
 				fsim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-			
-							
+										
 			if imm!=0:
 				mm_fitpars_sim[MEAN][imm-1][idt-1]=fsim.GetParameter(1)
 				mm_fitpars_sim[SGMA][imm-1][idt-1]=fsim.GetParameter(2)
@@ -191,6 +212,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 					yields_ER_mmcut[imm-1][idt-1]=fexp_pdf.Integral(sqrt(0.8),1)
 		cmm.SaveAs("%s/%s.png"%(OUTDIR,cmm.GetName()))
 		cmm.Close()	
+		#cmm.Delete()
 	
 	##--Plot [Mean&Sigma of SR-MM distributions]-[Mean&Sigma of ER-MM distributions] Vs. gpppars
 	lgpp_sel=ROOT.TLine(13,0,13,0)
@@ -206,7 +228,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		pad=c.cd(1)
 		pad.SetGridx()
 		gdmeanVgpp=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_mean)
-		gdmeanVgpp.SetTitle("#mu_{ER}-#mu_{SR}(MM_top%d) Vs. gpp-pars"%(imm+2))
+		gdmeanVgpp.SetTitle("#mu_{ER}-#mu_{SR}(MM_top%d) Vs. gpp-pars (be=%d)"%(imm+2,be))
 		gdmeanVgpp.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 		gdmeanVgpp.SetMarkerSize(MARKER_SIZE)
 		x1=gdmeanVgpp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
@@ -252,7 +274,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		c.SetGridx()
 		dy=array('d',dyields[imm])
 		g=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy)
-		g.SetTitle("#Deltaexp-yield(top%d) Vs. gpp-pars"%(imm+2))
+		g.SetTitle("#Deltaexp-yield(top%d) Vs. gpp-pars(be=%d)"%(imm+2,be))
 		g.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 		g.SetMarkerSize(MARKER_SIZE)
 		x1=g.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
