@@ -248,7 +248,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		for j in range(len(gpppars_cmbns)):
 			gdmeanVgpp[imm].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
 		gdmeanVgpp[imm].GetYaxis().SetTitle("#mu_{SR}-#mu_{ER}(GeV)")
-		gdmeanVgpp[imm].SetMinimum(-0.002)
+		gdmeanVgpp[imm].SetMinimum(-0.006)
 		gdmeanVgpp[imm].SetMaximum(0.015)
 		gdmeanVgpp[imm].SetMarkerColor(imm+1)
 		leg_mm_fitpars.AddEntry(gdmeanVgpp[imm],"Top%d"%(imm+2),"P")
