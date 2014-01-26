@@ -72,16 +72,21 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	CWIDTH=1000
 	CHEIGHT=800	
 	MARKER_SIZE=2
-	ERMAXS=[4000,10000,3000,4000]
+	ERMAXS=[2000,10000,3000,4000]
 
 	for idt in range(DTYPS):
 		topdir=""
-		if idt==ER:	topdir="top"
-		else:       topdir="top2"
-		hmms[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/%s/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/%s/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
-		hmms[idt].append(f[idt].Get("/%s/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s'%DTYPS_NAME[idt]))
+		beame=""
+		if idt==ER:	
+			topdir="top"
+			beame=5497
+		else:
+		    topdir="top2"
+		    beame=be
+		hmms[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s_be%d'%(DTYPS_NAME[idt],beame)))
+		hmms[idt].append(f[idt].Get("/%s/hmmppipVw"%topdir).ProjectionY('hmmppip_%s_be%d'%(DTYPS_NAME[idt],beame)))
+		hmms[idt].append(f[idt].Get("/%s/hmmppimVw"%topdir).ProjectionY('hmmppim_%s_be%d'%(DTYPS_NAME[idt],beame)))
+		hmms[idt].append(f[idt].Get("/%s/hmmpippimVw"%topdir).ProjectionY('hmmpippim_%s_be%d'%(DTYPS_NAME[idt],beame)))
 		# hmms[idt].append(f[idt].Get("/%s/top1/hmmppippimVw"%topdir).ProjectionY('hmmppippim_%s'%DTYPS_NAME[idt]))
 		# hmms[idt].append(f[idt].Get("/%s/top2/hmmppipVw"%topdir).ProjectionY('hmmppip_%s'%DTYPS_NAME[idt]))
 		# hmms[idt].append(f[idt].Get("/%s/top3/hmmppimVw"%topdir).ProjectionY('hmmppim_%s'%DTYPS_NAME[idt]))
@@ -215,81 +220,98 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		#cmm.Delete()
 	
 	##--Plot [Mean&Sigma of SR-MM distributions]-[Mean&Sigma of ER-MM distributions] Vs. gpppars
-	lgpp_sel=ROOT.TLine(13,0,13,0)
+	lgpp_sel=ROOT.TLine(13,-50000,13,50000)
 	gpppars_cmbns=array('d',range(27))
-	delta_mm_fitpars=np.subtract(mm_fitpars_exp,mm_fitpars_sim)
+	#delta_mm_fitpars=np.subtract(mm_fitpars_exp,mm_fitpars_sim)
+	delta_mm_fitpars=np.subtract(mm_fitpars_sim,mm_fitpars_exp)
 
+	
+	cname="delta_mm_fitpars" #Note addition of '2', since top1 mm is not analyzed
+	c=ROOT.TCanvas(cname,cname,2*CWIDTH,2*CHEIGHT)
+	c.Divide(1,2)
+	gdmeanVgpp=[]
+	gdsgmaVgpp=[]
+	leg_mm_fitpars=ROOT.TLegend(0.10,0.90,0.20,0.80);
 	for imm in range(3):
 		delta_mm_mean=array('d',delta_mm_fitpars[MEAN][imm])
 		delta_mm_sgma=array('d',delta_mm_fitpars[SGMA][imm])
-		cname="delta_mm_fitpars_top%d"%(imm+2) #Note addition of '2', since top1 mm is not analyzed
-		c=ROOT.TCanvas(cname,cname,2*CWIDTH,2*CHEIGHT)
-		c.Divide(1,2)
 		pad=c.cd(1)
 		pad.SetGridx()
-		gdmeanVgpp=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_mean)
-		gdmeanVgpp.SetTitle("#mu_{ER}-#mu_{SR}(MM_top%d) Vs. gpp-pars (be=%d)"%(imm+2,be))
-		gdmeanVgpp.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-		gdmeanVgpp.SetMarkerSize(MARKER_SIZE)
-		x1=gdmeanVgpp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
-		x2=gdmeanVgpp.GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
-		gdmeanVgpp.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)
+		gdmeanVgpp.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_mean))
+		gdmeanVgpp[imm].SetTitle("#mu_{SR}-#mu_{ER} Vs. gpp-pars (be=%d)"%(be))
+		gdmeanVgpp[imm].SetMarkerStyle(20+imm)
+		gdmeanVgpp[imm].SetMarkerSize(MARKER_SIZE)
+		gdmeanVgpp[imm].SetMarkerColor(imm+1)
+		x1=gdmeanVgpp[imm].GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+		x2=gdmeanVgpp[imm].GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+		gdmeanVgpp[imm].GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)
 		for j in range(len(gpppars_cmbns)):
-			gdmeanVgpp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
-		gdmeanVgpp.GetYaxis().SetTitle("#mu_{ER}-#mu_{SR}(GeV)")
-		gdmeanVgpp.Draw("AP")
-		pad.Update()
-		lgpp_sel.SetY1(pad.GetUymin())
-		lgpp_sel.SetY2(pad.GetUymax())
+			gdmeanVgpp[imm].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		gdmeanVgpp[imm].GetYaxis().SetTitle("#mu_{SR}-#mu_{ER}(GeV)")
+		gdmeanVgpp[imm].SetMinimum(-0.002)
+		gdmeanVgpp[imm].SetMaximum(0.015)
+		gdmeanVgpp[imm].SetMarkerColor(imm+1)
+		leg_mm_fitpars.AddEntry(gdmeanVgpp[imm],"Top%d"%(imm+2),"P")
+		if (imm==0):gdmeanVgpp[imm].Draw("AP")
+		else:gdmeanVgpp[imm].Draw("P")
 		lgpp_sel.Draw("same")
 		pad=c.cd(2)
 		pad.SetGridx()
-		gdsgmaVgpp=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_sgma)
-		gdsgmaVgpp.SetTitle("#sigma_{ER}-#sigma_{SR}(MM_top%d) Vs. gpp-pars"%(imm+2))
-		gdsgmaVgpp.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-		gdsgmaVgpp.SetMarkerSize(MARKER_SIZE)
-		x1=gdsgmaVgpp.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
-		x2=gdsgmaVgpp.GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
-		gdsgmaVgpp.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)
+		gdsgmaVgpp.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_sgma))
+		gdsgmaVgpp[imm].SetTitle("#sigma_{SR}-#sigma_{ER} Vs. gpp-pars (be=%d)"%(be))
+		gdsgmaVgpp[imm].SetMarkerStyle(20+imm)
+		gdsgmaVgpp[imm].SetMarkerSize(MARKER_SIZE)
+		gdsgmaVgpp[imm].SetMarkerColor(imm+1)
+		x1=gdsgmaVgpp[imm].GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+		x2=gdsgmaVgpp[imm].GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+		gdsgmaVgpp[imm].GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)
 		for j in range(len(gpppars_cmbns)):
-			gdsgmaVgpp.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
-		gdsgmaVgpp.GetYaxis().SetTitle("#sigma_{ER}-#sigma_{SR}(GeV)")
-		gdsgmaVgpp.Draw("AP")
-		pad.Update()
-		lgpp_sel.SetY1(pad.GetUymin())
-		lgpp_sel.SetY2(pad.GetUymax())
+			gdsgmaVgpp[imm].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		gdsgmaVgpp[imm].GetYaxis().SetTitle("#sigma_{SR}-#sigma_{ER}(GeV)")
+		gdsgmaVgpp[imm].SetMinimum(-0.02)
+		gdsgmaVgpp[imm].SetMaximum(0.03)
+		if (imm==0):gdsgmaVgpp[imm].Draw("AP")
+		else:gdsgmaVgpp[imm].Draw("P")
 		lgpp_sel.Draw("same")
-		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
-		c.Close()
+	c.cd(1)
+	leg_mm_fitpars.Draw("same")	
+	c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
+	c.Close()	
 
 	##-- Plot dyield(%) vs gpppars	
 	##   dyield = [EC(from EA)-EC(from SA)]/EC(from EA) = 1-[ER(mmcut)/SR(mmcut)]
 	dyields=np.divide(yields_ER_mmcut,yields_SR_mmcut)
-	dyields=np.multiply(dyields,-1)
-	dyields=np.add(dyields,1)
+	# dyields=np.multiply(dyields,-1)
+	# dyields=np.add(dyields,1)
+	dyields=np.add(dyields,-1)
 	dyields=np.multiply(dyields,100)
+	leg_dyields=ROOT.TLegend(0.10,0.90,0.20,0.80);
+	cname="dyields_top" #Note addition of '2', since top1 mm is not analyzed
+	c=ROOT.TCanvas(cname,cname,4*CWIDTH,2*CHEIGHT)
+	c.SetGridx()
+	g=[]
 	for imm in range(3):
-		cname="dyields_top%d"%(imm+2) #Note addition of '2', since top1 mm is not analyzed
-		c=ROOT.TCanvas(cname,cname,4*CWIDTH,2*CHEIGHT)
-		c.SetGridx()
 		dy=array('d',dyields[imm])
-		g=ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy)
-		g.SetTitle("#Deltaexp-yield(top%d) Vs. gpp-pars(be=%d)"%(imm+2,be))
-		g.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-		g.SetMarkerSize(MARKER_SIZE)
-		x1=g.GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
-		x2=g.GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
-		g.GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)#x1,x2);
+		g.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy))
+		g[imm].SetTitle("#DeltaEC/EC Vs. gpp-pars(be=%d)"%(be))
+		g[imm].SetMarkerStyle(20+imm)
+		g[imm].SetMarkerSize(MARKER_SIZE+2)
+		g[imm].SetMarkerColor(imm+1)
+		leg_dyields.AddEntry(g[imm],"Top%d"%(imm+2),"P")
+		x1=g[imm].GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+		x2=g[imm].GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+		g[imm].GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)#x1,x2);
 		for j in range(len(gpppars_cmbns)):
-			g.GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
-		g.GetYaxis().SetTitle("#Deltaexp-yield(%)")
-		g.Draw("AP")
-		c.Update()
-		lgpp_sel.SetY1(c.GetUymin())
-		lgpp_sel.SetY2(c.GetUymax())
+			g[imm].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		g[imm].GetYaxis().SetTitle("#DeltaEC/EC(%)")
+		g[imm].SetMinimum(-5.)
+		g[imm].SetMaximum(20.)
+		if imm==0:g[imm].Draw("AP")
+		else:g[imm].Draw("P")
 		lgpp_sel.Draw("same")
-		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
-		c.Close()
+	leg_dyields.Draw("same")
+	c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
+	c.Close()
 	
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
