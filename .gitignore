@@ -43,3 +43,8 @@ ep_dict.cpp
 *.aux
 *.log
 *.toc
+
+########################
+# libreoffice specific #
+########################
+*~lock*odp#

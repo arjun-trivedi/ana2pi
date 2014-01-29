@@ -55,10 +55,10 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	f=[]
 	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
 	for i in range(27):
-		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/ana_new-sim/q2w2_gpptest_%d_011914/recon/d2pi_be%d.root"%(i+1,be)))
+		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_%d_011914/recon/d2pi_be%d.root"%(i+1,be)))
 
 	
-	OUTDIR_ROOT=os.path.join(os.environ['E1F_SIM2PI_DATADIR'],'ana_new-sim')
+	OUTDIR_ROOT=os.path.join(os.environ['E1F_SIM2PI_DATADIR'],'setup_sim_CentOS6/gpppars/try1')
 	OUTDIR=os.path.join(OUTDIR_ROOT,'be%d'%be)
 	if not os.path.isdir(OUTDIR):
 		os.mkdir(OUTDIR)

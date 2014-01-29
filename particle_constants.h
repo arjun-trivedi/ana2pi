@@ -52,8 +52,10 @@ namespace ParticleConstants {
 		return PARTMAP[pdgId];
 	}
 
-    static const Float_t E1F_P = 5.497;//5.475,5.485,5.497 
-    static const TLorentzVector E1F_lvE0(0,0,E1F_P,TMath::Sqrt(E1F_P*E1F_P+MASS_E*MASS_E));
+    static const Float_t E1F_P_EXP = 5.497;
+    static const TLorentzVector E1F_lvE0_EXP(0,0,E1F_P_EXP,TMath::Sqrt(E1F_P_EXP*E1F_P_EXP+MASS_E*MASS_E));
+    static const Float_t E1F_P_SIM = 5.485;//5.497;//5.475; 
+    static const TLorentzVector E1F_lvE0_SIM(0,0,E1F_P_SIM,TMath::Sqrt(E1F_P_SIM*E1F_P_SIM+MASS_E*MASS_E));
 	static const TLorentzVector E1F_lvP0(0,0,0,MASS_P);
 
     static const Float_t E16_P = 5.754; //changed from 5.700 post parkkj conversation on mtg 02-25-13

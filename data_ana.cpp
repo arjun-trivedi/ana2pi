@@ -194,8 +194,8 @@ TObjArray* DataAna::makeHistsEkin()
 TObjArray* DataAna::makeHistsMM()
 {
 	TObjArray *ret = new TObjArray(4);
-	ret->Add(new TH2F("hmm2ppippimVw","Missing Mass2 of p,#pi^{+},#pi^{-} vs W",150, 0, 4, 20000, -.1, .1));
-	ret->Add(new TH2F("hmmppippimVw", "Missing Mass of p,#pi^{+},#pi^{-} vs W", 150, 0, 4, 20000, -.1, .1));
+	ret->Add(new TH2F("hmm2ppippimVw","Missing Mass2 of p,#pi^{+},#pi^{-} vs W",150, 0, 4, 600,-0.003,0.003));
+	ret->Add(new TH2F("hmmppippimVw", "Missing Mass of p,#pi^{+},#pi^{-} vs W", 150, 0, 4, 20000, -0.1, 0.1));
 	ret->Add(new TH2F("hmm2ppipVw",   "Missing Mass2 of p,#pi^{+} vs W",        150, 0, 4, 100, -0.02, 0.16));
 	ret->Add(new TH2F("hmmppipVw",    "Missing Mass of p,#pi^{+} vs W",         150, 0, 4, 100, 0.00, 0.40));
 	ret->Add(new TH2F("hmm2ppimVw",   "Missing Mass2 of p,#pi^{-} vs W",        150, 0, 4, 100, -0.02, 0.16));

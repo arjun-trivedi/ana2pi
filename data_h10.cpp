@@ -11,8 +11,11 @@ DataH10::DataH10(TString h10type)
 	dtyp = h10type_tokens->At(1)->GetName();
 	rctn = h10type_tokens->At(2)->GetName();
 
-	if (expt=="e1f") {
-		lvE0 = E1F_lvE0;
+	if (expt=="e1f" && dtyp=="exp") {
+		lvE0 = E1F_lvE0_EXP;
+		lvP0 = E1F_lvP0;
+	}else if (expt=="e1f" && dtyp=="sim") {
+		lvE0 = E1F_lvE0_SIM;
 		lvP0 = E1F_lvP0;
 	}else if (expt=="e16") {
 		lvE0 = E16_lvE0;
