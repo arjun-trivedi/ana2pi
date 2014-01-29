@@ -63,7 +63,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	if not os.path.isdir(OUTDIR):
 		os.mkdir(OUTDIR)
 
-	ROOT.gStyle.SetOptStat("n")
+	ROOT.gStyle.SetOptStat("nei")
 	ROOT.gStyle.SetOptFit(1011)
 	# ROOT.gStyle.SetStatY(0.9);
 	# ROOT.gStyle.SetStatX(0.9);	
@@ -147,7 +147,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 
 			nsignal_exp=None
-			if fexp is None:nsignal_exp=1000
+			if fexp is None:nsignal_exp=hmms[ER][imm].Integral()#GetEntries()
 			else:			nsignal_exp=fexp.GetParameter(0)
 			#print "imm,norm=",imm,norm
 			
