@@ -11,7 +11,8 @@ The story so far is that, although the shape of my Cross-sections look acceptabl
 		+ Since I am using `mctk` banks in the h10-Tree created after Reconstruction. At this stage, the  `mctk' bank retains only those events that have been Reconstructed. Hence, I am not accounting for Acceptance using all the Thrown events.
 [X] 3. MM cuts are "not optimized"
 		+ I am not sure if this cut over- or under-estimates the Acceptance
-		+ [01-31-14] I started looking into the details of this issue in sub-study setup_sim_CentOS6. For details look into the notes for this substudy. For now it seems that, with the current gpp-parameters(1.37,1.37,1.37,0.962), the EC yields may be underestimated by 1%-2% (Top1,3,4 ~ 1%, Top2 ~ 1%)
+		+ [01-31-14] I started looking into the details of this issue in sub-study setup_sim_CentOS6. For details look into the notes for this substudy. For now it seems that, with the current gpp-parameters(1.37,1.37,1.37,0.962), the EC yields may be underestimated by 1%-2% (Top1,3,4 ~ 1%, Top2 ~ 2%)
+			+ This systmatic error could be worse, if for example it turns out that 'EffectiveMomCorr-Exp/Sim' need to be adjusted for different kinematic regions! (Again see note for more details)
 [ ] 4. Event selection not mindful of Evan's Run Quality check
 		+ Since I am using the integrated luminosity as calculated by Evan, I should make sure that I am using ALL events that were within "good Luminosity Blocks" and NOT using events that were not part of LBs used to calculate the integrated Luminosity  
 
