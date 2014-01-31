@@ -31,7 +31,7 @@ def gauss_pippim_hack(v, par):
     fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
     return fitval;
 
-def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
+def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user control
 	gpppars_name=[]
 	gpppars=[0.0,1.4,4.0]
 	for i in range(len(gpppars)):
@@ -241,7 +241,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		pad=c.cd(1)
 		pad.SetGridx()
 		gdmeanVgpp.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_mean))
-		gdmeanVgpp[imm].SetTitle("#mu_{SR}-#mu_{ER} Vs. gpp-pars (be=%d)"%(be))
+		gdmeanVgpp[imm].SetTitle("#mu_{SR}-#mu_{ER} Vs. gpp-pars (be-sim%d)"%(be))
 		gdmeanVgpp[imm].SetMarkerStyle(20+imm)
 		gdmeanVgpp[imm].SetMarkerSize(MARKER_SIZE)
 		gdmeanVgpp[imm].SetMarkerColor(imm+1)
@@ -261,7 +261,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		pad=c.cd(2)
 		pad.SetGridx()
 		gdsgmaVgpp.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_sgma))
-		gdsgmaVgpp[imm].SetTitle("#sigma_{SR}-#sigma_{ER} Vs. gpp-pars (be=%d)"%(be))
+		gdsgmaVgpp[imm].SetTitle("#sigma_{SR}-#sigma_{ER} Vs. gpp-pars (be-sim%d)"%(be))
 		gdsgmaVgpp[imm].SetMarkerStyle(20+imm)
 		gdsgmaVgpp[imm].SetMarkerSize(MARKER_SIZE)
 		gdsgmaVgpp[imm].SetMarkerColor(imm+1)
@@ -298,7 +298,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	for imm in range(3):
 		dy=array('d',dyields[imm])
 		g.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy))
-		g[imm].SetTitle("#DeltaEC/EC Vs. gpp-pars(be=%d)"%(be))
+		g[imm].SetTitle("#DeltaEC/EC Vs. gpp-pars(be-sim%d)"%(be))
 		g[imm].SetMarkerStyle(20+imm)
 		g[imm].SetMarkerSize(MARKER_SIZE+2)
 		g[imm].SetMarkerColor(imm+1)
@@ -328,7 +328,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 		#r=array('d',rats_ERvSR[imm])
 		r=array('d',rats_SRvER[imm])
 		g.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,r))
-		g[imm].SetTitle("#epsilon_{sim}^{MMcut}:#epsilon_{exp}^{MMcut}(ySR:yER post MMcut) Vs. gpp-pars(be=%d)"%(be))
+		g[imm].SetTitle("#epsilon_{sim}^{MMcut}:#epsilon_{exp}^{MMcut}(ySR:yER post MMcut) Vs. gpp-pars(be-sim%d)"%(be))
 		g[imm].SetMarkerStyle(20+imm)
 		g[imm].SetMarkerSize(MARKER_SIZE+2)
 		g[imm].SetMarkerColor(imm+1)

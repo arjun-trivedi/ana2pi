@@ -6,10 +6,15 @@ Here I keep track of how my extraction of the Integrated Cross-section is coming
 ============================================= 
 The story so far is that, although the shape of my Cross-sections look acceptable, they are factor of ~4 smaller than Evgeny's. The factors that could be affecting this, that I have so far identified are (In no particular order):
 
-1. Fiducial Cuts for hadrons are not applied
-2. Acceptance may currently be overestimated, since I am using `mctk` banks in the h10-Tree created after Reconstruction. At this stage, the `mctk' bank retains only those events that have been Reconstructed. Hence, I am not accounting for Acceptance using all the Thrown events.
-3. MM cuts are "not optimized"
-	+ I am not sure if this cut over- or under-estimates the Acceptance
+[ ] 1. Fiducial Cuts for hadrons are not applied  
+[ ] 2. Acceptance may currently be overestimated (!LARGEST POSSIBLE SOURCE of DISCREPANCY!)
+		+ Since I am using `mctk` banks in the h10-Tree created after Reconstruction. At this stage, the  `mctk' bank retains only those events that have been Reconstructed. Hence, I am not accounting for Acceptance using all the Thrown events.
+[X] 3. MM cuts are "not optimized"
+		+ I am not sure if this cut over- or under-estimates the Acceptance
+		+ [01-31-14] I started looking into the details of this issue in sub-study setup_sim_CentOS6. For details look into the notes for this substudy. For now it seems that, with the current gpp-parameters(1.37,1.37,1.37,0.962), the EC yields may be underestimated by 1%-2% (Top1,3,4 ~ 1%, Top2 ~ 1%)
+[ ] 4. Event selection not mindful of Evan's Run Quality check
+		+ Since I am using the integrated luminosity as calculated by Evan, I should make sure that I am using ALL events that were within "good Luminosity Blocks" and NOT using events that were not part of LBs used to calculate the integrated Luminosity  
+
 
 
 
