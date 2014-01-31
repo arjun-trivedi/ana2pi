@@ -125,7 +125,8 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 			st.SetFillStyle(4000)
 			st.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"));
 			
-			
+			##-- Calculate, for Tops. 2,3 & 4, normalization factor for SR based on number
+			##-- of events under the signal for ER (estimated from a Fit)
 			fexp=None
 			if imm==1 or imm==2:
 				fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,0.0,0.2,3);
@@ -147,7 +148,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				fexp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 
 			nsignal_exp=None
-			if fexp is None:nsignal_exp=hmms[ER][imm].Integral()#GetEntries()
+			if fexp is None:nsignal_exp=hmms[ER][imm].GetEntries()#GetEntries()
 			else:			nsignal_exp=fexp.GetParameter(0)
 			#print "imm,norm=",imm,norm
 			
@@ -167,10 +168,12 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 				fsim=hmms[idt][imm].GetFunction("fgauss")
 
 			nsignal_sim=None
-			if fsim is None:nsignal_sim=nsignal_exp
+			if fsim is None:nsignal_sim=hmms[idt][imm].GetEntries()
 			else:			nsignal_sim=fsim.GetParameter(0)
 				
 			norm=nsignal_exp*(hmms[idt][imm].GetEntries()/nsignal_sim)
+			##-- Finish calculation of normalization for SR
+
 			hsim=hmms[idt][imm].DrawNormalized("sames",norm)
 			pad.Update();
 			if imm==1 or imm==2:
@@ -226,7 +229,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	delta_mm_fitpars=np.subtract(mm_fitpars_sim,mm_fitpars_exp)
 
 	
-	cname="delta_mm_fitpars" #Note addition of '2', since top1 mm is not analyzed
+	cname="delta_mm_fitpars_Vs_gpppars" #Note addition of '2', since top1 mm is not analyzed
 	c=ROOT.TCanvas(cname,cname,2*CWIDTH,2*CHEIGHT)
 	c.Divide(1,2)
 	gdmeanVgpp=[]
@@ -280,13 +283,15 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 
 	##-- Plot dyield(%) vs gpppars	
 	##   dyield = [EC(from EA)-EC(from SA)]/EC(from EA) = 1-[ER(mmcut)/SR(mmcut)]
-	dyields=np.divide(yields_ER_mmcut,yields_SR_mmcut)
-	# dyields=np.multiply(dyields,-1)
-	# dyields=np.add(dyields,1)
-	dyields=np.add(dyields,-1)
+	# rats_ERvSR=np.divide(yields_ER_mmcut,yields_SR_mmcut)
+	# dyields=np.add(rats_ERvSR,-1)
+	# dyields=np.multiply(dyields,100)
+	rats_SRvER=np.divide(yields_SR_mmcut,yields_ER_mmcut)
+	dyields=np.multiply(rats_SRvER,-1)
+	dyields=np.add(dyields,1)
 	dyields=np.multiply(dyields,100)
 	leg_dyields=ROOT.TLegend(0.10,0.90,0.20,0.80);
-	cname="dyields_top" #Note addition of '2', since top1 mm is not analyzed
+	cname="delta_yieldEC_Vs_gpppars" #Note addition of '2', since top1 mm is not analyzed
 	c=ROOT.TCanvas(cname,cname,4*CWIDTH,2*CHEIGHT)
 	c.SetGridx()
 	g=[]
@@ -312,6 +317,38 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=beam energy,dtypes for user control
 	leg_dyields.Draw("same")
 	c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 	c.Close()
+
+	leg_rats=ROOT.TLegend(0.10,0.20,0.20,0.10);
+	cname="effmmcut_Vs_gpppars" #Note addition of '2', since top1 mm is not analyzed
+	c=ROOT.TCanvas(cname,cname,4*CWIDTH,2*CHEIGHT)
+	c.SetGridx()
+	c.SetGridy()
+	g=[]
+	for imm in range(3):
+		#r=array('d',rats_ERvSR[imm])
+		r=array('d',rats_SRvER[imm])
+		g.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,r))
+		g[imm].SetTitle("#epsilon_{sim}^{MMcut}:#epsilon_{exp}^{MMcut}(ySR:yER post MMcut) Vs. gpp-pars(be=%d)"%(be))
+		g[imm].SetMarkerStyle(20+imm)
+		g[imm].SetMarkerSize(MARKER_SIZE+2)
+		g[imm].SetMarkerColor(imm+1)
+		leg_rats.AddEntry(g[imm],"Top%d"%(imm+2),"P")
+		x1=g[imm].GetHistogram().GetXaxis().GetXmin()#GetBinLowEdge(1)
+		x2=g[imm].GetHistogram().GetXaxis().GetXmax()#GetBinUpEdge(gfpVgp.GetNbins())
+		g[imm].GetHistogram().GetXaxis().Set(len(gpppars_cmbns),-0.5,26.5)#x1,x2);
+		for j in range(len(gpppars_cmbns)):
+			g[imm].GetHistogram().GetXaxis().SetBinLabel(j+1,gpppars_name[j])
+		g[imm].GetYaxis().SetTitle("SRvER")
+		#g[imm].SetMinimum(-5.)
+		#g[imm].SetMaximum(20.)
+		if imm==0:g[imm].Draw("AP")
+		else:g[imm].Draw("P")
+		lgpp_sel.Draw("same")
+	leg_rats.Draw("same")
+	c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
+	c.Close()
+
+
 	
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
