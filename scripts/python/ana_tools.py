@@ -31,7 +31,7 @@ def gauss_pippim_hack(v, par):
     fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
     return fitval;
 
-def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user control
+def anaMMs_ERSR(be_exp,be_sim,dtyps=28):#dtypes for user control
 	gpppars_name=[]
 	gpppars=[0.0,1.4,4.0]
 	for i in range(len(gpppars)):
@@ -53,13 +53,13 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 	#print hmms
 
 	f=[]
-	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi_be%d.root"%be_exp))
 	for i in range(27):
-		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_%d_011914/recon/d2pi_be%d.root"%(i+1,be)))
+		f.append(ROOT.TFile("/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_%d_011914/recon/d2pi_be%d.root"%(i+1,be_sim)))
 
 	
 	OUTDIR_ROOT=os.path.join(os.environ['E1F_SIM2PI_DATADIR'],'setup_sim_CentOS6/gpppars/try1')
-	OUTDIR=os.path.join(OUTDIR_ROOT,'be%d'%be)
+	OUTDIR=os.path.join(OUTDIR_ROOT,'be_exp%d_be_sim%d'%(be_exp,be_sim))
 	if not os.path.isdir(OUTDIR):
 		os.mkdir(OUTDIR)
 
@@ -79,10 +79,10 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 		beame=""
 		if idt==ER:	
 			topdir="top"
-			beame=5497
+			beame=be_exp
 		else:
 		    topdir="top2"
-		    beame=be
+		    beame=be_sim
 		hmms[idt].append(f[idt].Get("/%s/hmm2ppippimVw"%topdir).ProjectionY('hmm2ppippim_%s_be%d'%(DTYPS_NAME[idt],beame)))
 		hmms[idt].append(f[idt].Get("/%s/hmmppipVw"%topdir).ProjectionY('hmmppip_%s_be%d'%(DTYPS_NAME[idt],beame)))
 		hmms[idt].append(f[idt].Get("/%s/hmmppimVw"%topdir).ProjectionY('hmmppim_%s_be%d'%(DTYPS_NAME[idt],beame)))
@@ -241,7 +241,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 		pad=c.cd(1)
 		pad.SetGridx()
 		gdmeanVgpp.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_mean))
-		gdmeanVgpp[imm].SetTitle("#mu_{SR}-#mu_{ER} Vs. gpp-pars (be-sim%d)"%(be))
+		gdmeanVgpp[imm].SetTitle("#mu_{SR}-#mu_{ER} Vs. gpp-pars (be-sim%d)"%(be_sim))
 		gdmeanVgpp[imm].SetMarkerStyle(20+imm)
 		gdmeanVgpp[imm].SetMarkerSize(MARKER_SIZE)
 		gdmeanVgpp[imm].SetMarkerColor(imm+1)
@@ -261,7 +261,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 		pad=c.cd(2)
 		pad.SetGridx()
 		gdsgmaVgpp.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,delta_mm_sgma))
-		gdsgmaVgpp[imm].SetTitle("#sigma_{SR}-#sigma_{ER} Vs. gpp-pars (be-sim%d)"%(be))
+		gdsgmaVgpp[imm].SetTitle("#sigma_{SR}-#sigma_{ER} Vs. gpp-pars (be-sim%d)"%(be_sim))
 		gdsgmaVgpp[imm].SetMarkerStyle(20+imm)
 		gdsgmaVgpp[imm].SetMarkerSize(MARKER_SIZE)
 		gdsgmaVgpp[imm].SetMarkerColor(imm+1)
@@ -298,7 +298,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 	for imm in range(3):
 		dy=array('d',dyields[imm])
 		g.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,dy))
-		g[imm].SetTitle("#DeltaEC/EC Vs. gpp-pars(be-sim%d)"%(be))
+		g[imm].SetTitle("#DeltaEC/EC Vs. gpp-pars(be-sim%d)"%(be_sim))
 		g[imm].SetMarkerStyle(20+imm)
 		g[imm].SetMarkerSize(MARKER_SIZE+2)
 		g[imm].SetMarkerColor(imm+1)
@@ -328,7 +328,7 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 		#r=array('d',rats_ERvSR[imm])
 		r=array('d',rats_SRvER[imm])
 		g.append(ROOT.TGraph(len(gpppars_cmbns),gpppars_cmbns,r))
-		g[imm].SetTitle("#epsilon_{sim}^{MMcut}:#epsilon_{exp}^{MMcut}(ySR:yER post MMcut) Vs. gpp-pars(be-sim%d)"%(be))
+		g[imm].SetTitle("#epsilon_{sim}^{MMcut}:#epsilon_{exp}^{MMcut}(ySR:yER post MMcut) Vs. gpp-pars(be-sim%d)"%(be_sim))
 		g[imm].SetMarkerStyle(20+imm)
 		g[imm].SetMarkerSize(MARKER_SIZE+2)
 		g[imm].SetMarkerColor(imm+1)
@@ -346,16 +346,77 @@ def plot_ana2pi_MMs(be,dtyps=28):#be=be-sim (be-exp=5.497),dtypes for user contr
 		lgpp_sel.Draw("same")
 	leg_rats.Draw("same")
 	c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
-	c.Close()
+	#c.Close()
 
+	# if not ROOT.gROOT.IsBatch():
+	# 	plt.show()
+	# 	# wait for you to close the ROOT canvas before exiting
+	# 	wait(True)
 
+def anaMMs_ER(mmtyp="mm2"):#dtypes for user control
+	DTYPS=2# for the two beam energies: 5.497,5.497
+	DTYPS_NAME=["5479","5497"]
 	
+	NMM=4
+
+	ROOT.gStyle.SetOptStat("n")
+	ROOT.gStyle.SetOptFit(1011)
+	CWIDTH=1000
+	CHEIGHT=800	
+	MARKER_SIZE=2
+	
+	
+	c=ROOT.TCanvas("ER-%s"%mmtyp,"ER-%s"%mmtyp)#,CWIDTH,CHEIGHT)
+	c.Divide(2,2)
+	leg=[None]*NMM
+	for i in range(NMM):
+		leg[i]=ROOT.TLegend(0.8,0.5,0.9,0.3)
+	
+
+	f=[None]*DTYPS
+	hmms=np.zeros((DTYPS,NMM),object)
+
+	XMIN_FIT=""
+	XMAX_FIT=""
+	if mmtyp=="mm2":
+		XMIN_FIT=[0,0.01,0.01,0.80]
+		XMAX_FIT=[0,0.03,0.03,0.90]
+	else:
+		XMIN_FIT=[0,0.10,0.10,0.91]
+		XMAX_FIT=[0,0.17,0.17,0.95]
+
+	for idtyp in range(DTYPS):
+		f[idtyp]=ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi_be%s.root"%DTYPS_NAME[idtyp])
+		#print f[idtyp].GetName()
+		hmms[idtyp,0]=f[idtyp].Get("/top/h%sppippimVw"%mmtyp).ProjectionY('h%sppippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,1]=f[idtyp].Get("/top/h%sppipVw"%mmtyp).ProjectionY('h%sppip_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,2]=f[idtyp].Get("/top/h%sppimVw"%mmtyp).ProjectionY('h%sppim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,3]=f[idtyp].Get("/top/h%spippimVw"%mmtyp).ProjectionY('h%spippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		for imm in range(NMM):
+			pad=c.cd(imm+1)
+			pad.SetGridx()
+			#print idtyp,imm
+			hmms[idtyp,imm].Fit("gaus","0","",XMIN_FIT[imm],XMAX_FIT[imm])
+			ffit=hmms[idtyp,imm].GetFunction("gaus")
+			ffit.SetLineColor(idtyp+1)
+			hmms[idtyp,imm].SetMarkerColor(idtyp+1)
+			hmms[idtyp,imm].SetLineColor(idtyp+1)
+			leg[imm].AddEntry(hmms[idtyp,imm],DTYPS_NAME[idtyp],"L")
+			if idtyp==0:
+				hmms[idtyp,imm].Draw()
+				ffit.Draw("same")
+			else:
+				hmms[idtyp,imm].Draw("sames")
+				ffit.Draw("same")
+			leg[imm].Draw()
+
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
 		# wait for you to close the ROOT canvas before exiting
 		wait(True)
 
-def plot_elastic_W(nentries=1000000000):
+
+def plot_elastic_W(be_exp=5479,nentries=1000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
 	DTYPS=5
@@ -363,8 +424,8 @@ def plot_elastic_W(nentries=1000000000):
 	DTYPS_NAME=['ER-nomcorr','ER-yesmcorr','SR-nogpp','SR-yesgpp','ST']
 
 	f=[]
-	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
-	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be%d.root"%be_exp))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be%d.root"%be_exp))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-no_011014/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/sim/elast_gpp-yes_011014/delast_ST.root"))

@@ -209,6 +209,16 @@ Instructions from: http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytable
 # arrnd=np.add(arrnd,2)
 # print arrnd
 
-from array import *
-gpppars_cmbns=array('d',range(27))
-print gpppars_cmbns
+# from array import *
+# gpppars_cmbns=array('d',range(27))
+# print gpppars_cmbns
+import numpy as np
+t=np.zeros((3,2),'i')
+#t[0:1]=1
+t[0,0]=1
+t[0,1]=2
+t[1,0]=3
+t[1,1]=4
+print t
+
+test[1,2]="ajrnt"
