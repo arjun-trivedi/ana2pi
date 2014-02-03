@@ -4,6 +4,7 @@ if [ -z $1 ];then
   echo "enter beam energy!"
   exit
 fi
+nentries=${2:-1000000000}
 
 ##-- Change E1F_P_SIM in particle_constants.h and compile ana2pi.
 ##-- Once done, revert E1F_P_SIM to 5.485
@@ -17,5 +18,5 @@ sed -i "s/E1F_P_EXP = $be/E1F_P_EXP = 5.497/" particle_constants.h
 ##-- Now go on and make delast.root for all different gpppar Simulations
 BENAME=be$1
 cd /data/trivedia/e1f/ana-elast/exp
-ana_e1f.exp.elast
-cp delast.root delast_$BE.root
+ana_e1f.exp.elast $nentries
+cp delast.root delast_$BENAME.root

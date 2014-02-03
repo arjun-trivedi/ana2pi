@@ -115,6 +115,9 @@ void ProcDelast::UpdateDataElastic(){
 	_dElast->ne=_ne;
 	_dElast->np=_np;
 
+	//_dElast->sector=dH10->sc_sect[dH10->sc[0]-1];
+	//_dElast->sector=dH10->sc_part;
+
 	//create vxE,vxP,lvE,lvP
 	TVector3 vxE(dH10->vx[0],dH10->vy[0],dH10->vz[0]);
 	Float_t p_e = dH10->p[0];

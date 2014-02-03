@@ -16,6 +16,7 @@ public:
 	Int_t gpart;
 	Int_t ne;
 	Int_t np;
+	//Int_t sector;
 	Float_t Q2;
 	Float_t W;
 	Float_t MMp;

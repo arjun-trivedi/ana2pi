@@ -386,9 +386,9 @@ def anaQ2W2pi_SRST():
 	# h8Ds[1][ST].SetLineColor(2)
 	# h8Ds[0][ST].Projection(1).Draw()
 	# h8Ds[1][ST].Projection(1).Draw("sames")
-	h0ST=h8Ds[0][ST].Projection(1)#(2)
-	h1ST=h8Ds[1][ST].Projection(1)#(2)
-	h2ST=h8Ds[2][ST].Projection(1)#(2)
+	h0ST=h8Ds[0][ST].Projection(2)#(2)
+	h1ST=h8Ds[1][ST].Projection(2)#(2)
+	h2ST=h8Ds[2][ST].Projection(2)#(2)
 	h0ST.SetName(DTYPS_NAME[0])
 	h1ST.SetName(DTYPS_NAME[1])
 	h2ST.SetName(DTYPS_NAME[2])
@@ -403,9 +403,9 @@ def anaQ2W2pi_SRST():
 	# h8Ds[1][SR].SetLineColor(2)
 	# h8Ds[0][SR].Projection(1).Draw()
 	# h8Ds[1][SR].Projection(1).Draw("sames")
-	h0SR=h8Ds[0][SR].Projection(1)#(2)
-	h1SR=h8Ds[1][SR].Projection(1)#(2)
-	h2SR=h8Ds[2][SR].Projection(1)#(2)
+	h0SR=h8Ds[0][SR].Projection(2)#(2)
+	h1SR=h8Ds[1][SR].Projection(2)#(2)
+	h2SR=h8Ds[2][SR].Projection(2)#(2)
 	h0SR.SetName(DTYPS_NAME[0])
 	h1SR.SetName(DTYPS_NAME[1])
 	h2SR.SetName(DTYPS_NAME[2])
@@ -524,9 +524,11 @@ def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
 		# print "Tree title:",t.GetTitle()
 		# print "Tree entries:",t.GetEntries()
 		if i==ST:
-			t.Draw("W**2>>hW(600,0.6,1.2)","","",nentries)
+			#t.Draw("W**2>>hW(600,0.6,1.2)","","",nentries)
+			t.Draw("W>>hW(600,0.6,1.2)","","",nentries)
 		else:
-			t.Draw("W**2>>hW(100,0.6,1.2)","","",nentries)
+			#t.Draw("W**2>>hW(100,0.6,1.2)","","",nentries)
+			t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
 		hW.append(ROOT.gDirectory.Get("hW"))
 		# cut=ROOT.TCut("W<1.1");# && lvE.Theta()*TMath::RadToDeg()>15")
 		# t.Draw("lvE.X()>>hpx(100,-2,2)",cut,"",nentries)
@@ -543,7 +545,7 @@ def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
 		# hv[2].append(ROOT.gDirectory.Get("hvz"))
 		
 		
-	c_hW = Canvas(name="W",title="W")
+	c_hW = ROOT.TCanvas("W_be%s"%be_exp,"W_be%s"%be_exp)
 	c_hW.Divide(2,2)
 	# c_DC=Canvas(name="DC",title="DC")
 	# c_DC.Divide(3,2);
@@ -556,8 +558,8 @@ def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
 		hW[i].SetName(DTYPS_NAME[i]+"_"+hW[i].GetName())
 		hW[i].Draw()
 		if i!=ST:
-			#hW[i].Fit("gaus","","",0.90,0.98)
-			hW[i].Fit("gaus","","",0.80,0.98)
+			hW[i].Fit("gaus","","",0.90,0.98)
+			#hW[i].Fit("gaus","","",0.74,0.96)
 
 		ROOT.gStyle.SetOptStat("nemMrR")
 		# for j in range(3):
@@ -599,12 +601,13 @@ def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
 def anaMMelas_ER(nentries=1000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
-	DTYPS=2
-	DTYPS_NAME=["5479","5497"]
+	DTYPS=3
+	DTYPS_NAME=["5479","5497","5499"]
 
 	f=[]
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be5479.root"))
 	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be5497.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be5499.root"))
 	
 	hWnmcr=[]
 	hWymcr=[]
@@ -615,24 +618,30 @@ def anaMMelas_ER(nentries=1000000):
 		tnmcr=f[i].Get("/delast/t")
 		tymcr=f[i].Get("/delast2/t")
 		
-		tnmcr.Draw("W**2>>hWnmcr(100,0.6,1.2)","","",nentries)
-		tymcr.Draw("W**2>>hWymcr(100,0.6,1.2)","","",nentries)
+		tnmcr.Draw("W>>hWnmcr(100,0.6,1.2)","","",nentries)
+		tymcr.Draw("W>>hWymcr(100,0.6,1.2)","","",nentries)
 		hWnmcr.append(ROOT.gDirectory.Get("hWnmcr"))
 		hWymcr.append(ROOT.gDirectory.Get("hWymcr"))
 		
-	c_hW = Canvas(name="W",title="W")
-	c_hW.Divide(1,2)
+	c_hW=ROOT.TCanvas("W","W")
+	c_hW.Divide(1,3)
 	# c_DC=Canvas(name="DC",title="DC")
 	# c_DC.Divide(3,2);
 	norm=1000;
+	ROOT.gStyle.SetOptStat("n")
+	ROOT.gStyle.SetOptFit(1011)
 	for i in range(DTYPS):
-		ROOT.gStyle.SetOptStat("nemMrRiuo")
-		c_hW.cd(i+1)
-		hWnmcr[i].SetName(DTYPS_NAME[i]+"_"+hWnmcr[i].GetName())
-		hWnmcr[i].Draw()
+		pad=c_hW.cd(i+1)
+		pad.SetGridx()
 		hWymcr[i].SetName(DTYPS_NAME[i]+"_"+hWymcr[i].GetName())
-		hWymcr[i].Draw("sames")
-		
+		hWymcr[i].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+		#hWymcr[i].Fit("gaus","","",0.74,0.96)
+		hWymcr[i].Fit("gaus","","",0.90,0.98)
+		hWymcr[i].Draw()
+		hWnmcr[i].SetName(DTYPS_NAME[i]+"_"+hWnmcr[i].GetName())
+		hWnmcr[i].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+		hWnmcr[i].Draw("sames")
+				
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
 		# wait for you to close the ROOT canvas before exiting
