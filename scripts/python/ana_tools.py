@@ -31,7 +31,7 @@ def gauss_pippim_hack(v, par):
     fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
     return fitval;
 
-def anaMMs_ERSR(be_exp,be_sim,dtyps=28):#dtypes for user control
+def anaMM2pi_ERSR(be_exp,be_sim,dtyps=28):#dtypes for user control
 	gpppars_name=[]
 	gpppars=[0.0,1.4,4.0]
 	for i in range(len(gpppars)):
@@ -353,7 +353,76 @@ def anaMMs_ERSR(be_exp,be_sim,dtyps=28):#dtypes for user control
 	# 	# wait for you to close the ROOT canvas before exiting
 	# 	wait(True)
 
-def anaMMs_ER(mmtyp="mm2"):#dtypes for user control
+def anaQ2W2pi_SRST():
+	DTYPS=3
+	DTYPS_NAME=["5.470","5.485","5.497"]
+	f=[]
+	DATADIR="/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon"
+	f.append(ROOT.TFile("%s/d2pi_be%d.root"%(DATADIR,5470)))
+	f.append(ROOT.TFile("%s/d2pi_be%d.root"%(DATADIR,5485)))
+	f.append(ROOT.TFile("%s/d2pi_be%d.root"%(DATADIR,5497)))
+
+	ST,SR=range(2)
+	
+	h8Ds=[[] for i in range(DTYPS)]
+	#print hmms
+
+
+
+	ROOT.gStyle.SetOptStat("nei")
+	ROOT.gStyle.SetOptFit(1011)
+	CWIDTH=1000
+	CHEIGHT=800	
+	MARKER_SIZE=2
+	
+	for idt in range(DTYPS):
+		h8Ds[idt].append(f[idt].Get("/top/mc/yield_varset1"))
+		h8Ds[idt].append(f[idt].Get("/top2/top1/yield_varset1"))
+
+	c=ROOT.TCanvas()
+	c.Divide(1,2)
+	pad=c.cd(ST+1)
+	# h8Ds[0][ST].SetLineColor(1)
+	# h8Ds[1][ST].SetLineColor(2)
+	# h8Ds[0][ST].Projection(1).Draw()
+	# h8Ds[1][ST].Projection(1).Draw("sames")
+	h0ST=h8Ds[0][ST].Projection(1)#(2)
+	h1ST=h8Ds[1][ST].Projection(1)#(2)
+	h2ST=h8Ds[2][ST].Projection(1)#(2)
+	h0ST.SetName(DTYPS_NAME[0])
+	h1ST.SetName(DTYPS_NAME[1])
+	h2ST.SetName(DTYPS_NAME[2])
+	h0ST.SetLineColor(1)
+	h1ST.SetLineColor(2)
+	h2ST.SetLineColor(3)
+	h0ST.Draw()
+	h1ST.Draw("sames")
+	h2ST.Draw("sames")
+	c.cd(SR+1)
+	# h8Ds[0][SR].SetLineColor(1)
+	# h8Ds[1][SR].SetLineColor(2)
+	# h8Ds[0][SR].Projection(1).Draw()
+	# h8Ds[1][SR].Projection(1).Draw("sames")
+	h0SR=h8Ds[0][SR].Projection(1)#(2)
+	h1SR=h8Ds[1][SR].Projection(1)#(2)
+	h2SR=h8Ds[2][SR].Projection(1)#(2)
+	h0SR.SetName(DTYPS_NAME[0])
+	h1SR.SetName(DTYPS_NAME[1])
+	h2SR.SetName(DTYPS_NAME[2])
+	h0SR.SetLineColor(1)
+	h1SR.SetLineColor(2)
+	h2SR.SetLineColor(3)
+	h0SR.Draw()
+	h1SR.Draw("sames")
+	h2SR.Draw("sames")
+
+	
+	if not ROOT.gROOT.IsBatch():
+		plt.show()
+		# wait for you to close the ROOT canvas before exiting
+		wait(True)
+
+def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
 	DTYPS=2# for the two beam energies: 5.497,5.497
 	DTYPS_NAME=["5479","5497"]
 	
@@ -416,7 +485,7 @@ def anaMMs_ER(mmtyp="mm2"):#dtypes for user control
 		wait(True)
 
 
-def plot_elastic_W(be_exp=5479,nentries=1000000):
+def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
 	DTYPS=5
@@ -455,32 +524,29 @@ def plot_elastic_W(be_exp=5479,nentries=1000000):
 		# print "Tree title:",t.GetTitle()
 		# print "Tree entries:",t.GetEntries()
 		if i==ST:
-			t.Draw("W>>hW(600,0.6,1.2)","","",nentries)
+			t.Draw("W**2>>hW(600,0.6,1.2)","","",nentries)
 		else:
-			t.Draw("W>>hW(100,0.6,1.2)","","",nentries)
-		cut=ROOT.TCut("W<1.1");# && lvE.Theta()*TMath::RadToDeg()>15")
-		t.Draw("lvE.X()>>hpx(100,-2,2)",cut,"",nentries)
-		t.Draw("lvE.Y()>>hpy(100,-2,2)",cut,"",nentries)
-		t.Draw("lvE.Z()>>hpz(100,0,6)",cut,"",nentries)
-		t.Draw("vxE.X()>>hvx(100,-1,1)",cut,"",nentries)
-		t.Draw("vxE.Y()>>hvy(100,-1,1)",cut,"",nentries)
-		t.Draw("vxE.Z()>>hvz(100,-50,0)",cut,"",nentries)
+			t.Draw("W**2>>hW(100,0.6,1.2)","","",nentries)
 		hW.append(ROOT.gDirectory.Get("hW"))
-		hp[0].append(ROOT.gDirectory.Get("hpx"))
-		hp[1].append(ROOT.gDirectory.Get("hpy"))
-		hp[2].append(ROOT.gDirectory.Get("hpz"))
-		hv[0].append(ROOT.gDirectory.Get("hvx"))
-		hv[1].append(ROOT.gDirectory.Get("hvy"))
-		hv[2].append(ROOT.gDirectory.Get("hvz"))
-		# print "pwd:"
-		# ROOT.gDirectory.pwd()
-		# print "---- gDirectory Content ---- :"
-		# ROOT.gDirectory.ls()
+		# cut=ROOT.TCut("W<1.1");# && lvE.Theta()*TMath::RadToDeg()>15")
+		# t.Draw("lvE.X()>>hpx(100,-2,2)",cut,"",nentries)
+		# t.Draw("lvE.Y()>>hpy(100,-2,2)",cut,"",nentries)
+		# t.Draw("lvE.Z()>>hpz(100,0,6)",cut,"",nentries)
+		# t.Draw("vxE.X()>>hvx(100,-1,1)",cut,"",nentries)
+		# t.Draw("vxE.Y()>>hvy(100,-1,1)",cut,"",nentries)
+		# t.Draw("vxE.Z()>>hvz(100,-50,0)",cut,"",nentries)
+		# hp[0].append(ROOT.gDirectory.Get("hpx"))
+		# hp[1].append(ROOT.gDirectory.Get("hpy"))
+		# hp[2].append(ROOT.gDirectory.Get("hpz"))
+		# hv[0].append(ROOT.gDirectory.Get("hvx"))
+		# hv[1].append(ROOT.gDirectory.Get("hvy"))
+		# hv[2].append(ROOT.gDirectory.Get("hvz"))
+		
 		
 	c_hW = Canvas(name="W",title="W")
-	c_hW.Divide(3,2)
-	c_DC=Canvas(name="DC",title="DC")
-	c_DC.Divide(3,2);
+	c_hW.Divide(2,2)
+	# c_DC=Canvas(name="DC",title="DC")
+	# c_DC.Divide(3,2);
 	norm=1000;
 	for i in range(DTYPS):
 		print "iteration #:",i
@@ -490,40 +556,83 @@ def plot_elastic_W(be_exp=5479,nentries=1000000):
 		hW[i].SetName(DTYPS_NAME[i]+"_"+hW[i].GetName())
 		hW[i].Draw()
 		if i!=ST:
-			hW[i].Fit("gaus","","",0.90,0.98)
+			#hW[i].Fit("gaus","","",0.90,0.98)
+			hW[i].Fit("gaus","","",0.80,0.98)
 
 		ROOT.gStyle.SetOptStat("nemMrR")
-		for j in range(3):
-			#pad=c_hp[j].cd()
-			pad=c_DC.cd(j+1)
-			hp[j][i].SetLineColor(i+1)
-			hp[j][i].SetName(DTYPS_NAME[i]+"_"+hp[j][i].GetName())
-			if i==0:
-				hn=hp[j][i].DrawNormalized("HIST",norm)
-			else:
-				hn=hp[j][i].DrawNormalized("HIST sames",norm)
-			pad.Update();
-			#st=hp[j][i].GetListOfFunctions().FindObject("stats");
-			st=hn.GetListOfFunctions().FindObject("stats");
-			st.SetTextColor(i+1);
-			st.Draw()
+		# for j in range(3):
+		# 	#pad=c_hp[j].cd()
+		# 	pad=c_DC.cd(j+1)
+		# 	hp[j][i].SetLineColor(i+1)
+		# 	hp[j][i].SetName(DTYPS_NAME[i]+"_"+hp[j][i].GetName())
+		# 	if i==0:
+		# 		hn=hp[j][i].DrawNormalized("HIST",norm)
+		# 	else:
+		# 		hn=hp[j][i].DrawNormalized("HIST sames",norm)
+		# 	pad.Update();
+		# 	#st=hp[j][i].GetListOfFunctions().FindObject("stats");
+		# 	st=hn.GetListOfFunctions().FindObject("stats");
+		# 	st.SetTextColor(i+1);
+		# 	st.Draw()
 
-		for j in range(3):
-			#pad=c_hv[j].cd()
-			pad=c_DC.cd(j+1+3)
-			hv[j][i].SetLineColor(i+1)
-			hv[j][i].SetOption("")
-			hv[j][i].SetName(DTYPS_NAME[i]+"_"+hv[j][i].GetName())
-			if i==0:
-				hn=hv[j][i].DrawNormalized("HIST",norm)
-			else:
-				hn=hv[j][i].DrawNormalized("HIST sames",norm)
-			pad.Update();
-			#st=hv[j][i].GetListOfFunctions().FindObject("stats");
-			st=hn.GetListOfFunctions().FindObject("stats");
-			st.SetTextColor(i+1);
-			st.Draw()
+		# for j in range(3):
+		# 	#pad=c_hv[j].cd()
+		# 	pad=c_DC.cd(j+1+3)
+		# 	hv[j][i].SetLineColor(i+1)
+		# 	hv[j][i].SetOption("")
+		# 	hv[j][i].SetName(DTYPS_NAME[i]+"_"+hv[j][i].GetName())
+		# 	if i==0:
+		# 		hn=hv[j][i].DrawNormalized("HIST",norm)
+		# 	else:
+		# 		hn=hv[j][i].DrawNormalized("HIST sames",norm)
+		# 	pad.Update();
+		# 	#st=hv[j][i].GetListOfFunctions().FindObject("stats");
+		# 	st=hn.GetListOfFunctions().FindObject("stats");
+		# 	st.SetTextColor(i+1);
+		# 	st.Draw()
 
+	if not ROOT.gROOT.IsBatch():
+		plt.show()
+		# wait for you to close the ROOT canvas before exiting
+		wait(True)
+
+def anaMMelas_ER(nentries=1000000):
+	ROOT.gStyle.SetOptFit(1111)
+	
+	DTYPS=2
+	DTYPS_NAME=["5479","5497"]
+
+	f=[]
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be5479.root"))
+	f.append(ROOT.TFile("/datadir2/e1f/ana-elast/exp/delast_be5497.root"))
+	
+	hWnmcr=[]
+	hWymcr=[]
+	
+	t=""
+	for i in range(DTYPS):
+		f[i].cd()
+		tnmcr=f[i].Get("/delast/t")
+		tymcr=f[i].Get("/delast2/t")
+		
+		tnmcr.Draw("W**2>>hWnmcr(100,0.6,1.2)","","",nentries)
+		tymcr.Draw("W**2>>hWymcr(100,0.6,1.2)","","",nentries)
+		hWnmcr.append(ROOT.gDirectory.Get("hWnmcr"))
+		hWymcr.append(ROOT.gDirectory.Get("hWymcr"))
+		
+	c_hW = Canvas(name="W",title="W")
+	c_hW.Divide(1,2)
+	# c_DC=Canvas(name="DC",title="DC")
+	# c_DC.Divide(3,2);
+	norm=1000;
+	for i in range(DTYPS):
+		ROOT.gStyle.SetOptStat("nemMrRiuo")
+		c_hW.cd(i+1)
+		hWnmcr[i].SetName(DTYPS_NAME[i]+"_"+hWnmcr[i].GetName())
+		hWnmcr[i].Draw()
+		hWymcr[i].SetName(DTYPS_NAME[i]+"_"+hWymcr[i].GetName())
+		hWymcr[i].Draw("sames")
+		
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
 		# wait for you to close the ROOT canvas before exiting
