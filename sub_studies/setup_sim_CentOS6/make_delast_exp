@@ -1,0 +1,21 @@
+#!/bin/bash 
+# $1 = Beam Energy*1000 (i.e. 5497 instead of 5.497)
+if [ -z $1 ];then
+  echo "enter beam energy!"
+  exit
+fi
+
+##-- Change E1F_P_SIM in particle_constants.h and compile ana2pi.
+##-- Once done, revert E1F_P_SIM to 5.485
+be=$(echo "scale=3; $1/1000" | bc -l)
+cd $WORKSPACE/ana2pi
+sed -i "s/E1F_P_EXP = 5.497/E1F_P_EXP = $be/" particle_constants.h
+make clean
+make all
+sed -i "s/E1F_P_EXP = $be/E1F_P_EXP = 5.497/" particle_constants.h
+
+##-- Now go on and make delast.root for all different gpppar Simulations
+BENAME=be$1
+cd /data/trivedia/e1f/ana-elast/exp
+ana_e1f.exp.elast
+cp delast.root delast_$BE.root
