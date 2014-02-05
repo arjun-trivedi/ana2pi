@@ -14,7 +14,8 @@ using namespace ParticleConstants;
 class ProcD2pi : public EpProcessor {
 
 public:
-	ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
+	ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
+			 bool procT, bool procR);
 	~ProcD2pi();
 	void handle();
 	void write();
@@ -31,7 +32,8 @@ protected:
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
-    Bool_t mMakeOnlyMCYields; //atrivedi 051013
+    bool _procT; 
+    bool _procR;
     TObjArray* mHistsAnaMM;    // for 't1a || t2a || t3a || t4a'. For technical reasons, "hists" was used in place of histsMM
     TObjArray* mYields[NTOPS];
 	TObjArray* mHistsMM[NTOPS];
@@ -59,13 +61,12 @@ protected:
 	     };
 };
 
-ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
+ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
+				   bool procT, bool procR)
 				 :EpProcessor(td, dataH10, dataAna) {
-	//atrivedi 051013 mMakeOnlyMCYields if: 
-	//if 'is_h10sim' & 'procorder = top'
-	mMakeOnlyMCYields = kFALSE;
-	if (dH10->dtyp=="sim" && EpProcessor::isFirstProc()) mMakeOnlyMCYields = kTRUE;
-	
+	_procT=procT;
+	_procR=procR;
+		
 	mHistsAnaMM = NULL; //for techincal reasons, hists was used
 	for (int iTop = 0; iTop < NTOPS; ++iTop)
 	{
@@ -136,7 +137,7 @@ void ProcD2pi::handle() {
 	mLvPipCMS.SetXYZT(0,0,0,0);
 	mLvPimCMS.SetXYZT(0,0,0,0);
 	
-	if (mHistsAnaMM==NULL && !mMakeOnlyMCYields) {
+	if (_procR && mHistsAnaMM==NULL) {
 		dirout->cd();
 		mHistsAnaMM = dAna->makeHistsMM();
 		for (int iTop = 0; iTop < NTOPS; ++iTop)
@@ -146,20 +147,26 @@ void ProcD2pi::handle() {
 			mHistsMM[iTop]  =dAna->makeHistsMM();
 			mHistseKin[iTop]=dAna->makeHistsEkin();
 		}
-	}else if (mHistsMM_Th==NULL && mMakeOnlyMCYields){
+	}else if (_procT && mHistsMM_Th==NULL){
 		dirout->cd();
-		dirout->mkdir("mc")->cd();
+		//dirout->mkdir("mc")->cd();
 		mYields_Th   =dAna->makeYields();
 		mHistsMM_Th  =dAna->makeHistsMM();
 		mHistseKin_Th=dAna->makeHistsEkin();
 	}
-	if (mMakeOnlyMCYields) {
+
+	if (_procT && !_procR){
 		McKin();
 		dAna->fillYields(mYields_Th, kTRUE);
 		dAna->fillHistsMM(mHistsMM_Th, kTRUE);
 		dAna->fillHistsEkin(mHistseKin_Th, kTRUE);
-		EpProcessor::handle(); //atrivedi 120113
-		return; //atrivedi 051013
+		EpProcessor::handle(); 
+		return;
+	}else if(_procT && _procR){
+		McKin();
+		dAna->fillYields(mYields_Th, kTRUE);
+		dAna->fillHistsMM(mHistsMM_Th, kTRUE);
+		dAna->fillHistsEkin(mHistseKin_Th, kTRUE);
 	}
 	
 	
@@ -542,7 +549,7 @@ void ProcD2pi::write(){
 		}
 	}
 	
-	if(mMakeOnlyMCYields){
+	if(_procT){
 		dirout->cd("mc");
 		mYields_Th->Write();
 		mHistsMM_Th->Write();
