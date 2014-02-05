@@ -24,35 +24,36 @@ protected:
 	
 	void UpdateEkin(Bool_t useMc = kFALSE);
 	
-	void setLabFrame4vecHadrons();
+	void ResetLvs();
+	void SetLabFrmHadronLvs();
 	void UpdateMM(Bool_t ismc  = kFALSE);
 	void UpdateVarsets(Bool_t ismc = kFALSE);
 	
-	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and mLvQCMS
+	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
     bool _procT; 
     bool _procR;
-    TObjArray* mHistsAnaMM;    // for 't1a || t2a || t3a || t4a'. For technical reasons, "hists" was used in place of histsMM
-    TObjArray* mYields[NTOPS];
-	TObjArray* mHistsMM[NTOPS];
-	TObjArray* mHistseKin[NTOPS];
-	TObjArray* mYields_Th;
-	TObjArray* mHistsMM_Th;
-	TObjArray* mHistseKin_Th;
-	TLorentzVector mLvQ;
-	TLorentzVector mLvW;
-	TLorentzVector mLvE;
-	TLorentzVector mLvP;
-	TLorentzVector mLvPip;
-	TLorentzVector mLvPim;
-	TLorentzVector mLvMM[NTOPS];
-	TLorentzVector mLvQCMS;
-	TLorentzVector mLvP0CMS;
-	TLorentzVector mLvPCMS;
-	TLorentzVector mLvPipCMS;
-	TLorentzVector mLvPimCMS;
+    TObjArray* _hists_ana_MM;    
+    TObjArray* _yields_R[NTOPS];
+	TObjArray* _hists_MM_R[NTOPS];
+	TObjArray* _hists_ekin_R[NTOPS];
+	TObjArray* _yields_T;
+	TObjArray* _hists_MM_T;
+	TObjArray* _hists_ekin_T;
+	TLorentzVector _lvQ;
+	TLorentzVector _lvW;
+	TLorentzVector _lvE;
+	TLorentzVector _lvP;
+	TLorentzVector _lvPip;
+	TLorentzVector _lvPim;
+	TLorentzVector _lvMM[NTOPS];
+	TLorentzVector _lvQCMS;
+	TLorentzVector _lvP0CMS;
+	TLorentzVector _lvPCMS;
+	TLorentzVector _lvPipCMS;
+	TLorentzVector _lvPimCMS;
 protected:
 	static const Int_t NUM_EVTCUTS = 16;
 	enum { EVT_NULL,  EVT,       EVT_GPART0,  EVT_GPARTEQ1, EVT_GPARTEQ2, EVT_GPARTEQ3, EVT_GPARTEQ4, EVT_GPART4,
@@ -67,16 +68,16 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	_procT=procT;
 	_procR=procR;
 		
-	mHistsAnaMM = NULL; //for techincal reasons, hists was used
+	_hists_ana_MM = NULL; //for techincal reasons, hists was used
 	for (int iTop = 0; iTop < NTOPS; ++iTop)
 	{
-		mYields[iTop]   =NULL;
-		mHistsMM[iTop]  =NULL;
-		mHistseKin[iTop]=NULL;
+		_yields_R[iTop]   =NULL;
+		_hists_MM_R[iTop]  =NULL;
+		_hists_ekin_R[iTop]=NULL;
 	}
-	mYields_Th   =NULL;
-	mHistsMM_Th  =NULL;
-	mHistseKin_Th=NULL; 
+	_yields_T   =NULL;
+	_hists_MM_T  =NULL;
+	_hists_ekin_T=NULL; 
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->SetMinimum(0);
@@ -100,16 +101,16 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 
 ProcD2pi::~ProcD2pi() {
 	delete hevtsum;
-	delete mHistsAnaMM;
+	delete _hists_ana_MM;
 	for (int iTop = 0; iTop < NTOPS; ++iTop)
     {
-    	delete mYields[iTop];
-    	delete mHistsMM[iTop];
-    	delete mHistseKin[iTop];
+    	delete _yields_R[iTop];
+    	delete _hists_MM_R[iTop];
+    	delete _hists_ekin_R[iTop];
     }
-    delete mYields_Th;
-	delete mHistsMM_Th;
-	delete mHistseKin_Th;
+    delete _yields_T;
+	delete _hists_MM_T;
+	delete _hists_ekin_T;
 }
 
 void ProcD2pi::handle() {
@@ -118,58 +119,46 @@ void ProcD2pi::handle() {
 	
 	const TLorentzVector lvE0 = dH10->lvE0;
 	const TLorentzVector lvP0 = dH10->lvP0;
+	ResetLvs();
 	
 	hevtsum->Fill(EVT);
 	
-	mLvQ.SetXYZT(0,0,0,0);
-	mLvW.SetXYZT(0,0,0,0);
-	mLvE.SetXYZT(0,0,0,0);
-	mLvP.SetXYZT(0,0,0,0);
-	mLvPip.SetXYZT(0,0,0,0);
-	mLvPim.SetXYZT(0,0,0,0);
-	mLvMM[TOP1].SetXYZT(0,0,0,0);
-	mLvMM[TOP2].SetXYZT(0,0,0,0);
-	mLvMM[TOP3].SetXYZT(0,0,0,0);
-	mLvMM[TOP4].SetXYZT(0,0,0,0);
-	mLvQCMS.SetXYZT(0,0,0,0);
-	mLvP0CMS.SetXYZT(0,0,0,0);
-	mLvPCMS.SetXYZT(0,0,0,0);
-	mLvPipCMS.SetXYZT(0,0,0,0);
-	mLvPimCMS.SetXYZT(0,0,0,0);
-	
-	if (_procR && mHistsAnaMM==NULL) {
+	if (_procR && _hists_ana_MM==NULL) {
 		dirout->cd();
-		mHistsAnaMM = dAna->makeHistsMM();
+		_hists_ana_MM = dAna->makeHistsMM();
 		for (int iTop = 0; iTop < NTOPS; ++iTop)
 		{
 			dirout->mkdir(TString::Format("top%d",iTop+1))->cd();
-			mYields[iTop]   =dAna->makeYields();
-			mHistsMM[iTop]  =dAna->makeHistsMM();
-			mHistseKin[iTop]=dAna->makeHistsEkin();
+			_yields_R[iTop]   =dAna->makeYields();
+			_hists_MM_R[iTop]  =dAna->makeHistsMM();
+			_hists_ekin_R[iTop]=dAna->makeHistsEkin();
 		}
-	}else if (_procT && mHistsMM_Th==NULL){
+	}else if (_procT && _hists_MM_T==NULL){
 		dirout->cd();
 		//dirout->mkdir("mc")->cd();
-		mYields_Th   =dAna->makeYields();
-		mHistsMM_Th  =dAna->makeHistsMM();
-		mHistseKin_Th=dAna->makeHistsEkin();
+		_yields_T   =dAna->makeYields();
+		_hists_MM_T  =dAna->makeHistsMM();
+		_hists_ekin_T=dAna->makeHistsEkin();
 	}
 
 	if (_procT && !_procR){
 		McKin();
-		dAna->fillYields(mYields_Th, kTRUE);
-		dAna->fillHistsMM(mHistsMM_Th, kTRUE);
-		dAna->fillHistsEkin(mHistseKin_Th, kTRUE);
+		dAna->fillYields(_yields_T, kTRUE);
+		dAna->fillHistsMM(_hists_MM_T, kTRUE);
+		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 		EpProcessor::handle(); 
 		return;
 	}else if(_procT && _procR){
 		McKin();
-		dAna->fillYields(mYields_Th, kTRUE);
-		dAna->fillHistsMM(mHistsMM_Th, kTRUE);
-		dAna->fillHistsEkin(mHistseKin_Th, kTRUE);
+		dAna->fillYields(_yields_T, kTRUE);
+		dAna->fillHistsMM(_hists_MM_T, kTRUE);
+		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 	}
 	
-	
+	//! ResetLvs() before _procR
+	//! (In case of _procT, Lvs will have been set to Thrown values)
+	ResetLvs(); 
+
 	if (dH10->gpart>0) {hevtsum->Fill(EVT_GPART0);}
 	if (dH10->gpart==1) {hevtsum->Fill(EVT_GPARTEQ1);}
 	if (dH10->gpart==2) {hevtsum->Fill(EVT_GPARTEQ2);}
@@ -221,20 +210,20 @@ void ProcD2pi::handle() {
 	        Double_t py = mom*dH10->cy[dAna->h10idxE];
 	        Double_t pz = mom*dH10->cz[dAna->h10idxE];
 	        Double_t energy = Sqrt(mom*mom+MASS_E*MASS_E);
-	        mLvE.SetPxPyPzE(px,py,pz,energy);
-	        mLvQ = lvE0-mLvE;
-	        mLvW = mLvQ+lvP0;
-	        dAna->d2pi.Q2 = -1*(mLvQ.Mag2());
-	        dAna->d2pi.W = mLvW.Mag();
+	        _lvE.SetPxPyPzE(px,py,pz,energy);
+	        _lvQ = lvE0-_lvE;
+	        _lvW = _lvQ+lvP0;
+	        dAna->d2pi.Q2 = -1*(_lvQ.Mag2());
+	        dAna->d2pi.W = _lvW.Mag();
 	        
-	        /* *** mLvP, mLvPip, mLvPim, mLvMM[TOP1/2/3/4] *** */
-	        setLabFrame4vecHadrons();
+	        /* *** _lvP, _lvPip, _lvPim, _lvMM[TOP1/2/3/4] *** */
+	        SetLabFrmHadronLvs();
 	              
 	        /* *** MM *** */   
-	        Float_t mm2ppippim = mLvMM[TOP1].Mag2();
-			Float_t mm2ppip    = mLvMM[TOP2].Mag2();
-			Float_t mm2ppim    = mLvMM[TOP3].Mag2();
-			Float_t mm2pippim  = mLvMM[TOP4].Mag2();
+	        Float_t mm2ppippim = _lvMM[TOP1].Mag2();
+			Float_t mm2ppip    = _lvMM[TOP2].Mag2();
+			Float_t mm2ppim    = _lvMM[TOP3].Mag2();
+			Float_t mm2pippim  = _lvMM[TOP4].Mag2();
 						
 			Bool_t t1a = gP && gPip && gPim;// && dH10->gpart == 4; //atrivedi: 071613
 			Bool_t t1b = TMath::Abs(mm2ppippim) < 0.0005;
@@ -252,7 +241,7 @@ void ProcD2pi::handle() {
 			
 			if (t1a || t2a || t3a || t4a) { //used to determine top MM cut
 				UpdateMM();
-				dAna->fillHistsMM(mHistsAnaMM);
+				dAna->fillHistsMM(_hists_ana_MM);
 								
 				UpdateEkin();
 				
@@ -266,20 +255,20 @@ void ProcD2pi::handle() {
 				}else if (t2) {
 					hevtsum->Fill(EVT_T2);
 					dAna->top = 2;
-					mLvPim = mLvMM[TOP2];
+					_lvPim = _lvMM[TOP2];
 				}else if (t3) {
 					hevtsum->Fill(EVT_T3);
 					dAna->top = 3;
-					mLvPip = mLvMM[TOP3];
+					_lvPip = _lvMM[TOP3];
 				}else if (t4) {
 					hevtsum->Fill(EVT_T4);
 					dAna->top = 4;
-					mLvP = mLvMM[TOP4];
+					_lvP = _lvMM[TOP4];
 				}
 				UpdateVarsets();
-				dAna->fillYields(mYields[dAna->top-1]);
-				dAna->fillHistsMM(mHistsMM[dAna->top-1]);
-				dAna->fillHistsEkin(mHistseKin[dAna->top-1]);
+				dAna->fillYields(_yields_R[dAna->top-1]);
+				dAna->fillHistsMM(_hists_MM_R[dAna->top-1]);
+				dAna->fillHistsEkin(_hists_ekin_R[dAna->top-1]);
 			} else (hevtsum->Fill(EVT_OTHER));
 		}
 	}
@@ -292,12 +281,12 @@ void ProcD2pi::McKin() {
 	const TLorentzVector lvE0 = dH10->lvE0;
 	const TLorentzVector lvP0 = dH10->lvP0;
 	
-	mLvQ.SetXYZT(0,0,0,0);
-	mLvW.SetXYZT(0,0,0,0);
-	mLvE.SetXYZT(0,0,0,0);
-	mLvP.SetXYZT(0,0,0,0);
-	mLvPip.SetXYZT(0,0,0,0);
-	mLvPim.SetXYZT(0,0,0,0);
+	_lvQ.SetXYZT(0,0,0,0);
+	_lvW.SetXYZT(0,0,0,0);
+	_lvE.SetXYZT(0,0,0,0);
+	_lvP.SetXYZT(0,0,0,0);
+	_lvPip.SetXYZT(0,0,0,0);
+	_lvPim.SetXYZT(0,0,0,0);
 	//printf("num mc = %i\n",dAna->h10.mcnentr);
 	for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
 		Int_t _id = dH10->mcid[idx];
@@ -320,26 +309,26 @@ void ProcD2pi::McKin() {
 		//printf("id = %i\n");
 		switch(_id) {
 		case ELECTRON:
-			mLvE.SetPxPyPzE(_px,_py,_pz,_energy);
+			_lvE.SetPxPyPzE(_px,_py,_pz,_energy);
 			break;
 		case PROTON:
-			mLvP.SetPxPyPzE(_px,_py,_pz,_energy);
+			_lvP.SetPxPyPzE(_px,_py,_pz,_energy);
 			break;
 		case PIP:
-			mLvPip.SetPxPyPzE(_px,_py,_pz,_energy);
+			_lvPip.SetPxPyPzE(_px,_py,_pz,_energy);
 			break;
 		case PIM:
-			mLvPim.SetPxPyPzE(_px,_py,_pz,_energy);
+			_lvPim.SetPxPyPzE(_px,_py,_pz,_energy);
 			break;
 		default:
 			break;
 		}
 	}
 
-	mLvQ = lvE0-mLvE;
-	mLvW = mLvQ+lvP0;
-	dAna->d2pi_mc.Q2 = -1*(mLvQ.Mag2());
-	dAna->d2pi_mc.W = mLvW.Mag();
+	_lvQ = lvE0-_lvE;
+	_lvW = _lvQ+lvP0;
+	dAna->d2pi_mc.Q2 = -1*(_lvQ.Mag2());
+	dAna->d2pi_mc.W = _lvW.Mag();
 	
 	UpdateEkin(kTRUE);
 	UpdateMM(kTRUE);
@@ -393,7 +382,25 @@ void ProcD2pi::UpdateEkin(Bool_t useMc /*= kFALSE*/) {
 	//if (!useMc) {ekin->eSector = dH10->.sc_sect[dH10->.sc[0]-1];}
 }
 
-void ProcD2pi::setLabFrame4vecHadrons(){
+void ProcD2pi::ResetLvs(){
+	_lvQ.SetXYZT(0,0,0,0);
+	_lvW.SetXYZT(0,0,0,0);
+	_lvE.SetXYZT(0,0,0,0);
+	_lvP.SetXYZT(0,0,0,0);
+	_lvPip.SetXYZT(0,0,0,0);
+	_lvPim.SetXYZT(0,0,0,0);
+	_lvMM[TOP1].SetXYZT(0,0,0,0);
+	_lvMM[TOP2].SetXYZT(0,0,0,0);
+	_lvMM[TOP3].SetXYZT(0,0,0,0);
+	_lvMM[TOP4].SetXYZT(0,0,0,0);
+	_lvQCMS.SetXYZT(0,0,0,0);
+	_lvP0CMS.SetXYZT(0,0,0,0);
+	_lvPCMS.SetXYZT(0,0,0,0);
+	_lvPipCMS.SetXYZT(0,0,0,0);
+	_lvPimCMS.SetXYZT(0,0,0,0);
+}
+
+void ProcD2pi::SetLabFrmHadronLvs(){
 	//Track Identified as hadrons
 	if (dAna->h10idxP>0) {
 		Double_t mom = dH10->p[dAna->h10idxP];
@@ -401,7 +408,7 @@ void ProcD2pi::setLabFrame4vecHadrons(){
 		Double_t py = mom*dH10->cy[dAna->h10idxP];
 		Double_t pz = mom*dH10->cz[dAna->h10idxP];
 		Double_t energy = Sqrt(mom*mom+MASS_P*MASS_P);
-		mLvP.SetPxPyPzE(px,py,pz,energy);
+		_lvP.SetPxPyPzE(px,py,pz,energy);
 	}
 	if (dAna->h10idxPip>0) {
 		Double_t mom = dH10->p[dAna->h10idxPip];
@@ -409,7 +416,7 @@ void ProcD2pi::setLabFrame4vecHadrons(){
 		Double_t py = mom*dH10->cy[dAna->h10idxPip];
 		Double_t pz = mom*dH10->cz[dAna->h10idxPip];
 		Double_t energy = Sqrt(mom*mom+MASS_PIP*MASS_PIP);
-		mLvPip.SetPxPyPzE(px,py,pz,energy);
+		_lvPip.SetPxPyPzE(px,py,pz,energy);
 	}
 	if (dAna->h10idxPim>0) {
 		Double_t mom = dH10->p[dAna->h10idxPim];
@@ -417,26 +424,26 @@ void ProcD2pi::setLabFrame4vecHadrons(){
 		Double_t py = mom*dH10->cy[dAna->h10idxPim];
 		Double_t pz = mom*dH10->cz[dAna->h10idxPim];
 		Double_t energy = Sqrt(mom*mom+MASS_PIM*MASS_PIM);
-		mLvPim.SetPxPyPzE(px,py,pz,energy);
+		_lvPim.SetPxPyPzE(px,py,pz,energy);
 	}
 	
-	mLvMM[TOP1] = (mLvW-(mLvP+mLvPip+mLvPim));
-	mLvMM[TOP2] = (mLvW-(mLvP+mLvPip));
-    mLvMM[TOP3] = (mLvW-(mLvP+mLvPim));  
-	mLvMM[TOP4] = (mLvW-(mLvPip+mLvPim)); 
+	_lvMM[TOP1] = (_lvW-(_lvP+_lvPip+_lvPim));
+	_lvMM[TOP2] = (_lvW-(_lvP+_lvPip));
+    _lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
+	_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
 }
 
 void ProcD2pi::UpdateMM(Bool_t ismc /* = kFALSE */) {
 	Data2pi *tp = &(dAna->d2pi);
 	if (ismc) tp = &(dAna->d2pi_mc);
-	tp->mm2ppippim = mLvMM[TOP1].Mag2();
-	tp->mmppippim  = mLvMM[TOP1].Mag();
-	tp->mm2ppip    = mLvMM[TOP2].Mag2();
-	tp->mmppip     = mLvMM[TOP2].Mag();
-	tp->mm2ppim    = mLvMM[TOP3].Mag2();
-	tp->mmppim     = mLvMM[TOP3].Mag();
-	tp->mm2pippim  = mLvMM[TOP4].Mag2();
-	tp->mmpippim   = mLvMM[TOP4].Mag();
+	tp->mm2ppippim = _lvMM[TOP1].Mag2();
+	tp->mmppippim  = _lvMM[TOP1].Mag();
+	tp->mm2ppip    = _lvMM[TOP2].Mag2();
+	tp->mmppip     = _lvMM[TOP2].Mag();
+	tp->mm2ppim    = _lvMM[TOP3].Mag2();
+	tp->mmppim     = _lvMM[TOP3].Mag();
+	tp->mm2pippim  = _lvMM[TOP4].Mag2();
+	tp->mmpippim   = _lvMM[TOP4].Mag();
 }
 
 void ProcD2pi::UpdateVarsets(Bool_t ismc /* = kFALSE */){
@@ -447,56 +454,56 @@ void ProcD2pi::UpdateVarsets(Bool_t ismc /* = kFALSE */){
 	if (ismc) tp = &(dAna->d2pi_mc);
 
 	//Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
-	TVector3 uz = mLvQ.Vect().Unit();
-    TVector3 ux = (lvE0.Vect().Cross(mLvE.Vect())).Unit();
+	TVector3 uz = _lvQ.Vect().Unit();
+    TVector3 ux = (lvE0.Vect().Cross(_lvE.Vect())).Unit();
     ux.Rotate(-TMath::Pi()/2,uz);
     TRotation r3;// = new TRotation();
     r3.SetZAxis(uz,ux).Invert();
     //_w and _q are in z-direction
-    TVector3 boost(-1*mLvW.BoostVector());
+    TVector3 boost(-1*_lvW.BoostVector());
     TLorentzRotation r4(r3); //*_boost);
     r4 *= boost; //*_3rot;
 	
-	mLvQCMS   = mLvQ;
-	mLvP0CMS  = lvP0;
-	mLvPCMS   = mLvP;
-	mLvPipCMS = mLvPip;
-	mLvPimCMS = mLvPim;
-	/*mLvQCMS.Boost(-1*mLvW.BoostVector());
-	mLvP0CMS.Boost(-1*mLvW.BoostVector());
-	mLvPCMS.Boost(-1*mLvW.BoostVector());
-	mLvPipCMS.Boost(-1*mLvW.BoostVector());
-	mLvPimCMS.Boost(-1*mLvW.BoostVector());*/
-	mLvQCMS.Transform(r4);
-	mLvP0CMS.Transform(r4);
-	mLvPCMS.Transform(r4);
-	mLvPipCMS.Transform(r4);
-	mLvPimCMS.Transform(r4);
+	_lvQCMS   = _lvQ;
+	_lvP0CMS  = lvP0;
+	_lvPCMS   = _lvP;
+	_lvPipCMS = _lvPip;
+	_lvPimCMS = _lvPim;
+	/*_lvQCMS.Boost(-1*_lvW.BoostVector());
+	_lvP0CMS.Boost(-1*_lvW.BoostVector());
+	_lvPCMS.Boost(-1*_lvW.BoostVector());
+	_lvPipCMS.Boost(-1*_lvW.BoostVector());
+	_lvPimCMS.Boost(-1*_lvW.BoostVector());*/
+	_lvQCMS.Transform(r4);
+	_lvP0CMS.Transform(r4);
+	_lvPCMS.Transform(r4);
+	_lvPipCMS.Transform(r4);
+	_lvPimCMS.Transform(r4);
 	
-	Float_t Mppip = (mLvPCMS + mLvPipCMS).Mag();
-	Float_t Mppim = (mLvPCMS + mLvPimCMS).Mag();
-	Float_t Mpippim = (mLvPipCMS + mLvPimCMS).Mag();
+	Float_t Mppip = (_lvPCMS + _lvPipCMS).Mag();
+	Float_t Mppim = (_lvPCMS + _lvPimCMS).Mag();
+	Float_t Mpippim = (_lvPipCMS + _lvPimCMS).Mag();
 	
 	tp->varset1.M1 = Mppip;
 	tp->varset1.M2 = Mpippim;
-	tp->varset1.theta = getTheta(mLvPimCMS);
-	tp->varset1.phi = getPhi(mLvPimCMS);
-	//tp->varset1.alpha = getAlpha(mLvPimCMS);
+	tp->varset1.theta = getTheta(_lvPimCMS);
+	tp->varset1.phi = getPhi(_lvPimCMS);
+	//tp->varset1.alpha = getAlpha(_lvPimCMS);
 	tp->varset1.alpha = 180;
 	
 	
 	tp->varset2.M1 = Mppip;
 	tp->varset2.M2 = Mpippim;
-	tp->varset2.theta = getTheta(mLvPCMS);
-	tp->varset2.phi = getPhi(mLvPCMS);
-	//tp->varset2.alpha = getAlpha(mLvPCMS);
+	tp->varset2.theta = getTheta(_lvPCMS);
+	tp->varset2.phi = getPhi(_lvPCMS);
+	//tp->varset2.alpha = getAlpha(_lvPCMS);
 	tp->varset2.alpha = 180;
 	
 	tp->varset3.M1 = Mppip;
 	tp->varset3.M2 = Mppim;
-	tp->varset3.theta = getTheta(mLvPipCMS);
-	tp->varset3.phi = getPhi(mLvPipCMS);
-	//tp->varset1.alpha = getAlpha(mLvPipCMS);
+	tp->varset3.theta = getTheta(_lvPipCMS);
+	tp->varset3.phi = getPhi(_lvPipCMS);
+	//tp->varset1.alpha = getAlpha(_lvPipCMS);
 	tp->varset3.alpha = 180;
 	
 	//helicity
@@ -508,8 +515,8 @@ Float_t ProcD2pi::getTheta(TLorentzVector lv){
 	Float_t retVal = 0;
 	/* ***atrivedi 09-13-12*** */
 	TVector3 lv_3vec = lv.Vect();
-	TVector3 mLvQCMS_3vec = mLvQCMS.Vect();
-	//retVal = RadToDeg()*ACos( (lv.Dot(mLvQCMS))/(lv.P()*mLvQCMS.P()) );
+	TVector3 mLvQCMS_3vec = _lvQCMS.Vect();
+	//retVal = RadToDeg()*ACos( (lv.Dot(_lvQCMS))/(lv.P()*_lvQCMS.P()) );
 	retVal = RadToDeg()*ACos( (lv_3vec.Dot(mLvQCMS_3vec))/(lv_3vec.Mag()*mLvQCMS_3vec.Mag()) );
 	/***************************/
 	return retVal;
@@ -536,24 +543,24 @@ Float_t ProcD2pi::invTan(Float_t y, Float_t x){
 void ProcD2pi::write(){
 	Info("ProcD2pi::write()", "");
 	
-	if (mHistsAnaMM != NULL) {
+	if (_hists_ana_MM != NULL) {
 		dirout->cd();
 		hevtsum->Write();
-		mHistsAnaMM->Write();
+		_hists_ana_MM->Write();
 		for (int iTop = 0; iTop < NTOPS; ++iTop)
 		{
 			dirout->cd(TString::Format("top%d",iTop+1));
-			mYields[iTop]->Write();
-			mHistsMM[iTop]->Write();
-			mHistseKin[iTop]->Write();
+			_yields_R[iTop]->Write();
+			_hists_MM_R[iTop]->Write();
+			_hists_ekin_R[iTop]->Write();
 		}
 	}
 	
 	if(_procT){
 		dirout->cd("mc");
-		mYields_Th->Write();
-		mHistsMM_Th->Write();
-		mHistseKin_Th->Write();
+		_yields_T->Write();
+		_hists_MM_T->Write();
+		_hists_ekin_T->Write();
 	}
 }
 
