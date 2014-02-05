@@ -141,19 +141,17 @@ void ProcD2pi::handle() {
 		_hists_ekin_T=dAna->makeHistsEkin();
 	}
 
-	if (_procT && !_procR){
-		McKin();
-		dAna->fillYields(_yields_T, kTRUE);
-		dAna->fillHistsMM(_hists_MM_T, kTRUE);
-		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
-		EpProcessor::handle(); 
-		return;
-	}else if(_procT && _procR){
+	if (_procT){
 		McKin();
 		dAna->fillYields(_yields_T, kTRUE);
 		dAna->fillHistsMM(_hists_MM_T, kTRUE);
 		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 	}
+	if(!_procR){
+		EpProcessor::handle(); 
+		return;
+	}
+
 	
 	//! ResetLvs() before _procR
 	//! (In case of _procT, Lvs will have been set to Thrown values)
@@ -244,7 +242,6 @@ void ProcD2pi::handle() {
 				dAna->fillHistsMM(_hists_ana_MM);
 								
 				UpdateEkin();
-				
 			}
 			if ( t1 || t2 || t3 || t4) { //final top selection post MM cut
 				pass = kTRUE;
@@ -281,12 +278,6 @@ void ProcD2pi::McKin() {
 	const TLorentzVector lvE0 = dH10->lvE0;
 	const TLorentzVector lvP0 = dH10->lvP0;
 	
-	_lvQ.SetXYZT(0,0,0,0);
-	_lvW.SetXYZT(0,0,0,0);
-	_lvE.SetXYZT(0,0,0,0);
-	_lvP.SetXYZT(0,0,0,0);
-	_lvPip.SetXYZT(0,0,0,0);
-	_lvPim.SetXYZT(0,0,0,0);
 	//printf("num mc = %i\n",dAna->h10.mcnentr);
 	for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
 		Int_t _id = dH10->mcid[idx];
