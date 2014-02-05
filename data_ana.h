@@ -8,7 +8,7 @@
 #include "data_mom.h"
 #include "data_pid.h"
 #include "data_ekin.h"
-#include "data_top.h"
+#include "data_2pi.h"
 #include "data_h10.h"
 #include "data_elastic.h"
 #include <TObjArray.h>
@@ -33,8 +33,8 @@ public:
 	DataMom mom;
 	DataEkin eKin;
 	DataEkin eKin_mc;
-	DataTop dTop;
-	DataTop dTop_mc;
+	Data2pi d2pi;
+	Data2pi d2pi_mc;
 	DataElastic dElast;
 	DataElastic dElast_ST;
 	

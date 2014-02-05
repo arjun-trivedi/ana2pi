@@ -8,7 +8,8 @@
 #include "proc_pid.h"
 #include "proc_skim_q.h"
 #include "proc_mom_cor.h"
-#include "proc_top.h"
+#include "proc_d2pi.h"
+//#include "proc_top.h"
 /*#include "proc_skim_q2w.h"
 #include "proc_fill_skim.h"
 #include "proc_copy_h10.h"*/
@@ -192,7 +193,8 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("top"))        proc = new ProcTop(mkdir("top"),dH10,dAna);
+         else if (str.EqualTo("d2pi"))       proc = new ProcD2pi(mkdir("d2pi"),dH10,dAna);
+         //else if (str.EqualTo("top"))        proc = new ProcTop(mkdir("top"),dH10,dAna);
          /*else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
          else if (str.EqualTo("fillskim"))   proc = new ProcFillSkim(mkdir("skim"),dH10,dAna);
          else if (str.EqualTo("copyh10")) proc = new ProcCopyH10(fFileOut,dH10,dAna);*/

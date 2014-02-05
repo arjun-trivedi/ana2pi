@@ -11,7 +11,7 @@
 #pragma link C++ class DataSkimQ+;
 #pragma link C++ class DataMom+;
 #pragma link C++ class DataPid+;
-#pragma link C++ class DataTop+;
+#pragma link C++ class Data2pi+;
 #pragma link C++ class DataEkin+;
 //#pragma link C++ class SelH10+;
 #pragma link C++ class DataElastic+;

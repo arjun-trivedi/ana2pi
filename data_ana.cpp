@@ -32,8 +32,8 @@ void DataAna::Clear()
 	pid.Clear();
 	eKin.Clear();
 	eKin_mc.Clear();
-	dTop.Clear();
-	dTop_mc.Clear();
+	d2pi.Clear();
+	d2pi_mc.Clear();
 	dElast.Clear();
 	dElast_ST.Clear();
 }
@@ -527,8 +527,8 @@ void DataAna::fillHistsEkin(TObjArray* hists, Bool_t useMc /* = kFALSE */)
 void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 {
 	Int_t hIdx = 0;
-	DataTop *tp = &dTop;
-	if (useMc) tp = &dTop_mc;
+	Data2pi *tp = &d2pi;
+	if (useMc) tp = &d2pi_mc;
 		
 	if ((useMc || (h10idxP>0 && h10idxPip>0 && h10idxPim>0)) ) {	
 		hIdx = 0;
@@ -570,8 +570,8 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 
 void DataAna::fillYields(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 {
-	DataTop *tp = &dTop;
-	if (useMc) tp = &dTop_mc;
+	Data2pi *tp = &d2pi;
+	if (useMc) tp = &d2pi_mc;
 	THnSparse* hN1 = (THnSparse*)hists->At(0);
 	Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->varset1.M1, tp->varset1.M2, tp->varset1.theta, tp->varset1.phi, tp->varset1.alpha };
 	hN1->Fill(coord1);
