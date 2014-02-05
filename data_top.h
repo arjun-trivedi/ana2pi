@@ -19,8 +19,8 @@ public:
     Float_t mmppim;
 	Float_t mm2pippim;
     Float_t mmpippim; 
+    Float_t Q2; 
 	Float_t W;
-	Float_t Q2;  //morand
 	Char_t  h;
 	struct vars{
 		Float_t M1;
