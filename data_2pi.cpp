@@ -14,9 +14,9 @@ void Data2pi::Clear()
 	p_e0 = 0;
 	//! Reconstructed Kinematics 
 	//! for e',p',p,pip,pim at e' vertex
-	p_e = p_p = p_pip = p_pim = 0;
+	p_e     = p_p     = p_pip     = p_pim     = 0;
 	theta_e = theta_p = theta_pip = theta_pim = 0;
-	phi_e = phi_p = phi_pip = phi_pim = 0;
+	phi_e =   phi_p   = phi_pip   = phi_pim   = 0;
 	//! Reconstructed e' Vertex
 	vx_e = vx_p = vx_pip = vx_pim = 0;
 	vy_e = vy_p = vy_pip = vy_pim = 0;
@@ -30,7 +30,12 @@ void Data2pi::Clear()
 	//! Topology
 	top=0;
 	//! Varsets
-	varset1.M1 = varset1.M2 = varset1.theta = varset1.phi = varset1.alpha = 0;
-	varset2.M1 = varset2.M2 = varset2.theta = varset2.phi = varset2.alpha = 0;
-	varset3.M1 = varset3.M2 = varset3.theta = varset3.phi = varset3.alpha = 0;
+	M_ppip      = M_ppim        = M_pippim      = 0;
+	theta_cms_p = theta_cms_pip = theta_cms_pim = 0;
+	phi_cms_p   = phi_cms_pip   = phi_cms_pim   = 0;
+	alpha_1     = alpha_2       = alpha_3       = 0;
+
+	/*varset1.M1 = varset1.M2 = varset1.theta_cms = varset1.phi_ = varset1.alpha = 0;
+	varset2.M1 = varset2.M2 = varset2.theta_cms = varset2.phi_ = varset2.alpha = 0;
+	varset3.M1 = varset3.M2 = varset3.theta_cms = varset3.phi_ = varset3.alpha = 0;*/
 }

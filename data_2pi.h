@@ -58,13 +58,26 @@ public:
     //! Topology
 	Int_t top;
     //! Varsets
-    struct vars{
+    Float_t M_ppip;
+    Float_t M_ppim;
+    Float_t M_pippim;
+    Float_t theta_cms_p;
+	Float_t theta_cms_pip;
+	Float_t theta_cms_pim;
+	Float_t phi_cms_p;
+	Float_t phi_cms_pip;
+	Float_t phi_cms_pim;
+	Float_t alpha_1;
+	Float_t alpha_2;
+	Float_t alpha_3;
+
+    /*struct vars{
 		Float_t M1;
 	    Float_t M2;
 	    Float_t theta;
 	    Float_t phi;
 	    Float_t alpha;
-    } varset1, varset2, varset3;
+    } varset1, varset2, varset3;*/
 };
 
 #endif // DATA2PI_H

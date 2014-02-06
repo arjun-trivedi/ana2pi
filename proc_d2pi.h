@@ -518,6 +518,7 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 
 	//!{MMs} should be updated already by UpdateD2pi_MM()
 
+	//! Varsets
 	//! Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
 	TVector3 uz = _lvQ.Vect().Unit();
     TVector3 ux = (lvE0.Vect().Cross(_lvE.Vect())).Unit();
@@ -549,7 +550,23 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	Float_t Mppim = (_lvPCMS + _lvPimCMS).Mag();
 	Float_t Mpippim = (_lvPipCMS + _lvPimCMS).Mag();
 	
-	tp->varset1.M1 = Mppip;
+	tp->M_ppip=Mppip;
+	tp->M_ppim=Mppim;
+	tp->M_pippim=Mpippim;
+
+	tp->theta_cms_p=getTheta(_lvPCMS);
+	tp->theta_cms_pip=getTheta(_lvPipCMS);
+	tp->theta_cms_pim=getTheta(_lvPimCMS);
+
+	tp->phi_cms_p=getPhi(_lvPCMS);
+	tp->phi_cms_pip=getPhi(_lvPipCMS);
+	tp->phi_cms_pim=getPhi(_lvPimCMS);
+
+	tp->alpha_1=180;
+	tp->alpha_2=180;
+	tp->alpha_3=180;
+
+	/*tp->varset1.M1 = Mppip;
 	tp->varset1.M2 = Mpippim;
 	tp->varset1.theta = getTheta(_lvPimCMS);
 	tp->varset1.phi = getPhi(_lvPimCMS);
@@ -569,7 +586,7 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->varset3.theta = getTheta(_lvPipCMS);
 	tp->varset3.phi = getPhi(_lvPipCMS);
 	//tp->varset1.alpha = getAlpha(_lvPipCMS);
-	tp->varset3.alpha = 180;
+	tp->varset3.alpha = 180;*/
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){

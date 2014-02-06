@@ -573,7 +573,8 @@ void DataAna::fillYields(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	Data2pi *tp = &d2pi;
 	if (useMc) tp = &d2pi_mc;
 	THnSparse* hN1 = (THnSparse*)hists->At(0);
-	Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->varset1.M1, tp->varset1.M2, tp->varset1.theta, tp->varset1.phi, tp->varset1.alpha };
+	//Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->varset1.M1, tp->varset1.M2, tp->varset1.theta, tp->varset1.phi, tp->varset1.alpha };
+	Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->M_ppip, tp->M_pippim, tp->theta_cms_pim, tp->phi_cms_pim, tp->alpha_1 };
 	hN1->Fill(coord1);
 	
 	//atrivedi:080231
