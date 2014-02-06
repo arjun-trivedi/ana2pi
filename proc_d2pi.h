@@ -444,13 +444,13 @@ void ProcD2pi::UpdateVarsets(Bool_t ismc /* = kFALSE */){
 	Data2pi *tp = &(dAna->d2pi);
 	if (ismc) tp = &(dAna->d2pi_mc);
 
-	//Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
+	//! Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
 	TVector3 uz = _lvQ.Vect().Unit();
     TVector3 ux = (lvE0.Vect().Cross(_lvE.Vect())).Unit();
     ux.Rotate(-TMath::Pi()/2,uz);
     TRotation r3;// = new TRotation();
     r3.SetZAxis(uz,ux).Invert();
-    //_w and _q are in z-direction
+    //! _w and _q are in z-direction
     TVector3 boost(-1*_lvW.BoostVector());
     TLorentzRotation r4(r3); //*_boost);
     r4 *= boost; //*_3rot;
