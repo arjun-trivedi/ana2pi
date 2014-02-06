@@ -54,6 +54,8 @@ protected:
 	TLorentzVector _lvPCMS;
 	TLorentzVector _lvPipCMS;
 	TLorentzVector _lvPimCMS;
+	TTree* _tT;
+	TTree* _tR;
 protected:
 	static const Int_t NUM_EVTCUTS = 16;
 	enum { EVT_NULL,  EVT,       EVT_GPART0,  EVT_GPARTEQ1, EVT_GPARTEQ2, EVT_GPARTEQ3, EVT_GPARTEQ4, EVT_GPART4,
@@ -97,6 +99,15 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T3,"Type3(p#pi^{-})");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T4,"Type4(#pi^{+}#pi^{-})");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
+
+	if (_procT) {
+		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
+		_tT->Branch("d","Data2pi",&dAna->d2pi_mc,32000,0);
+	}
+	if (_procR) {
+		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
+		_tR->Branch("d","DataElastic",&dAna->d2pi,32000,0);
+	}
 }
 
 ProcD2pi::~ProcD2pi() {
@@ -146,6 +157,7 @@ void ProcD2pi::handle() {
 		dAna->fillYields(_yields_T, kTRUE);
 		dAna->fillHistsMM(_hists_MM_T, kTRUE);
 		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
+		_tT->Fill();
 	}
 	if(!_procR){
 		EpProcessor::handle(); 
@@ -266,6 +278,7 @@ void ProcD2pi::handle() {
 				dAna->fillYields(_yields_R[dAna->d2pi.top-1]);
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
+				_tR->Fill();
 			} else (hevtsum->Fill(EVT_OTHER));
 		}
 	}

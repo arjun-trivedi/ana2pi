@@ -2,8 +2,9 @@
 #define DATA2PI_H
 
 #include <TROOT.h>
+#include <TObject.h>
 
-class Data2pi
+class Data2pi:public TObject
 {
 
 public:
