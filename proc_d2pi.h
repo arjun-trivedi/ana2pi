@@ -26,8 +26,8 @@ protected:
 	
 	void ResetLvs();
 	void SetLabFrmHadronLvs();
-	void UpdateMM(Bool_t ismc  = kFALSE);
-	void UpdateVarsets(Bool_t ismc = kFALSE);
+	void UpdateD2pi_MM(Bool_t ismc  = kFALSE);
+	void UpdateD2pi(Bool_t ismc = kFALSE);
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
@@ -211,8 +211,8 @@ void ProcD2pi::handle() {
 	        _lvE.SetPxPyPzE(px,py,pz,energy);
 	        _lvQ = lvE0-_lvE;
 	        _lvW = _lvQ+lvP0;
-	        dAna->d2pi.Q2 = -1*(_lvQ.Mag2());
-	        dAna->d2pi.W = _lvW.Mag();
+	        /*dAna->d2pi.Q2 = -1*(_lvQ.Mag2());
+	        dAna->d2pi.W = _lvW.Mag();*/
 	        
 	        /* *** _lvP, _lvPip, _lvPim, _lvMM[TOP1/2/3/4] *** */
 	        SetLabFrmHadronLvs();
@@ -238,9 +238,8 @@ void ProcD2pi::handle() {
 			Bool_t t4 = t4a && t4b;
 			
 			if (t1a || t2a || t3a || t4a) { //used to determine top MM cut
-				UpdateMM();
+				UpdateD2pi_MM();
 				dAna->fillHistsMM(_hists_ana_MM);
-								
 				UpdateEkin();
 			}
 			if ( t1 || t2 || t3 || t4) { //final top selection post MM cut
@@ -262,7 +261,8 @@ void ProcD2pi::handle() {
 					dAna->d2pi.top = 4;
 					_lvP = _lvMM[TOP4];
 				}
-				UpdateVarsets();
+
+				UpdateD2pi(); //MM part of d2pi already updated
 				dAna->fillYields(_yields_R[dAna->d2pi.top-1]);
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
@@ -322,8 +322,8 @@ void ProcD2pi::McKin() {
 	dAna->d2pi_mc.W = _lvW.Mag();
 	
 	UpdateEkin(kTRUE);
-	UpdateMM(kTRUE);
-	UpdateVarsets(kTRUE);
+	UpdateD2pi_MM(kTRUE);
+	UpdateD2pi(kTRUE);
 }
 
 void ProcD2pi::UpdateEkin(Bool_t useMc /*= kFALSE*/) {
@@ -424,7 +424,7 @@ void ProcD2pi::SetLabFrmHadronLvs(){
 	_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
 }
 
-void ProcD2pi::UpdateMM(Bool_t ismc /* = kFALSE */) {
+void ProcD2pi::UpdateD2pi_MM(Bool_t ismc /* = kFALSE */) {
 	Data2pi *tp = &(dAna->d2pi);
 	if (ismc) tp = &(dAna->d2pi_mc);
 	tp->mm2ppippim = _lvMM[TOP1].Mag2();
@@ -437,12 +437,86 @@ void ProcD2pi::UpdateMM(Bool_t ismc /* = kFALSE */) {
 	tp->mmpippim   = _lvMM[TOP4].Mag();
 }
 
-void ProcD2pi::UpdateVarsets(Bool_t ismc /* = kFALSE */){
+void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	const TLorentzVector lvE0 = dH10->lvE0;
 	const TLorentzVector lvP0 = dH10->lvP0;
 	
 	Data2pi *tp = &(dAna->d2pi);
 	if (ismc) tp = &(dAna->d2pi_mc);
+
+	//! Initial Beam Energy
+	tp->p_e0=lvE0.P();
+
+	//! Reconstructed Kinematics 
+	//! for e',p',p,pip,pim at e' vertex
+	tp->p_e=_lvE.P();
+	tp->p_p=_lvP.P();
+	tp->p_pip=_lvPip.P();
+	tp->p_pim=_lvPim.P();
+	tp->theta_e=_lvE.Theta();
+	tp->theta_p=_lvP.Theta();
+	tp->theta_pip=_lvPip.Theta();
+	tp->theta_pim=_lvPim.Theta();
+	tp->phi_e=_lvE.Phi();
+	tp->phi_p=_lvP.Phi();
+	tp->phi_pip=_lvPip.Phi();
+	tp->phi_pim=_lvPim.Phi();
+	//! Reconstructed e' Vertex
+	if (!ismc){
+		tp->vx_e=dH10->vx[dAna->h10idxE];
+		tp->vx_p=dH10->vx[dAna->h10idxP];
+		tp->vx_pip=dH10->vx[dAna->h10idxPip];
+		tp->vx_pim=dH10->vx[dAna->h10idxPim];
+		tp->vy_e=dH10->vy[dAna->h10idxE];
+		tp->vy_p=dH10->vy[dAna->h10idxP];
+		tp->vy_pip=dH10->vy[dAna->h10idxPip];
+		tp->vy_pim=dH10->vy[dAna->h10idxPim];
+		tp->vz_e=dH10->vz[dAna->h10idxE];
+		tp->vz_p=dH10->vz[dAna->h10idxP];
+		tp->vz_pip=dH10->vz[dAna->h10idxPip];
+		tp->vz_pim=dH10->vz[dAna->h10idxPim];
+	}else{
+		for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
+		Int_t _id = dH10->mcid[idx];
+		Float_t tmp_vx=dH10->mcvx[idx];
+		Float_t tmp_vy=dH10->mcvy[idx];
+		Float_t tmp_vz=dH10->mcvz[idx];
+		
+		switch(_id) {
+			case ELECTRON:
+				tp->vx_e=tmp_vx;
+				tp->vy_e=tmp_vy;
+				tp->vz_e=tmp_vz;
+				break;
+			case PROTON:
+				tp->vx_p=tmp_vx;
+				tp->vy_p=tmp_vy;
+				tp->vz_p=tmp_vz;
+				break;
+			case PIP:
+				tp->vx_pip=tmp_vx;
+				tp->vy_pip=tmp_vy;
+				tp->vz_pip=tmp_vz;
+				break;
+			case PIM:
+				tp->vx_pim=tmp_vx;
+				tp->vy_pim=tmp_vy;
+				tp->vz_pim=tmp_vz;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	//!Q2,W
+	tp->Q2 = -1*(_lvQ.Mag2());
+	tp->W = _lvW.Mag();
+
+	//Helicity
+	if(!ismc) {tp->h = dH10->evthel;} //e1f
+
+	//!{MMs} should be updated already by UpdateD2pi_MM()
 
 	//! Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
 	TVector3 uz = _lvQ.Vect().Unit();
@@ -496,10 +570,6 @@ void ProcD2pi::UpdateVarsets(Bool_t ismc /* = kFALSE */){
 	tp->varset3.phi = getPhi(_lvPipCMS);
 	//tp->varset1.alpha = getAlpha(_lvPipCMS);
 	tp->varset3.alpha = 180;
-	
-	//helicity
-	if(!ismc) {tp->h = dH10->evthel;} //e1f
-	
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
