@@ -221,4 +221,15 @@ t[1,0]=3
 t[1,1]=4
 print t
 
-test[1,2]="ajrnt"
+
+
+import ROOT as ROOT
+f = ROOT.TFile('/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon/d2pi.root')
+t=f.Get("d2piR/tR")
+print t.GetEntries()
+b = t.GetBranch("d")
+print "Num of leaves = ",b.GetNleaves()
+# l = b.GetLeaf("p_e")
+# print l.GetValue(0)
+#t.Draw("p_e")
+t.Print()
