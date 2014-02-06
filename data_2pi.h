@@ -11,6 +11,10 @@ public:
 	virtual ~Data2pi();
 	void Clear();
 	
+	Float_t Q2; 
+	Float_t W;
+	Int_t top;
+	Char_t  h;
 	Float_t mm2ppippim;
     Float_t mmppippim;
 	Float_t mm2ppip;
@@ -19,10 +23,7 @@ public:
     Float_t mmppim;
 	Float_t mm2pippim;
     Float_t mmpippim; 
-    Float_t Q2; 
-	Float_t W;
-	Char_t  h;
-	struct vars{
+    struct vars{
 		Float_t M1;
 	    Float_t M2;
 	    Float_t theta;

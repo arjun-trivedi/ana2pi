@@ -45,10 +45,10 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
 	
-	if (dAna->top==0 && histsEkin[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
+	if (dAna->d2pi.top==0 && histsEkin[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
-	}else if(dAna->top!=0 && histsEkin[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+	}else if(dAna->d2pi.top!=0 && histsEkin[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
 		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
 			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
 			dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirmon);
@@ -57,10 +57,10 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 	
 	updateEkin(dH10);
 	
-	if (dAna->top == 0) { //i.e inclusive event
+	if (dAna->d2pi.top == 0) { //i.e inclusive event
 		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
 	}else{ //i.e 2pi event
-		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->top-1]);
+		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1]);
 	}
 	
 	

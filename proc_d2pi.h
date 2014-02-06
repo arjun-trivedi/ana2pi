@@ -228,7 +228,7 @@ void ProcD2pi::handle() {
 			Bool_t t2a = gP && gPip && !gPim;// && dH10->gpart == 3; //atrivedi: 071613
 			Bool_t t2b = mm2ppip>0 && mm2ppip<0.04;// && dAna->d2pi.W < 1.1; //atrivedi tmp
 			Bool_t t3a = gP && gPim && !gPip;// && dH10->gpart == 3; //atrivedi: 071613
-			Bool_t t3b = mm2ppim>0 && mm2ppim<0.04;// && dAna->top.W < 1.1; //atrivedi tmp
+			Bool_t t3b = mm2ppim>0 && mm2ppim<0.04;// && dAna->d2pi.top.W < 1.1; //atrivedi tmp
 			Bool_t t4a = gPip && gPim && !gP;// && dH10->gpart == 3; //atrivedi: 071613
 			Bool_t t4b = mm2pippim>0.8 && mm2pippim<1;
 			
@@ -248,24 +248,24 @@ void ProcD2pi::handle() {
 				
 				if (t1) {
 					hevtsum->Fill(EVT_T1);
-					dAna->top = 1;
+					dAna->d2pi.top = 1;
 				}else if (t2) {
 					hevtsum->Fill(EVT_T2);
-					dAna->top = 2;
+					dAna->d2pi.top = 2;
 					_lvPim = _lvMM[TOP2];
 				}else if (t3) {
 					hevtsum->Fill(EVT_T3);
-					dAna->top = 3;
+					dAna->d2pi.top = 3;
 					_lvPip = _lvMM[TOP3];
 				}else if (t4) {
 					hevtsum->Fill(EVT_T4);
-					dAna->top = 4;
+					dAna->d2pi.top = 4;
 					_lvP = _lvMM[TOP4];
 				}
 				UpdateVarsets();
-				dAna->fillYields(_yields_R[dAna->top-1]);
-				dAna->fillHistsMM(_hists_MM_R[dAna->top-1]);
-				dAna->fillHistsEkin(_hists_ekin_R[dAna->top-1]);
+				dAna->fillYields(_yields_R[dAna->d2pi.top-1]);
+				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
+				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
 			} else (hevtsum->Fill(EVT_OTHER));
 		}
 	}
