@@ -9,6 +9,7 @@
 			1. proc_top & data_top -> proc_d2pi & data_2pi (Code readability)
 				1.i.  More data added to Data2pi (Code integrity)
 				1.ii. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
+				1.iii. Added functionality to make d2pi Tree (New functionality)
 			2. Moved "top" from DataAna to Data2pi (Code integrity)
 			3. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
 				
