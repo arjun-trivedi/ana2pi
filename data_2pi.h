@@ -9,6 +9,7 @@ class Data2pi:public TObject
 
 public:
 	Data2pi();
+	ClassDef(Data2pi, 1)
 	virtual ~Data2pi();
 	void Clear();
 	
