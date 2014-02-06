@@ -1,5 +1,7 @@
 #include "data_2pi.h"
 
+ClassImp(Data2pi)
+
 Data2pi::Data2pi()
 {
 }
