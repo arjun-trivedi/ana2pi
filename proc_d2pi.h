@@ -28,6 +28,8 @@ protected:
 	void SetLabFrmHadronLvs();
 	void UpdateD2pi_MM(Bool_t ismc  = kFALSE);
 	void UpdateD2pi(Bool_t ismc = kFALSE);
+
+	void CreateBranches();
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
@@ -102,11 +104,16 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 
 	if (_procT) {
 		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
-		_tT->Branch("d","Data2pi",&dAna->d2pi_mc,32000,0);
+		//_tT->Branch("d","Data2pi",&dAna->d2pi_mc,32000,0);//1);
+		_tT->Branch("d",&dAna->d2pi_mc,32000,0);//1);
 	}
 	if (_procR) {
 		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
-		_tR->Branch("d","DataElastic",&dAna->d2pi,32000,0);
+		//_tR->Branch("d","Data2pi",&dAna->d2pi,32000,1);
+		//_tR->Branch("d",&dAna->d2pi,32000,0);//99);
+
+		_tR->Branch("p_e",&dAna->d2pi.p_e);//99);
+		_tR->Branch("p_p",&dAna->d2pi.p_e);
 	}
 }
 
@@ -600,6 +607,19 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->varset3.phi = getPhi(_lvPipCMS);
 	//tp->varset1.alpha = getAlpha(_lvPipCMS);
 	tp->varset3.alpha = 180;*/
+}
+
+void ProcD2pi::CreateBranches(){
+	/*if (_procT) {
+		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
+		_tT->Branch("d","Data2pi",&dAna->d2pi_mc,32000,0);//1);
+	}
+	if (_procR) {
+		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
+		//_tR->Branch("d","Data2pi",&dAna->d2pi,32000,1);
+		_tR->Branch("p_e",&dAna->d2pi.p_e);//99);
+		_tR->Branch("p_p",&dAna->d2pi.p_e);
+	}*/
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
