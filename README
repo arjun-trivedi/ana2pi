@@ -10,6 +10,7 @@
 				1.i.  More data added to Data2pi (Code integrity)
 				1.ii. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
 				1.iii. Added functionality to make d2pi Tree (New functionality)
+                                1.iv. Added functionality for a single instantiation of ProcD2pi to make `d2pi` for Thrown and Reconstructed events (earlier a single instantiation could make `d2pi` for Thrown or Reconstructed events)  
 			2. Moved "top" from DataAna to Data2pi (Code integrity)
 			3. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
 				

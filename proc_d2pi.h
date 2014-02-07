@@ -149,17 +149,19 @@ void ProcD2pi::handle() {
 	
 	hevtsum->Fill(EVT);
 	
-	if (_procT){
+	if (_procT && !_procR){
 		McKin();
 		dAna->fillYields(_yields_T, kTRUE);
 		dAna->fillHistsMM(_hists_MM_T, kTRUE);
 		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 		_tT->Fill();
-	}
-	if(!_procR){
 		EpProcessor::handle(); 
 		return;
 	}
+	/*if(!_procR){
+		EpProcessor::handle(); 
+		return;
+	}*/
 
 	//! ResetLvs() before _procR
 	//! (In case of _procT, Lvs will have been set to Thrown values)
@@ -275,6 +277,13 @@ void ProcD2pi::handle() {
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
 				_tR->Fill();
+				if (_procT){
+					McKin();
+					dAna->fillYields(_yields_T, kTRUE);
+					dAna->fillHistsMM(_hists_MM_T, kTRUE);
+					dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
+					_tT->Fill();
+				}
 			} else (hevtsum->Fill(EVT_OTHER));
 		}
 	}
