@@ -29,7 +29,7 @@ protected:
 	void UpdateD2pi_MM(Bool_t ismc  = kFALSE);
 	void UpdateD2pi(Bool_t ismc = kFALSE);
 
-	void AddBranches(TTree* t);
+	void AddBranches(TTree* t, Bool_t ismc=kFALSE);
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
@@ -72,16 +72,6 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	_procT=procT;
 	_procR=procR;
 		
-	_hists_ana_MM = NULL; //for techincal reasons, hists was used
-	for (int iTop = 0; iTop < NTOPS; ++iTop)
-	{
-		_yields_R[iTop]   =NULL;
-		_hists_MM_R[iTop]  =NULL;
-		_hists_ekin_R[iTop]=NULL;
-	}
-	_yields_T   =NULL;
-	_hists_MM_T  =NULL;
-	_hists_ekin_T=NULL; 
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->SetMinimum(0);
@@ -103,10 +93,33 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
 
 	if (_procT) {
+		TDirectory* subdir=NULL;
+		if (_procR) subdir=dirout->mkdir("T");
+		else subdir=dirout;
+
+		subdir->cd();
+		_yields_T    =dAna->makeYields();
+		_hists_MM_T  =dAna->makeHistsMM();
+		_hists_ekin_T=dAna->makeHistsEkin();
+		
 		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
-		AddBranches(_tT);
+		AddBranches(_tT,kTRUE);
 	}
 	if (_procR) {
+		TDirectory* subdir=NULL;
+		if (_procT) subdir=dirout->mkdir("R");
+		else subdir=dirout;
+
+		subdir->cd();
+		_hists_ana_MM = dAna->makeHistsMM();
+		for (int iTop = 0; iTop < NTOPS; ++iTop)
+		{
+			subdir->mkdir(TString::Format("top%d",iTop+1))->cd();
+			_yields_R[iTop]    =dAna->makeYields();
+			_hists_MM_R[iTop]  =dAna->makeHistsMM();
+			_hists_ekin_R[iTop]=dAna->makeHistsEkin();
+		}
+		subdir->cd();
 		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
 		AddBranches(_tR);
 	}
@@ -136,24 +149,6 @@ void ProcD2pi::handle() {
 	
 	hevtsum->Fill(EVT);
 	
-	if (_procR && _hists_ana_MM==NULL) {
-		dirout->cd();
-		_hists_ana_MM = dAna->makeHistsMM();
-		for (int iTop = 0; iTop < NTOPS; ++iTop)
-		{
-			dirout->mkdir(TString::Format("top%d",iTop+1))->cd();
-			_yields_R[iTop]   =dAna->makeYields();
-			_hists_MM_R[iTop]  =dAna->makeHistsMM();
-			_hists_ekin_R[iTop]=dAna->makeHistsEkin();
-		}
-	}else if (_procT && _hists_MM_T==NULL){
-		dirout->cd();
-		//dirout->mkdir("mc")->cd();
-		_yields_T   =dAna->makeYields();
-		_hists_MM_T  =dAna->makeHistsMM();
-		_hists_ekin_T=dAna->makeHistsEkin();
-	}
-
 	if (_procT){
 		McKin();
 		dAna->fillYields(_yields_T, kTRUE);
@@ -166,7 +161,6 @@ void ProcD2pi::handle() {
 		return;
 	}
 
-	
 	//! ResetLvs() before _procR
 	//! (In case of _procT, Lvs will have been set to Thrown values)
 	ResetLvs(); 
@@ -604,65 +598,68 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->varset3.alpha = 180;*/
 }
 
-void ProcD2pi::AddBranches(TTree* t){
+void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*/){
+	Data2pi *tp = &(dAna->d2pi);
+	if (ismc) tp = &(dAna->d2pi_mc);
+
 	//! Initial Beam Energy
-	t->Branch("p_e0",&dAna->d2pi.p_e0);
+	t->Branch("p_e0",&tp->p_e0);
 	//! Reconstructed Kinematics 
 	//! for e',p',p,pip,pim at e' vertex
-	t->Branch("p_e",&dAna->d2pi.p_e);
-	t->Branch("p_p",&dAna->d2pi.p_p);
-	t->Branch("p_pip",&dAna->d2pi.p_pip);
-	t->Branch("p_pim",&dAna->d2pi.p_pim);
-	t->Branch("theta_e",&dAna->d2pi.theta_e);
-	t->Branch("theta_p",&dAna->d2pi.theta_p);
-	t->Branch("theta_pip",&dAna->d2pi.theta_pip);
-	t->Branch("theta_pim",&dAna->d2pi.theta_pim);
-	t->Branch("phi_e",&dAna->d2pi.phi_e);
-	t->Branch("phi_p",&dAna->d2pi.phi_p);
-	t->Branch("phi_pip",&dAna->d2pi.phi_pip);
-	t->Branch("phi_pim",&dAna->d2pi.phi_pim);
+	t->Branch("p_e",&tp->p_e);
+	t->Branch("p_p",&tp->p_p);
+	t->Branch("p_pip",&tp->p_pip);
+	t->Branch("p_pim",&tp->p_pim);
+	t->Branch("theta_e",&tp->theta_e);
+	t->Branch("theta_p",&tp->theta_p);
+	t->Branch("theta_pip",&tp->theta_pip);
+	t->Branch("theta_pim",&tp->theta_pim);
+	t->Branch("phi_e",&tp->phi_e);
+	t->Branch("phi_p",&tp->phi_p);
+	t->Branch("phi_pip",&tp->phi_pip);
+	t->Branch("phi_pim",&tp->phi_pim);
 	//! Reconstructed e' Vertex
-	t->Branch("vx_e",&dAna->d2pi.vx_e);
-	t->Branch("vx_p",&dAna->d2pi.vx_p);
-	t->Branch("vx_pip",&dAna->d2pi.vx_pip);
-	t->Branch("vx_pim",&dAna->d2pi.vx_pim);
-	t->Branch("vy_e",&dAna->d2pi.vy_e);
-	t->Branch("vy_p",&dAna->d2pi.vy_p);
-	t->Branch("vy_pip",&dAna->d2pi.vy_pip);
-	t->Branch("vy_pim",&dAna->d2pi.vy_pim);
-	t->Branch("vz_e",&dAna->d2pi.vz_e);
-	t->Branch("vz_p",&dAna->d2pi.vz_p);
-	t->Branch("vz_pip",&dAna->d2pi.vz_pip);
-	t->Branch("vz_pim",&dAna->d2pi.vz_pim);
+	t->Branch("vx_e",&tp->vx_e);
+	t->Branch("vx_p",&tp->vx_p);
+	t->Branch("vx_pip",&tp->vx_pip);
+	t->Branch("vx_pim",&tp->vx_pim);
+	t->Branch("vy_e",&tp->vy_e);
+	t->Branch("vy_p",&tp->vy_p);
+	t->Branch("vy_pip",&tp->vy_pip);
+	t->Branch("vy_pim",&tp->vy_pim);
+	t->Branch("vz_e",&tp->vz_e);
+	t->Branch("vz_p",&tp->vz_p);
+	t->Branch("vz_pip",&tp->vz_pip);
+	t->Branch("vz_pim",&tp->vz_pim);
 	//! Q2, W
-	t->Branch("Q2",&dAna->d2pi.Q2);
-	t->Branch("W",&dAna->d2pi.W);
+	t->Branch("Q2",&tp->Q2);
+	t->Branch("W",&tp->W);
 	//! Helicity
-	t->Branch("h",&dAna->d2pi.h);
+	t->Branch("h",&tp->h);
 	//! {MMs}
-	t->Branch("mm2ppippim",&dAna->d2pi.mm2ppippim);
-	t->Branch("mmppippim",&dAna->d2pi.mmppippim);
-	t->Branch("mm2ppip",&dAna->d2pi.mm2ppip);
-	t->Branch("mmppip",&dAna->d2pi.mmppip);
-	t->Branch("mm2ppim",&dAna->d2pi.mm2ppim);
-	t->Branch("mmppim",&dAna->d2pi.mmppim);
-	t->Branch("mm2pippim",&dAna->d2pi.mm2pippim);
-	t->Branch("mmpippim",&dAna->d2pi.mmpippim);
+	t->Branch("mm2ppippim",&tp->mm2ppippim);
+	t->Branch("mmppippim",&tp->mmppippim);
+	t->Branch("mm2ppip",&tp->mm2ppip);
+	t->Branch("mmppip",&tp->mmppip);
+	t->Branch("mm2ppim",&tp->mm2ppim);
+	t->Branch("mmppim",&tp->mmppim);
+	t->Branch("mm2pippim",&tp->mm2pippim);
+	t->Branch("mmpippim",&tp->mmpippim);
 	//! Topology
-	t->Branch("top",&dAna->d2pi.top);
+	t->Branch("top",&tp->top);
 	//! Varsets
-	t->Branch("M_ppip",&dAna->d2pi.M_ppip);
-	t->Branch("M_ppim",&dAna->d2pi.M_ppim);
-	t->Branch("M_pippim",&dAna->d2pi.M_pippim);
-	t->Branch("theta_cms_p",&dAna->d2pi.theta_cms_p);
-	t->Branch("theta_cms_pip",&dAna->d2pi.theta_cms_pip);
-	t->Branch("theta_cms_pim",&dAna->d2pi.theta_cms_pim);
-	t->Branch("phi_cms_p",&dAna->d2pi.phi_cms_p);
-	t->Branch("phi_cms_pip",&dAna->d2pi.phi_cms_pip);
-	t->Branch("phi_cms_pim",&dAna->d2pi.phi_cms_pim);
-	t->Branch("alpha_1",&dAna->d2pi.alpha_1);
-	t->Branch("alpha_2",&dAna->d2pi.alpha_2);
-	t->Branch("alpha_3",&dAna->d2pi.alpha_3);
+	t->Branch("M_ppip",&tp->M_ppip);
+	t->Branch("M_ppim",&tp->M_ppim);
+	t->Branch("M_pippim",&tp->M_pippim);
+	t->Branch("theta_cms_p",&tp->theta_cms_p);
+	t->Branch("theta_cms_pip",&tp->theta_cms_pip);
+	t->Branch("theta_cms_pim",&tp->theta_cms_pim);
+	t->Branch("phi_cms_p",&tp->phi_cms_p);
+	t->Branch("phi_cms_pip",&tp->phi_cms_pip);
+	t->Branch("phi_cms_pim",&tp->phi_cms_pim);
+	t->Branch("alpha_1",&tp->alpha_1);
+	t->Branch("alpha_2",&tp->alpha_2);
+	t->Branch("alpha_3",&tp->alpha_3);
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
