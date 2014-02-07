@@ -1,1 +1,5 @@
 setenv PATH "${PATH}:${WORKSPACE}/ana2pi/sub_studies/setup_sim_CentOS6"
+
+setenv SETUPSIMCENTOS6_DATADIR "/e1f.sim2pi.datadir/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon"
+setenv SETUPSIMCENTOS6_ANADIR $SETUPSIMCENTOS6_DATADIR
+
