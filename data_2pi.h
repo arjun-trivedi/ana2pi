@@ -42,7 +42,6 @@ public:
 	Float_t vz_p;
 	Float_t vz_pip;
 	Float_t vz_pim;	
-
 	//! Q2, W
 	Float_t Q2; 
 	Float_t W;

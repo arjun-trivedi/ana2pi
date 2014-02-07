@@ -29,7 +29,7 @@ protected:
 	void UpdateD2pi_MM(Bool_t ismc  = kFALSE);
 	void UpdateD2pi(Bool_t ismc = kFALSE);
 
-	void CreateBranches();
+	void AddBranches(TTree* t);
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
@@ -104,16 +104,11 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 
 	if (_procT) {
 		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
-		//_tT->Branch("d","Data2pi",&dAna->d2pi_mc,32000,0);//1);
-		_tT->Branch("d",&dAna->d2pi_mc,32000,0);//1);
+		AddBranches(_tT);
 	}
 	if (_procR) {
 		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
-		//_tR->Branch("d","Data2pi",&dAna->d2pi,32000,1);
-		//_tR->Branch("d",&dAna->d2pi,32000,0);//99);
-
-		_tR->Branch("p_e",&dAna->d2pi.p_e);//99);
-		_tR->Branch("p_p",&dAna->d2pi.p_e);
+		AddBranches(_tR);
 	}
 }
 
@@ -609,17 +604,65 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->varset3.alpha = 180;*/
 }
 
-void ProcD2pi::CreateBranches(){
-	/*if (_procT) {
-		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
-		_tT->Branch("d","Data2pi",&dAna->d2pi_mc,32000,0);//1);
-	}
-	if (_procR) {
-		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
-		//_tR->Branch("d","Data2pi",&dAna->d2pi,32000,1);
-		_tR->Branch("p_e",&dAna->d2pi.p_e);//99);
-		_tR->Branch("p_p",&dAna->d2pi.p_e);
-	}*/
+void ProcD2pi::AddBranches(TTree* t){
+	//! Initial Beam Energy
+	t->Branch("p_e0",&dAna->d2pi.p_e0);
+	//! Reconstructed Kinematics 
+	//! for e',p',p,pip,pim at e' vertex
+	t->Branch("p_e",&dAna->d2pi.p_e);
+	t->Branch("p_p",&dAna->d2pi.p_p);
+	t->Branch("p_pip",&dAna->d2pi.p_pip);
+	t->Branch("p_pim",&dAna->d2pi.p_pim);
+	t->Branch("theta_e",&dAna->d2pi.theta_e);
+	t->Branch("theta_p",&dAna->d2pi.theta_p);
+	t->Branch("theta_pip",&dAna->d2pi.theta_pip);
+	t->Branch("theta_pim",&dAna->d2pi.theta_pim);
+	t->Branch("phi_e",&dAna->d2pi.phi_e);
+	t->Branch("phi_p",&dAna->d2pi.phi_p);
+	t->Branch("phi_pip",&dAna->d2pi.phi_pip);
+	t->Branch("phi_pim",&dAna->d2pi.phi_pim);
+	//! Reconstructed e' Vertex
+	t->Branch("vx_e",&dAna->d2pi.vx_e);
+	t->Branch("vx_p",&dAna->d2pi.vx_p);
+	t->Branch("vx_pip",&dAna->d2pi.vx_pip);
+	t->Branch("vx_pim",&dAna->d2pi.vx_pim);
+	t->Branch("vy_e",&dAna->d2pi.vy_e);
+	t->Branch("vy_p",&dAna->d2pi.vy_p);
+	t->Branch("vy_pip",&dAna->d2pi.vy_pip);
+	t->Branch("vy_pim",&dAna->d2pi.vy_pim);
+	t->Branch("vz_e",&dAna->d2pi.vz_e);
+	t->Branch("vz_p",&dAna->d2pi.vz_p);
+	t->Branch("vz_pip",&dAna->d2pi.vz_pip);
+	t->Branch("vz_pim",&dAna->d2pi.vz_pim);
+	//! Q2, W
+	t->Branch("Q2",&dAna->d2pi.Q2);
+	t->Branch("W",&dAna->d2pi.W);
+	//! Helicity
+	t->Branch("h",&dAna->d2pi.h);
+	//! {MMs}
+	t->Branch("mm2ppippim",&dAna->d2pi.mm2ppippim);
+	t->Branch("mmppippim",&dAna->d2pi.mmppippim);
+	t->Branch("mm2ppip",&dAna->d2pi.mm2ppip);
+	t->Branch("mmppip",&dAna->d2pi.mmppip);
+	t->Branch("mm2ppim",&dAna->d2pi.mm2ppim);
+	t->Branch("mmppim",&dAna->d2pi.mmppim);
+	t->Branch("mm2pippim",&dAna->d2pi.mm2pippim);
+	t->Branch("mmpippim",&dAna->d2pi.mmpippim);
+	//! Topology
+	t->Branch("top",&dAna->d2pi.top);
+	//! Varsets
+	t->Branch("M_ppip",&dAna->d2pi.M_ppip);
+	t->Branch("M_ppim",&dAna->d2pi.M_ppim);
+	t->Branch("M_pippim",&dAna->d2pi.M_pippim);
+	t->Branch("theta_cms_p",&dAna->d2pi.theta_cms_p);
+	t->Branch("theta_cms_pip",&dAna->d2pi.theta_cms_pip);
+	t->Branch("theta_cms_pim",&dAna->d2pi.theta_cms_pim);
+	t->Branch("phi_cms_p",&dAna->d2pi.phi_cms_p);
+	t->Branch("phi_cms_pip",&dAna->d2pi.phi_cms_pip);
+	t->Branch("phi_cms_pim",&dAna->d2pi.phi_cms_pim);
+	t->Branch("alpha_1",&dAna->d2pi.alpha_1);
+	t->Branch("alpha_2",&dAna->d2pi.alpha_2);
+	t->Branch("alpha_3",&dAna->d2pi.alpha_3);
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
