@@ -495,14 +495,14 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->p_p=_lvP.P();
 	tp->p_pip=_lvPip.P();
 	tp->p_pim=_lvPim.P();
-	tp->theta_e=_lvE.Theta();
-	tp->theta_p=_lvP.Theta();
-	tp->theta_pip=_lvPip.Theta();
-	tp->theta_pim=_lvPim.Theta();
-	tp->phi_e=_lvE.Phi();
-	tp->phi_p=_lvP.Phi();
-	tp->phi_pip=_lvPip.Phi();
-	tp->phi_pim=_lvPim.Phi();
+	tp->theta_e=_lvE.Theta()*RadToDeg();
+	tp->theta_p=_lvP.Theta()*RadToDeg();
+	tp->theta_pip=_lvPip.Theta()*RadToDeg();
+	tp->theta_pim=_lvPim.Theta()*RadToDeg();
+	tp->phi_e=_lvE.Phi()*RadToDeg();
+	tp->phi_p=_lvP.Phi()*RadToDeg();
+	tp->phi_pip=_lvPip.Phi()*RadToDeg();
+	tp->phi_pim=_lvPim.Phi()*RadToDeg();
 	//! Reconstructed e' Vertex
 	if (!ismc){
 		tp->vx_e=dH10->vx[dAna->h10idxE];
