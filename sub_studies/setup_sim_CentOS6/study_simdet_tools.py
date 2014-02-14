@@ -15,6 +15,7 @@ import os
 dfT=""
 dfR=""
 datadir=''
+xx=None
 
 NPARTS=4
 PARTS=['e','p','pip','pim']
@@ -30,7 +31,7 @@ sgmas=[[] for i in range(NCOLS)]
 NTOPS=4
 TOPS=[1,2,3,4]
 
-def load_data():
+def load_data(beam_energy):
 	"""
 	Load data
 	"""
@@ -39,9 +40,11 @@ def load_data():
 	global dfT
 	global dfR
 	global datadir
-	#f = '/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon/d2pi.root'
+	global be
+
+	be=beam_energy
 	datadir=os.environ['SETUPSIMCENTOS6_DATADIR']
-	f = os.path.join(datadir,'d2pi_be5485.root')
+	f = os.path.join(datadir,'d2pi_be%d.root'%be)
 	arrT = root2array(f,'d2piTR/T/tT')#,stop=10000)#,start=1,stop=5)#,start=1,stop=5)#start=1,stop=2)
 	arrR = root2array(f,'d2piTR/R/tR')#,stop=10000)#,start=1,stop=5)#,start=1,stop=5)#start=1,stop=2)
 
@@ -52,7 +55,7 @@ def plot_q2w():
 	"""
 	Look at Q2 Vs. W
 	"""
-	print __doc__
+	print plot_q2w.__doc__
 
 	q2T=dfT['Q2']
 	wT=dfT['W']
@@ -116,17 +119,23 @@ def get_detector_resolution_and_offset():
     print get_detector_resolution_and_offset.__doc__
         
     ROOT.gStyle.SetOptFit(1111)
+    ROOT.gStyle.SetStatW(0.4); 
+    ROOT.gStyle.SetStatH(0.2); 
+    CWIDTH=1200
+    CHEIGHT=1000
         
     deltas=[[] for i in range(NCOLS)]
     hs=[[] for i in range(NCOLS)]
     global means#=[[] for i in range(NCOLS)]
     global sgmas#=[[] for i in range(NCOLS)]
     cs=[]
-    #fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 10))
+    outdir='%s/be%d'%(datadir,be)
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
     for icol in range(NCOLS):
         #print "processing %s"%COLS[ipart]
-        cs.append(ROOT.TCanvas('Delta_%s'%COLS[icol],'Delta_%s'%COLS[icol]))
-        cs[icol].Divide(1,4)
+        cs.append(ROOT.TCanvas('Delta_%s'%COLS[icol],'Delta_%s'%COLS[icol],CWIDTH,CHEIGHT))
+        cs[icol].Divide(2,2)
         for itop in range(NTOPS):
             #print "processing top %d"%TOPS[itop]
             sel=(dfR['top']==TOPS[itop])
@@ -149,14 +158,15 @@ def get_detector_resolution_and_offset():
             else:
                 means[icol].append(0)
                 sgmas[icol].append(0)
-    
-    if not ROOT.gROOT.IsBatch():
-		plt.show()
-	 	# wait for you to close the ROOT canvas before exiting
-	 	wait(True)
+        cs[icol].SaveAs('%s/%s.png'%(outdir,cs[icol].GetName()))
+  #   if not ROOT.gROOT.IsBatch():
+		# plt.show()
+	 # 	# wait for you to close the ROOT canvas before exiting
+	 # 	wait(True)
         
     #return means,sgmas      
     #plt.show()
+
 def plot_detector_resolution_and_offset():
     fig,(ax)=plt.subplots(nrows=4,ncols=2,figsize=(15,10))
     
@@ -244,6 +254,95 @@ def plot_detector_resolution_and_offset():
     ax8.set_xlabel('top')
     ax8.set_ylabel('resolution')
     ax8.grid(True)
+
+
+# def plot_detector_resolution_and_offset():
+#     fig,(ax)=plt.subplots(nrows=4,ncols=2,figsize=(15,10))
+    
+#     ##-- momenta
+#     ax1=ax[0][0]
+#     lns1=ax1.plot(TOPS,means[0],'b^',
+#                   TOPS,means[1],'g>',
+#                   TOPS,means[2],'rv',
+#                   TOPS,means[3],'k<')
+#     ax1.set_xlim(0,5)
+#     ax1.set_ylim(ax1.get_ylim()[0]-0.001,ax1.get_ylim()[1]+0.001)
+#     ax1.set_xlabel('top')
+#     ax1.set_ylabel('offset:SR-ST')
+#     ax1.legend(lns1,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
+#     #ax1.legend(loc='best')
+    
+#     ax2=ax[0][1]
+#     lns2=ax2.plot(TOPS,sgmas[0],'b^',
+#                   TOPS,sgmas[1],'g>',
+#                   TOPS,sgmas[2],'rv',
+#                   TOPS,sgmas[3],'k<')
+#     ax2.set_xlim(0,5)
+#     ax2.set_ylim(ax2.get_ylim()[0]-0.001,ax2.get_ylim()[1]+0.001)
+#     ax2.set_xlabel('top')
+#     ax2.set_ylabel('resolution')
+#     ax2.legend(lns2,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
+    
+#     ##-- Q2,W
+#     ax3=ax[1][0]
+#     lns3=ax3.plot(TOPS,means[4],'b^',
+#                   TOPS,means[5],'g>',)                  
+#     ax3.set_xlim(0,5)
+#     ax3.set_ylim(ax3.get_ylim()[0]-0.001,ax3.get_ylim()[1]+0.001)
+#     #ax3.set_ylim(-0.003,0.003)
+#     ax3.set_xlabel('top')
+#     ax3.set_ylabel('offset')
+#     ax3.grid(True)
+#     ax3.legend(lns2,[COLS[4],COLS[5]],loc='best',prop={'size':9})
+    
+#     ax4=ax[1][1]
+#     lns4=ax4.plot(TOPS,sgmas[4],'b^',
+#                   TOPS,sgmas[5],'g>',)                  
+#     ax4.set_xlim(0,5)
+#     ax4.set_ylim(ax4.get_ylim()[0]-0.001,ax4.get_ylim()[1]+0.001)
+#     ax4.set_xlabel('top')
+#     ax4.set_ylabel('resolution')
+#     ax4.legend(lns4,[COLS[4],COLS[5]],loc='best',prop={'size':9})
+    
+#     #-- {Mij}
+#     ax5=ax[2][0]
+#     lns5=ax5.plot(TOPS,means[6],'b^',
+#                   TOPS,means[7],'g>',
+#                   TOPS,means[8],'rv')
+#     ax5.set_xlim(0,5)
+#     ax5.set_ylim(ax5.get_ylim()[0]-0.001,ax5.get_ylim()[1]+0.001)
+#     ax5.set_xlabel('top')
+#     ax5.set_ylabel('offset:SR-ST')
+#     ax5.legend(lns5,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
+    
+    
+#     ax6=ax[2][1]
+#     lns6=ax6.plot(TOPS,sgmas[6],'b^',
+#                   TOPS,sgmas[7],'g>',
+#                   TOPS,sgmas[8],'rv')
+#     ax6.set_xlim(0,5)
+#     ax6.set_ylim(ax6.get_ylim()[0]-0.001,ax6.get_ylim()[1]+0.001)
+#     ax6.set_xlabel('top')
+#     ax6.set_ylabel('resolution')
+#     ax6.legend(lns6,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
+    
+#     #-- MMs
+#     ax7=ax[3][0]
+#     lns7=ax7.plot(TOPS,[means[9][0],means[10][1],means[11][2],means[12][3]],'b^')
+#     ax7.set_xlim(0,5)
+#     #ax7.set_ylim(-0.001,0.006)
+#     ax7.set_xlabel('top')
+#     ax7.set_ylabel('offset:SR-ST')
+#     ax7.grid(True)
+#     #ax7.legend(lns7,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
+    
+#     ax8=ax[3][1]
+#     lns8=ax8.plot(TOPS,[sgmas[9][0],sgmas[10][1],sgmas[11][2],sgmas[12][3]],'b^')
+#     ax8.set_xlim(0,5)
+#     ax8.set_ylim(-0.001,0.030)
+#     ax8.set_xlabel('top')
+#     ax8.set_ylabel('resolution')
+#     ax8.grid(True)
     
 
-	
+# 	
