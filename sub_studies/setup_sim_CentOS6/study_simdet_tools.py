@@ -27,10 +27,11 @@ NCOLS=13+12# 3- components of momentum for each of the 4 particles
 # COLS=['p_e',  'p_p',  'p_pip','p_pim', 'Q2',    'W',   'M_ppip', 'M_ppim', 'M_pippim', 'mm2ppippim', 'mmppip','mmppim','mmpippim']
 # XMIN=[-0.20, -0.08,   -0.08,  -0.08,   -0.06,  -0.06,  -0.06,    -0.06,    -0.06,       -0.001,       -0.2,-0.2,-0.2]
 # XMAX=[ 0.20,  0.08,    0.08,   0.08,    0.06,   0.06,   0.06,     0.06,     0.06,        0.001,        0.2,0.2,0.2]
-COLS=['p_e',  'p_p',  'p_pip','p_pim', 'px_e','py_e','pz_e', 'px_p','py_p','pz_p', 'px_pip','py_pip','pz_pip', 'px_pim','py_pim','pz_pim','Q2',    'W',   'M_ppip', 'M_ppim', 'M_pippim', 'mm2ppippim', 'mmppip','mmppim','mmpippim']
-XMIN=[-0.20, -0.08,   -0.08,  -0.08,   -0.08,-0.08,-0.08, -0.08,-0.08,-0.08, -0.08,-0.08,-0.08, -0.08,-0.08,-0.08, -0.06,  -0.06,  -0.06,    -0.06,    -0.06,       -0.001,       -0.2,-0.2,-0.2]
-XMAX=[ 0.20,  0.08,    0.08,   0.08,    0.08, 0.08, 0.08,  0.08, 0.08, 0.08,  0.08, 0.08, 0.08,  0.08, 0.08, 0.08,  0.06,   0.06,   0.06,     0.06,     0.06,        0.001,        0.2,0.2,0.2]
+COLS=['p_e','p_p','p_pip','p_pim', 'px_e','py_e','pz_e', 'px_p','py_p','pz_p', 'px_pip','py_pip','pz_pip', 'px_pim','py_pim','pz_pim','Q2','W',    'M_ppip','M_ppim','M_pippim', 'mm2ppippim','mmppip','mmppim','mmpippim']
+XMIN=[-0.20,-0.08,-0.08,-0.08,     -0.08,-0.08,-0.08,    -0.08,-0.08,-0.08,    -0.08,-0.08,-0.08,          -0.08,-0.08,-0.08,         -0.06,-0.06, -0.06,-0.06,-0.06,           -0.001,-0.2,-0.2,-0.2]
+XMAX=[ 0.20, 0.08, 0.08, 0.08,      0.08, 0.08, 0.08,     0.08, 0.08, 0.08,     0.08, 0.08, 0.08,           0.08, 0.08, 0.08,          0.06, 0.06,  0.06, 0.06, 0.06,            0.001, 0.2, 0.2, 0.2]
 NBINS=100
+dP_E,dP_P,dP_PIP,dP_PIM, dPX_E,dPY_E,dPZ_E, dPX_P,dPY_P,dPZ_P, dPX_PIP,dPY_PIP,dPZ_PIP, dPX_PIM,dPY_PIM,dPZ_PIM, dQ2,dW,  dM_PPIP,dM_PPIM,dM_PIPPIM, dMM2PPIPPIM,dMMPPIP,dMMPPIM,dMMPIPPIM = range(NCOLS)
 # means=[[] for i in range(NCOLS)]
 # sgmas=[[] for i in range(NCOLS)]
     
@@ -104,7 +105,7 @@ def plot_q2w():
     		interpolation='nearest',
     		aspect='auto',
     		origin='lower')
-	ax2.set_title('q2wR')
+	ax2.set_title(q2wR)
 	im2 = ax2.imshow(zR,
     		extent=[hq2wR.xedges(0), hq2wR.xedges(-1),
             hq2wR.yedges(0), hq2wR.yedges(-1)],
@@ -114,7 +115,7 @@ def plot_q2w():
 
 def plot_kinematics():
     """
-    Plot Reconstructed kinematics of e',p',pip,pim at the e' vertex 
+    Plot Reconstructed kinematics of e,p,pip,pim at the e vertex 
     Compare with Thrown kinematics
     """
     print plot_kinematics.__doc__
@@ -126,9 +127,9 @@ def plot_kinematics():
     figT = plt.figure(figsize=(20,8))
     for i in range(NPART):
         plt.subplot(1,NPART,i+1)
-        ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='T',color=['blue'])#,color=['red','blue'])
-        ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='R',color=['red'])
-        plt.legend(loc='best')
+        ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label=T,color=[blue])#,color=[red,blue])
+        ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label=R,color=[red])
+        plt.legend(loc=best)
     plt.show()
 
 def get_detector_resolution_and_offset():
@@ -179,7 +180,7 @@ def get_detector_resolution_and_offset():
             else:
                 means[icol].append(0)
                 sgmas[icol].append(0)
-        cs[icol].SaveAs('%s/%s.png'%(outdir,cs[icol].GetName()))
+        cs[icol].SaveAs("%s/%s.png"%(outdir,cs[icol].GetName()))
   #   if not ROOT.gROOT.IsBatch():
 		# plt.show()
 	 # 	# wait for you to close the ROOT canvas before exiting
@@ -189,198 +190,153 @@ def get_detector_resolution_and_offset():
     #plt.show()
 
 def plot_detector_resolution_and_offset(means,sgmas):
-    fig,(axs)=plt.subplots(nrows=8,ncols=2,figsize=(20,15))
+	fig_nrows=8
+	fig_ncols=2
+	fig,(axs)=plt.subplots(nrows=fig_nrows,ncols=fig_ncols,figsize=(20,40))
+	subplot_datas=[(dP_E,dP_P,dP_PIP,dP_PIM),
+    			   (dPX_E,dPY_E,dPZ_E),
+    			   (dPX_P,dPY_P,dPZ_P),
+    			   (dPX_PIP,dPY_PIP,dPZ_PIP),
+    			   (dPX_PIM,dPY_PIM,dPZ_PIM),
+    			   (dQ2,dW),
+    			   (dM_PPIP,dM_PPIM,dM_PIPPIM),
+    			   (dMM2PPIPPIM,dM_PPIP,dM_PPIM,dMMPIPPIM)]
+	marker_styles=['b^','g>','rv','k<']
     
-    ##-- momenta
-    ax=axs[0][0]
-    lns=ax.plot(TOPS,means[0],'b^',
-    			TOPS,means[1],'g>',
-                TOPS,means[2],'rv',
-                TOPS,means[3],'k<')
-    ax.set_xlim(0,5)
-    ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-    ax.set_xlabel('top')
-    ax.set_ylabel('offset:SR-ST')
-    ax.legend(lns,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-        
-    ax=axs[0][1]
-    lns=ax.plot(TOPS,sgmas[0],'b^',
-                TOPS,sgmas[1],'g>',
-                TOPS,sgmas[2],'rv',
-                TOPS,sgmas[3],'k<')
-    ax.set_xlim(0,5)
-    ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-    ax.set_xlabel('top')
-    ax.set_ylabel('resolution')
-    ax.legend(lns,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-    	    
-    ##-- Q2,W
-    ax=axs[1][0]
-    lns=ax.plot(TOPS,means[4],'b^',
-                TOPS,means[5],'g>',)                  
-    ax.set_xlim(0,5)
-    ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-    #ax.set_ylim(-0.003,0.003)
-    ax.set_xlabel('top')
-    ax.set_ylabel('offset')
-    ax.grid(True)
-    ax.legend(lns,[COLS[4],COLS[5]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-    
-    ax=axs[1][1]
-    lns=ax.plot(TOPS,sgmas[4],'b^',
-                TOPS,sgmas[5],'g>',)                  
-    ax.set_xlim(0,5)
-    ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-    ax.set_xlabel('top')
-    ax.set_ylabel('resolution')
-    ax.legend(lns,[COLS[4],COLS[5]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-    
-    #-- {Mij}
-    ax=axs[2][0]
-    lns=ax.plot(TOPS,means[6],'b^',
-                TOPS,means[7],'g>',
-                TOPS,means[8],'rv')
-    ax.set_xlim(0,5)
-    ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-    ax.set_xlabel('top')
-    ax.set_ylabel('offset:SR-ST')
-    ax.legend(lns,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-    
-    
-    ax=axs[2][1]
-    lns=ax.plot(TOPS,sgmas[6],'b^',
-                TOPS,sgmas[7],'g>',
-                TOPS,sgmas[8],'rv')
-    ax.set_xlim(0,5)
-    ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-    ax.set_xlabel('top')
-    ax.set_ylabel('resolution')
-    ax.legend(lns,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-    
-    #-- MMs
-    ax=axs[3][0]
-    lns=ax.plot(TOPS,[means[9][0],means[10][1],means[11][2],means[12][3]],'b^')
-    ax.set_xlim(0,5)
-    #ax.set_ylim(-0.001,0.006)
-    ax.set_xlabel('top')
-    ax.set_ylabel('offset:SR-ST')
-    ax.grid(True)
-    #ax.legend(lns,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
-    
-    ax=axs[3][1]
-    lns=ax.plot(TOPS,[sgmas[9][0],sgmas[10][1],sgmas[11][2],sgmas[12][3]],'b^')
-    ax.set_xlim(0,5)
-    ax.set_ylim(-0.001,0.030)
-    ax.set_xlabel('top')
-    ax.set_ylabel('resolution')
-    ax.grid(True)
-    for i in range(len(lns)):
-    	lns[i].set_markersize(10)
+	for irow in range(fig_nrows):
+		ax=axs[irow][0]
+		lns=[]
+		iln=0
+		for idata in subplot_datas[irow]:
+			lns.append(ax.plot(TOPS,means[idata],
+				       marker_styles[iln],markersize=10))
+			iln+=1
+		ax.set_xlim(0,5)
+		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+		ax.set_xlabel('top')
+		ax.set_ylabel('offset:SR-ST')
+		ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
+		# print [COLS[i] for i in subplot_datas[irow]]
+		# print len(lns)
+		# for i in range(len(lns)):
+		# 	print lns[i]
+		# 	lns[i].set_markersize(10)
 
+		ax=axs[irow][1]
+		lns=[]
+		iln=0
+		for idata in subplot_datas[irow]:
+			lns.append(ax.plot(TOPS,sgmas[idata],
+				       marker_styles[iln],markersize=10))
+			iln+=1
+		ax.set_xlim(0,5)
+		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+		ax.set_xlabel('top')
+		ax.set_ylabel('offset:SR-ST')
+		ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
+		# for i in range(len(lns)):
+		# 	lns[i].set_markersize(10)
+   
 
-
-
-# def plot_detector_resolution_and_offset():
-#     fig,(ax)=plt.subplots(nrows=4,ncols=2,figsize=(15,10))
+# def plot_detector_resolution_and_offset(means,sgmas):
+#     fig,(axs)=plt.subplots(nrows=8,ncols=2,figsize=(20,15))
     
 #     ##-- momenta
-#     ax1=ax[0][0]
-#     lns1=ax1.plot(TOPS,means[0],'b^',
-#                   TOPS,means[1],'g>',
-#                   TOPS,means[2],'rv',
-#                   TOPS,means[3],'k<')
-#     ax1.set_xlim(0,5)
-#     ax1.set_ylim(ax1.get_ylim()[0]-0.001,ax1.get_ylim()[1]+0.001)
-#     ax1.set_xlabel('top')
-#     ax1.set_ylabel('offset:SR-ST')
-#     ax1.legend(lns1,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
-#     #ax1.legend(loc='best')
-    
-#     ax2=ax[0][1]
-#     lns2=ax2.plot(TOPS,sgmas[0],'b^',
-#                   TOPS,sgmas[1],'g>',
-#                   TOPS,sgmas[2],'rv',
-#                   TOPS,sgmas[3],'k<')
-#     ax2.set_xlim(0,5)
-#     ax2.set_ylim(ax2.get_ylim()[0]-0.001,ax2.get_ylim()[1]+0.001)
-#     ax2.set_xlabel('top')
-#     ax2.set_ylabel('resolution')
-#     ax2.legend(lns2,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
-    
+#     ax=axs[0][0]
+#     lns=ax.plot(TOPS,means[0],b^,
+#     			TOPS,means[1],g>,
+#                 TOPS,means[2],rv,
+#                 TOPS,means[3],k<)
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(offset:SR-ST)
+#     ax.legend(lns,[COLS[0],COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
+        
+#     ax=axs[0][1]
+#     lns=ax.plot(TOPS,sgmas[0],b^,
+#                 TOPS,sgmas[1],g>,
+#                 TOPS,sgmas[2],rv,
+#                 TOPS,sgmas[3],k<)
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(resolution)
+#     ax.legend(lns,[COLS[0],COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
+
 #     ##-- Q2,W
-#     ax3=ax[1][0]
-#     lns3=ax3.plot(TOPS,means[4],'b^',
-#                   TOPS,means[5],'g>',)                  
-#     ax3.set_xlim(0,5)
-#     ax3.set_ylim(ax3.get_ylim()[0]-0.001,ax3.get_ylim()[1]+0.001)
-#     #ax3.set_ylim(-0.003,0.003)
-#     ax3.set_xlabel('top')
-#     ax3.set_ylabel('offset')
-#     ax3.grid(True)
-#     ax3.legend(lns2,[COLS[4],COLS[5]],loc='best',prop={'size':9})
+#     ax=axs[1][0]
+#     lns=ax.plot(TOPS,means[4],b^,
+#                 TOPS,means[5],g>,)                  
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+#     #ax.set_ylim(-0.003,0.003)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(offset)
+#     ax.grid(True)
+#     ax.legend(lns,[COLS[4],COLS[5]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
     
-#     ax4=ax[1][1]
-#     lns4=ax4.plot(TOPS,sgmas[4],'b^',
-#                   TOPS,sgmas[5],'g>',)                  
-#     ax4.set_xlim(0,5)
-#     ax4.set_ylim(ax4.get_ylim()[0]-0.001,ax4.get_ylim()[1]+0.001)
-#     ax4.set_xlabel('top')
-#     ax4.set_ylabel('resolution')
-#     ax4.legend(lns4,[COLS[4],COLS[5]],loc='best',prop={'size':9})
+#     ax=axs[1][1]
+#     lns=ax.plot(TOPS,sgmas[4],b^,
+#                 TOPS,sgmas[5],g>,)                  
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(resolution)
+#     ax.legend(lns,[COLS[4],COLS[5]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
     
 #     #-- {Mij}
-#     ax5=ax[2][0]
-#     lns5=ax5.plot(TOPS,means[6],'b^',
-#                   TOPS,means[7],'g>',
-#                   TOPS,means[8],'rv')
-#     ax5.set_xlim(0,5)
-#     ax5.set_ylim(ax5.get_ylim()[0]-0.001,ax5.get_ylim()[1]+0.001)
-#     ax5.set_xlabel('top')
-#     ax5.set_ylabel('offset:SR-ST')
-#     ax5.legend(lns5,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
+#     ax=axs[2][0]
+#     lns=ax.plot(TOPS,means[6],b^,
+#                 TOPS,means[7],g>,
+#                 TOPS,means[8],rv)
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(offset:SR-ST)
+#     ax.legend(lns,[COLS[6],COLS[7],COLS[8]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
     
     
-#     ax6=ax[2][1]
-#     lns6=ax6.plot(TOPS,sgmas[6],'b^',
-#                   TOPS,sgmas[7],'g>',
-#                   TOPS,sgmas[8],'rv')
-#     ax6.set_xlim(0,5)
-#     ax6.set_ylim(ax6.get_ylim()[0]-0.001,ax6.get_ylim()[1]+0.001)
-#     ax6.set_xlabel('top')
-#     ax6.set_ylabel('resolution')
-#     ax6.legend(lns6,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
+#     ax=axs[2][1]
+#     lns=ax.plot(TOPS,sgmas[6],b^,
+#                 TOPS,sgmas[7],g>,
+#                 TOPS,sgmas[8],rv)
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(resolution)
+#     ax.legend(lns,[COLS[6],COLS[7],COLS[8]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
     
 #     #-- MMs
-#     ax7=ax[3][0]
-#     lns7=ax7.plot(TOPS,[means[9][0],means[10][1],means[11][2],means[12][3]],'b^')
-#     ax7.set_xlim(0,5)
-#     #ax7.set_ylim(-0.001,0.006)
-#     ax7.set_xlabel('top')
-#     ax7.set_ylabel('offset:SR-ST')
-#     ax7.grid(True)
-#     #ax7.legend(lns7,[COLS[6],COLS[7],COLS[8]],loc='best',prop={'size':9})
+#     ax=axs[3][0]
+#     lns=ax.plot(TOPS,[means[9][0],means[10][1],means[11][2],means[12][3]],b^)
+#     ax.set_xlim(0,5)
+#     #ax.set_ylim(-0.001,0.006)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(offset:SR-ST)
+#     ax.grid(True)
+#     #ax.legend(lns,[COLS[6],COLS[7],COLS[8]],loc=best,prop={size:9})
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
     
-#     ax8=ax[3][1]
-#     lns8=ax8.plot(TOPS,[sgmas[9][0],sgmas[10][1],sgmas[11][2],sgmas[12][3]],'b^')
-#     ax8.set_xlim(0,5)
-#     ax8.set_ylim(-0.001,0.030)
-#     ax8.set_xlabel('top')
-#     ax8.set_ylabel('resolution')
-#     ax8.grid(True)
-    
-
-# 	
+#     ax=axs[3][1]
+#     lns=ax.plot(TOPS,[sgmas[9][0],sgmas[10][1],sgmas[11][2],sgmas[12][3]],b^)
+#     ax.set_xlim(0,5)
+#     ax.set_ylim(-0.001,0.030)
+#     ax.set_xlabel(top)
+#     ax.set_ylabel(resolution)
+#     ax.grid(True)
+#     for i in range(len(lns)):
+#     	lns[i].set_markersize(10)
