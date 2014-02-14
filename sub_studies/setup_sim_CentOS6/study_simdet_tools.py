@@ -10,12 +10,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+from math import *
+
 import os
+
 
 dfT=""
 dfR=""
 datadir=''
-xx=None
+be=''
 
 NPARTS=4
 PARTS=['e','p','pip','pim']
@@ -50,6 +53,21 @@ def load_data(beam_energy):
 
 	dfT = pd.DataFrame(arrT)
 	dfR = pd.DataFrame(arrR)
+
+	#Add some columns to resolve momentum into its x,y,z components
+	for df in (dfT,dfR):
+		df['px_e']=df['p_e']*np.sin(np.deg2rad(df['theta_e']))*np.cos(np.deg2rad(df['phi_e']))
+		df['py_e']=df['p_e']*np.sin(np.deg2rad(df['theta_e']))*np.sin(np.deg2rad(df['phi_e']))
+		df['pz_e']=df['p_e']*np.cos(np.deg2rad(df['theta_e']))
+		df['px_p']=df['p_p']*np.sin(np.deg2rad(df['theta_p']))*np.cos(np.deg2rad(df['phi_p']))
+		df['py_p']=df['p_p']*np.sin(np.deg2rad(df['theta_p']))*np.sin(np.deg2rad(df['phi_p']))
+		df['pz_p']=df['p_p']*np.cos(np.deg2rad(df['theta_p']))
+		df['px_pip']=df['p_pip']*np.sin(np.deg2rad(df['theta_pip']))*np.cos(np.deg2rad(df['phi_pip']))
+		df['py_pip']=df['p_pip']*np.sin(np.deg2rad(df['theta_pip']))*np.sin(np.deg2rad(df['phi_pip']))
+		df['pz_pip']=df['p_pip']*np.cos(np.deg2rad(df['theta_pip']))
+		df['px_pim']=df['p_pim']*np.sin(np.deg2rad(df['theta_pim']))*np.cos(np.deg2rad(df['phi_pim']))
+		df['py_pim']=df['p_pim']*np.sin(np.deg2rad(df['theta_pim']))*np.sin(np.deg2rad(df['phi_pim']))
+		df['pz_pim']=df['p_pim']*np.cos(np.deg2rad(df['theta_pim']))
 
 def plot_q2w():
 	"""
