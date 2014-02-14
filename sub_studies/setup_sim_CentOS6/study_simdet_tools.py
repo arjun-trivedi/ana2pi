@@ -200,44 +200,45 @@ def plot_detector_resolution_and_offset(means,sgmas):
     			   (dPX_PIM,dPY_PIM,dPZ_PIM),
     			   (dQ2,dW),
     			   (dM_PPIP,dM_PPIM,dM_PIPPIM),
-    			   (dMM2PPIPPIM,dM_PPIP,dM_PPIM,dMMPIPPIM)]
+    			   (dMM2PPIPPIM,dMMPPIP,dMMPPIM,dMMPIPPIM)]
 	marker_styles=['b^','g>','rv','k<']
     
 	for irow in range(fig_nrows):
 		ax=axs[irow][0]
 		lns=[]
 		iln=0
-		for idata in subplot_datas[irow]:
-			lns.append(ax.plot(TOPS,means[idata],
-				       marker_styles[iln],markersize=10,label=COLS[idata]))
-			iln+=1
+		if irow!=7:
+			for idata in subplot_datas[irow]:
+				lns.append(ax.plot(TOPS,means[idata],
+					       marker_styles[iln],markersize=10,label=COLS[idata]))
+				iln+=1
+		else:
+			ax.plot(TOPS,[means[dMM2PPIPPIM][0],means[dMMPPIP][1],means[dMMPPIM][2],means[dMMPIPPIM][3]],
+					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_xlabel('Top')
 		ax.set_ylabel('Offset(SR-ST)')
 		ax.legend(loc='best',prop={'size':10})
-		#ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
-		# print [COLS[i] for i in subplot_datas[irow]]
-		# print len(lns)
-		# for i in range(len(lns)):
-		# 	print lns[i]
-		# 	lns[i].set_markersize(10)
-
+		ax.grid(True)
+		
 		ax=axs[irow][1]
 		lns=[]
 		iln=0
-		for idata in subplot_datas[irow]:
-			lns.append(ax.plot(TOPS,sgmas[idata],
-				       marker_styles[iln],markersize=10,label=COLS[idata]))
-			iln+=1
+		if irow!=7:
+			for idata in subplot_datas[irow]:
+				lns.append(ax.plot(TOPS,sgmas[idata],
+					       marker_styles[iln],markersize=10,label=COLS[idata]))
+				iln+=1
+		else:
+			ax.plot(TOPS,[sgmas[dMM2PPIPPIM][0],sgmas[dMMPPIP][1],sgmas[dMMPPIM][2],sgmas[dMMPIPPIM][3]],
+					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_xlabel('Top')
 		ax.set_ylabel('Resolution')
 		ax.legend(loc='best',prop={'size':10})
-		#ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
-		# for i in range(len(lns)):
-		# 	lns[i].set_markersize(10)
+		ax.grid(True)	
    
 
 # def plot_detector_resolution_and_offset(means,sgmas):
