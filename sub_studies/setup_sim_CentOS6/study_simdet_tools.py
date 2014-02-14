@@ -173,9 +173,9 @@ def plot_detector_resolution_and_offset(means,sgmas):
     ##-- momenta
     ax=axs[0][0]
     lns=ax.plot(TOPS,means[0],'b^',
-                  TOPS,means[1],'g>',
-                  TOPS,means[2],'rv',
-                  TOPS,means[3],'k<')
+    			TOPS,means[1],'g>',
+                TOPS,means[2],'rv',
+                TOPS,means[3],'k<')
     ax.set_xlim(0,5)
     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
     ax.set_xlabel('top')
@@ -186,9 +186,9 @@ def plot_detector_resolution_and_offset(means,sgmas):
         
     ax=axs[0][1]
     lns=ax.plot(TOPS,sgmas[0],'b^',
-                  TOPS,sgmas[1],'g>',
-                  TOPS,sgmas[2],'rv',
-                  TOPS,sgmas[3],'k<')
+                TOPS,sgmas[1],'g>',
+                TOPS,sgmas[2],'rv',
+                TOPS,sgmas[3],'k<')
     ax.set_xlim(0,5)
     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
     ax.set_xlabel('top')
@@ -200,7 +200,7 @@ def plot_detector_resolution_and_offset(means,sgmas):
     ##-- Q2,W
     ax=axs[1][0]
     lns=ax.plot(TOPS,means[4],'b^',
-                  TOPS,means[5],'g>',)                  
+                TOPS,means[5],'g>',)                  
     ax.set_xlim(0,5)
     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
     #ax.set_ylim(-0.003,0.003)
@@ -213,7 +213,7 @@ def plot_detector_resolution_and_offset(means,sgmas):
     
     ax=axs[1][1]
     lns=ax.plot(TOPS,sgmas[4],'b^',
-                  TOPS,sgmas[5],'g>',)                  
+                TOPS,sgmas[5],'g>',)                  
     ax.set_xlim(0,5)
     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
     ax.set_xlabel('top')
@@ -225,8 +225,8 @@ def plot_detector_resolution_and_offset(means,sgmas):
     #-- {Mij}
     ax=axs[2][0]
     lns=ax.plot(TOPS,means[6],'b^',
-                  TOPS,means[7],'g>',
-                  TOPS,means[8],'rv')
+                TOPS,means[7],'g>',
+                TOPS,means[8],'rv')
     ax.set_xlim(0,5)
     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
     ax.set_xlabel('top')
@@ -238,8 +238,8 @@ def plot_detector_resolution_and_offset(means,sgmas):
     
     ax=axs[2][1]
     lns=ax.plot(TOPS,sgmas[6],'b^',
-                  TOPS,sgmas[7],'g>',
-                  TOPS,sgmas[8],'rv')
+                TOPS,sgmas[7],'g>',
+                TOPS,sgmas[8],'rv')
     ax.set_xlim(0,5)
     ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
     ax.set_xlabel('top')
