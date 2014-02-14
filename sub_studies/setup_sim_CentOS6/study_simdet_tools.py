@@ -23,10 +23,13 @@ be=''
 NPARTS=4
 PARTS=['e','p','pip','pim']
 
-NCOLS=13
-COLS=['p_e',  'p_p',  'p_pip','p_pim', 'Q2',    'W',   'M_ppip', 'M_ppim', 'M_pippim', 'mm2ppippim', 'mmppip','mmppim','mmpippim']
-XMIN=[-0.20, -0.08,   -0.08,  -0.08,   -0.06,  -0.06,  -0.06,    -0.06,    -0.06,       -0.001,       -0.2,-0.2,-0.2]
-XMAX=[ 0.20,  0.08,    0.08,   0.08,    0.06,   0.06,   0.06,     0.06,     0.06,        0.001,        0.2,0.2,0.2]
+NCOLS=13+12# 3- components of momentum for each of the 4 particles
+# COLS=['p_e',  'p_p',  'p_pip','p_pim', 'Q2',    'W',   'M_ppip', 'M_ppim', 'M_pippim', 'mm2ppippim', 'mmppip','mmppim','mmpippim']
+# XMIN=[-0.20, -0.08,   -0.08,  -0.08,   -0.06,  -0.06,  -0.06,    -0.06,    -0.06,       -0.001,       -0.2,-0.2,-0.2]
+# XMAX=[ 0.20,  0.08,    0.08,   0.08,    0.06,   0.06,   0.06,     0.06,     0.06,        0.001,        0.2,0.2,0.2]
+COLS=['p_e',  'p_p',  'p_pip','p_pim', 'px_e','py_e','pz_e', 'px_p','py_p','pz_p', 'px_pip','py_pip','pz_pip', 'px_pim','py_pim','pz_pim','Q2',    'W',   'M_ppip', 'M_ppim', 'M_pippim', 'mm2ppippim', 'mmppip','mmppim','mmpippim']
+XMIN=[-0.20, -0.08,   -0.08,  -0.08,   -0.08,-0.08,-0.08, -0.08,-0.08,-0.08, -0.08,-0.08,-0.08, -0.08,-0.08,-0.08, -0.06,  -0.06,  -0.06,    -0.06,    -0.06,       -0.001,       -0.2,-0.2,-0.2]
+XMAX=[ 0.20,  0.08,    0.08,   0.08,    0.08, 0.08, 0.08,  0.08, 0.08, 0.08,  0.08, 0.08, 0.08,  0.08, 0.08, 0.08,  0.06,   0.06,   0.06,     0.06,     0.06,        0.001,        0.2,0.2,0.2]
 NBINS=100
 # means=[[] for i in range(NCOLS)]
 # sgmas=[[] for i in range(NCOLS)]
@@ -186,7 +189,7 @@ def get_detector_resolution_and_offset():
     #plt.show()
 
 def plot_detector_resolution_and_offset(means,sgmas):
-    fig,(axs)=plt.subplots(nrows=4,ncols=2,figsize=(20,15))
+    fig,(axs)=plt.subplots(nrows=8,ncols=2,figsize=(20,15))
     
     ##-- momenta
     ax=axs[0][0]
@@ -214,7 +217,7 @@ def plot_detector_resolution_and_offset(means,sgmas):
     ax.legend(lns,[COLS[0],COLS[1],COLS[2],COLS[3]],loc='best',prop={'size':9})
     for i in range(len(lns)):
     	lns[i].set_markersize(10)
-    
+    	    
     ##-- Q2,W
     ax=axs[1][0]
     lns=ax.plot(TOPS,means[4],'b^',
@@ -287,6 +290,8 @@ def plot_detector_resolution_and_offset(means,sgmas):
     ax.grid(True)
     for i in range(len(lns)):
     	lns[i].set_markersize(10)
+
+
 
 
 # def plot_detector_resolution_and_offset():
