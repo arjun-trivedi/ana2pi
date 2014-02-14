@@ -209,13 +209,14 @@ def plot_detector_resolution_and_offset(means,sgmas):
 		iln=0
 		for idata in subplot_datas[irow]:
 			lns.append(ax.plot(TOPS,means[idata],
-				       marker_styles[iln],markersize=10))
+				       marker_styles[iln],markersize=10,label=COLS[idata]))
 			iln+=1
 		ax.set_xlim(0,5)
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_xlabel('top')
 		ax.set_ylabel('offset:SR-ST')
-		ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
+		ax.legend(loc='best',prop={'size':9})
+		#ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
 		# print [COLS[i] for i in subplot_datas[irow]]
 		# print len(lns)
 		# for i in range(len(lns)):
@@ -227,13 +228,14 @@ def plot_detector_resolution_and_offset(means,sgmas):
 		iln=0
 		for idata in subplot_datas[irow]:
 			lns.append(ax.plot(TOPS,sgmas[idata],
-				       marker_styles[iln],markersize=10))
+				       marker_styles[iln],markersize=10,label=COLS[idata]))
 			iln+=1
 		ax.set_xlim(0,5)
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_xlabel('top')
 		ax.set_ylabel('offset:SR-ST')
-		ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
+		ax.legend(loc='best',prop={'size':9})
+		#ax.legend(lns,[COLS[i] for i in subplot_datas[irow]],loc='best',prop={'size':9})#,COLS[1],COLS[2],COLS[3]],loc=best,prop={size:9})
 		# for i in range(len(lns)):
 		# 	lns[i].set_markersize(10)
    
