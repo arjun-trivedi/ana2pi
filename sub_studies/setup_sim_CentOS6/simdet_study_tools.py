@@ -14,6 +14,7 @@ import os
 
 dfT=""
 dfR=""
+datadir=''
 
 NPARTS=4
 PARTS=['e','p','pip','pim']
@@ -29,7 +30,6 @@ sgmas=[[] for i in range(NCOLS)]
 NTOPS=4
 TOPS=[1,2,3,4]
 
-
 def load_data():
 	"""
 	Load data
@@ -38,9 +38,10 @@ def load_data():
 
 	global dfT
 	global dfR
+	global datadir
 	#f = '/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon/d2pi.root'
-	ddir=os.environ['SETUPSIMCENTOS6_DATADIR']
-	f = os.path.join(ddir,'d2pi_be5485.root')
+	datadir=os.environ['SETUPSIMCENTOS6_DATADIR']
+	f = os.path.join(datadir,'d2pi_be5485.root')
 	arrT = root2array(f,'d2piTR/T/tT')#,stop=10000)#,start=1,stop=5)#,start=1,stop=5)#start=1,stop=2)
 	arrR = root2array(f,'d2piTR/R/tR')#,stop=10000)#,start=1,stop=5)#,start=1,stop=5)#start=1,stop=2)
 
