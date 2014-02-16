@@ -160,26 +160,27 @@ def get_detector_resolution_and_offset():
         cs[icol].Divide(2,2)
         for itop in range(NTOPS):
             #print "processing top %d"%TOPS[itop]
-            sel=(dfR['top']==TOPS[itop])
-            deltas[icol].append(dfR[COLS[icol]][sel]-dfT[COLS[icol]][sel])
-            pad=cs[icol].cd(itop+1)
-            hs[icol].append(Hist(NBINS,XMIN[icol],XMAX[icol]))
-            hs[icol][itop].fill_array(deltas[icol][itop])
-            hs[icol][itop].Draw()
-            if COLS[icol]=='mmppip' or COLS[icol]=='mmppim':
-                hs[icol][itop].Fit("gaus","","",-0.03,0.03)
-            elif COLS[icol]=='mmpippim':
-                hs[icol][itop].Fit("gaus","","",-0.07,0.03)
-            else:
-                hs[icol][itop].Fit("gaus")        
-            pad.Update()
-            f=hs[icol][itop].GetFunction("gaus")
-            if f!=None:
-                means[icol].append(f.GetParameter(1))
-                sgmas[icol].append(f.GetParameter(2))
-            else:
-                means[icol].append(0)
-                sgmas[icol].append(0)
+         	sel=(dfR['top']==TOPS[itop])
+        	deltas[icol].append(dfR[COLS[icol]][sel]-dfT[COLS[icol]][sel])
+        	pad=cs[icol].cd(itop+1)
+        	pad.SetGrid()
+         	hs[icol].append(Hist(NBINS,XMIN[icol],XMAX[icol]))
+        	hs[icol][itop].fill_array(deltas[icol][itop])
+         	hs[icol][itop].Draw()
+        	if COLS[icol]=='mmppip' or COLS[icol]=='mmppim':
+        		hs[icol][itop].Fit("gaus","","",-0.03,0.03)
+        	elif COLS[icol]=='mmpippim':
+        		hs[icol][itop].Fit("gaus","","",-0.07,0.03)
+        	else:
+        		hs[icol][itop].Fit("gaus")        
+        	pad.Update()
+        	f=hs[icol][itop].GetFunction("gaus")
+        	if f!=None:
+        		means[icol].append(f.GetParameter(1))
+        		sgmas[icol].append(f.GetParameter(2))
+        	else:
+        		means[icol].append(0)
+        		sgmas[icol].append(0)
         cs[icol].SaveAs("%s/%s.png"%(outdir,cs[icol].GetName()))
   #   if not ROOT.gROOT.IsBatch():
 		# plt.show()
