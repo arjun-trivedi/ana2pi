@@ -518,7 +518,27 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 		tp->vz_pip=dH10->vz[dAna->h10idxPip];
 		tp->vz_pim=dH10->vz[dAna->h10idxPim];
 	}else{
-		for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
+		Float_t vx_x_el=dH10->mcvx_x_el;
+		Float_t vx_y_el=dH10->mcvx_y_el;
+		Float_t vx_z_el=dH10->mcvx_z_el;
+		//! In MCTK banks, there is only an electron
+		//! vertex defined, unlike in SEB banks, where
+		//! each particle has a vertex position.
+		//! For all other particles, in MCTK, I assign them to the
+		//! electron vertex
+		tp->vx_e=vx_x_el;
+		tp->vy_e=vx_y_el;
+		tp->vz_e=vx_z_el;
+		tp->vx_p=vx_x_el;
+		tp->vy_p=vx_y_el;
+		tp->vz_p=vx_z_el;
+		tp->vx_pip=vx_x_el;
+		tp->vy_pip=vx_y_el;
+		tp->vz_pip=vx_z_el;
+		tp->vx_pim=vx_x_el;
+		tp->vy_pim=vx_y_el;
+		tp->vz_pim=vx_z_el;
+		/*for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
 		Int_t _id = dH10->mcid[idx];
 		Float_t tmp_vx=dH10->mcvx[idx];
 		Float_t tmp_vy=dH10->mcvy[idx];
@@ -548,7 +568,7 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 			default:
 				break;
 			}
-		}
+		}*/
 	}
 
 	//!Q2,W
