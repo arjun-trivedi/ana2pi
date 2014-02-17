@@ -127,9 +127,9 @@ def plot_kinematics():
     figT = plt.figure(figsize=(20,8))
     for i in range(NPART):
         plt.subplot(1,NPART,i+1)
-        ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label=T,color=[blue])#,color=[red,blue])
-        ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label=R,color=[red])
-        plt.legend(loc=best)
+        ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
+        ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='SR',color=['red'])
+        plt.legend(loc='best')
     plt.show()
 
 def get_detector_resolution_and_offset():
@@ -172,7 +172,7 @@ def get_detector_resolution_and_offset():
         	elif COLS[icol]=='mmpippim':
         		hs[icol][itop].Fit("gaus","","",-0.07,0.03)
         	else:
-        		hs[icol][itop].Fit("gaus")        
+        		hs[icol][itop].Fit("gaus","","",-0.02,0.02)        
         	pad.Update()
         	f=hs[icol][itop].GetFunction("gaus")
         	if f!=None:
@@ -218,8 +218,8 @@ def plot_detector_resolution_and_offset(means,sgmas):
 					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-		ax.set_xlabel('Top')
-		ax.set_ylabel('Offset(SR-ST)')
+		ax.set_xlabel('Top',size='xx-large')
+		ax.set_ylabel('Offset(SR-ST)',size='xx-large')
 		ax.legend(loc='best',prop={'size':10})
 		ax.grid(True)
 		
@@ -236,8 +236,8 @@ def plot_detector_resolution_and_offset(means,sgmas):
 					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-		ax.set_xlabel('Top')
-		ax.set_ylabel('Resolution')
+		ax.set_xlabel('Top',size='xx-large')
+		ax.set_ylabel('Resolution',size='xx-large')
 		ax.legend(loc='best',prop={'size':10})
 		ax.grid(True)	
    
