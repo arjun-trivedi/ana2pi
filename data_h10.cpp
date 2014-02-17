@@ -117,10 +117,10 @@ void DataH10::Bind(TTree* tree)
 		h10chain->SetBranchAddress("mcphi", mcphi, &b_mcphi);
 		h10chain->SetBranchAddress("mcp", mcp, &b_mcp);
 		h10chain->SetBranchAddress("mcm", mcm, &b_mcm);
-		h10chain->SetBranchAddress("mcvx", mcvx, &b_mcvx);
-		h10chain->SetBranchAddress("mcvy", mcvy, &b_mcvy);
-		h10chain->SetBranchAddress("mcvz", mcvz, &b_mcvz);
-		h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
+		h10chain->SetBranchAddress("mcvx_x_el", &mcvx_x_el, &b_mcvx_x_el);
+		h10chain->SetBranchAddress("mcvx_y_el", &mcvx_y_el, &b_mcvx_y_el);
+		h10chain->SetBranchAddress("mcvx_z_el", &mcvx_z_el, &b_mcvx_z_el);
+		//h10chain->SetBranchAddress("mctof", mctof, &b_mctof);
 	}
 	//PART Branches
 	if (dtyp=="sim" && (rctn=="elast"||rctn=="elast_userana")) { 
@@ -235,10 +235,8 @@ void DataH10::Clear()
 	memset(mcphi, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(mcp, 0, sizeof(Float_t) * _MAX_PARTS);
 	memset(mcm, 0, sizeof(Float_t) * _MAX_PARTS);
-	memset(mcvx, 0, sizeof(Float_t) * _MAX_PARTS);
-	memset(mcvy, 0, sizeof(Float_t) * _MAX_PARTS);
-	memset(mcvz, 0, sizeof(Float_t) * _MAX_PARTS);
-	memset(mctof, 0, sizeof(Float_t) * _MAX_PARTS);
+	mcvx_x_el=mcvx_y_el=mcvx_z_el=0;
+	//memset(mctof, 0, sizeof(Float_t) * _MAX_PARTS);
     
     //PART
 	nprt=0;

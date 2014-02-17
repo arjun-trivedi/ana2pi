@@ -104,10 +104,10 @@ public:
 	Float_t mcphi[_MAX_PARTS]; //[mcnentr]
 	Float_t mcp[_MAX_PARTS]; //[mcnentr]
 	Float_t mcm[_MAX_PARTS]; //[mcnentr]
-	Float_t mcvx[_MAX_PARTS]; //[mcnentr]
-	Float_t mcvy[_MAX_PARTS]; //[mcnentr]
-	Float_t mcvz[_MAX_PARTS]; //[mcnentr]
-	Float_t mctof[_MAX_PARTS]; //[mcnentr]
+	Float_t mcvx_x_el; //[mcnentr]
+	Float_t mcvx_y_el; //[mcnentr]
+	Float_t mcvx_z_el; //[mcnentr]
+	//Float_t mctof[_MAX_PARTS]; //[mcnentr]
 
 	//PART Banks
 	Int_t nprt;
@@ -207,10 +207,10 @@ public:
 	TBranch *b_mcphi; //!
 	TBranch *b_mcp; //!
 	TBranch *b_mcm; //!
-	TBranch *b_mcvx; //!
-	TBranch *b_mcvy; //!
-	TBranch *b_mcvz; //!
-	TBranch *b_mctof; //!
+	TBranch *b_mcvx_x_el; //!
+	TBranch *b_mcvx_y_el; //!
+	TBranch *b_mcvx_z_el; //!
+	//TBranch *b_mctof; //!
 
 	//PART Branches
 	TBranch *b_nprt;   //!
