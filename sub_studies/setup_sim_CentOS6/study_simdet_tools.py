@@ -114,23 +114,38 @@ def plot_q2w():
     		origin='lower')
 
 def plot_kinematics():
-    """
-    Plot Reconstructed kinematics of e,p,pip,pim at the e vertex 
-    Compare with Thrown kinematics
-    """
-    print plot_kinematics.__doc__
-    NPART=4
-    COLS=['p_e','p_p','p_pip','p_pim']
-    XLOWS =[2.5,0.0,0.0,0.0]
-    XHIGHS=[4.1,3.0,3.0,3.0]
-    alpha=0.5
-    figT = plt.figure(figsize=(20,8))
-    for i in range(NPART):
-        plt.subplot(1,NPART,i+1)
-        ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
-        ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='SR',color=['red'])
-        plt.legend(loc='best')
-    plt.show()
+	"""
+	Plot Reconstructed kinematics of e,p,pip,pim at the e vertex 
+	Compare with Thrown kinematics
+	"""
+	print plot_kinematics.__doc__
+	NPART=4
+	#COLS=['p_e','p_p','p_pip','p_pim']
+	#XLOWS =[2.5,0.0,0.0,0.0]
+	#XHIGHS=[4.1,3.0,3.0,3.0]
+	COLS=['px_e','py_e','pz_e', 'px_p','py_p','pz_p', 'px_pip','py_pip','pz_pip', 'px_pim','py_pim','pz_pim']
+	XMINS=[-1.5,-1.5,0.0, -1.5,-1.5,-0.5, -1.5,-1.5,-0.5, -1.5,-1.5,-0.5]
+	XMAXS=[1.5,1.5,4,     1.5,1.5,4.0, 1.5,1.5,4.0, 1.5,1.5,4.0]
+    #COLS=['pz_e','pz_p','pz_pip','pz_pim']
+    # XLOWS =[2.5,0.0,0.0,0.0]
+    # XHIGHS=[4.1,3.0,3.0,3.0]
+	alpha=0.5
+	figT = plt.figure(figsize=(20,8))
+	# for i in range(NPART):
+	#     plt.subplot(1,NPART,i+1)
+	#     ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
+	#     ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='SR',color=['red'])
+	#     plt.legend(loc='best')
+	for i in range(len(COLS)):
+		sel=(dfR['top']==1)
+		plt.subplot(NPART,3,i+1)
+		#plt.subplot(NPART,1,i+1)
+		# ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
+		# ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='SR',color=['red'])
+		ret=plt.hist(dfT[COLS[i]][sel],100,range=(XMINS[i],XMAXS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
+		ret=plt.hist(dfR[COLS[i]][sel],100,range=(XMINS[i],XMAXS[i]),alpha=alpha,label='SR',color=['red'])
+		plt.legend(loc='best')
+	plt.show()
 
 def get_detector_resolution_and_offset():
     """
