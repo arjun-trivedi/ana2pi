@@ -417,7 +417,7 @@ def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
 		wait(True)
 
 
-def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
+def anaMMelas_ERSR(be_exp=5499,nentries=1000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
 	DTYPS=5

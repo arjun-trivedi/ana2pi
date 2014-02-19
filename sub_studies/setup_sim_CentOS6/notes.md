@@ -1,3 +1,31 @@
+Study objectives
+================
+To understand CLAS & Simulated-CLAS detector response and therefore understand differences in some key histograms that
+are obtained by putting together measured kinematics. 
+
+This study started when I noticed that distribution of ER- & SR-MM distributions did not match.  The ER-MMs are closer to the Expected Distribution and SR-MMs are shifted and narrower. To fix the SR-MMs, I tried:
+	1. Tuning GPP pars
+	2. Playing with SR-BE
+	3. Applying Energy Loss corrections
+
+1.Tuning GPP pars
+-----------------
+For now, I am using GPP pars picked by Evan (1.37,1.37,1.37). I tried 27 combinations in GPP-par space spanned by:
+(0,0,0)*(1.37,1.37,1.37)*(4,4,4)
+Among all of the the parameters used by Evan, matched ER-MMs most closely; however as mentioned before, they were shifted and narrower
+compared with ER-MMs.
+
+
+2. Playing with SR-BE [02-19-14]
+--------------------------------
+I tried to change the SR-BE as a means for applying an "Effective Correction". But the SR-BE I had to pick was 5.485 GeV, which was 14 MeV off from ER-BE(5.499 GeV). This made me wonder what the matter was and led me to study the Simulated Detector response (See below). There I found that z component of the measured momentum (pz) was shifted viz-a-viz ST momentum. In the Q2W range = q2w2, this shift was ~ 3 Mev for e-,~2 MeV and almost neglible for the pip/pim. Although this shift is seems little, it affects the time componenent of the 4-vecs more strongly, since there the momentum components enter in quadratically and therefore, the error due to this little offset manifests itself more strongly (See handwritten notes for details)
+
+3. Applying Energy Loss corrections
+-----------------------------------
+This may not solve the offset SR-MM offset problem, but should reduce it, since it should correct for the offsets of the measured pz for the hadrons and therefore, reduce the offets on the MMs. I think this correction will have to be applied for ER and SR and it will be interesting to note its affects. 
+
+
+
 
 E1F Nominal Beam Energy: 5.479 GeV
 (http://clasweb.jlab.org/rungroups/e1/e1f/lists/LOAF_all.txt)

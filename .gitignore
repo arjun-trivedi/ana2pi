@@ -6,6 +6,7 @@
 *log
 *test*
 *scratch*
+*datadir*
 
 ################################
 # specific to compiler objects #
