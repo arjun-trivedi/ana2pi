@@ -423,8 +423,9 @@ def anaQ2W2pi_SRST():
 		wait(True)
 
 def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
-	DTYPS=2# for the two beam energies: 5.497,5.497
-	DTYPS_NAME=["5479","5497"]
+	#DTYPS=2# for the two beam energies: 5.497,5.497
+	DTYPS_NAME=["5499","5497","5479"]#"5479","5497","5499"]
+	DTYPS=len(DTYPS_NAME)
 	
 	NMM=4
 
@@ -457,10 +458,10 @@ def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
 	for idtyp in range(DTYPS):
 		f[idtyp]=ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi_be%s.root"%DTYPS_NAME[idtyp])
 		#print f[idtyp].GetName()
-		hmms[idtyp,0]=f[idtyp].Get("/top/h%sppippimVw"%mmtyp).ProjectionY('h%sppippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
-		hmms[idtyp,1]=f[idtyp].Get("/top/h%sppipVw"%mmtyp).ProjectionY('h%sppip_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
-		hmms[idtyp,2]=f[idtyp].Get("/top/h%sppimVw"%mmtyp).ProjectionY('h%sppim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
-		hmms[idtyp,3]=f[idtyp].Get("/top/h%spippimVw"%mmtyp).ProjectionY('h%spippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,0]=f[idtyp].Get("/d2piR/top1/h%sppippimVw"%mmtyp).ProjectionY('h%sppippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,1]=f[idtyp].Get("/d2piR/top2/h%sppipVw"%mmtyp).ProjectionY('h%sppip_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,2]=f[idtyp].Get("/d2piR/top3/h%sppimVw"%mmtyp).ProjectionY('h%sppim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,3]=f[idtyp].Get("/d2piR/top4/h%spippimVw"%mmtyp).ProjectionY('h%spippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
 		for imm in range(NMM):
 			pad=c.cd(imm+1)
 			pad.SetGridx()
