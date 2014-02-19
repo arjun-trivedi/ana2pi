@@ -8,8 +8,12 @@ This study started when I noticed that distribution of ER- & SR-MM distributions
 	2. Playing with SR-BE
 	3. Applying Energy Loss corrections
 
-[02-19-14] As it stands, even after correcting for shifts in SR hadron momentum, shift in SR e- momentum will remain, causing the
-SR-MMs to remain Offset from ER-MMs. The shift in SR e- z-momentum cannot simply be accomodated by making a corresponding shift in SR-BE; it may well appear to fix the z-MM component which changes linearly with e- pz, however the t-MM component suffers even more strongly (see hand written notes), which cannot be accomodated by the shift in SR-BE. Therefore, it may well be the MM cuts in SR and ER will be centered around different mean values and with using a different sigma if after all the steps I am not able to make with the widths of the SR-MM agree with ER-MM.
+[02-19-14] 
+As it stands, even after correcting for shifts in SR hadron momentum by way of applying eloss corrections, shift in SR e- momentum will remain, causing the z-MM to remain offset and therfoere, the SR-MMs to remain Offset from ER-MMs. The shift in SR e- z-momentum cannot simply be accomodated by making a corresponding shift in SR-BE; it may well appear to fix the z-MM component which changes linearly with pz_e', however the t-MM component suffers even more strongly (see hand written notes), which cannot be accomodated by the shift in SR-BE. Therefore, the options may be:
+	1. Shift SR-BE by an amount equal to shift in SR pz_e'; atleast this will fix the 3-momentum component of MM and therefore the 3-	momentum of the Missing Particle. However, the MM cuts in ER and SR, will be different (but have similar effects)
+	2. Shift SR-BE by the amount needed to make the SR-MMs agree with ER-MMs; in this case the MM cuts in ER and SR will be the same, 
+	   but the 3-momentum of the missing particle will be incorrect (But according to Gothe, I may not be sensitive to this shift, which I should verify)
+
 
 1.Tuning GPP pars
 -----------------
