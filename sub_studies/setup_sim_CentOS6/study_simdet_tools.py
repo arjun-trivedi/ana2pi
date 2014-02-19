@@ -153,11 +153,11 @@ def plot_q2w():
     		aspect='auto',
     		origin='lower')
 
-def plot_kinematics():
+def plot_kinematics_vtxpos():
 	"""
 	Compare SR and ST kinematics & vertex positions of e,p,pip,pim 
 	"""
-	print plot_kinematics.__doc__
+	print plot_kinematics_vtxpos.__doc__
 	NPARTS=4
 	COLS =['px_e','py_e','pz_e']
 	XMINS=[-1.5,-1.5,0.0]
@@ -195,13 +195,13 @@ def plot_kinematics():
 		plt.legend(loc='best')
 	plt.show()
 
-def get_detector_resolution_and_offset():
+def get_resolution_and_offset():
     """
     Plot (Simulated)detector "Offset" & "Resolution"
     Offset:     Mean of ST-SR distribution
     Resolution: RMS of ST-SR distribution
     """
-    print get_detector_resolution_and_offset.__doc__
+    print get_resolution_and_offset.__doc__
         
     ROOT.gStyle.SetOptFit(1111)
     ROOT.gStyle.SetStatW(0.4); 
@@ -255,10 +255,10 @@ def get_detector_resolution_and_offset():
     return means,sgmas      
     #plt.show()
 
-def plot_detector_resolution_and_offset(means,sgmas):
+def plot_resolution_and_offset(means,sgmas):
 	fig_nrows=12
 	fig_ncols=2
-	fig,(axs)=plt.subplots(nrows=fig_nrows,ncols=fig_ncols,figsize=(20,40))
+	fig,(axs)=plt.subplots(nrows=fig_nrows,ncols=fig_ncols,figsize=(20,80))
 	subplot_datas=[(dP_E,dP_P,dP_PIP,dP_PIM),
     			   (dPX_E,dPY_E,dPZ_E),
     			   (dPX_P,dPY_P,dPZ_P),
