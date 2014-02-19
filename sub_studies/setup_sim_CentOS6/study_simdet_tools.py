@@ -23,17 +23,57 @@ be=''
 NPARTS=4
 PARTS=['e','p','pip','pim']
 
-NCOLS=13+12# 3- components of momentum for each of the 4 particles
-# COLS=['p_e',  'p_p',  'p_pip','p_pim', 'Q2',    'W',   'M_ppip', 'M_ppim', 'M_pippim', 'mm2ppippim', 'mmppip','mmppim','mmpippim']
-# XMIN=[-0.20, -0.08,   -0.08,  -0.08,   -0.06,  -0.06,  -0.06,    -0.06,    -0.06,       -0.001,       -0.2,-0.2,-0.2]
-# XMAX=[ 0.20,  0.08,    0.08,   0.08,    0.06,   0.06,   0.06,     0.06,     0.06,        0.001,        0.2,0.2,0.2]
-COLS=['p_e','p_p','p_pip','p_pim', 'px_e','py_e','pz_e', 'px_p','py_p','pz_p', 'px_pip','py_pip','pz_pip', 'px_pim','py_pim','pz_pim','Q2','W',    'M_ppip','M_ppim','M_pippim', 'mm2ppippim','mmppip','mmppim','mmpippim']
-XMIN=[-0.20,-0.08,-0.08,-0.08,     -0.08,-0.08,-0.08,    -0.08,-0.08,-0.08,    -0.08,-0.08,-0.08,          -0.08,-0.08,-0.08,         -0.06,-0.06, -0.06,-0.06,-0.06,           -0.001,-0.2,-0.2,-0.2]
-XMAX=[ 0.20, 0.08, 0.08, 0.08,      0.08, 0.08, 0.08,     0.08, 0.08, 0.08,     0.08, 0.08, 0.08,           0.08, 0.08, 0.08,          0.06, 0.06,  0.06, 0.06, 0.06,            0.001, 0.2, 0.2, 0.2]
+COLS =['p_e','p_p','p_pip','p_pim']
+XMIN=[-0.20,-0.08,-0.08,-0.08]
+XMAX=[ 0.20, 0.08, 0.08, 0.08]
+COLS+=['px_e','py_e','pz_e']
+XMIN+=[-0.08,-0.08,-0.08]
+XMAX+=[ 0.08, 0.08, 0.08]
+COLS+=['px_p','py_p','pz_p']
+XMIN+=[-0.08,-0.08,-0.08]
+XMAX+=[ 0.08, 0.08, 0.08]
+COLS+=['px_pip','py_pip','pz_pip']
+XMIN+=[-0.08,-0.08,-0.08]
+XMAX+=[ 0.08, 0.08, 0.08]
+COLS+=['px_pim','py_pim','pz_pim']
+XMIN+=[-0.08,-0.08,-0.08]
+XMAX+=[ 0.08, 0.08, 0.08]
+COLS+=['vx_e','vy_e','vz_e']
+XMIN+=[-1,-1,-1]
+XMAX+=[ 1, 1, 1]
+COLS+=['vx_p','vy_p','vz_p']
+XMIN+=[-1,-1,-1]
+XMAX+=[ 1, 1, 1]
+COLS+=['vx_pip','vy_pip','vz_pip']
+XMIN+=[-1,-1,-1]
+XMAX+=[ 1, 1, 1]
+COLS+=['vx_pim','vy_pim','vz_pim']
+XMIN+=[-1,-1,-1]
+XMAX+=[ 1, 1, 1]
+COLS+=['Q2','W']
+XMIN+=[-0.06,-0.06]
+XMAX+=[ 0.06, 0.06]
+COLS+=['M_ppip','M_ppim','M_pippim']
+XMIN+=[-0.06,-0.06,-0.06]
+XMAX+=[ 0.06, 0.06, 0.06]
+COLS+=['mm2ppippim','mmppip','mmppim','mmpippim']
+XMIN+=[-0.001,-0.2,-0.2,-0.2]
+XMAX+=[ 0.001, 0.2, 0.2, 0.2]
+NCOLS=len(COLS)
 NBINS=100
-dP_E,dP_P,dP_PIP,dP_PIM, dPX_E,dPY_E,dPZ_E, dPX_P,dPY_P,dPZ_P, dPX_PIP,dPY_PIP,dPZ_PIP, dPX_PIM,dPY_PIM,dPZ_PIM, dQ2,dW,  dM_PPIP,dM_PPIM,dM_PIPPIM, dMM2PPIPPIM,dMMPPIP,dMMPPIM,dMMPIPPIM = range(NCOLS)
-# means=[[] for i in range(NCOLS)]
-# sgmas=[[] for i in range(NCOLS)]
+#dP_E,dP_P,dP_PIP,dP_PIM, dPX_E,dPY_E,dPZ_E, dPX_P,dPY_P,dPZ_P, dPX_PIP,dPY_PIP,dPZ_PIP, dPX_PIM,dPY_PIM,dPZ_PIM, dVX_E,dVY_E,dVZ_E, dVX_P,dVY_P,dVZ_P, dVX_PIP,dVY_PIP,dVZ_PIP, dVX_PIM,dVY_PIM,dVZ_PIM, dQ2,dW,  dM_PPIP,dM_PPIM,dM_PIPPIM, dMM2PPIPPIM,dMMPPIP,dMMPPIM,dMMPIPPIM = range(NCOLS)
+dP_E,dP_P,dP_PIP,dP_PIM=range(0,4)
+dPX_E,dPY_E,dPZ_E=range(4,7)
+dPX_P,dPY_P,dPZ_P=range(7,10)
+dPX_PIP,dPY_PIP,dPZ_PIP=range(10,13)
+dPX_PIM,dPY_PIM,dPZ_PIM=range(13,16)
+dVX_E,dVY_E,dVZ_E=range(16,19)
+dVX_P,dVY_P,dVZ_P=range(19,22)
+dVX_PIP,dVY_PIP,dVZ_PIP=range(22,25)
+dVX_PIM,dVY_PIM,dVZ_PIM=range(25,28)
+dQ2,dW=range(28,30)
+dM_PPIP,dM_PPIM,dM_PIPPIM=range(30,33)
+dMM2PPIPPIM,dMMPPIP,dMMPPIM,dMMPIPPIM=range(33,37)
     
 NTOPS=4
 TOPS=[1,2,3,4]
@@ -115,35 +155,43 @@ def plot_q2w():
 
 def plot_kinematics():
 	"""
-	Plot Reconstructed kinematics of e,p,pip,pim at the e vertex 
-	Compare with Thrown kinematics
+	Compare SR and ST kinematics & vertex positions of e,p,pip,pim 
 	"""
 	print plot_kinematics.__doc__
-	NPART=4
-	#COLS=['p_e','p_p','p_pip','p_pim']
-	#XLOWS =[2.5,0.0,0.0,0.0]
-	#XHIGHS=[4.1,3.0,3.0,3.0]
-	COLS=['px_e','py_e','pz_e', 'px_p','py_p','pz_p', 'px_pip','py_pip','pz_pip', 'px_pim','py_pim','pz_pim']
-	XMINS=[-1.5,-1.5,0.0, -1.5,-1.5,-0.5, -1.5,-1.5,-0.5, -1.5,-1.5,-0.5]
-	XMAXS=[1.5,1.5,4,     1.5,1.5,4.0, 1.5,1.5,4.0, 1.5,1.5,4.0]
-    #COLS=['pz_e','pz_p','pz_pip','pz_pim']
-    # XLOWS =[2.5,0.0,0.0,0.0]
-    # XHIGHS=[4.1,3.0,3.0,3.0]
+	NPARTS=4
+	COLS =['px_e','py_e','pz_e']
+	XMINS=[-1.5,-1.5,0.0]
+	XMAXS=[ 1.5, 1.5,4.0]
+	COLS+=['px_p','py_p','pz_p']
+	XMINS+=[-1.5,-1.5,0.5]
+	XMAXS+=[ 1.5, 1.5,4.0]
+	COLS+=['px_pip','py_pip','pz_pip']
+	XMINS+=[-1.5,-1.5,0.5]
+	XMAXS+=[ 1.5, 1.5,4.0]
+	COLS+=['px_pim','py_pim','pz_pim']
+	XMINS+=[-1.5,-1.5,0.5]
+	XMAXS+=[ 1.5, 1.5,4.0]
+	COLS+=['vx_e','vy_e','vz_e']
+	XMINS+=[-1,-1,-30]
+	XMAXS+=[ 1, 1,-20]
+	COLS+=['vx_p','vy_p','vz_p']
+	XMINS+=[-1,-1,-30]
+	XMAXS+=[ 1, 1,-20]
+	COLS+=['vx_pip','vy_pip','vz_pip']
+	XMINS+=[-1,-1,-30]
+	XMAXS+=[ 1, 1,-20]
+	COLS+=['vx_pim','vy_pim','vz_pim']
+	XMINS+=[-1,-1,-30]
+	XMAXS+=[ 1, 1,-20]
+
+	NCOLS=len(COLS)
 	alpha=0.5
-	figT = plt.figure(figsize=(20,8))
-	# for i in range(NPART):
-	#     plt.subplot(1,NPART,i+1)
-	#     ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
-	#     ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='SR',color=['red'])
-	#     plt.legend(loc='best')
-	for i in range(len(COLS)):
+	fig = plt.figure(figsize=(20,15))
+	for icol in range(NCOLS):
 		sel=(dfR['top']==1)
-		plt.subplot(NPART,3,i+1)
-		#plt.subplot(NPART,1,i+1)
-		# ret=plt.hist(dfT[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
-		# ret=plt.hist(dfR[COLS[i]],100,range=(XLOWS[i],XHIGHS[i]),alpha=alpha,label='SR',color=['red'])
-		ret=plt.hist(dfT[COLS[i]][sel],100,range=(XMINS[i],XMAXS[i]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
-		ret=plt.hist(dfR[COLS[i]][sel],100,range=(XMINS[i],XMAXS[i]),alpha=alpha,label='SR',color=['red'])
+		plt.subplot(8,3,icol+1)
+		ret=plt.hist(dfT[COLS[icol]][sel],100,range=(XMINS[icol],XMAXS[icol]),alpha=alpha,label='ST',color=['blue'])#,color=[red,blue])
+		ret=plt.hist(dfR[COLS[icol]][sel],100,range=(XMINS[icol],XMAXS[icol]),alpha=alpha,label='SR',color=['red'])
 		plt.legend(loc='best')
 	plt.show()
 
@@ -186,6 +234,8 @@ def get_detector_resolution_and_offset():
         		hs[icol][itop].Fit("gaus","","",-0.03,0.03)
         	elif COLS[icol]=='mmpippim':
         		hs[icol][itop].Fit("gaus","","",-0.07,0.03)
+        	elif str(COLS[icol]).find('vx')!=-1 or str(COLS[icol]).find('vy')!=-1 or str(COLS[icol]).find('vz')!=-1:
+        		hs[icol][itop].Fit("gaus","","",-0.4,0.4)	
         	else:
         		hs[icol][itop].Fit("gaus","","",-0.02,0.02)        
         	pad.Update()
@@ -206,7 +256,7 @@ def get_detector_resolution_and_offset():
     #plt.show()
 
 def plot_detector_resolution_and_offset(means,sgmas):
-	fig_nrows=8
+	fig_nrows=12
 	fig_ncols=2
 	fig,(axs)=plt.subplots(nrows=fig_nrows,ncols=fig_ncols,figsize=(20,40))
 	subplot_datas=[(dP_E,dP_P,dP_PIP,dP_PIM),
@@ -214,16 +264,21 @@ def plot_detector_resolution_and_offset(means,sgmas):
     			   (dPX_P,dPY_P,dPZ_P),
     			   (dPX_PIP,dPY_PIP,dPZ_PIP),
     			   (dPX_PIM,dPY_PIM,dPZ_PIM),
+    			   (dVX_E,dVY_E,dVZ_E),
+    			   (dVX_P,dVY_P,dVZ_P),
+    			   (dVX_PIP,dVY_PIP,dVZ_PIP),
+    			   (dVX_PIM,dVY_PIM,dVZ_PIM),
     			   (dQ2,dW),
     			   (dM_PPIP,dM_PPIM,dM_PIPPIM),
     			   (dMM2PPIPPIM,dMMPPIP,dMMPPIM,dMMPIPPIM)]
 	marker_styles=['b^','g>','rv','k<']
     
 	for irow in range(fig_nrows):
+		#! First plot the 'means' of the delta distributions
 		ax=axs[irow][0]
 		lns=[]
 		iln=0
-		if irow!=7:
+		if irow!=11:
 			for idata in subplot_datas[irow]:
 				lns.append(ax.plot(TOPS,means[idata],
 					       marker_styles[iln],markersize=10,label=COLS[idata]))
@@ -238,10 +293,11 @@ def plot_detector_resolution_and_offset(means,sgmas):
 		ax.legend(loc='best',prop={'size':10})
 		ax.grid(True)
 		
+		#! Now plot the 'sgmas' of the delta distributions
 		ax=axs[irow][1]
 		lns=[]
 		iln=0
-		if irow!=7:
+		if irow!=11:
 			for idata in subplot_datas[irow]:
 				lns.append(ax.plot(TOPS,sgmas[idata],
 					       marker_styles[iln],markersize=10,label=COLS[idata]))
