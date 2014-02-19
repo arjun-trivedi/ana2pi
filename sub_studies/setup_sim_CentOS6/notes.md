@@ -8,12 +8,15 @@ This study started when I noticed that distribution of ER- & SR-MM distributions
 	2. Playing with SR-BE
 	3. Applying Energy Loss corrections
 
+[02-19-14] As it stands, even after correcting for shifts in SR hadron momentum, shift in SR e- momentum will remain, causing the
+SR-MMs to remain Offset from ER-MMs. The shift in SR e- z-momentum cannot simply be accomodated by making a corresponding shift in SR-BE; it may well appear to fix the z-MM component which changes linearly with e- pz, however the t-MM component suffers even more strongly (see hand written notes), which cannot be accomodated by the shift in SR-BE. Therefore, it may well be the MM cuts in SR and ER will be centered around different mean values and with using a different sigma if after all the steps I am not able to make with the widths of the SR-MM agree with ER-MM.
+
 1.Tuning GPP pars
 -----------------
 For now, I am using GPP pars picked by Evan (1.37,1.37,1.37). I tried 27 combinations in GPP-par space spanned by:
 (0,0,0)*(1.37,1.37,1.37)*(4,4,4)
 Among all of the the parameters used by Evan, matched ER-MMs most closely; however as mentioned before, they were shifted and narrower
-compared with ER-MMs.
+compared with ER-MMs. Items 2 and 3 address the shift, but the narrowness of the MM distributions may need to be addressed by picking different GPP pars, but I will revisit this once 3 is done. 
 
 
 2. Playing with SR-BE [02-19-14]
