@@ -1,0 +1,28 @@
+#!/bin/bash 
+# $1 = Beam Energy*1000 (i.e. 5497 instead of 5.497)
+if [ -z $1 ];then
+  echo "enter beam energy!"
+  exit
+fi
+
+##-- Change E1F_P_SIM in particle_constants.h and compile ana2pi.
+##-- Once done, revert E1F_P_SIM to 5.485
+be=$(echo "scale=3; $1/1000" | bc -l)
+cd $WORKSPACE/ana2pi
+sed -i "s/E1F_P_SIM = 5.485/E1F_P_SIM = $be/" particle_constants.h
+make clean
+make all
+sed -i "s/E1F_P_SIM = $be/E1F_P_SIM = 5.485/" particle_constants.h
+
+##-- Now go on and make d2pi.root for all different gpppar Simulations
+BENAME=be$1
+ROOTDIR=$STUDY_GPPPARS_DATADIR
+for i in $(ls -d $ROOTDIR/q2w2_gpptest_*/);
+do
+ RECONDIR=${i%%/}/recon
+ echo $RECONDIR
+ cd $RECONDIR
+ ls *.root > h10.lst 
+ ana_e1f.sim.2pi 
+ cp d2pi.root d2pi_$BENAME.root
+done

@@ -1,0 +1,24 @@
+#!/bin/bash 
+# $1 = Beam Energy*1000 (i.e. 5497 instead of 5.497)
+if [ -z $1 ];then
+  echo "enter beam energy!"
+  exit
+fi
+
+##-- Change E1F_P_SIM in particle_constants.h and compile ana2pi.
+##-- Once done, revert E1F_P_SIM to 5.485
+be=$(echo "scale=3; $1/1000" | bc -l)
+cd $WORKSPACE/ana2pi
+sed -i "s/E1F_P_SIM = 5.485/E1F_P_SIM = $be/" particle_constants.h
+make clean
+make all
+sed -i "s/E1F_P_SIM = $be/E1F_P_SIM = 5.485/" particle_constants.h
+
+##-- Now go on and make d2pi.root
+BENAME=be$1
+ROOTDIR=$STUDY_SIMDET_DATADIR
+H10DIR=$ROOTDIR
+cd $H10DIR
+#ana_e1f.sim.2pi.study 
+ana -i h10.lst -t e1f:sim:2pi -p d2piT:eid:efid:qskim:pid:d2piTR
+cp d2pi.root d2pi_$BENAME.root
