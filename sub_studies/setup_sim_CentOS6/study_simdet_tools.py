@@ -90,7 +90,7 @@ def load_data(beam_energy):
 	global be
 
 	be=beam_energy
-	datadir=os.environ['SETUPSIMCENTOS6_DATADIR']
+	datadir=os.environ['STUDY_SIMDET_DATADIR']
 	f = os.path.join(datadir,'d2pi_be%d.root'%be)
 	arrT = root2array(f,'d2piTR/T/tT')#,stop=10000)#,start=1,stop=5)#,start=1,stop=5)#start=1,stop=2)
 	arrR = root2array(f,'d2piTR/R/tR')#,stop=10000)#,start=1,stop=5)#,start=1,stop=5)#start=1,stop=2)
