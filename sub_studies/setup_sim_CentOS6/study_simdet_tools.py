@@ -256,6 +256,7 @@ def get_resolution_and_offset():
     #plt.show()
 
 def plot_resolution_and_offset(means,sgmas):
+	LEGEND_FONT_SIZE=15
 	fig_nrows=12
 	fig_ncols=2
 	fig,(axs)=plt.subplots(nrows=fig_nrows,ncols=fig_ncols,figsize=(20,80))
@@ -290,7 +291,7 @@ def plot_resolution_and_offset(means,sgmas):
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_xlabel('Top',size='xx-large')
 		ax.set_ylabel('Offset(SR-ST)',size='xx-large')
-		ax.legend(loc='best',prop={'size':10})
+		ax.legend(loc='best',prop={'size':LEGEND_FONT_SIZE})
 		ax.grid(True)
 		
 		#! Now plot the 'sgmas' of the delta distributions
@@ -309,7 +310,7 @@ def plot_resolution_and_offset(means,sgmas):
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_xlabel('Top',size='xx-large')
 		ax.set_ylabel('Resolution',size='xx-large')
-		ax.legend(loc='best',prop={'size':10})
+		ax.legend(loc='best',prop={'size':LEGEND_FONT_SIZE})
 		ax.grid(True)	
    
 
