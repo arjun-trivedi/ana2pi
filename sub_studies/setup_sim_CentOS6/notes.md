@@ -17,7 +17,7 @@ As it stands, even after correcting for shifts in SR hadron momentum by way of a
 
 1.Tuning GPP pars
 -----------------
-For now, I am using GPP pars picked by Evan (1.37,1.37,1.37). I tried 27 combinations in GPP-par space spanned by:
+For now, I am using GPP pars picked by Evan (1.357,1.357,1.357). I tried 27 combinations in GPP-par space spanned by:
 (0,0,0)*(1.37,1.37,1.37)*(4,4,4)
 Among all of the the parameters used by Evan, matched ER-MMs most closely; however as mentioned before, they were shifted and narrower
 compared with ER-MMs. Items 2 and 3 address the shift, but the narrowness of the MM distributions may need to be addressed by picking different GPP pars, but I will revisit this once 3 is done. 
