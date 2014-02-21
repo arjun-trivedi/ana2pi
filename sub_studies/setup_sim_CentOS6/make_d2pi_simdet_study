@@ -19,6 +19,6 @@ BENAME=be$1
 ROOTDIR=$STUDY_SIMDET_DATADIR
 H10DIR=$ROOTDIR
 cd $H10DIR
-#ana_e1f.sim.2pi.study 
-ana -i h10.lst -t e1f:sim:2pi -p d2piT:eid:efid:qskim:pid:d2piTR
+#ana -i h10.lst -t e1f:sim:2pi -p d2piT:eid:efid:qskim:pid:d2piTR
+ana_e1f.sim.2pi_simdet-study
 cp d2pi.root d2pi_$BENAME.root
