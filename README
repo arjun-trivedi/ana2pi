@@ -3,7 +3,8 @@ Please read at-h10/formats/README to understand:
 	+ `h10typ` understood by ana.cpp and therefore the, rest of the analysis objects
 	+  the nuances of Bind-ing h10 TTrees of different `h10typ` to DataH10
 
-ana2pi Branches (Listed in accordance with tree-level heirarchy)
+ana2pi Branches 
+(Listed in accordance with tree-level heirarchy which is set up by executing 'git branch sub-branch' when the top level branch is checked out)
 ==================================================================
 + master: pre-DNP code; pretty much should reproduce DNP results
 	+ elastic: Here I started the effort to setup Simulation on CentOS6 (the idea as to use elastic simulations, hence the name) and also reorganzed a lot of code which mainly affected the production of processed data from h10-data (See handwritten notes). Also a lot of new scripts etc may have been added. 
