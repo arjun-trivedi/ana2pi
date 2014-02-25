@@ -9,6 +9,7 @@
 #include "proc_skim_q.h"
 #include "proc_mom_cor.h"
 #include "proc_d2pi.h"
+#include "proc_dnstr_dis.h"
 #include "proc_fill_skim.h"
 //#include "proc_top.h"
 /*#include "proc_skim_q2w.h"
@@ -197,6 +198,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("d2piT"))      proc = new ProcD2pi(mkdir("d2piT"),dH10,dAna,kTRUE,kFALSE);
          else if (str.EqualTo("d2piR"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE);
          else if (str.EqualTo("d2piTR"))     proc = new ProcD2pi(mkdir("d2piTR"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("dnstrDIS"))   proc = new ProcDnstrDIS(mkdir("dnstrDIS"),dH10,dAna);
          else if (str.EqualTo("fillskim")) proc = new ProcFillSkim(mkdir("skim"),dH10,dAna);	
 
          //else if (str.EqualTo("top"))        proc = new ProcTop(mkdir("top"),dH10,dAna);

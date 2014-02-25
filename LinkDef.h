@@ -15,6 +15,7 @@
 #pragma link C++ class DataEkin+;
 //#pragma link C++ class SelH10+;
 #pragma link C++ class DataElastic+;
+#pragma link C++ class DataNstrDIS+;
 #pragma link C++ class H10Looper+;
 
 #pragma link C++ namespace ParticleConstants+;

@@ -11,6 +11,7 @@
 #include "data_2pi.h"
 #include "data_h10.h"
 #include "data_elastic.h"
+#include "data_nstr_dis.h"
 #include <TObjArray.h>
 
 class DataAna
@@ -37,6 +38,7 @@ public:
 	Data2pi d2pi_mc;
 	DataElastic dElast;
 	DataElastic dElast_ST;
+	DataNstrDIS dNstrDIS;
 	
 	struct h8Dbng{
 		Int_t bins;
