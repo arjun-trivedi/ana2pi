@@ -16,4 +16,5 @@ ana2pi Branches
                                1.iv. Added functionality for a single instantiation of ProcD2pi to make `d2pi` for Thrown and Reconstructed events (earlier a single instantiation could make `d2pi` for Thrown or Reconstructed events)  
 		2. Moved "top" from DataAna to Data2pi (Code integrity)
 		3. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
+			+ prop14_new_data [02-25-14]: When preparing for my proposal defense (March, 2014), I realized that I needed to make a new branch in order to make quick code changes and obtain data, without having to worry about the over-all code integrity. Any changes that I find lasting, I will merge in later. 
 				
