@@ -131,25 +131,25 @@ def add_reco_elcols(d):
     d['qsq']=qsq 
     d['w']=w
 
-    mc_qsq=[]
-    mc_w=[]
-    for ievt in np.arange(0,len(d.mcnentr)):
-        for ipart in np.arange(0,d.mcnentr[ievt]):
-            if d.mcid[ievt][ipart] != 11: continue
-            p=d.mcp[ievt][ipart]
-            theta=math.radians(d.mctheta[ievt][ipart])
-            phi=math.radians(d.mcphi[ievt][ipart])
-            px=p*math.sin(theta)*math.cos(phi)
-            py=p*math.sin(theta)*math.sin(phi)
-            pz=p*math.cos(theta)
-            e=math.sqrt(p*p+MASS_E*MASS_E)
-            lve = ROOT.TLorentzVector(px,py,pz,e)
-            lvq = lvE0-lve
-            lvw = lvq+lvP0
-            mc_qsq.append(-lvq.Mag2())
-            mc_w.append(lvw.Mag())
-    d['mc_qsq']=mc_qsq 
-    d['mc_w']=mc_w
+    # mc_qsq=[]
+    # mc_w=[]
+    # for ievt in np.arange(0,len(d.mcnentr)):
+    #     for ipart in np.arange(0,d.mcnentr[ievt]):
+    #         if d.mcid[ievt][ipart] != 11: continue
+    #         p=d.mcp[ievt][ipart]
+    #         theta=math.radians(d.mctheta[ievt][ipart])
+    #         phi=math.radians(d.mcphi[ievt][ipart])
+    #         px=p*math.sin(theta)*math.cos(phi)
+    #         py=p*math.sin(theta)*math.sin(phi)
+    #         pz=p*math.cos(theta)
+    #         e=math.sqrt(p*p+MASS_E*MASS_E)
+    #         lve = ROOT.TLorentzVector(px,py,pz,e)
+    #         lvq = lvE0-lve
+    #         lvw = lvq+lvP0
+    #         mc_qsq.append(-lvq.Mag2())
+    #         mc_w.append(lvw.Mag())
+    # d['mc_qsq']=mc_qsq 
+    # d['mc_w']=mc_w
 
 
 def plot_qsq_w(h10dfs):
