@@ -71,6 +71,12 @@ public:
 	Float_t alpha_1;
 	Float_t alpha_2;
 	Float_t alpha_3;
+	//for eid
+	Float_t p;
+	Int_t nphe;
+	Float_t ec_eo;
+	Float_t ec_ei;
+	Float_t etot;
 
     /*struct vars{
 		Float_t M1;

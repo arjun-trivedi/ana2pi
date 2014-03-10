@@ -282,7 +282,7 @@ void ProcD2pi::handle() {
 					_lvP = _lvMM[TOP4];
 				}
 
-				//UpdateD2pi(); //MM part of d2pi already updated
+				UpdateD2pi(); //MM part of d2pi already updated
 				dAna->fillYields(_yields_R[dAna->d2pi.top-1]);
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
@@ -629,6 +629,14 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->alpha_2=180;
 	tp->alpha_3=180;
 
+	//! for eid
+	tp->p = dH10->p[0];
+	tp->nphe    = dH10->nphe[dH10->cc[0]-1];
+	tp->ec_ei   = dH10->ec_ei[dH10->ec[0]-1];
+	tp->ec_eo   = dH10->ec_eo[dH10->ec[0]-1];
+	tp->etot    = dH10->etot[dH10->ec[0]-1];
+	
+
 	/*tp->varset1.M1 = Mppip;
 	tp->varset1.M2 = Mpippim;
 	tp->varset1.theta = getTheta(_lvPimCMS);
@@ -716,11 +724,11 @@ void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*/){
 	t->Branch("alpha_3",&tp->alpha_3);
 
 	//! to demo proposal::eid 03-09-13
-	t->Branch("p",&dH10->p[0]); //momentum is redundant, but kept for integrity check
-	t->Branch("etot",&dH10->etot[0]); 
-	t->Branch("ec_eo",&dH10->ec_eo[0]);
-	t->Branch("ec_ei",&dH10->ec_ei[0]);
-	t->Branch("nphe",&dH10->nphe[0]);
+	t->Branch("p",&tp->p); //momentum is redundant, but kept for integrity check
+	t->Branch("nphe",&tp->nphe); 
+	t->Branch("ec_eo",&tp->ec_eo);
+	t->Branch("ec_ei",&tp->ec_ei);
+	t->Branch("etot",&tp->etot);
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
