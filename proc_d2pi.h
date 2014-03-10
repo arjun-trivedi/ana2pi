@@ -713,6 +713,13 @@ void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*/){
 	t->Branch("alpha_1",&tp->alpha_1);
 	t->Branch("alpha_2",&tp->alpha_2);
 	t->Branch("alpha_3",&tp->alpha_3);
+
+	//! to demo proposal::eid 03-09-13
+	t->Branch("p",&dH10->p[0]); //momentum is redundant, but kept for integrity check
+	t->Branch("etot",&dH10->etot[0]); 
+	t->Branch("ec_eo",&dH10->ec_eo[0]);
+	t->Branch("ec_ei",&dH10->ec_ei[0]);
+	t->Branch("nphe",&dH10->nphe[0]);
 }
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
