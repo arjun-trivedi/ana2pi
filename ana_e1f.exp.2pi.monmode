@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-1000000000}
+ana -i h10.lst -t e1f:exp:2pi -p eidmon:efidmon:qskim:mom:pidmon:d2piR:eidmononly:efidmononly:pidmononly -n $nentries
