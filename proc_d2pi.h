@@ -258,6 +258,7 @@ void ProcD2pi::handle() {
 			
 			if (t1a || t2a || t3a || t4a) { //used to determine top MM cut
 				UpdateD2pi_MM();
+				UpdateD2pi(); //MM part of d2pi already updated
 				dAna->fillHistsMM(_hists_ana_MM);
 				UpdateEkin();
 			}
@@ -281,7 +282,7 @@ void ProcD2pi::handle() {
 					_lvP = _lvMM[TOP4];
 				}
 
-				UpdateD2pi(); //MM part of d2pi already updated
+				//UpdateD2pi(); //MM part of d2pi already updated
 				dAna->fillYields(_yields_R[dAna->d2pi.top-1]);
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
