@@ -293,7 +293,11 @@ def plot_resolution_and_offset(means,sgmas):
 		ax.set_ylabel('Offset(SR-ST)',size='xx-large')
 		ax.legend(loc='best',prop={'size':LEGEND_FONT_SIZE})
 		ax.grid(True)
-		
+		#save
+		outdir='/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/Simulation/SR_effect'
+		extent = axs[irow][0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+		fig.savefig('%s/off_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.4, 1.3))
+				
 		#! Now plot the 'sgmas' of the delta distributions
 		ax=axs[irow][1]
 		lns=[]
@@ -311,7 +315,11 @@ def plot_resolution_and_offset(means,sgmas):
 		ax.set_xlabel('Top',size='xx-large')
 		ax.set_ylabel('Resolution',size='xx-large')
 		ax.legend(loc='best',prop={'size':LEGEND_FONT_SIZE})
-		ax.grid(True)	
+		ax.grid(True)
+		#save
+		outdir='/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/Simulation/SR_effect'
+		extent = axs[irow][0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+		fig.savefig('%s/res_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.4, 1.3))
    
 
 # def plot_detector_resolution_and_offset(means,sgmas):
