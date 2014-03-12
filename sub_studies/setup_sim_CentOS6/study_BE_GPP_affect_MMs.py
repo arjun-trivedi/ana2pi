@@ -240,6 +240,7 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 				elif imm==3:
 					yields_SR_mmcut[imm-1][idt-1]=fsim_pdf.Integral(sqrt(0.8),1)
 					yields_ER_mmcut[imm-1][idt-1]=fexp_pdf.Integral(sqrt(0.8),1)
+			pad.SaveAs("%s/mmt%d.eps"%(OUTDIR,imm+1))
 		cmm.SaveAs("%s/%s.png"%(OUTDIR,cmm.GetName()))
 		cmm.Close()	
 		#cmm.Delete()
