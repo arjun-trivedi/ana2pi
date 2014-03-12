@@ -88,9 +88,10 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 			beame=be_sim
 			hname='simulation'
 		else:
-			topdir="top2"
-			beame=be_sim
-			hname='simulation'
+			continue
+			# topdir="top2"
+			# beame=be_sim
+			# hname='simulation'
 		print idt
 		#t=f[idt].Get("/%s/hmm2ppippimVw"%topdir)
 		#print t.GetName()
@@ -101,6 +102,7 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 		#fix name and title of histograms
 		for imm in range(len(hmms[idt])):
 			hmms[idt][imm].SetName(hname)
+			hmms[idt][imm].SetXTitle('MM_{X} [GeV]')
 		hmms[idt][0].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{+}#pi^{-}')
 		hmms[idt][1].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{+}X')
 		hmms[idt][2].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{-}X')
