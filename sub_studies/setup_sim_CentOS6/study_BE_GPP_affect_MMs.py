@@ -59,7 +59,7 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 
 	
 	OUTDIR_ROOT=os.path.join(os.environ['WORKSPACE'],'at-docs/Prop14/pics/Analysis/details/Simulation')
-	OUTDIR=os.path.join(OUTDIR_ROOT,'be_exp%d_be_sim%d'%(be_exp,be_sim))
+	OUTDIR=os.path.join(OUTDIR_ROOT,'MMs')
 	if not os.path.isdir(OUTDIR):
 		os.mkdir(OUTDIR)
 
@@ -103,7 +103,7 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 		for imm in range(len(hmms[idt])):
 			hmms[idt][imm].SetName(hname)
 			hmms[idt][imm].SetXTitle('MM_{X} [GeV]')
-		hmms[idt][0].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{+}#pi^{-}')
+		hmms[idt][0].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{+}#pi^{-}X')
 		hmms[idt][1].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{+}X')
 		hmms[idt][2].SetTitle('MM_{X} for #gamma^{*}p #rightarrow p#pi^{-}X')
 		hmms[idt][3].SetTitle('MM_{X} for #gamma^{*}p #rightarrow #pi^{+}#pi^{-}X')
@@ -126,7 +126,8 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 	yields_SR_mmcut=np.zeros((3,27),'d')
 	yields_ER_mmcut=np.zeros((3,27),'d')#3rd index is redundant EXP, but kept for code readability
 
-	lcut_t2t3=ROOT.TLine(0.2,0,0.2,50000)
+	lcut_t2=ROOT.TLine(0.2,0,0.2,50000)
+	lcut_t3=ROOT.TLine(0.2,0,0.2,50000)
 	lcut_t4=ROOT.TLine(1,0,1,50000)
 	for idt in range(1,DTYPS):
 		if idt != 14: continue
@@ -188,7 +189,8 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 				fgauss.SetParameters(1,0,1);
 				hmms[idt][imm].Fit("fgauss","0","",0.9,0.96)
 				fsim=hmms[idt][imm].GetFunction("fgauss")
-
+			pad.Update();
+			
 			nsignal_sim=None
 			if fsim is None:nsignal_sim=hmms[idt][imm].GetEntries()
 			else:			nsignal_sim=fsim.GetParameter(0)
@@ -198,13 +200,17 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 
 			hsim=hmms[idt][imm].DrawNormalized("sames",norm)
 			pad.Update();
-			if imm==1 or imm==2:
-				# lcut_t2t3.SetY1(pad.GetUymin())
-				# lcut_t2t3.SetY2(pad.GetUymax())
-				lcut_t2t3.Draw("same")
+			if imm==1:
+				lcut_t2.SetY1(pad.GetUymin())
+				lcut_t2.SetY2(pad.GetUymax())
+				lcut_t2.Draw("same")
+			elif imm==2:
+				lcut_t3.SetY1(pad.GetUymin())
+				lcut_t3.SetY2(pad.GetUymax())
+				lcut_t3.Draw("same")
 			elif imm==3:
-				# lcut_t4.SetY1(pad.GetUymin())
-				# lcut_t4.SetY2(pad.GetUymax())
+				lcut_t4.SetY1(pad.GetUymin())
+				lcut_t4.SetY2(pad.GetUymax())
 				lcut_t4.Draw("same")
 			st=hsim.GetListOfFunctions().FindObject("stats")
 			st.SetX1NDC(0.60)
