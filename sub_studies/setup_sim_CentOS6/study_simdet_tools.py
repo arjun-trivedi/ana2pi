@@ -8,11 +8,14 @@ import ROOT
 
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 
 from math import *
 
 import os
+
+matplotlib.rc('text', usetex=True)
 
 
 dfT=""
@@ -24,39 +27,51 @@ NPARTS=4
 PARTS=['e','p','pip','pim']
 
 COLS =['p_e','p_p','p_pip','p_pim']
+COLNAMES =[r'$p_{e}$',r'$p_{p}$',r'$p_{\pi^{+}}$',r'$p_{\pi^{-}}$']
 XMIN=[-0.20,-0.08,-0.08,-0.08]
 XMAX=[ 0.20, 0.08, 0.08, 0.08]
 COLS+=['px_e','py_e','pz_e']
+COLNAMES +=[r'$px_{e}$',r'$py_{e}$',r'$pz_{e}$']
 XMIN+=[-0.08,-0.08,-0.08]
 XMAX+=[ 0.08, 0.08, 0.08]
 COLS+=['px_p','py_p','pz_p']
+COLNAMES +=[r'$px_{p}$',r'$py_{p}$',r'$pz_{p}$']
 XMIN+=[-0.08,-0.08,-0.08]
 XMAX+=[ 0.08, 0.08, 0.08]
 COLS+=['px_pip','py_pip','pz_pip']
+COLNAMES +=[r'$px_{\pi{+}}$',r'$py_{\pi^{+}}$',r'$pz_{\pi^{+}}$']
 XMIN+=[-0.08,-0.08,-0.08]
 XMAX+=[ 0.08, 0.08, 0.08]
 COLS+=['px_pim','py_pim','pz_pim']
+COLNAMES +=[r'$px_{\pi^{-}}$',r'$py_{\pi^{-}}$',r'$pz_{\pi^{-}}$']
 XMIN+=[-0.08,-0.08,-0.08]
 XMAX+=[ 0.08, 0.08, 0.08]
 COLS+=['vx_e','vy_e','vz_e']
+COLNAMES +=[r'$vx_{e}$',r'$vy_{e}$',r'$vz_{e}$']
 XMIN+=[-1,-1,-1]
 XMAX+=[ 1, 1, 1]
-COLS+=['vx_p','vy_p','vz_p']
+COLS +=['vx_p','vy_p','vz_p']
+COLNAMES+=[r'$vx_{p}$',r'$vy_{p}$',r'$vz_{p}$']
 XMIN+=[-1,-1,-1]
 XMAX+=[ 1, 1, 1]
 COLS+=['vx_pip','vy_pip','vz_pip']
+COLNAMES +=[r'$vx_{\pi^{+}}$',r'$vy_{\pi^{+}}$',r'$vz_{\pi^{+}}$']
 XMIN+=[-1,-1,-1]
 XMAX+=[ 1, 1, 1]
 COLS+=['vx_pim','vy_pim','vz_pim']
+COLNAMES +=[r'$vx_{pi^{-}}$',r'$vy_{\pi^{-}}$',r'$vz_{\pi^{-}}$']
 XMIN+=[-1,-1,-1]
 XMAX+=[ 1, 1, 1]
 COLS+=['Q2','W']
+COLNAMES +=[r'$Q^{2}$',r'$W$']
 XMIN+=[-0.06,-0.06]
 XMAX+=[ 0.06, 0.06]
-COLS+=['M_ppip','M_ppim','M_pippim']
+COLS +=['M_ppip','M_ppim','M_pippim']
+COLNAMES+=[r'$M_{p\pi^{+}}$',r'$M_{p\pi^{-}}$',r'$M_{\pi^{+}\pi^{-}}$']
 XMIN+=[-0.06,-0.06,-0.06]
 XMAX+=[ 0.06, 0.06, 0.06]
 COLS+=['mm2ppippim','mmppip','mmppim','mmpippim']
+COLNAMES +=[r'$mm^{2}_{p\pi^{+}\pi^{-}}$',r'$mm_{p\pi^{+}}$',r'$mm_{p\pi^{-}}$',r'$mm_{\pi^{+}\pi^{-}}$']
 XMIN+=[-0.001,-0.2,-0.2,-0.2]
 XMAX+=[ 0.001, 0.2, 0.2, 0.2]
 NCOLS=len(COLS)
@@ -256,7 +271,7 @@ def get_resolution_and_offset():
     #plt.show()
 
 def plot_resolution_and_offset(means,sgmas):
-	LEGEND_FONT_SIZE=15
+	LEGEND_FONT_SIZE=20
 	fig_nrows=12
 	fig_ncols=2
 	fig,(axs)=plt.subplots(nrows=fig_nrows,ncols=fig_ncols,figsize=(20,80))
@@ -282,20 +297,26 @@ def plot_resolution_and_offset(means,sgmas):
 		if irow!=11:
 			for idata in subplot_datas[irow]:
 				lns.append(ax.plot(TOPS,means[idata],
-					       marker_styles[iln],markersize=10,label=COLS[idata]))
+					       marker_styles[iln],markersize=10,label=COLNAMES[idata]))
 				iln+=1
 		else:
 			ax.plot(TOPS,[means[dMM2PPIPPIM][0],means[dMMPPIP][1],means[dMMPPIM][2],means[dMMPIPPIM][3]],
 					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
+		if irow!=11:
+			ax.set_xticklabels(['','1','2','3','4',''],size='xx-large')
+			ax.set_xlabel(r'Top',size='xx-large')
+		else:
+			ax.set_xticklabels(['',r'$MM^{2}_{p\pi^{+}\pi^{-}}$',r'$MM_{p\pi^{+}}$',r'$MM_{p\pi^{-}}$',r'$MM_{\pi^{+}\pi^{-}}$',''],size='xx-large')
+			ax.set_xlabel(r'MM',size='xx-large')
+		ax.set_yticklabels(ax.get_yticks(),size='xx-large')
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-		ax.set_xlabel('Top',size='xx-large')
-		ax.set_ylabel('Offset(SR-ST)',size='xx-large')
+		ax.set_ylabel(r'Offset(SR-ST) [GeV]',size='xx-large')
 		ax.legend(loc='best',prop={'size':LEGEND_FONT_SIZE})
 		ax.grid(True)
 		#save
 		outdir='/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/Simulation/SR_effect'
-		extent = axs[irow][0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+		extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
 		fig.savefig('%s/off_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.4, 1.3))
 				
 		#! Now plot the 'sgmas' of the delta distributions
@@ -305,20 +326,26 @@ def plot_resolution_and_offset(means,sgmas):
 		if irow!=11:
 			for idata in subplot_datas[irow]:
 				lns.append(ax.plot(TOPS,sgmas[idata],
-					       marker_styles[iln],markersize=10,label=COLS[idata]))
+					       marker_styles[iln],markersize=10,label=COLNAMES[idata]))
 				iln+=1
 		else:
 			ax.plot(TOPS,[sgmas[dMM2PPIPPIM][0],sgmas[dMMPPIP][1],sgmas[dMMPPIM][2],sgmas[dMMPIPPIM][3]],
 					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
+		if irow!=11:
+			ax.set_xticklabels(['','1','2','3','4',''],size='xx-large')
+			ax.set_xlabel(r'Top',size='xx-large')
+		else:
+			ax.set_xticklabels(['',r'$MM^{2}_{p\pi^{+}\pi^{-}}$',r'$MM_{p\pi^{+}}$',r'$MM_{p\pi^{-}}$',r'$MM_{\pi^{+}\pi^{-}}$',''],size='xx-large')
+			ax.set_xlabel(r'MM',size='xx-large')
+		ax.set_yticklabels(ax.get_yticks(),size='xx-large')
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
-		ax.set_xlabel('Top',size='xx-large')
-		ax.set_ylabel('Resolution',size='xx-large')
+		ax.set_ylabel(r'Resolution [GeV]',size='xx-large')
 		ax.legend(loc='best',prop={'size':LEGEND_FONT_SIZE})
 		ax.grid(True)
 		#save
 		outdir='/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/Simulation/SR_effect'
-		extent = axs[irow][0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+		extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
 		fig.savefig('%s/res_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.4, 1.3))
    
 
