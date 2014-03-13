@@ -190,7 +190,7 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 				hmms[idt][imm].Fit("fgauss","0","",0.9,0.96)
 				fsim=hmms[idt][imm].GetFunction("fgauss")
 			pad.Update();
-			
+
 			nsignal_sim=None
 			if fsim is None:nsignal_sim=hmms[idt][imm].GetEntries()
 			else:			nsignal_sim=fsim.GetParameter(0)
@@ -584,7 +584,7 @@ def anaMMelas_ER(nentries=1000000):
 		hWnmcr.append(ROOT.gDirectory.Get("hWnmcr"))
 		hWymcr.append(ROOT.gDirectory.Get("hWymcr"))
 		
-	c_hW=ROOT.TCanvas("W","W")
+	c_hW=ROOT.TCanvas("W","W",500,800)
 	c_hW.Divide(1,3)
 	# c_DC=Canvas(name="DC",title="DC")
 	# c_DC.Divide(3,2);
@@ -596,12 +596,50 @@ def anaMMelas_ER(nentries=1000000):
 		pad.SetGridx()
 		hWymcr[i].SetName(DTYPS_NAME[i]+"_"+hWymcr[i].GetName())
 		hWymcr[i].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+		hWymcr[i].SetTitle("W for Elastic events")
+		hWymcr[i].SetName("with MomCor")
+		hWymcr[i].SetXTitle("W [GeV]")
 		#hWymcr[i].Fit("gaus","","",0.74,0.96)
-		hWymcr[i].Fit("gaus","","",0.90,0.98)
+		# hWymcr[i].Fit("gaus","","",0.90,0.98)
+		# fymcr=hWymcr[i].GetFunction("gaus")
+		# fymcr.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 		hWymcr[i].Draw()
+		pad.Update();
+		st=hWymcr[i].GetListOfFunctions().FindObject("stats")
+		st.SetX1NDC(0.20)
+		st.SetX2NDC(0.40)
+		st.SetY1NDC(0.625)
+		st.SetY2NDC(0.350)
+		#st.SetFillStyle(4000)
+		st.SetTextColor(ROOT.gROOT.ProcessLine("kRed"));
+		hWymcr[i].Fit("gaus","","",0.90,0.98)
+		fymcr=hWymcr[i].GetFunction("gaus")
+		fymcr.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+		#pad.Update();
+
 		hWnmcr[i].SetName(DTYPS_NAME[i]+"_"+hWnmcr[i].GetName())
 		hWnmcr[i].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+		hWnmcr[i].SetTitle("W for Elastic events")
+		hWnmcr[i].SetName("no MomCor")
+		hWnmcr[i].SetXTitle("W [GeV]")
+		# hWnmcr[i].Fit("gaus","0","",0.90,0.98)
+		# fnmcr=hWnmcr[i].GetFunction("gaus")
+		# fnmcr.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 		hWnmcr[i].Draw("sames")
+		pad.Update();
+		st=hWnmcr[i].GetListOfFunctions().FindObject("stats")
+		st.SetX1NDC(0.20)
+		st.SetX2NDC(0.40)
+		st.SetY1NDC(0.900)
+		st.SetY2NDC(0.625)#(0.625)
+		st.SetTextColor(ROOT.gROOT.ProcessLine("kBlack"));
+		hWnmcr[i].Fit("gaus","0","",0.90,1.025)
+		fnmcr=hWnmcr[i].GetFunction("gaus")
+		fnmcr.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+		fnmcr.Draw("same")
+		
+		if DTYPS_NAME[i]=='5499':
+			pad.SaveAs('/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/momcorr/W.eps')
 				
 	if not ROOT.gROOT.IsBatch():
 		plt.show()
