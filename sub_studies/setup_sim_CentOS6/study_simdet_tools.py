@@ -304,11 +304,11 @@ def plot_resolution_and_offset(means,sgmas):
 					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
 		if irow!=11:
-			ax.set_xticklabels(['','1','2','3','4',''],size='xx-large')
-			ax.set_xlabel(r'Top',size='xx-large')
+			ax.set_xticklabels(['','top-1','top-2','top-3','top-4',''],size='xx-large')
+			#ax.set_xlabel(r'Top',size='xx-large')
 		else:
 			ax.set_xticklabels(['',r'$MM^{2}_{p\pi^{+}\pi^{-}}$',r'$MM_{p\pi^{+}}$',r'$MM_{p\pi^{-}}$',r'$MM_{\pi^{+}\pi^{-}}$',''],size='xx-large')
-			ax.set_xlabel(r'MM',size='xx-large')
+			#ax.set_xlabel(r'MM',size='xx-large')
 		ax.set_yticklabels(ax.get_yticks(),size='xx-large')
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_ylabel(r'Offset(SR-ST) [GeV]',size='xx-large')
@@ -317,7 +317,7 @@ def plot_resolution_and_offset(means,sgmas):
 		#save
 		outdir='/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/Simulation/SR_effect'
 		extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-		fig.savefig('%s/off_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.4, 1.3))
+		fig.savefig('%s/off_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.34, 1.2))
 				
 		#! Now plot the 'sgmas' of the delta distributions
 		ax=axs[irow][1]
@@ -333,11 +333,11 @@ def plot_resolution_and_offset(means,sgmas):
 					       marker_styles[iln],markersize=10)
 		ax.set_xlim(0,5)
 		if irow!=11:
-			ax.set_xticklabels(['','1','2','3','4',''],size='xx-large')
-			ax.set_xlabel(r'Top',size='xx-large')
+			ax.set_xticklabels(['','top-1','top-2','top-3','top-4',''],size='xx-large')
+			#ax.set_xlabel(r'Top',size='xx-large')
 		else:
 			ax.set_xticklabels(['',r'$MM^{2}_{p\pi^{+}\pi^{-}}$',r'$MM_{p\pi^{+}}$',r'$MM_{p\pi^{-}}$',r'$MM_{\pi^{+}\pi^{-}}$',''],size='xx-large')
-			ax.set_xlabel(r'MM',size='xx-large')
+			#ax.set_xlabel(r'MM',size='xx-large')
 		ax.set_yticklabels(ax.get_yticks(),size='xx-large')
 		ax.set_ylim(ax.get_ylim()[0]-0.001,ax.get_ylim()[1]+0.001)
 		ax.set_ylabel(r'Resolution [GeV]',size='xx-large')
@@ -346,7 +346,7 @@ def plot_resolution_and_offset(means,sgmas):
 		#save
 		outdir='/home/trivedia/CLAS/workspace/at-docs/Prop14/pics/Analysis/details/Simulation/SR_effect'
 		extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-		fig.savefig('%s/res_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.4, 1.3))
+		fig.savefig('%s/res_r%d.eps'%(outdir,irow+1), bbox_inches=extent.expanded(1.34, 1.2))
    
 
 # def plot_detector_resolution_and_offset(means,sgmas):
