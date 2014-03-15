@@ -45,6 +45,7 @@ void plotxsec(TString xsectype = "vm", bool ploty=kFALSE, bool sim=kFALSE,bool c
 void plotxsec_dnp(TString xsectype = "vm", bool ploty=kFALSE, bool sim=kFALSE,bool comp=kFALSE);
 void plot1Dxsec(seq_t seq=FULL);
 void plot1Dxsec_dnp(seq_t seq=FULL);
+void plot1Dxsec_prop14(seq_t seq=FULL);
 void plotcompxsec(TString xsectype = "vm", bool ploty=kFALSE, bool comp=kFALSE);
 void plotxsec_CommonBins(seq_t seq=ACC_CORR, bool sim=kFALSE, int Q2Wbin=0);
 
