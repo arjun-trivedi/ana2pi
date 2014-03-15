@@ -537,6 +537,147 @@ void plot1Dxsec_dnp(seq_t seq/*=FULL*/){
   }
 }
 
+void plot1Dxsec_prop14(seq_t seq/*=FULL*/){
+  if (setup("vm")==kFALSE) return;
+
+  //! COSMETICS for this method
+  gStyle->SetOptStat(0);
+
+  //! INPUT DATA for this method
+  
+  //! OBJECTS for this method
+  //* Use any of the input files to get the number of Q2Wbins
+  const int kNumQ2Wbins = _fyexp[0]->GetNkeys() - 2; //subtract 2 for hYW_Dir and hYW dirs
+  TCanvas* c[kNumQ2Wbins][nVARSET];
+  /*TCanvas* cexp[kNumQ2Wbins][nVARSET];
+  TCanvas* csim[kNumQ2Wbins][nVARSET];*/
+  for(int iq2wbin=0;iq2wbin<kNumQ2Wbins;iq2wbin++){
+    for(int iVarset=0;iVarset<nVARSET;iVarset++){
+      TString cname = TString::Format("chY1D_%02d_%d",iq2wbin+1,iVarset+1);
+      c[iq2wbin][iVarset] = new TCanvas(cname,cname,800,600);
+      c[iq2wbin][iVarset]->Divide(2,2);
+      /*TString cname_exp = TString::Format("chY1Dexp_%02d_%d",iq2wbin+1,iVarset+1);
+      cexp[iq2wbin][iVarset] = new TCanvas(cname_exp,cname_exp,800,600);
+      cexp[iq2wbin][iVarset]->Divide(2,2);
+      TString cname_sim = TString::Format("chY1Dsim_%02d_%d",iq2wbin+1,iVarset+1);
+      csim[iq2wbin][iVarset] = new TCanvas(cname_sim,cname_sim,800,600);
+      csim[iq2wbin][iVarset]->Divide(2,2);*/
+    }
+  }
+  //TCanvas *cs= TCanvas();
+
+  //! GET all the OBJECTS from INPUT DATA 
+  for (int iTop=0;iTop<5;iTop++){//nTOP loop
+    if (iTop!=4) continue;
+    if (_fyexp[iTop]==NULL) continue;
+    TIter nextkey(_fyexp[iTop]->GetListOfKeys());
+    TKey *key;
+    int iq2wbin = 0;
+    while (key = (TKey*)nextkey()) {//Q2W loop
+      TString Q2Wdirname = key->GetName();
+      if(Q2Wdirname.EqualTo("hYW_Dir") || Q2Wdirname.EqualTo("hYW"))continue;
+      printf("iq2wbin,Q2Wdirname = %d,%s\n", iq2wbin, Q2Wdirname.Data());
+      for (int iVarset=0; iVarset<nVARSET; iVarset++){//nVARSET loop
+        for (int iVar=0; iVar<nVAR;iVar++){//nVAR loop
+          if (iVar==ALPHA) continue;
+          TString hname = TString::Format("%s/hY1D/Varset%d/hY1D_%s_%s",
+                                Q2Wdirname.Data(),iVarset+1,seqTitle[seq].Data(),varName[iVar].Data());
+          TString hname_th = TString::Format("%s/hY1D/Varset%d/hY1D_%s_%s",
+                                Q2Wdirname.Data(),iVarset+1,"TH",varName[iVar].Data());
+          cout << hname << endl;
+          TH1F* h1Dexp=(TH1F*)_fyexp[iTop]->Get(hname);
+          TH1F* h1Dsim=(TH1F*)_fysim[iTop]->Get(hname);
+          TH1F* h1Dsim_th=(TH1F*)_fysim[iTop]->Get(hname_th);
+          h1Dexp->SetMarkerStyle(kFullCircle);
+          h1Dexp->SetMarkerColor(kGreen);
+          h1Dexp->SetLineColor(kGreen);
+          h1Dsim->SetMarkerStyle(kFullCircle);
+          h1Dsim->SetMarkerColor(kRed);
+          h1Dsim->SetLineColor(kRed);
+
+          h1Dsim_th->SetFillColor(2+iTop);
+          h1Dsim_th->SetFillStyle(3001+iTop);
+          h1Dsim_th->SetLineColor(kBlack);
+          /*TCanvas* ct = new TCanvas("t","t");
+          h1Dsim_th->Draw("hist");
+          printf("histogram options = %s,%s\n", h1Dexp->GetOption(), h1Dsim->GetOption());*/
+
+          //! Make Titles nice
+          TPaveText* pt = new TPaveText(0.5, 0.6, 1.0, 0.75, "NDC");
+          TText* q2wt = pt->AddText(TString::Format("[Q^{2}][W] = %s",Q2Wdirname.Data()));
+          q2wt->SetTextColor(kBlue);
+          TText* vart = pt->AddText(TString::Format("Varset 1: %s,%s,%s,%s",
+                                       varTitle[iVarset][0].Data(),varTitle[iVarset][1].Data(),
+                                       varTitle[iVarset][2].Data(),varTitle[iVarset][3].Data()));
+          vart->SetTextSize(0.05);
+          int kNorm = 900;
+          c[iq2wbin][iVarset]->cd(iVar+1);
+          if(iTop==4){
+            if (seq==RECO) h1Dexp->SetMaximum(10*h1Dexp->GetMaximum());
+            h1Dexp->SetTitle("");
+            h1Dsim->SetTitle("");
+            h1Dexp->SetTitleSize(0.05);
+            h1Dsim->SetTitleSize(0.05);
+            h1Dexp->DrawNormalized("X0 E0",kNorm);
+            h1Dsim->DrawNormalized("X0 E0 same",kNorm);
+            if (iVar+1==1){
+              TLegend* l = new TLegend(0.7,0.75,1,0.9);
+              l->AddEntry(h1Dexp,"exp","p");
+              l->AddEntry(h1Dsim,"sim","p");
+              l->Draw("same");
+            }
+          }else {
+            h1Dexp->DrawNormalized("same",kNorm);
+            h1Dsim->DrawNormalized("same",kNorm);
+          }
+          if (iVar+1==1) pt->Draw();
+          
+          
+          /*cexp[iq2wbin][iVarset]->cd(iVar+1);
+          if(iTop==0){
+            if (seq==RECO) h1Dexp->SetMaximum(10*h1Dexp->GetMaximum());
+            h1Dexp->Draw();
+          }else h1Dexp->Draw("same");
+
+          csim[iq2wbin][iVarset]->cd(iVar+1);
+          if(iTop==0){
+            if (seq==RECO) h1Dsim->SetMaximum(10*h1Dsim->GetMaximum());
+            h1Dsim->Draw();
+            if (seq==FULL) h1Dsim_th->Draw("hist same");
+          }else {
+            h1Dsim->Draw("same");
+            if (seq==FULL) h1Dsim_th->Draw("hist same");
+          }*/
+        }//end nVAR loop
+      }//end nVARSET loop
+      iq2wbin+=1;
+    }//end Q2W loop
+  }//end nTOP loop
+
+  //! DRAW OBJECTS
+  TString outdir = "Prop14";
+  gSystem->mkdir(outdir,1);
+  /*TString outdir_exp = "1Dxsec_dnp/exp";
+  TString outdir_sim = "1Dxsec_dnp/sim";*/
+  /*gSystem->mkdir(outdir_exp,1);
+  gSystem->mkdir(outdir_sim,1);*/
+  for(int iq2wbin=0;iq2wbin<kNumQ2Wbins;iq2wbin++){
+    for(int iVarset=0;iVarset<nVARSET;iVarset++){
+      TString csavename = TString::Format("%s/h1D_%02d_%d_%s.png",outdir.Data(),iq2wbin+1,iVarset+1,seqTitle[seq].Data());
+      c[iq2wbin][iVarset]->SaveAs(csavename);
+      csavename = TString::Format("%s/h1D_%02d_%d_%s.eps",outdir.Data(),iq2wbin+1,iVarset+1,seqTitle[seq].Data());
+      c[iq2wbin][iVarset]->SaveAs(csavename);
+      c[iq2wbin][iVarset]->Close();
+      /*TString csavename_exp = TString::Format("%s/h1D_%02d_%d_%s.png",outdir_exp.Data(),iq2wbin+1,iVarset+1,seqTitle[seq].Data());
+      cexp[iq2wbin][iVarset]->SaveAs(csavename_exp);
+      cexp[iq2wbin][iVarset]->Close();
+      TString csavename_sim = TString::Format("%s/h1D_%02d_%d_%s.png",outdir_sim.Data(),iq2wbin+1,iVarset+1,seqTitle[seq].Data());
+      csim[iq2wbin][iVarset]->SaveAs(csavename_sim);
+      csim[iq2wbin][iVarset]->Close();*/
+    }
+  }
+}
+
 void plotcompxsec(TString xsectype/*= "vm"*/, bool ploty/*=kFALSE*/,bool comp/*=kFALSE*/){
   TString methodB = TString::Format("Yield - Method B {%s}",_topNames[4].Data());
   TString methodA = TString::Format("Yield - Method A");
