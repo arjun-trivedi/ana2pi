@@ -5,6 +5,7 @@
 #include <TLegend.h>
 #include <TSystem.h>
 #include <TStyle.h>
+#include <TROOT.h>
 #include <TKey.h>
 #include <THStack.h>
 #include <TF1.h>
@@ -537,11 +538,24 @@ void plot1Dxsec_dnp(seq_t seq/*=FULL*/){
   }
 }
 
-void plot1Dxsec_prop14(seq_t seq/*=FULL*/){
+void plot1Dxsec_prop14(seq_t seq/*=FULL*/){gStyle->SetPaperSize(20,26);
+  
   if (setup("vm")==kFALSE) return;
 
   //! COSMETICS for this method
   gStyle->SetOptStat(0);
+  //gROOT->ProcessLine(".x styAT.C")
+  gStyle->SetPadTopMargin(0.05);//(0.05);
+  gStyle->SetPadRightMargin(0.05);//(0.05);
+  gStyle->SetPadBottomMargin(0.16);//(0.16);
+  gStyle->SetPadLeftMargin(0.16);//(0.12);
+
+  // Fix labels and title sizes 
+  gStyle->SetLabelSize(0.2,"t");
+  gStyle->SetTitleSize(0.2,"t");
+  gStyle->SetLabelSize(0.2,"xy");
+  gStyle->SetTitleSize(0.2,"xy");
+
 
   //! INPUT DATA for this method
   
@@ -589,8 +603,10 @@ void plot1Dxsec_prop14(seq_t seq/*=FULL*/){
           TH1F* h1Dsim=(TH1F*)_fysim[iTop]->Get(hname);
           TH1F* h1Dsim_th=(TH1F*)_fysim[iTop]->Get(hname_th);
           h1Dexp->SetMarkerStyle(kFullCircle);
-          h1Dexp->SetMarkerColor(kGreen);
-          h1Dexp->SetLineColor(kGreen);
+          h1Dexp->SetMarkerColor(kBlack);
+          h1Dexp->SetLineColor(kBlack);
+          /*h1Dexp->SetMarkerColor(kGreen);
+          h1Dexp->SetLineColor(kGreen);*/
           h1Dsim->SetMarkerStyle(kFullCircle);
           h1Dsim->SetMarkerColor(kRed);
           h1Dsim->SetLineColor(kRed);
@@ -603,9 +619,10 @@ void plot1Dxsec_prop14(seq_t seq/*=FULL*/){
           printf("histogram options = %s,%s\n", h1Dexp->GetOption(), h1Dsim->GetOption());*/
 
           //! Make Titles nice
-          TPaveText* pt = new TPaveText(0.5, 0.6, 1.0, 0.75, "NDC");
+          TPaveText* pt = new TPaveText(0.5, 0.84, 1.0, 0.99, "NDC");
           TText* q2wt = pt->AddText(TString::Format("[Q^{2}][W] = %s",Q2Wdirname.Data()));
           q2wt->SetTextColor(kBlue);
+          //q2wt->SetTextSize(0.06);
           TText* vart = pt->AddText(TString::Format("Varset 1: %s,%s,%s,%s",
                                        varTitle[iVarset][0].Data(),varTitle[iVarset][1].Data(),
                                        varTitle[iVarset][2].Data(),varTitle[iVarset][3].Data()));
@@ -616,16 +633,17 @@ void plot1Dxsec_prop14(seq_t seq/*=FULL*/){
             if (seq==RECO) h1Dexp->SetMaximum(10*h1Dexp->GetMaximum());
             h1Dexp->SetTitle("");
             h1Dsim->SetTitle("");
-            h1Dexp->SetTitleSize(0.05);
-            h1Dsim->SetTitleSize(0.05);
-            h1Dexp->DrawNormalized("X0 E0",kNorm);
-            h1Dsim->DrawNormalized("X0 E0 same",kNorm);
-            if (iVar+1==1){
+            h1Dexp->SetTitleSize(0.08);
+            h1Dsim->SetTitleSize(0.08);
+            h1Dexp->Draw("X0 E0");
+            /*h1Dexp->DrawNormalized("X0 E0",kNorm);
+            h1Dsim->DrawNormalized("X0 E0 same",kNorm);*/
+            /*if (iVar+1==1){
               TLegend* l = new TLegend(0.7,0.75,1,0.9);
               l->AddEntry(h1Dexp,"exp","p");
               l->AddEntry(h1Dsim,"sim","p");
               l->Draw("same");
-            }
+            }*/
           }else {
             h1Dexp->DrawNormalized("same",kNorm);
             h1Dsim->DrawNormalized("same",kNorm);
@@ -655,7 +673,7 @@ void plot1Dxsec_prop14(seq_t seq/*=FULL*/){
   }//end nTOP loop
 
   //! DRAW OBJECTS
-  TString outdir = "Prop14";
+  TString outdir = "1Dxsec_Prop14";
   gSystem->mkdir(outdir,1);
   /*TString outdir_exp = "1Dxsec_dnp/exp";
   TString outdir_sim = "1Dxsec_dnp/sim";*/

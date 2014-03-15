@@ -68,6 +68,7 @@
 /home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/TSysEvtHandler.h
 /home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/TTime.h
 /home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/TStyle.h
+/home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/TROOT.h
 /home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/TKey.h
 /home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/THStack.h
 /home/trivedia/CLAS/workspace/ana2pi/scripts/xsec-tools_C.so: /opt/root/include/TObjArray.h
