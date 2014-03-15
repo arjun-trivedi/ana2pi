@@ -52,6 +52,7 @@ void plotxsec_CommonBins(seq_t seq=ACC_CORR, bool sim=kFALSE, int Q2Wbin=0);
 /* private-type functions */
 Bool_t setup(TString xsectype = "vm", TString q2w_bng="", bool pol=false);
 TH1F* normalizeYield(TH1F* hYW);
+TH1F* normalize1DYield(TH1F* hY,Float_t w, Float_t dw);
 
 //! each plot function gets a main canvas "c" and tnail canvas "ct" via
 //  c->AddExec("tnail", "tnail()")

@@ -127,6 +127,30 @@ TH1F* normalizeYield(TH1F* hYW)
   return hYWnorm;
 }
 
+TH1F* normalize1DYield(TH1F* hY,Float_t w, Float_t dw)
+{
+  TH1F* hYnorm = (TH1F*)hY->Clone("hYnorm");
+  for (int ibin = 0; ibin < hY->GetNbinsX(); ibin++)
+    {
+      /*float wmin = hYW->GetBinLowEdge(ibin+1);
+      float dw   = hYW->GetBinWidth(ibin+1);*/
+      float vgflux = getvgflux(w,_q2min);
+      float factor = 1000000000;
+      float norm = LUM*vgflux*_dq2*dw*factor;
+      /*printf("[wmin,q2min] = %f:%f\n",wmin,_q2min);
+      printf("lum:vgflux:dw:dq2:factor = %f:%f:%f:%f:%.0E\n",
+              LUM,vgflux,dw,_dq2,factor);
+      printf("norm = %f\n",norm);*/
+
+      float yield     = hY->GetBinContent(ibin+1);
+      float normYield = yield/norm;
+      
+      hYnorm->SetBinContent(ibin+1,normYield);
+      hYnorm->SetBinError(ibin+1,0); //tmp till errors are correctly propagated
+    }
+  return hYnorm;
+}
+
 void plotxsec(TString xsectype/*= "vm"*/, bool ploty/*=kFALSE*/,bool sim/*=kFALSE*/,bool comp/*=kFALSE*/){
   if (setup(xsectype)==kFALSE) return;
 
@@ -635,7 +659,19 @@ void plot1Dxsec_prop14(seq_t seq/*=FULL*/){gStyle->SetPaperSize(20,26);
             h1Dsim->SetTitle("");
             h1Dexp->SetTitleSize(0.08);
             h1Dsim->SetTitleSize(0.08);
-            h1Dexp->Draw("X0 E0");
+            
+            TString wrange = Q2Wdirname.Tokenize("_")->At(1)->GetName();
+            TString wmin = wrange.Tokenize(",")->At(0)->GetName();
+            //TString wmax = wrange.Tokenize(",")->At(1)->GetName();
+            wmin.Remove(0,1); //remove "["
+            //wmax.Remove(0,1);
+            double w = wmin.Atof();
+
+            TH1F* h1Dexp_norm=normalize1DYield(h1Dexp,w,0.025);
+            h1Dexp_norm->SetMarkerStyle(kFullCircle);
+            h1Dexp_norm->SetMarkerColor(kBlack);
+            h1Dexp_norm->SetLineColor(kBlack);
+            h1Dexp_norm->Draw("p");
             /*h1Dexp->DrawNormalized("X0 E0",kNorm);
             h1Dsim->DrawNormalized("X0 E0 same",kNorm);*/
             /*if (iVar+1==1){
