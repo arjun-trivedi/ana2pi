@@ -473,8 +473,8 @@ void plot1Dxsec_dnp(seq_t seq/*=FULL*/){
           TH1F* h1Dsim=(TH1F*)_fysim[iTop]->Get(hname);
           TH1F* h1Dsim_th=(TH1F*)_fysim[iTop]->Get(hname_th);
           h1Dexp->SetMarkerStyle(kFullCircle);
-          h1Dexp->SetMarkerColor(kGreen);
-          h1Dexp->SetLineColor(kGreen);
+          h1Dexp->SetMarkerColor(kBlack);//)(kGreen);
+          h1Dexp->SetLineColor(kBlack);
           h1Dsim->SetMarkerStyle(kFullCircle);
           h1Dsim->SetMarkerColor(kRed);
           h1Dsim->SetLineColor(kRed);
