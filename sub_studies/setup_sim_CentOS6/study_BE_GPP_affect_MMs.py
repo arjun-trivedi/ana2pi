@@ -67,11 +67,15 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 	ROOT.gStyle.SetOptStat("n")
 	ROOT.gStyle.SetOptFit(0011)
 
-	#! For histogram title size and location (I do not quite understand this well!)
+	#! For histogram titles size and location (I do not quite understand the units very well)
 	ROOT.gStyle.SetTitleX(0.5)
 	ROOT.gStyle.SetTitleY(1.55)
 	ROOT.gStyle.SetTitleH(1)
-
+	ROOT.gStyle.SetTitleSize(2,"T")
+	#! For histogram axes labels and titles (They do not seem to work from here? Have to set them directly on TH)
+	# ROOT.gStyle.SetTitleXSize(0.08)#,"X")
+	# ROOT.gStyle.SetLabelSize(0.05,"X")
+	#! For TPad margins
 	ROOT.gStyle.SetPaperSize(20,26);
 	ROOT.gStyle.SetPadTopMargin(0.15);#(0.05);
 	ROOT.gStyle.SetPadRightMargin(0.09);#(0.05);
@@ -153,10 +157,7 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 			pad.Update();
 			hmms[ER][imm].SetTitleSize(2,"T")
 			hmms[ER][imm].SetTitleSize(0.08,"x")
-			# x=hmms[ER][1].GetXaxis()
-			# x.SetLabelSize(0.05)
-			# x.SetTitleSize(0.1)
-			pad.Update()
+			hmms[ER][imm].SetLabelSize(0.05,"x")
 			st=hmms[ER][imm].GetListOfFunctions().FindObject("stats")
 			st.SetX1NDC(0.60)
 			st.SetX2NDC(1.00)
