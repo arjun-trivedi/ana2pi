@@ -66,6 +66,17 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 	#ROOT.gStyle.SetOptStat("nei")
 	ROOT.gStyle.SetOptStat("n")
 	ROOT.gStyle.SetOptFit(0011)
+
+	#! For histogram title size and location (I do not quite understand this well!)
+	ROOT.gStyle.SetTitleX(0.5)
+	ROOT.gStyle.SetTitleY(1.55)
+	ROOT.gStyle.SetTitleH(1)
+
+	ROOT.gStyle.SetPaperSize(20,26);
+	ROOT.gStyle.SetPadTopMargin(0.15);#(0.05);
+	ROOT.gStyle.SetPadRightMargin(0.09);#(0.05);
+	ROOT.gStyle.SetPadBottomMargin(0.20);#(0.16);
+	ROOT.gStyle.SetPadLeftMargin(0.15);#(0.12);
 	# ROOT.gStyle.SetStatY(0.9);
 	# ROOT.gStyle.SetStatX(0.9);	
 	# ROOT.gStyle.SetStatW(0.4);
@@ -140,6 +151,12 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 			hmms[ER][imm].SetMaximum(ERMAXS[imm])
 			hmms[ER][imm].Draw()
 			pad.Update();
+			hmms[ER][imm].SetTitleSize(2,"T")
+			hmms[ER][imm].SetTitleSize(0.08,"x")
+			# x=hmms[ER][1].GetXaxis()
+			# x.SetLabelSize(0.05)
+			# x.SetTitleSize(0.1)
+			pad.Update()
 			st=hmms[ER][imm].GetListOfFunctions().FindObject("stats")
 			st.SetX1NDC(0.60)
 			st.SetX2NDC(1.00)
@@ -199,7 +216,11 @@ def anaMM2pi_ERSR(be_exp=5497,be_sim=5497,dtyps=28):#dtypes for user control
 			##-- Finish calculation of normalization for SR
 
 			hsim=hmms[idt][imm].DrawNormalized("sames",norm)
-			pad.Update();
+			# hsim.SetTitleSize(0.5,"t")
+			# x=hsim.GetXaxis()
+			# x.SetLabelSize(0.05)
+			# x.SetTitleSize(0.06)
+			pad.Update()
 			if imm==1:
 				lcut_t2.SetY1(pad.GetUymin())
 				lcut_t2.SetY2(pad.GetUymax())
