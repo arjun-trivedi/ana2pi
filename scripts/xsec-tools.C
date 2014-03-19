@@ -275,6 +275,10 @@ void plotxsec_dnp(TString xsectype/*= "vm"*/, bool ploty/*=kFALSE*/,bool sim/*=k
   if (setup(xsectype)==kFALSE) return;
 
   gStyle->SetOptStat(0);
+  gStyle->SetPadTopMargin(0.17);//(0.05);
+  gStyle->SetPadRightMargin(0.05);//(0.05);
+  gStyle->SetPadBottomMargin(0.22);//(0.16);
+  gStyle->SetPadLeftMargin(0.15);//(0.12);
 
   TString methodB = TString::Format("Yield - Method B {%s}",_topNames[4].Data());
   TString methodA = TString::Format("Yield - Method A");
@@ -305,7 +309,7 @@ void plotxsec_dnp(TString xsectype/*= "vm"*/, bool ploty/*=kFALSE*/,bool sim/*=k
    if (iTop==4){
      c->cd();
      //l->SetHeader("[2.0-2.4]_[1.3-1.9]");
-     TPaveText* pt = new TPaveText(0.1,0.75,0.5,0.9,"NDC");
+     TPaveText* pt = new TPaveText(0.2,0.75,0.6,0.9,"NDC");
      TText* q2wt = pt->AddText("[2.0-2.4]_[1.3-1.9]");
      q2wt->SetTextColor(kBlue);
      pt->AddText("Normalized Yield");
@@ -313,6 +317,9 @@ void plotxsec_dnp(TString xsectype/*= "vm"*/, bool ploty/*=kFALSE*/,bool sim/*=k
      hYWnorm[iTop]->SetMinimum(0);
      hYWnorm[iTop]->SetTitle("");
      hYWnorm[iTop]->SetYTitle("Yield [a.u.]");
+     hYWnorm[iTop]->SetTitleSize(0.1,"x");
+     hYWnorm[iTop]->SetTitleSize(0.08,"y");
+     hYWnorm[iTop]->SetLabelSize(0.06,"xy");
      hYWnorm[iTop]->Draw("ep");
      pt->Draw();
      //hYWnorm[iTop]->SetMinimum(0);
@@ -2227,7 +2234,13 @@ void plotr3_dnp(int top,bool sim=kFALSE){
   //! COSMETICS
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111); //pcev = 1111
-  //gStyle->SetTitleW(1.5);
+
+  gStyle->SetPadTopMargin(0.17);//(0.05);
+  gStyle->SetPadRightMargin(0.05);//(0.05);
+  gStyle->SetPadBottomMargin(0.22);//(0.16);
+  gStyle->SetPadLeftMargin(0.15);//(0.12);
+  gStyle->SetErrorX(0.001);
+  //gStyle->SS;etTitleW(1.5);
 
   //! INPUT data
   int itop = top-1;
@@ -2332,18 +2345,21 @@ void plotr3_dnp(int top,bool sim=kFALSE){
     hRvVar_avg = (TH1D*)hRvVar[kExp][POS]->Clone("avg");
     hRvVar_avg->Add(hRvVar[kExp][NEG],1);
     hRvVar_avg->Scale(0.5);
-    hRvVar_avg->SetLineColor(kMagenta);
+    hRvVar_avg->SetLineColor(kBlack);
     hRvVar_avg->SetMarkerStyle(kFullCircle);
     hRvVar_avg->SetTitle(TString::Format("D^{%s} vs. %s",varTitle[0][THETA].Data(),varTitle[0][THETA].Data()));
     hRvVar_avg->SetXTitle(varTitle[0][THETA]);
-    hRvVar_avg->SetTitleSize(0.05);
+    //hRvVar_avg->SetTitleSize(0.05);
     //! Make Titles nice
     hRvVar_avg->SetTitle("");
-    TPaveText* pt = new TPaveText(0.3, 0.85, 0.7, 1.0, "NDC");
+    hRvVar_avg->SetTitleSize(0.1,"x");
+    hRvVar_avg->SetTitleSize(0.08,"y");
+    hRvVar_avg->SetLabelSize(0.06,"xy");
+    TPaveText* pt = new TPaveText(0.2, 0.80, .90, 0.99, "NDC");
     TText* q2wt = pt->AddText(TString::Format("[Q^{2}][W] = %s",Q2Wdirname.Data()));
     q2wt->SetTextColor(kBlue);
     TText* vart = pt->AddText(TString::Format("D^{%s} vs. %s",varTitle[0][THETA].Data(),varTitle[0][THETA].Data()));
-    vart->SetTextSize(0.05);
+    pt->SetTextSize(0.08);
 
     //! DRAW & SAVE hRvVar_exp, hRvVar_sim
     TLine l(0,0,180,0);
