@@ -78,7 +78,7 @@ def anaMM2pi_ERSR(be_exp,be_sim,dtyps=28):#dtypes for user control
 		topdir=""
 		beame=""
 		if idt==ER:	
-			topdir="top"
+			topdir="d2piR"
 			beame=be_exp
 		else:
 		    topdir="top2"
@@ -353,78 +353,10 @@ def anaMM2pi_ERSR(be_exp,be_sim,dtyps=28):#dtypes for user control
 	# 	# wait for you to close the ROOT canvas before exiting
 	# 	wait(True)
 
-def anaQ2W2pi_SRST():
-	DTYPS=3
-	DTYPS_NAME=["5.470","5.485","5.497"]
-	f=[]
-	DATADIR="/data/trivedia/e1f/simulation_2pi/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon"
-	f.append(ROOT.TFile("%s/d2pi_be%d.root"%(DATADIR,5470)))
-	f.append(ROOT.TFile("%s/d2pi_be%d.root"%(DATADIR,5485)))
-	f.append(ROOT.TFile("%s/d2pi_be%d.root"%(DATADIR,5497)))
-
-	ST,SR=range(2)
-	
-	h8Ds=[[] for i in range(DTYPS)]
-	#print hmms
-
-
-
-	ROOT.gStyle.SetOptStat("nei")
-	ROOT.gStyle.SetOptFit(1011)
-	CWIDTH=1000
-	CHEIGHT=800	
-	MARKER_SIZE=2
-	
-	for idt in range(DTYPS):
-		h8Ds[idt].append(f[idt].Get("/top/mc/yield_varset1"))
-		h8Ds[idt].append(f[idt].Get("/top2/top1/yield_varset1"))
-
-	c=ROOT.TCanvas()
-	c.Divide(1,2)
-	pad=c.cd(ST+1)
-	# h8Ds[0][ST].SetLineColor(1)
-	# h8Ds[1][ST].SetLineColor(2)
-	# h8Ds[0][ST].Projection(1).Draw()
-	# h8Ds[1][ST].Projection(1).Draw("sames")
-	h0ST=h8Ds[0][ST].Projection(2)#(2)
-	h1ST=h8Ds[1][ST].Projection(2)#(2)
-	h2ST=h8Ds[2][ST].Projection(2)#(2)
-	h0ST.SetName(DTYPS_NAME[0])
-	h1ST.SetName(DTYPS_NAME[1])
-	h2ST.SetName(DTYPS_NAME[2])
-	h0ST.SetLineColor(1)
-	h1ST.SetLineColor(2)
-	h2ST.SetLineColor(3)
-	h0ST.Draw()
-	h1ST.Draw("sames")
-	h2ST.Draw("sames")
-	c.cd(SR+1)
-	# h8Ds[0][SR].SetLineColor(1)
-	# h8Ds[1][SR].SetLineColor(2)
-	# h8Ds[0][SR].Projection(1).Draw()
-	# h8Ds[1][SR].Projection(1).Draw("sames")
-	h0SR=h8Ds[0][SR].Projection(2)#(2)
-	h1SR=h8Ds[1][SR].Projection(2)#(2)
-	h2SR=h8Ds[2][SR].Projection(2)#(2)
-	h0SR.SetName(DTYPS_NAME[0])
-	h1SR.SetName(DTYPS_NAME[1])
-	h2SR.SetName(DTYPS_NAME[2])
-	h0SR.SetLineColor(1)
-	h1SR.SetLineColor(2)
-	h2SR.SetLineColor(3)
-	h0SR.Draw()
-	h1SR.Draw("sames")
-	h2SR.Draw("sames")
-
-	
-	if not ROOT.gROOT.IsBatch():
-		plt.show()
-		# wait for you to close the ROOT canvas before exiting
-		wait(True)
-
 def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
-	DTYPS=2# for the two beam energies: 5.497,5.497
-	DTYPS_NAME=["5479","5497"]
+	#DTYPS=2# for the two beam energies: 5.497,5.497
+	DTYPS_NAME=["5499","5497","5479"]#"5479","5497","5499"]
+	DTYPS=len(DTYPS_NAME)
 	
 	NMM=4
 
@@ -457,10 +389,10 @@ def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
 	for idtyp in range(DTYPS):
 		f[idtyp]=ROOT.TFile("/datadir2/e1f/ana-2pi/exp/q2w2/d2pi_be%s.root"%DTYPS_NAME[idtyp])
 		#print f[idtyp].GetName()
-		hmms[idtyp,0]=f[idtyp].Get("/top/h%sppippimVw"%mmtyp).ProjectionY('h%sppippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
-		hmms[idtyp,1]=f[idtyp].Get("/top/h%sppipVw"%mmtyp).ProjectionY('h%sppip_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
-		hmms[idtyp,2]=f[idtyp].Get("/top/h%sppimVw"%mmtyp).ProjectionY('h%sppim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
-		hmms[idtyp,3]=f[idtyp].Get("/top/h%spippimVw"%mmtyp).ProjectionY('h%spippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,0]=f[idtyp].Get("/d2piR/top1/h%sppippimVw"%mmtyp).ProjectionY('h%sppippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,1]=f[idtyp].Get("/d2piR/top2/h%sppipVw"%mmtyp).ProjectionY('h%sppip_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,2]=f[idtyp].Get("/d2piR/top3/h%sppimVw"%mmtyp).ProjectionY('h%sppim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
+		hmms[idtyp,3]=f[idtyp].Get("/d2piR/top4/h%spippimVw"%mmtyp).ProjectionY('h%spippim_be%s'%(mmtyp,DTYPS_NAME[idtyp]))
 		for imm in range(NMM):
 			pad=c.cd(imm+1)
 			pad.SetGridx()
@@ -485,7 +417,7 @@ def anaMM2pi_ER(mmtyp="mm2"):#dtypes for user control
 		wait(True)
 
 
-def anaMMelas_ERSR(be_exp=5479,nentries=1000000):
+def anaMMelas_ERSR(be_exp=5499,nentries=1000000):
 	ROOT.gStyle.SetOptFit(1111)
 	
 	DTYPS=5
