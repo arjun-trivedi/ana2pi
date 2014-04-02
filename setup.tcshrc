@@ -1,0 +1,15 @@
+setenv ANA2PI "${WORKSPACE}/ana2pi"
+
+##- modify LD_LIBRARY_PATH to include shared objects
+setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${ANA2PI}/sobj"
+
+##- modify PATH to include binaries 
+setenv PATH "${PATH}:${ANA2PI}:${ANA2PI}/scripts:${ANA2PI}/scripts/python"
+
+##- modify PYTHONPATH
+setenv PYTHONPATH "{$PYTHONPATH}:${ANA2PI}/scripts/python:${ANA2PI}/sub_studies/setup_sim_CentOS6"
+
+##- setup some useful aliases
+alias ana2pi 'cd ${ANA2PI}'
+alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT&'
+alias notes 'pnb {$ANA2PI}/notes&'
