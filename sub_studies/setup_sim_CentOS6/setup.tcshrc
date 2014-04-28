@@ -1,3 +1,4 @@
+##- modify PATH
 setenv PATH "${PATH}:${WORKSPACE}/ana2pi/sub_studies/setup_sim_CentOS6"
 
 ##- modify PYTHONPATH
