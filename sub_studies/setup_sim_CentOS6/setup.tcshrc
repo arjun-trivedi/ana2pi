@@ -1,5 +1,8 @@
 setenv PATH "${PATH}:${WORKSPACE}/ana2pi/sub_studies/setup_sim_CentOS6"
 
+##- modify PYTHONPATH
+setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI}/sub_studies/setup_sim_CentOS6"
+
 #setenv SETUPSIMCENTOS6_DATADIR "$E1F_SIM2PI_DATADIR/setup_sim_CentOS6/gpppars/try1/q2w2_gpptest_14_011914/recon"
 setenv SETUPSIMCENTOS6_DATADIR "$E1F_SIM2PI_DATADIR/setup_sim_CentOS6"
 setenv SETUPSIMCENTOS6_ANADIR $SETUPSIMCENTOS6_DATADIR
