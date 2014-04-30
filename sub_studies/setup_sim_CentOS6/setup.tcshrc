@@ -1,3 +1,6 @@
+setenv ANA2PI_SETUPSIMCENTOS6 "${ANA2PI}/sub_studies/setup_sim_CentOS6"
+alias ana2pi_setupsimcent0s6 'cd ${ANA2PI_SETUPSIMCENTOS6}'
+
 ##- modify PATH
 setenv PATH "${PATH}:${WORKSPACE}/ana2pi/sub_studies/setup_sim_CentOS6"
 
@@ -11,6 +14,7 @@ setenv SETUPSIMCENTOS6_ANADIR $SETUPSIMCENTOS6_DATADIR
 setenv STUDY_GPPPARS_DATADIR "$SETUPSIMCENTOS6_DATADIR/gpppars/try1"
 
 setenv STUDY_SIMDET_DATADIR "$SETUPSIMCENTOS6_DATADIR/gpppars/try1/q2w2_gpptest_14_011914/recon"
+setenv STUDY_SIMDET_ANADIR  "${ANA2PI_SETUPSIMCENTOS6}"
 
 setenv STUDY_STQ2WRANGE_DATADIR "$SETUPSIMCENTOS6_DATADIR/study_ST-Q2W-range"
-setenv STUDY_STQ2WRANGE_ANADIR "${WORKSPACE}/ana2pi/sub_studies/setup_sim_CentOS6/study_ST-Q2W-range"
+setenv STUDY_STQ2WRANGE_ANADIR "${ANA2PI_SETUPSIMCENTOS6}/study_ST-Q2W-range"

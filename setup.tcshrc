@@ -1,4 +1,5 @@
 setenv ANA2PI "${WORKSPACE}/ana2pi"
+alias ana2pi 'cd ${ANA2PI}'
 
 ##- modify LD_LIBRARY_PATH to include shared objects
 setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${ANA2PI}/sobj"
@@ -10,6 +11,5 @@ setenv PATH "${PATH}:${ANA2PI}:${ANA2PI}/scripts:${ANA2PI}/scripts/python"
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI}/scripts/python"
 
 ##- setup some useful aliases
-alias ana2pi 'cd ${ANA2PI}'
 alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT&'
 alias notes 'pnb {$ANA2PI}/notes&'
