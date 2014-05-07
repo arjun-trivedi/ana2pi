@@ -1,5 +1,5 @@
 setenv ANA2PI_SETUPSIMCENTOS6 "${ANA2PI}/sub_studies/setup_sim_CentOS6"
-alias ana2pi_setupsimcent0s6 'cd ${ANA2PI_SETUPSIMCENTOS6}'
+alias ana2pi_setupsimcentos6 'cd ${ANA2PI_SETUPSIMCENTOS6}'
 
 ##- modify PATH
 setenv PATH "${PATH}:${WORKSPACE}/ana2pi/sub_studies/setup_sim_CentOS6"
