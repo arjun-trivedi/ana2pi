@@ -280,7 +280,7 @@ def plot_res(min_entries=-1,max_spreading=1):
 	#-- Clear existing plots from outdir
 	for ivar,var in enumerate(VARS):
 		outdir=os.path.join(OUTDIR,var)
-		print "outdir=",outdir
+		#print "outdir=",outdir
 		if os.path.exists(outdir):
 			shutil.rmtree(outdir)
 		os.makedirs(outdir)
