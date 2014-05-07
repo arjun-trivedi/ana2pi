@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from math import *
 
 import os
+import shutil
 
 W_TH = 1.216
 
@@ -174,3 +175,178 @@ def init(q2wdirs,nq2bins,nwbins,variables,hrange,frange,tops):
     if not os.path.exists(OUTDIR):
         os.makedirs(OUTDIR)
     print "OUTDIR=%s"%OUTDIR
+
+def plot_q2w_boundary(axes):
+    axes.hlines(Q2MIN,WMIN,WMAX,colors='red',linewidth=1)#5DFC0A
+    axes.hlines(Q2MAX,WMIN,WMAX,colors='red',linewidth=1)
+    axes.vlines(WMIN,Q2MIN,Q2MAX,colors='red',linewidth=1)
+    axes.vlines(WMAX,Q2MIN,Q2MAX,colors='red',linewidth=1)
+def plot_q2_boundary(axes):
+    ylim=axes.get_ylim()
+    axes.vlines(Q2MIN,ylim[0],ylim[1],colors='red',linewidth=1)#5DFC0A
+    axes.vlines(Q2MAX,ylim[0],ylim[1],colors='red',linewidth=1)
+def plot_w_boundary(axes):
+    ylim=axes.get_ylim()
+    axes.vlines(WMIN,ylim[0],ylim[1],colors='red',linewidth=1)
+    axes.vlines(WMAX,ylim[0],ylim[1],colors='red',linewidth=1)
+def plot_WTh(axes):
+    ylim=axes.get_ylim()
+    axes.vlines(W_TH,ylim[0],ylim[1],colors='green',linewidth=2,linestyles='dashed')
+    
+def plot_q2w():
+    fig=plt.figure(figsize=(30,15))
+    q2_T=dT['Q2']
+    w_T=dT['W']
+    sel=eval(SEL_TOPS)
+    q2_R=dR[sel]['Q2']
+    w_R=dR[sel]['W']
+    
+    nq2bins=4400
+    nwbins=100
+
+    axQ2vW_T=plt.subplot(221)
+    axQ2vW_T.set_xticks(WBINS)
+    axQ2vW_T.set_yticks(Q2BINS)
+    axQ2vW_T.grid(1,linewidth=2)
+    axQ2vW_T.set_title('Q2 vs. W: ST',fontsize='xx-large')
+    axQ2vW_T.tick_params(axis='both', which='major', labelsize=20)
+    hist,xbins,ybins=np.histogram2d(w_T,q2_T,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
+#     hist,xbins,ybins=np.histogram2d(w_T,q2_T,bins=[WBINS,Q2BINS])
+    extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+    im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+    cb = fig.colorbar(im, ax=axQ2vW_T)
+    #-- ST region
+    plot_q2w_boundary(axQ2vW_T)
+    #-- W Th
+    plot_WTh(axQ2vW_T)
+
+    axQ2vW_R=plt.subplot(222)
+    axQ2vW_R.set_xticks(WBINS)
+    axQ2vW_R.set_yticks(Q2BINS)
+    axQ2vW_R.grid(1,linewidth=2)
+    axQ2vW_R.set_title('Q2 vs. W: SR',fontsize='xx-large')
+    axQ2vW_R.tick_params(axis='both', which='major', labelsize=20)
+    hist,xbins,ybins=np.histogram2d(w_R,q2_R,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
+    #hist,xbins,ybins=np.histogram2d(w_R,q2_R,bins=[WBINS,Q2BINS])
+    extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+    im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+    cb = fig.colorbar(im, ax=axQ2vW_R)
+    #-- ST region
+    plot_q2w_boundary(axQ2vW_R)
+    #-- W Th
+    plot_WTh(axQ2vW_R)
+    
+    axQ2=plt.subplot(223)
+    axQ2.set_xticks(Q2BINS)
+    axQ2.grid(1,linewidth=2)
+    axQ2.set_title('Q2[GeV^2]',fontsize='xx-large')
+    axQ2.set_xlabel('Q2[GeV^2]',fontsize='xx-large')
+    axQ2.tick_params(axis='both', which='major', labelsize=20)
+    r=plt.hist(q2_T,nq2bins,range=(Q2MIN-0.1,Q2MAX+0.1),alpha=0.5,label='ST',histtype='stepfilled')
+    r=plt.hist(q2_R,nq2bins,range=(Q2MIN-0.1,Q2MAX+0.1),alpha=0.5,label='SR',histtype='stepfilled')
+#     r=plt.hist(q2_T,bins=Q2BINS,histtype='stepfilled',alpha=0.5,label='ST')
+#     r=plt.hist(q2_R,bins=Q2BINS,histtype='stepfilled',alpha=0.5,label='SR')
+    #-- ST region
+    plot_q2_boundary(axQ2)
+    axQ2.legend()
+
+    axW=plt.subplot(224)
+    axW.set_xticks(WBINS)
+    axW.grid(1,linewidth=2)
+    axW.set_title('W',fontsize='xx-large')
+    axW.set_xlabel('W[GeV]',fontsize='xx-large')
+    axW.tick_params(axis='both', which='major', labelsize=20)
+    r=plt.hist(w_T,nwbins,range=(WMIN-0.1,WMAX+0.1),alpha=0.5,label='ST',histtype='stepfilled')
+    r=plt.hist(w_R,nwbins,range=(WMIN-0.1,WMAX+0.1),alpha=0.5,label='SR',histtype='stepfilled')
+#     r=plt.hist(w_T,bins=WBINS,histtype='stepfilled',alpha=0.5,label='ST')
+#     r=plt.hist(w_R,bins=WBINS,histtype='stepfilled',alpha=0.5,label='SR')
+    #-- ST region
+    plot_w_boundary(axW)
+    axW.legend()
+    #-- W Th
+    plot_WTh(axW)
+
+def plot_res():
+    #-- Clear existing plots from outdir
+    for ivar,var in enumerate(VARS):
+        outdir=os.path.join(OUTDIR,var)
+        print "outdir=",outdir
+        if os.path.exists(outdir):
+            shutil.rmtree(outdir)
+        os.makedirs(outdir)
+        #-- Following were added when running in interactive mode
+        HOFT[ivar].Reset()
+        HRES[ivar].Reset()
+    
+    #-- For each q2wbin and therein, for each VAR:
+    #-- 1. Plot and save ST-SR distribiotn
+    #-- 2. Obtain offset and resolution from ST-SR distribution and fill HOFST,HRES    
+    for iq2bin in range(NQ2BINS):
+        for iwbin in range(NWBINS):
+            #print "Q2=[%0.2f,%0.2f]"%(Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin])
+            #print "W=[%0.2f,%0.2f]"%(WBINS_LE[iwbin],WBINS_UE[iwbin])
+            #sel_q2w=(dR['Q2']>=Q2BINS_LE[iq2bin])&(dR['Q2']<Q2BINS_UE[iq2bin])&(dR['W']>=WBINS_LE[iwbin])&(dR['W']<WBINS_UE[iwbin])
+            sel_q2w=(dT['Q2']>=Q2BINS_LE[iq2bin])&(dT['Q2']<Q2BINS_UE[iq2bin])&(dT['W']>=WBINS_LE[iwbin])&(dT['W']<WBINS_UE[iwbin])
+            sel=sel_q2w&eval(SEL_TOPS)
+            
+            for ivar,var in enumerate(VARS):
+                if len(dT[sel][var])==0: continue #if there is no data, continue 
+                diff=dT[sel][var]-dR[sel][var]
+                h=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_hdiff_%02d_%02d'%(var,iq2bin+1,iwbin+1),
+                              title='%s:ST-SR for Q2,W=[%.2f,%.2f],[%.2f,%.2f]'%
+                              (var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
+                h.fill_array(diff)
+                #-- Require minimum number of entries
+                #if h.GetEntries()<300:continue
+                if h.Integral()<500:continue 
+                #-- Require that "the spreading is not too much"    
+                #entries=h.GetEntries()
+                #uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
+                #if float(uoflow)/float(entries)>0.50: continue
+                c=ROOT.TCanvas(h.GetName(),h.GetName())
+                ROOT.gStyle.SetOptStat("nemMrRuo")
+                ROOT.gStyle.SetOptFit(1111)
+                h.Fit("gaus")#,"","",FRANGE[ivar][0],FRANGE[ivar][1])
+                h.Draw()
+                fgaus=h.GetFunction("gaus")
+                mu,smga='',''
+                if not fgaus:
+                    mu=0
+                    sgma=0
+                else:
+                    mu=fgaus.GetParameter(1)
+                    sgma=fgaus.GetParameter(2)
+                HOFT[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,mu)
+                HRES[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,sgma)
+                #print "w,q2,RMS=%.2f,%.2f,%.2f"%(WBINS_LE[iwbin],Q2BINS_LE[iq2bin],h.GetRMS())
+                #c.SaveAs("%s/%02d_%02d.png"%(outdir,iq2bin+1,iwbin+1)) 
+                outdir=os.path.join(OUTDIR,var)
+                c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
+                c.Close()
+    
+    #-- For each VAR, plot and save HOFST,HRES
+    fig=plt.figure(figsize=(25,25))
+    for ivar,var in enumerate(VARS):
+        for ihist,hist in enumerate([HOFT[ivar],HRES[ivar]]):
+            #-- Using matplotlib 
+            plt.subplot(len(VARS),2,(ivar+1)+ivar+ihist,title=hist.GetName());
+            plt.xticks(WBINS)
+            plt.yticks(Q2BINS)
+            plt.grid(1,linewidth=2)
+            z = np.array(hist.z()).T
+            im = plt.imshow(z,extent=[hist.xedges(0), hist.xedges(-1),
+                        hist.yedges(0), hist.yedges(-1)],
+                        interpolation='nearest',
+                        aspect='auto',
+                        origin='lower')
+            cb = plt.colorbar(im)
+            #-- Using TCanvas
+            c=ROOT.TCanvas(hist.GetName(),hist.GetName())
+            c.SetGrid();
+            ROOT.gStyle.SetOptStat("ne")
+            hist.Draw("colz");
+            outdir=os.path.join(OUTDIR,var)
+            c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
+            c.Close()
+    fig.savefig("%s/simdet_study.eps"%OUTDIR)       
+plt.show()
