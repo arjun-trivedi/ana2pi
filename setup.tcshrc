@@ -13,3 +13,4 @@ setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI}/scripts/python"
 ##- setup some useful aliases
 alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT&'
 alias notes 'pnb {$ANA2PI}/notes&'
+alias ana2pi_tech-notes 'cd ${ANA2PI}/notes/tech'
