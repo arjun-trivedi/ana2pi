@@ -370,6 +370,8 @@ def plot_res(min_entries=-1,max_spreading=1):
 plt.show()
 
 def plot_q2w_diagnostics():
+	THETA_MIN=12
+	THETA_MAX=55
 	fig=plt.figure(figsize=(15,6))
 	for i,d in enumerate([dT,dR]):
 		plt.subplot(2,4,4*i+1)
@@ -381,7 +383,10 @@ def plot_q2w_diagnostics():
 		plt.scatter(d['Q2'], d['theta_e'])
 		plt.xlabel('Q2')
 		plt.ylabel('theta_e')
-
+		xlim=plt.xlim()
+		plt.hlines(THETA_MIN,xlim[0],xlim[1],colors='r')
+		plt.hlines(THETA_MAX,xlim[0],xlim[1],colors='r')
+		
 		plt.subplot(2,4,4*i+3)
 		plt.scatter(d['W'], d['p_e'])
 		plt.xlabel('W')
@@ -391,4 +396,7 @@ def plot_q2w_diagnostics():
 		plt.scatter(d['W'], d['theta_e'])
 		plt.xlabel('W')
 		plt.ylabel('theta_e')
+		xlim=plt.xlim()
+		plt.hlines(THETA_MIN,xlim[0],xlim[1],colors='r')
+		plt.hlines(THETA_MAX,xlim[0],xlim[1],colors='r')
 plt.show()
