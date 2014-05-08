@@ -140,6 +140,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	# Q2BINW=round((Q2MAX-Q2MIN)/NQ2BINS,2)
 	Q2BINW=q2binw
 	NQ2BINS=int(round((Q2MAX-Q2MIN)/Q2BINW,0))
+	if NQ2BINS==0:NQ2BINS=1
 	Q2BINS_LE=[Q2MIN+(i*Q2BINW) for i in range(NQ2BINS)]
 	Q2BINS_UE=[Q2BINS_LE[i]+Q2BINW for i in range(NQ2BINS)]
 	print "*** Q2 binning ***"
@@ -150,6 +151,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	# WBINW=round((WMAX-WMIN)/NWBINS,2)
 	WBINW=wbinw
 	NWBINS=int(round((WMAX-WMIN)/WBINW,0))
+	if NWBINS==0:NWBINS=1
 	WBINS_LE=[WMIN+(i*WBINW) for i in range(NWBINS)]
   	WBINS_UE=[WBINS_LE[i]+WBINW for i in range(NWBINS)]
 	print "*** W binning ***"
@@ -225,7 +227,7 @@ def plot_q2w():
 	#-- ST region
 	plot_q2w_boundary(axQ2vW_T)
 	#-- W Th
-	plot_WTh(axQ2vW_T)
+	#plot_WTh(axQ2vW_T)
 
 	axQ2vW_R=plt.subplot(222)
 	axQ2vW_R.set_xticks(WBINS)
@@ -241,7 +243,7 @@ def plot_q2w():
 	#-- ST region
 	plot_q2w_boundary(axQ2vW_R)
 	#-- W Th
-	plot_WTh(axQ2vW_R)
+	#plot_WTh(axQ2vW_R)
     
 	axQ2=plt.subplot(223)
 	axQ2.set_xticks(Q2BINS)
@@ -271,7 +273,7 @@ def plot_q2w():
 	plot_w_boundary(axW)
 	axW.legend()
 	#-- W Th
-	plot_WTh(axW)
+	#plot_WTh(axW)
 
 def plot_res(min_entries=-1,max_spreading=1):
 	"""
@@ -365,4 +367,28 @@ def plot_res(min_entries=-1,max_spreading=1):
 			c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
 			c.Close()
 	fig.savefig("%s/simdet_study.eps"%OUTDIR)       
+plt.show()
+
+def plot_q2w_diagnostics():
+	fig=plt.figure(figsize=(15,6))
+	for i,d in enumerate([dT,dR]):
+		plt.subplot(2,4,4*i+1)
+		plt.scatter(d['Q2'], d['p_e'])
+		plt.xlabel('Q2')
+		plt.ylabel('p_e')
+
+		plt.subplot(2,4,4*i+2)
+		plt.scatter(d['Q2'], d['theta_e'])
+		plt.xlabel('Q2')
+		plt.ylabel('theta_e')
+
+		plt.subplot(2,4,4*i+3)
+		plt.scatter(d['W'], d['p_e'])
+		plt.xlabel('W')
+		plt.ylabel('p_e')
+
+		plt.subplot(2,4,4*i+4)
+		plt.scatter(d['W'], d['theta_e'])
+		plt.xlabel('W')
+		plt.ylabel('theta_e')
 plt.show()
