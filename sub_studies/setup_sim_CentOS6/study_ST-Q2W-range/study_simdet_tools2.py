@@ -315,25 +315,27 @@ def plot_res(min_entries=-1,max_spreading=1):
 								title='%s:ST-SR for Q2,W=[%.2f,%.2f],[%.2f,%.2f]'%
 								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
 				h.fill_array(diff)
-				#-- Require minimum number of entries
-				if h.Integral()<min_entries:continue 
-				#-- Require that "the spreading is not too much"    
-				entries=h.GetEntries()
-				uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
-				if float(uoflow)/float(entries)>max_spreading: continue
+				# #-- Require minimum number of entries
+				# if h.Integral()<min_entries:continue 
+				# #-- Require that "the spreading is not too much"    
+				# entries=h.GetEntries()
+				# uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
+				# if float(uoflow)/float(entries)>max_spreading: continue
 				c=ROOT.TCanvas(h.GetName(),h.GetName())
 				ROOT.gStyle.SetOptStat("nemMrRuo")
 				ROOT.gStyle.SetOptFit(1111)
 				h.Fit("gaus")#,"","",FRANGE[ivar][0],FRANGE[ivar][1])
 				h.Draw()
 				fgaus=h.GetFunction("gaus")
-				mu,smga='',''
-				if not fgaus:
-					mu=0
-					sgma=0
-				else:
-					mu=fgaus.GetParameter(1)
-					sgma=fgaus.GetParameter(2)
+				mu,sgma=0,0
+				if fgaus:
+					#-- Before getting mu,sgma from fgaus, make sure that the histogram fitted to
+					#-- has minimum number of entries & that "the spreading is not too much" 
+					entries=h.GetEntries()
+					uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
+					if float(uoflow)/float(entries)<max_spreading and h.Integral()>min_entries:
+						mu=fgaus.GetParameter(1)
+						sgma=fgaus.GetParameter(2)
 				HOFT[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,mu)
 				HRES[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,sgma)
 				#print "w,q2,RMS=%.2f,%.2f,%.2f"%(WBINS_LE[iwbin],Q2BINS_LE[iq2bin],h.GetRMS())
