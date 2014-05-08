@@ -370,33 +370,52 @@ def plot_res(min_entries=-1,max_spreading=1):
 plt.show()
 
 def plot_q2w_diagnostics():
-	THETA_MIN=12
-	THETA_MAX=55
-	fig=plt.figure(figsize=(15,6))
+	theta_min=12
+	theta_max=55
+
+	fig=plt.figure(figsize=(25,6))
+	# nrows=2
+	nrows=1
+	ncols=5
 	for i,d in enumerate([dT,dR]):
-		plt.subplot(2,4,4*i+1)
-		plt.scatter(d['Q2'], d['p_e'])
+		mc=''
+		if i==0:
+			mc='r'
+		else:
+			mc='b'
+
+		plt.subplot(nrows,ncols,1)#ncols*i+1)
+		plt.scatter(d['Q2'], d['p_e'],c=mc,alpha=0.5)
 		plt.xlabel('Q2')
 		plt.ylabel('p_e')
-
-		plt.subplot(2,4,4*i+2)
-		plt.scatter(d['Q2'], d['theta_e'])
-		plt.xlabel('Q2')
-		plt.ylabel('theta_e')
-		xlim=plt.xlim()
-		plt.hlines(THETA_MIN,xlim[0],xlim[1],colors='r')
-		plt.hlines(THETA_MAX,xlim[0],xlim[1],colors='r')
 		
-		plt.subplot(2,4,4*i+3)
-		plt.scatter(d['W'], d['p_e'])
+		plt.subplot(nrows,ncols,2)#ncols*i+2)
+		plt.scatter(d['Q2'], d['theta_e'],c=mc,alpha=0.5)
+		plt.xlabel('Q2')
+		plt.ylabel('theta_e')
+		xlim=plt.xlim()
+		plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
+		plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
+
+		plt.subplot(nrows,ncols,3)#ncols*i+3)
+		plt.scatter(d['W'], d['p_e'],c=mc,alpha=0.5)
 		plt.xlabel('W')
 		plt.ylabel('p_e')
 
-		plt.subplot(2,4,4*i+4)
-		plt.scatter(d['W'], d['theta_e'])
+		plt.subplot(nrows,ncols,4)#ncols*i+4)
+		plt.scatter(d['W'], d['theta_e'],c=mc,alpha=0.5)
 		plt.xlabel('W')
 		plt.ylabel('theta_e')
 		xlim=plt.xlim()
-		plt.hlines(THETA_MIN,xlim[0],xlim[1],colors='r')
-		plt.hlines(THETA_MAX,xlim[0],xlim[1],colors='r')
+		plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
+		plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
+
+		plt.subplot(nrows,ncols,5)#ncols*i+5)
+		plt.scatter(d['p_e'], d['theta_e'],c=mc,alpha=0.5)
+		plt.xlabel('p_e')
+		plt.ylabel('theta_e')
+		xlim=plt.xlim()
+		plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
+		plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
+
 plt.show()
