@@ -51,15 +51,18 @@ WBINS=""
 HOFT=""
 HRES=""
 
-def init(q2wdirs,nq2bins,nwbins,variables,hrange,frange,tops):
+#def init(q2wdirs,nq2bins,nwbins,variables,hrange,frange,tops):
+def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	"""
 	This function intializes the necessary information needed in studying the Simulated-Detector
     
 	Input arguments:
 	----------------
 	q2wdirs = list of q2wdirs relative to $STUDY_STQ2WRANGE_DATADIR,list of str
-	nq2bins = Number of Q2 bins,int
-	nwbins = Number of W bins,int
+	# nq2bins = Number of Q2 bins,int
+	# nwbins = Number of W bins,int
+	q2binw = Q2 bin width bins,float
+	wbinw= W bin width,float
 	variables = Variables for which offset and resolution is to be extracted,list of str
 	hrange=for each variable, range for ST-SR histogram,list of [min,max]
 	frange=for each variable, range over which ST-SR histogram is fitted,list of [min,max]
@@ -133,16 +136,20 @@ def init(q2wdirs,nq2bins,nwbins,variables,hrange,frange,tops):
 	#-- Determine Q2,W binning
 	global NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE
 	global NWBINS,WBINW,WBINS_LE,WBINS_UE
-	NQ2BINS=nq2bins
-	Q2BINW=round((Q2MAX-Q2MIN)/NQ2BINS,2)
+	# NQ2BINS=nq2bins
+	# Q2BINW=round((Q2MAX-Q2MIN)/NQ2BINS,2)
+	Q2BINW=q2binw
+	NQ2BINS=int(round((Q2MAX-Q2MIN)/Q2BINW,0))
 	Q2BINS_LE=[Q2MIN+(i*Q2BINW) for i in range(NQ2BINS)]
 	Q2BINS_UE=[Q2BINS_LE[i]+Q2BINW for i in range(NQ2BINS)]
 	print "*** Q2 binning ***"
 	print "NQ2BINS=%d,Q2BINW=%0.2f GeV^2"%(NQ2BINS,Q2BINW)
 	print ["%0.2f" % i for i in Q2BINS_LE]
 	print ["%0.2f" % i for i in Q2BINS_UE]
-	NWBINS=nwbins
-	WBINW=round((WMAX-WMIN)/NWBINS,2)
+	# NWBINS=nwbins
+	# WBINW=round((WMAX-WMIN)/NWBINS,2)
+	WBINW=wbinw
+	NWBINS=int(round((WMAX-WMIN)/WBINW,0))
 	WBINS_LE=[WMIN+(i*WBINW) for i in range(NWBINS)]
   	WBINS_UE=[WBINS_LE[i]+WBINW for i in range(NWBINS)]
 	print "*** W binning ***"
