@@ -83,7 +83,16 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 		drvd_cols=[item for item in VARS if item in DRVD_COLS]
 		if not 'p_e' in VARS: drct_cols.extend(['p_e'])#needed for drvd_cols
 		if not 'theta_e' in VARS: drct_cols.extend(['theta_e'])#needed for drvd_cols
-		if not 'phi_e' in VARS: drct_cols.extend(['phi_e'])#needed for drvd_cols    
+		if not 'phi_e' in VARS: drct_cols.extend(['phi_e'])#needed for drvd_cols
+		if not 'p_p' in VARS: drct_cols.extend(['p_p'])#needed for drvd_cols
+		if not 'theta_p' in VARS: drct_cols.extend(['theta_p'])#needed for drvd_cols
+		if not 'phi_p' in VARS: drct_cols.extend(['phi_p'])#needed for drvd_cols  
+		if not 'p_pip' in VARS: drct_cols.extend(['p_pip'])#needed for drvd_cols
+		if not 'theta_pip' in VARS: drct_cols.extend(['theta_pip'])#needed for drvd_cols
+		if not 'phi_pip' in VARS: drct_cols.extend(['phi_pip'])#needed for drvd_cols   
+		if not 'p_pim' in VARS: drct_cols.extend(['p_pim'])#needed for drvd_cols
+		if not 'theta_pim' in VARS: drct_cols.extend(['theta_pim'])#needed for drvd_cols
+		if not 'phi_pim' in VARS: drct_cols.extend(['phi_pim'])#needed for drvd_cols   
  		cols.extend(drct_cols)
 		print "Branches to load into DataFrame=",cols
 		#f = os.path.join(DATADIR,q2wdir,'recon/d2pi.root')
@@ -99,6 +108,15 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 			d['px_e']=d['p_e']*np.sin(np.deg2rad(d['theta_e']))*np.cos(np.deg2rad(d['phi_e']))
 			d['py_e']=d['p_e']*np.sin(np.deg2rad(d['theta_e']))*np.sin(np.deg2rad(d['phi_e']))
 			d['pz_e']=d['p_e']*np.cos(np.deg2rad(d['theta_e']))
+			d['px_p']=d['p_p']*np.sin(np.deg2rad(d['theta_p']))*np.cos(np.deg2rad(d['phi_p']))
+			d['py_p']=d['p_p']*np.sin(np.deg2rad(d['theta_p']))*np.sin(np.deg2rad(d['phi_p']))
+			d['pz_p']=d['p_p']*np.cos(np.deg2rad(d['theta_p']))
+			d['px_pip']=d['p_pip']*np.sin(np.deg2rad(d['theta_pip']))*np.cos(np.deg2rad(d['phi_pip']))
+			d['py_pip']=d['p_pip']*np.sin(np.deg2rad(d['theta_pip']))*np.sin(np.deg2rad(d['phi_pip']))
+			d['pz_pip']=d['p_pip']*np.cos(np.deg2rad(d['theta_pip']))
+			d['px_pim']=d['p_pim']*np.sin(np.deg2rad(d['theta_pim']))*np.cos(np.deg2rad(d['phi_pim']))
+			d['py_pim']=d['p_pim']*np.sin(np.deg2rad(d['theta_pim']))*np.sin(np.deg2rad(d['phi_pim']))
+			d['pz_pim']=d['p_pim']*np.cos(np.deg2rad(d['theta_pim']))
 	else:
 		cols.extend(VARS)
 		print "Branches to load into DataFrame=",cols
