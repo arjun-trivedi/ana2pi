@@ -33,6 +33,8 @@ HRANGE=""
 FRANGE=""
 SEL_TOPS=""
 
+PRCSN_Q2="%.2f"
+PRCSN_W="%.4f"
 Q2MIN=""
 Q2MAX=""
 NQ2BINS=""
@@ -79,6 +81,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 		#return
 		drct_cols=[item for item in VARS if item not in DRVD_COLS]
 		drvd_cols=[item for item in VARS if item in DRVD_COLS]
+		if not 'p_e' in VARS: drct_cols.extend(['p_e'])#needed for drvd_cols
 		if not 'theta_e' in VARS: drct_cols.extend(['theta_e'])#needed for drvd_cols
 		if not 'phi_e' in VARS: drct_cols.extend(['phi_e'])#needed for drvd_cols    
  		cols.extend(drct_cols)
@@ -131,7 +134,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	Q2MAX=round(max(dT['Q2']),2)
 	WMIN=round(min(dT['W']),2)
 	WMAX=round(max(dT['W']),2)
-	print "Simulated-Thrown Q2,W = [%.2f,%.2f]GeV^2,[%.2f,%.2f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
+	print "Simulated-Thrown Q2,W = [%.2f,%.2f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
     
 	#-- Determine Q2,W binning
 	global NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE
@@ -144,9 +147,9 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	Q2BINS_LE=[Q2MIN+(i*Q2BINW) for i in range(NQ2BINS)]
 	Q2BINS_UE=[Q2BINS_LE[i]+Q2BINW for i in range(NQ2BINS)]
 	print "*** Q2 binning ***"
-	print "NQ2BINS=%d,Q2BINW=%0.2f GeV^2"%(NQ2BINS,Q2BINW)
-	print ["%0.2f" % i for i in Q2BINS_LE]
-	print ["%0.2f" % i for i in Q2BINS_UE]
+	print "NQ2BINS=%d,Q2BINW=%.2f GeV^2"%(NQ2BINS,Q2BINW)
+	print ["%.2f" % i for i in Q2BINS_LE]
+	print ["%.2f" % i for i in Q2BINS_UE]
 	# NWBINS=nwbins
 	# WBINW=round((WMAX-WMIN)/NWBINS,2)
 	WBINW=wbinw
@@ -155,9 +158,9 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	WBINS_LE=[WMIN+(i*WBINW) for i in range(NWBINS)]
   	WBINS_UE=[WBINS_LE[i]+WBINW for i in range(NWBINS)]
 	print "*** W binning ***"
-	print "NWBINS=%d,WBINW=%0.2f GeV"%(NWBINS,WBINW)
-	print ["%0.2f" % i for i in WBINS_LE]
-	print ["%0.2f" % i for i in WBINS_UE]
+	print "NWBINS=%d,WBINW=%.4f GeV"%(NWBINS,WBINW)
+	print ["%.4f" % i for i in WBINS_LE]
+	print ["%.4f" % i for i in WBINS_UE]
     
 	#-- For the variables, create hres,hofst
 	global Q2BINS,WBINS
@@ -275,15 +278,17 @@ def plot_q2w():
 	#-- W Th
 	#plot_WTh(axW)
 
-def plot_res(min_entries=-1,max_spreading=1):
+def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 	"""
 	Input arguments:
 	----------------
-	The input arguments control the quality of ST-SR histograms i.e. by observation, I have decided that 
+	The followng input arguments control the quality of ST-SR histograms i.e. by observation, I have decided that 
 	the following basic critereon should be satisfied before I consider a ST-SR histogram to be "good"
 	enough to extract OFT and RES
 	+ min_entries=-1: The minimum number of entries(Integral),int
 	+ max_spreading=1: The maximum permissible ratio of (under- + over-flow)/Entries,float
+
+	+ use_frange: If to use user defined Fit range when fitting ST_SR histograms
 
 	"""
 	#-- Clear existing plots from outdir
@@ -312,7 +317,7 @@ def plot_res(min_entries=-1,max_spreading=1):
 				if len(dT[sel][var])==0: continue #if there is no data, continue 
 				diff=dT[sel][var]-dR[sel][var]
 				h=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_hdiff_%02d_%02d'%(var,iq2bin+1,iwbin+1),
-								title='%s:ST-SR for Q2,W=[%.2f,%.2f],[%.2f,%.2f]'%
+								title='%s:ST-SR for Q2,W=[%.2f,%.2f],[%.4f,%.4f]'%
 								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
 				h.fill_array(diff)
 				# #-- Require minimum number of entries
@@ -324,16 +329,27 @@ def plot_res(min_entries=-1,max_spreading=1):
 				c=ROOT.TCanvas(h.GetName(),h.GetName())
 				ROOT.gStyle.SetOptStat("nemMrRuo")
 				ROOT.gStyle.SetOptFit(1111)
-				h.Fit("gaus")#,"","",FRANGE[ivar][0],FRANGE[ivar][1])
+				if use_frange:
+					h.Fit("gaus","","",FRANGE[ivar][0],FRANGE[ivar][1])
+				else:
+					h.Fit("gaus")#,"","",FRANGE[ivar][0],FRANGE[ivar][1])
 				h.Draw()
 				fgaus=h.GetFunction("gaus")
 				mu,sgma=0,0
 				if fgaus:
 					#-- Before getting mu,sgma from fgaus, make sure that the histogram fitted to
-					#-- has minimum number of entries & that "the spreading is not too much" 
+					#-- has minimum number of entries(h.Integral()) & that "the spreading is not too much"
+					integral=0
+					if use_frange:
+						binmin=h.GetXaxis().FindBin(FRANGE[ivar][0])
+						binmax=h.GetXaxis().FindBin(FRANGE[ivar][1])
+						integral=h.Integral(binmin,binmax)
+					else:
+						integral=h.Integral()
+					entries,uoflow=0,0	
 					entries=h.GetEntries()
 					uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
-					if float(uoflow)/float(entries)<max_spreading and h.Integral()>min_entries:
+					if float(uoflow)/float(entries)<max_spreading and integral>min_entries:
 						mu=fgaus.GetParameter(1)
 						sgma=fgaus.GetParameter(2)
 				HOFT[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,mu)
