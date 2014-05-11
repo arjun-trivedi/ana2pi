@@ -405,14 +405,14 @@ def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 	fig.savefig("%s/simdet_study.eps"%OUTDIR)       
 plt.show()
 
-def plot_q2w_diagnostics():
+def plot_electron_diagnostics():
 	theta_min=12
 	theta_max=55
 
-	fig=plt.figure(figsize=(25,6))
-	# nrows=2
 	nrows=1
 	ncols=5
+	fig=plt.figure(figsize=(25,nrows*5))
+		
 	for i,d in enumerate([dT,dR]):
 		mc=''
 		if i==0:
@@ -420,38 +420,113 @@ def plot_q2w_diagnostics():
 		else:
 			mc='b'
 
-		plt.subplot(nrows,ncols,1)#ncols*i+1)
-		plt.scatter(d['Q2'], d['p_e'],c=mc,alpha=0.5)
-		plt.xlabel('Q2')
-		plt.ylabel('p_e')
+		pltnum=0 #keep track of plot number in subplot()
+		for ipart,part in enumerate(['e']):
+			pltnum=1
+			plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+			plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
+			plt.xlabel('theta_%s'%part)
+			plt.ylabel('p_%s'%part)
+
+			
+			for ikin,kin in enumerate(['Q2','W']):
+				pltnum+=1
+				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+				plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
+				plt.xlabel(kin)
+				plt.ylabel('p_%s'%part)
+
+				pltnum+=1
+				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+				plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
+				plt.xlabel(kin)
+				plt.ylabel('theta_%s'%part)
+
+		# plt.subplot(nrows,ncols,1)#ncols*i+1)
+		# plt.scatter(d['Q2'], d['p_e'],c=mc,alpha=0.5)
+		# plt.xlabel('Q2')
+		# plt.ylabel('p_e')
 		
-		plt.subplot(nrows,ncols,2)#ncols*i+2)
-		plt.scatter(d['Q2'], d['theta_e'],c=mc,alpha=0.5)
-		plt.xlabel('Q2')
-		plt.ylabel('theta_e')
-		xlim=plt.xlim()
-		plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
-		plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
+		# plt.subplot(nrows,ncols,2)#ncols*i+2)
+		# plt.scatter(d['Q2'], d['theta_e'],c=mc,alpha=0.5)
+		# plt.xlabel('Q2')
+		# plt.ylabel('theta_e')
+		# xlim=plt.xlim()
+		# plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
+		# plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
 
-		plt.subplot(nrows,ncols,3)#ncols*i+3)
-		plt.scatter(d['W'], d['p_e'],c=mc,alpha=0.5)
-		plt.xlabel('W')
-		plt.ylabel('p_e')
+		# plt.subplot(nrows,ncols,3)#ncols*i+3)
+		# plt.scatter(d['W'], d['p_e'],c=mc,alpha=0.5)
+		# plt.xlabel('W')
+		# plt.ylabel('p_e')
 
-		plt.subplot(nrows,ncols,4)#ncols*i+4)
-		plt.scatter(d['W'], d['theta_e'],c=mc,alpha=0.5)
-		plt.xlabel('W')
-		plt.ylabel('theta_e')
-		xlim=plt.xlim()
-		plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
-		plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
+		# plt.subplot(nrows,ncols,4)#ncols*i+4)
+		# plt.scatter(d['W'], d['theta_e'],c=mc,alpha=0.5)
+		# plt.xlabel('W')
+		# plt.ylabel('theta_e')
+		# xlim=plt.xlim()
+		# plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
+		# plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
 
-		plt.subplot(nrows,ncols,5)#ncols*i+5)
-		plt.scatter(d['p_e'], d['theta_e'],c=mc,alpha=0.5)
-		plt.xlabel('p_e')
-		plt.ylabel('theta_e')
-		xlim=plt.xlim()
-		plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
-		plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
+		# plt.subplot(nrows,ncols,5)#ncols*i+5)
+		# plt.scatter(d['p_e'], d['theta_e'],c=mc,alpha=0.5)
+		# plt.xlabel('p_e')
+		# plt.ylabel('theta_e')
+		# xlim=plt.xlim()
+		# plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
+		# plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
 
+plt.show()
+
+def plot_hadron_diagnostics():
+	theta_min=12
+	theta_max=55
+
+	nrows=3
+	ncols=5
+	fig=plt.figure(figsize=(25,nrows*5))
+	# nrows=2
+	for i,d in enumerate([dT,dR]):
+		mc=''
+		if i==0:
+			mc='r'
+		else:
+			mc='b'
+
+		pltnum=0 #keep track of plot number in subplot()
+		for ipart,part in enumerate(['p','pip','pim']):
+			pltnum=1
+			plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+			plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
+			plt.xlabel('theta_%s'%part)
+			plt.ylabel('p_%s'%part)
+
+			
+			for ikin,kin in enumerate(['Q2','W']):
+				pltnum+=1
+				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+				plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
+				plt.xlabel(kin)
+				plt.ylabel('p_%s'%part)
+
+				pltnum+=1
+				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+				plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
+				plt.xlabel(kin)
+				plt.ylabel('theta_%s'%part)
+
+			# plt.subplot(nrows,ncols,3+ipart*ncols)#ncols*i+1)
+			# plt.scatter(d['Q2'], d['theta_%s'%part],c=mc,alpha=0.5)
+			# plt.xlabel('Q2')
+			# plt.ylabel('theta_%s'%part)
+
+			# plt.subplot(nrows,ncols,4+ipart*ncols)#ncols*i+1)
+			# plt.scatter(d['W'], d['p_%s'%part],c=mc,alpha=0.5)
+			# plt.xlabel('W')
+			# plt.ylabel('p_%s'%part)
+
+			# plt.subplot(nrows,ncols,5+ipart*ncols)#ncols*i+1)
+			# plt.scatter(d['W'], d['theta_%s'%part],c=mc,alpha=0.5)
+			# plt.xlabel('W')
+			# plt.ylabel('theta_%s'%part)
 plt.show()
