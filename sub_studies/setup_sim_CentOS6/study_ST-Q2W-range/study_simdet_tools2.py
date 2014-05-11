@@ -441,41 +441,6 @@ def plot_electron_diagnostics():
 				plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
-
-		# plt.subplot(nrows,ncols,1)#ncols*i+1)
-		# plt.scatter(d['Q2'], d['p_e'],c=mc,alpha=0.5)
-		# plt.xlabel('Q2')
-		# plt.ylabel('p_e')
-		
-		# plt.subplot(nrows,ncols,2)#ncols*i+2)
-		# plt.scatter(d['Q2'], d['theta_e'],c=mc,alpha=0.5)
-		# plt.xlabel('Q2')
-		# plt.ylabel('theta_e')
-		# xlim=plt.xlim()
-		# plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
-		# plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
-
-		# plt.subplot(nrows,ncols,3)#ncols*i+3)
-		# plt.scatter(d['W'], d['p_e'],c=mc,alpha=0.5)
-		# plt.xlabel('W')
-		# plt.ylabel('p_e')
-
-		# plt.subplot(nrows,ncols,4)#ncols*i+4)
-		# plt.scatter(d['W'], d['theta_e'],c=mc,alpha=0.5)
-		# plt.xlabel('W')
-		# plt.ylabel('theta_e')
-		# xlim=plt.xlim()
-		# plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
-		# plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
-
-		# plt.subplot(nrows,ncols,5)#ncols*i+5)
-		# plt.scatter(d['p_e'], d['theta_e'],c=mc,alpha=0.5)
-		# plt.xlabel('p_e')
-		# plt.ylabel('theta_e')
-		# xlim=plt.xlim()
-		# plt.hlines(theta_min,xlim[0],xlim[1],colors='g',linewidth=2)
-		# plt.hlines(theta_max,xlim[0],xlim[1],colors='g',linewidth=2)
-
 plt.show()
 
 def plot_hadron_diagnostics():
@@ -514,19 +479,4 @@ def plot_hadron_diagnostics():
 				plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
-
-			# plt.subplot(nrows,ncols,3+ipart*ncols)#ncols*i+1)
-			# plt.scatter(d['Q2'], d['theta_%s'%part],c=mc,alpha=0.5)
-			# plt.xlabel('Q2')
-			# plt.ylabel('theta_%s'%part)
-
-			# plt.subplot(nrows,ncols,4+ipart*ncols)#ncols*i+1)
-			# plt.scatter(d['W'], d['p_%s'%part],c=mc,alpha=0.5)
-			# plt.xlabel('W')
-			# plt.ylabel('p_%s'%part)
-
-			# plt.subplot(nrows,ncols,5+ipart*ncols)#ncols*i+1)
-			# plt.scatter(d['W'], d['theta_%s'%part],c=mc,alpha=0.5)
-			# plt.xlabel('W')
-			# plt.ylabel('theta_%s'%part)
 plt.show()
