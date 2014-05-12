@@ -74,7 +74,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 				 :EpProcessor(td, dataH10, dataAna) {
 	_procT=procT;
 	_procR=procR;
-	_lvE0_ST.SetPxPyPzE(0,0,5.497,TMath::Sqrt(5.497*5.497+MASS_E*MASS_E));
+	_lvE0_ST.SetPxPyPzE(0,0,5.499,TMath::Sqrt(5.497*5.497+MASS_E*MASS_E));
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 		
