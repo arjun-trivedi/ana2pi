@@ -475,7 +475,14 @@ def plot_hadron_diagnostics():
 				# plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('p_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin], d['p_%s'%part],bins=100)
+				xmin,xmax=0,0
+				if kin=='Q2':
+					xmin=Q2MIN
+					xmax=Q2MAX
+				else:
+					xmin=WMIN
+					xmax=WMAX
+				hist,xbins,ybins=np.histogram2d(d[kin], d['p_%s'%part],bins=100,range=[[xmin-0.1,xmax+0.1],[0-0.1,3+0.1]])
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
 				im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 				cb = fig.colorbar(im)
@@ -485,7 +492,7 @@ def plot_hadron_diagnostics():
 				# plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin], d['theta_%s'%part],bins=100)
+				hist,xbins,ybins=np.histogram2d(d[kin], d['theta_%s'%part],bins=100,range=[[xmin-0.1,xmax+0.1],[5-0.1,150+0.1]])
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
 				im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 				cb = fig.colorbar(im)
