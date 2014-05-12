@@ -449,7 +449,7 @@ def plot_hadron_diagnostics():
 	ncols=5
 	fig=plt.figure(figsize=(25,nrows*5))
 	# nrows=2
-	for i,d in enumerate([dT,dR]):
+	for i,d in enumerate([dR]):#[dT,dR]):
 		mc=''
 		if i==0:
 			mc='r'
@@ -460,21 +460,33 @@ def plot_hadron_diagnostics():
 		for ipart,part in enumerate(['p','pip','pim']):
 			pltnum=1
 			plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-			plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
+			# plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
 			plt.xlabel('theta_%s'%part)
 			plt.ylabel('p_%s'%part)
+			hist,xbins,ybins=np.histogram2d(d['theta_%s'%part],d['p_%s'%part],bins=100)
+			extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+			im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+			cb = fig.colorbar(im)
 
 			
 			for ikin,kin in enumerate(['Q2','W']):
 				pltnum+=1
 				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
+				# plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('p_%s'%part)
+				hist,xbins,ybins=np.histogram2d(d[kin], d['p_%s'%part],bins=100)
+				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+				im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+				cb = fig.colorbar(im)
 
 				pltnum+=1
 				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
+				# plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
+				hist,xbins,ybins=np.histogram2d(d[kin], d['theta_%s'%part],bins=100)
+				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+				im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+				cb = fig.colorbar(im)
 plt.show()
