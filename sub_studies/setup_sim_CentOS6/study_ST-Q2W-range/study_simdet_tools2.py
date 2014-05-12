@@ -390,7 +390,8 @@ def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 						aspect='auto',
 						origin='lower')
 			cb = plt.colorbar(im)
-			if len(Q2BINS)==2:cb.ax.set_yticklabels(['', '%.3f'%max(z)])
+			#hack for adjusting colorbar when there is just 1 bin
+			if len(Q2BINS)==2 and len(WBINS)==2:cb.ax.set_yticklabels(['', '%.3f'%max(z)])
 			#-- Using TCanvas
 			c=ROOT.TCanvas(hist.GetName(),hist.GetName())
 			c.SetGrid();
