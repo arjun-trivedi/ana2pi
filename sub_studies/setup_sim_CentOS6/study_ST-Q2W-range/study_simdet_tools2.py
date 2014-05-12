@@ -157,8 +157,6 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	#-- Determine Q2,W binning
 	global NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE
 	global NWBINS,WBINW,WBINS_LE,WBINS_UE
-	# NQ2BINS=nq2bins
-	# Q2BINW=round((Q2MAX-Q2MIN)/NQ2BINS,2)
 	Q2BINW=q2binw
 	NQ2BINS=int(round((Q2MAX-Q2MIN)/Q2BINW,0))
 	if NQ2BINS==0:NQ2BINS=1
@@ -168,8 +166,6 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	print "NQ2BINS=%d,Q2BINW=%.2f GeV^2"%(NQ2BINS,Q2BINW)
 	print ["%.2f" % i for i in Q2BINS_LE]
 	print ["%.2f" % i for i in Q2BINS_UE]
-	# NWBINS=nwbins
-	# WBINW=round((WMAX-WMIN)/NWBINS,2)
 	WBINW=wbinw
 	NWBINS=int(round((WMAX-WMIN)/WBINW,0))
 	if NWBINS==0:NWBINS=1
