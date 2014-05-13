@@ -240,8 +240,10 @@ def plot_q2w():
 	axQ2vW_T.tick_params(axis='both', which='major', labelsize=20)
 	hist,xbins,ybins=np.histogram2d(w_T,q2_T,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
 #     hist,xbins,ybins=np.histogram2d(w_T,q2_T,bins=[WBINS,Q2BINS])
+	# Mask zeros
+	histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 	extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-	im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+	im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 	cb = fig.colorbar(im, ax=axQ2vW_T)
 	#-- ST region
 	plot_q2w_boundary(axQ2vW_T)
@@ -256,8 +258,10 @@ def plot_q2w():
 	axQ2vW_R.tick_params(axis='both', which='major', labelsize=20)
 	hist,xbins,ybins=np.histogram2d(w_R,q2_R,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
 	#hist,xbins,ybins=np.histogram2d(w_R,q2_R,bins=[WBINS,Q2BINS])
+	# Mask zeros
+	histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 	extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-	im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+	im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 	cb = fig.colorbar(im, ax=axQ2vW_R)
 	#-- ST region
 	plot_q2w_boundary(axQ2vW_R)
