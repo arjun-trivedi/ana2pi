@@ -384,7 +384,9 @@ def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 			plt.yticks(Q2BINS)
 			plt.grid(1,linewidth=2)
 			z = np.array(hist.z()).T
-			im = plt.imshow(z,extent=[hist.xedges(0), hist.xedges(-1),
+			# Mask zeroes
+			zmasked = np.ma.masked_where(z==0,z) # Mask pixels with a value of zero	
+			im = plt.imshow(zmasked,extent=[hist.xedges(0), hist.xedges(-1),
 						hist.yedges(0), hist.yedges(-1)],
 						interpolation='nearest',
 						aspect='auto',
@@ -468,7 +470,7 @@ def plot_electron_diagnostics():
 				cb = fig.colorbar(im)
 plt.show()
 
-def plot_hadron_diagnostics():
+def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 	sel=eval(SEL_TOPS)
 	theta_min=12
 	theta_max=55
@@ -485,15 +487,17 @@ def plot_hadron_diagnostics():
 			mc='b'
 
 		pltnum=0 #keep track of plot number in subplot()
-		for ipart,part in enumerate(['p','pip','pim']):
+		for ipart,part in enumerate(hadrons):
 			pltnum=1
 			plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
 			# plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
 			plt.xlabel('theta_%s'%part)
 			plt.ylabel('p_%s'%part)
 			hist,xbins,ybins=np.histogram2d(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100)
+			# Mask zeros
+			histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 			extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-			im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+			im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 			cb = fig.colorbar(im)
 
 			
@@ -512,8 +516,10 @@ def plot_hadron_diagnostics():
 				plt.xlabel(kin)
 				plt.ylabel('p_%s'%part)
 				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0-0.1,3+0.1]])
+				# Mask zeros
+				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 				cb = fig.colorbar(im)
 
 				pltnum+=1
@@ -522,8 +528,10 @@ def plot_hadron_diagnostics():
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
 				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[5-0.1,150+0.1]])
+				# Mask zeros
+				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(hist.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
 				cb = fig.colorbar(im)
 plt.show()
 
