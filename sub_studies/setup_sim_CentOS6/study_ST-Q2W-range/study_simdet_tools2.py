@@ -377,7 +377,7 @@ def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 				c.Close()
     
 	#-- For each VAR, plot and save HOFST,HRES
-	fig=plt.figure(figsize=(25,25))
+	fig=plt.figure(figsize=(25,5*len(VARS)))
 	for ivar,var in enumerate(VARS):
 		for ihist,hist in enumerate([HOFT[ivar],HRES[ivar]]):
 			#-- Using matplotlib 
@@ -495,7 +495,7 @@ def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 			# plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
 			plt.xlabel('theta_%s'%part)
 			plt.ylabel('p_%s'%part)
-			hist,xbins,ybins=np.histogram2d(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100)
+			hist,xbins,ybins=np.histogram2d(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100,range=[[0,150],[0,3]])
 			# Mask zeros
 			histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 			extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
@@ -517,7 +517,7 @@ def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 				# plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('p_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0-0.1,3+0.1]])
+				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,3]])
 				# Mask zeros
 				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
@@ -529,7 +529,7 @@ def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 				# plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[5-0.1,150+0.1]])
+				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,150]])
 				# Mask zeros
 				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
