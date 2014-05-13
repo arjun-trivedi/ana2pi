@@ -94,7 +94,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 		if not 'theta_pim' in VARS: drct_cols.extend(['theta_pim'])#needed for drvd_cols
 		if not 'phi_pim' in VARS: drct_cols.extend(['phi_pim'])#needed for drvd_cols   
  		cols.extend(drct_cols)
- 		cols=list(set(cols))
+ 		cols=list(set(cols))#remove any VARS that was already in cols, which to being with was =['top','Q2','W']
 		print "Branches to load into DataFrame=",cols
 		#f = os.path.join(DATADIR,q2wdir,'recon/d2pi.root')
 		f=[]
@@ -120,7 +120,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 			d['pz_pim']=d['p_pim']*np.cos(np.deg2rad(d['theta_pim']))
 	else:
 		cols.extend(VARS)
-		cols=list(set(cols))
+		cols=list(set(cols))#remove any VARS that was already in cols, which to being with was =['top','Q2','W']
 		print "Branches to load into DataFrame=",cols
 		#f = os.path.join(DATADIR,q2wdir,'recon/d2pi.root')
 		f=[]
