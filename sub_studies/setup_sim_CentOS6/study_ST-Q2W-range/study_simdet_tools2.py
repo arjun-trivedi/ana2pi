@@ -430,7 +430,12 @@ def plot_electron_diagnostics():
 		pltnum=0 #keep track of plot number in subplot()
 		for ipart,part in enumerate(['e']):
 			#pltnum=1
-			for ip,p in enumerate([['p','theta'],['px','py']]):
+			for ip,p in enumerate([['theta','p'],['px','py']]):
+				rng=''
+				if ip==0:
+					rng=[[5,50],[1,5]]
+				else:
+					rng=[[-3,3],[-3,3]]
 				pltnum=1
 				print "debug=",p,pltnum+(ip*ncols),'%s_%s'%(p[0],part),'%s_%s'%(p[1],part)
 				#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
@@ -439,7 +444,7 @@ def plot_electron_diagnostics():
 				# plt.ylabel('p_%s'%part)
 				plt.xlabel('%s_%s'%(p[0],part))
 				plt.ylabel('%s_%s'%(p[1],part))
-				hist,xbins,ybins=np.histogram2d(d['%s_%s'%(p[1],part)][sel],d['%s_%s'%(p[0],part)][sel],bins=100,range=[[5,50],[1,5]])
+				hist,xbins,ybins=np.histogram2d(d['%s_%s'%(p[0],part)][sel],d['%s_%s'%(p[1],part)][sel],bins=100,range=rng)
 				# Mask zeros
 				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
@@ -463,7 +468,7 @@ def plot_electron_diagnostics():
 					plt.xlabel(kin)
 					#plt.ylabel('p_%s'%part)
 					plt.ylabel('%s_%s'%(p[0],part))
-					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[0],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[1,5]])
+					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[0],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[0]])
 					# Mask zeros
 					histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 					extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
@@ -477,7 +482,7 @@ def plot_electron_diagnostics():
 					plt.xlabel(kin)
 					#plt.ylabel('theta_%s'%part)
 					plt.ylabel('%s_%s'%(p[1],part))
-					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[1],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[5,50]])
+					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[1],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[1]])
 					# Mask zeros
 					histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
 					extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
