@@ -416,7 +416,7 @@ def plot_electron_diagnostics():
 	theta_min=12
 	theta_max=55
 
-	nrows=1
+	nrows=2
 	ncols=5
 	fig=plt.figure(figsize=(25,nrows*5))
 		
@@ -429,51 +429,60 @@ def plot_electron_diagnostics():
 
 		pltnum=0 #keep track of plot number in subplot()
 		for ipart,part in enumerate(['e']):
-			pltnum=1
-			plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-			#plt.scatter(d['theta_%s'%part][sel], d['p_%s'%part][sel],c=mc,alpha=0.5)
-			plt.xlabel('theta_%s'%part)
-			plt.ylabel('p_%s'%part)
-			hist,xbins,ybins=np.histogram2d(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100,range=[[5,50],[1,5]])
-			# Mask zeros
-			histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-			extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-			im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-			cb = fig.colorbar(im)
+			#pltnum=1
+			for ip,p in enumerate([['p','theta'],['px','py']]):
+				pltnum=1
+				print "debug=",p,pltnum+(ip*ncols),'%s_%s'%(p[0],part),'%s_%s'%(p[1],part)
+				#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+				plt.subplot(nrows,ncols,pltnum+(ip*ncols))#ncols*i+1)
+				# plt.xlabel('theta_%s'%part)
+				# plt.ylabel('p_%s'%part)
+				plt.xlabel('%s_%s'%(p[0],part))
+				plt.ylabel('%s_%s'%(p[1],part))
+				hist,xbins,ybins=np.histogram2d(d['%s_%s'%(p[1],part)][sel],d['%s_%s'%(p[0],part)][sel],bins=100,range=[[5,50],[1,5]])
+				# Mask zeros
+				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
+				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+				cb = fig.colorbar(im)
 
 			
-			for ikin,kin in enumerate(['Q2','W']):
-				xmin,xmax=0,0
-				if kin=='Q2':
-					xmin=Q2MIN
-					xmax=Q2MAX
-				else:
-					xmin=WMIN
-					xmax=WMAX
+				for ikin,kin in enumerate(['Q2','W']):
+					xmin,xmax=0,0
+					if kin=='Q2':
+						xmin=Q2MIN
+						xmax=Q2MAX
+					else:
+						xmin=WMIN
+						xmax=WMAX
 
-				pltnum+=1
-				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				#plt.scatter(d[kin][sel], d['p_%s'%part][sel],c=mc,alpha=0.5)
-				plt.xlabel(kin)
-				plt.ylabel('p_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[1,5]])
-				# Mask zeros
-				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-				cb = fig.colorbar(im)
+					pltnum+=1
+					print "debug=",p,pltnum+(ip*ncols),kin,'%s_%s'%(p[0],part)
+					#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+					plt.subplot(nrows,ncols,pltnum+(ip*ncols))#ncols*i+1)
+					plt.xlabel(kin)
+					#plt.ylabel('p_%s'%part)
+					plt.ylabel('%s_%s'%(p[0],part))
+					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[0],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[1,5]])
+					# Mask zeros
+					histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
+					extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+					im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+					cb = fig.colorbar(im)
 
-				pltnum+=1
-				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				#plt.scatter(d[kin][sel], d['theta_%s'%part][sel],c=mc,alpha=0.5)
-				plt.xlabel(kin)
-				plt.ylabel('theta_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[5,50]])
-				# Mask zeros
-				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-				cb = fig.colorbar(im)
+					pltnum+=1
+					print "debug=",p,pltnum+(ip*ncols),kin,'%s_%s'%(p[1],part)
+					#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
+					plt.subplot(nrows,ncols,pltnum+(ip*ncols))#ncols*i+1)
+					plt.xlabel(kin)
+					#plt.ylabel('theta_%s'%part)
+					plt.ylabel('%s_%s'%(p[1],part))
+					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[1],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[5,50]])
+					# Mask zeros
+					histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
+					extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
+					im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
+					cb = fig.colorbar(im)
 plt.show()
 
 def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
