@@ -33,7 +33,7 @@ HRANGE=""
 FRANGE=""
 SEL_TOPS=""
 
-PRCSN_Q2="%.2f"
+PRCSN_Q2="%.4f"
 PRCSN_W="%.4f"
 Q2MIN=""
 Q2MAX=""
@@ -154,7 +154,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	Q2MAX=round(max(dT['Q2']),2)
 	WMIN=round(min(dT['W']),2)
 	WMAX=round(max(dT['W']),2)
-	print "Simulated-Thrown Q2,W = [%.2f,%.2f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
+	print "Simulated-Thrown Q2,W = [%.4f,%.4f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
     
 	#-- Determine Q2,W binning
 	global NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE
@@ -165,9 +165,9 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	Q2BINS_LE=[Q2MIN+(i*Q2BINW) for i in range(NQ2BINS)]
 	Q2BINS_UE=[Q2BINS_LE[i]+Q2BINW for i in range(NQ2BINS)]
 	print "*** Q2 binning ***"
-	print "NQ2BINS=%d,Q2BINW=%.2f GeV^2"%(NQ2BINS,Q2BINW)
-	print ["%.2f" % i for i in Q2BINS_LE]
-	print ["%.2f" % i for i in Q2BINS_UE]
+	print "NQ2BINS=%d,Q2BINW=%.4f GeV^2"%(NQ2BINS,Q2BINW)
+	print ["%.4f" % i for i in Q2BINS_LE]
+	print ["%.4f" % i for i in Q2BINS_UE]
 	WBINW=wbinw
 	NWBINS=int(round((WMAX-WMIN)/WBINW,0))
 	if NWBINS==0:NWBINS=1
@@ -337,7 +337,7 @@ def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 				if len(dT[sel][var])==0: continue #if there is no data, continue 
 				diff=dT[sel][var]-dR[sel][var]
 				h=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_hdiff_%02d_%02d'%(var,iq2bin+1,iwbin+1),
-								title='%s:ST-SR for Q2,W=[%.2f,%.2f],[%.4f,%.4f]'%
+								title='%s:ST-SR for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
 								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
 				h.fill_array(diff)
 				# #-- Require minimum number of entries
