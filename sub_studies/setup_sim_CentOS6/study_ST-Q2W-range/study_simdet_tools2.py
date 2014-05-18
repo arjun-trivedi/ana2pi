@@ -250,9 +250,7 @@ def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
 	#-- 2. Obtain offset and resolution from ST-SR distribution and fill HOFST,HRES    
 	for iq2bin in range(NQ2BINS):
 		for iwbin in range(NWBINS):
-			#print "Q2=[%0.2f,%0.2f]"%(Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin])
-			#print "W=[%0.2f,%0.2f]"%(WBINS_LE[iwbin],WBINS_UE[iwbin])
-			#sel_q2w=(dR['Q2']>=Q2BINS_LE[iq2bin])&(dR['Q2']<Q2BINS_UE[iq2bin])&(dR['W']>=WBINS_LE[iwbin])&(dR['W']<WBINS_UE[iwbin])
+			#print "Q2,W=[%0.2f,%0.2f][%0.2f,%0.2f],"%(Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin])
 			sel_q2w=(dT['Q2']>=Q2BINS_LE[iq2bin])&(dT['Q2']<Q2BINS_UE[iq2bin])&(dT['W']>=WBINS_LE[iwbin])&(dT['W']<WBINS_UE[iwbin])
 			sel=sel_q2w&eval(SEL_TOPS)
             
