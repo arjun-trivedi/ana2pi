@@ -14,6 +14,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+#atlib
+import atlib
+
 from math import *
 
 import os
@@ -23,38 +26,19 @@ W_TH = 1.216
 
 DATADIR=os.environ['STUDY_STQ2WRANGE_DATADIR']
 ANADIR=os.environ['STUDY_STQ2WRANGE_ANADIR']
-OUTDIR="" #OUTDIR = ANADIR/q2wdir
+OUTDIR=None #OUTDIR = ANADIR/q2wdir
 
-dT=""
-dR=""
-VARS=""
-DRVD_COLS=['px_e','py_e','pz_e','px_p','py_p','pz_p','px_pip','py_pip','pz_pip','px_pim','py_pim','pz_pim']
-HRANGE=""
-FRANGE=""
-SEL_TOPS=""
+dT,dR=None,None
+VARS=None
+HRANGE,FRANGE=None,None
+SEL_TOPS=None
 
-PRCSN_Q2="%.4f"
-PRCSN_W="%.4f"
-Q2MIN=""
-Q2MAX=""
-NQ2BINS=""
-Q2BINW=""
-Q2BINS_LE=""
-Q2BINS_UE=""
-WMIN=""
-WMAX=""
-NWBINS=""
-WBINW=""
-WBINS_LE=""
-WBINS_UE=""
+PRCSN_Q2,PRCSN_W="%.4f","%.4f"
+Q2MIN,Q2MAX,NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,None,None
+WMIN, WMAX, NWBINS, WBINW, WBINS_LE, WBINS_UE, WBINS =None,None,None,None,None,None,None
+HOFT,HRES=None,None
 
-Q2BINS=""
-WBINS=""
-HOFT=""
-HRES=""
-
-#def init(q2wdirs,nq2bins,nwbins,variables,hrange,frange,tops):
-def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
+def init(q2wdirs,q2binw,wbinw,vars,hrange,frange,tops):
 	"""
 	This function intializes the necessary information needed in studying the Simulated-Detector
     
@@ -65,7 +49,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	# nwbins = Number of W bins,int
 	q2binw = Q2 bin width bins,float
 	wbinw= W bin width,float
-	variables = Variables for which offset and resolution is to be extracted,list of str
+	vars = Variables for which offset and resolution is to be extracted,list of str
 	hrange=for each variable, range for ST-SR histogram,list of [min,max]
 	frange=for each variable, range over which ST-SR histogram is fitted,list of [min,max]
 	tops = Topology to be used, list of int
@@ -75,62 +59,13 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	#-- Import data 
 	global dT,dR,VARS
 	cols=['top','Q2','W']
-	VARS=variables
-	if any(items in VARS for items in DRVD_COLS):
-		#print "Don't know what to do"
-		#return
-		drct_cols=[item for item in VARS if item not in DRVD_COLS]
-		drvd_cols=[item for item in VARS if item in DRVD_COLS]
-		if not 'p_e' in VARS: drct_cols.extend(['p_e'])#needed for drvd_cols
-		if not 'theta_e' in VARS: drct_cols.extend(['theta_e'])#needed for drvd_cols
-		if not 'phi_e' in VARS: drct_cols.extend(['phi_e'])#needed for drvd_cols
-		if not 'p_p' in VARS: drct_cols.extend(['p_p'])#needed for drvd_cols
-		if not 'theta_p' in VARS: drct_cols.extend(['theta_p'])#needed for drvd_cols
-		if not 'phi_p' in VARS: drct_cols.extend(['phi_p'])#needed for drvd_cols  
-		if not 'p_pip' in VARS: drct_cols.extend(['p_pip'])#needed for drvd_cols
-		if not 'theta_pip' in VARS: drct_cols.extend(['theta_pip'])#needed for drvd_cols
-		if not 'phi_pip' in VARS: drct_cols.extend(['phi_pip'])#needed for drvd_cols   
-		if not 'p_pim' in VARS: drct_cols.extend(['p_pim'])#needed for drvd_cols
-		if not 'theta_pim' in VARS: drct_cols.extend(['theta_pim'])#needed for drvd_cols
-		if not 'phi_pim' in VARS: drct_cols.extend(['phi_pim'])#needed for drvd_cols   
- 		cols.extend(drct_cols)
- 		cols=list(set(cols))#remove any VARS that was already in cols, which to being with was =['top','Q2','W']
-		print "Branches to load into DataFrame=",cols
-		#f = os.path.join(DATADIR,q2wdir,'recon/d2pi.root')
-		f=[]
-		for q2wdir in q2wdirs:
-			f.append(os.path.join(DATADIR,q2wdir,'recon/d2pi.root'))
-		arrT = root2array(f,'d2piTR/T/tT',branches=cols)
-		arrR = root2array(f,'d2piTR/R/tR',branches=cols)
-		dT = pd.DataFrame(arrT)
-		dR = pd.DataFrame(arrR)
-		#-- Add drvd_cols
-		for d in (dT,dR):
-			d['px_e']=d['p_e']*np.sin(np.deg2rad(d['theta_e']))*np.cos(np.deg2rad(d['phi_e']))
-			d['py_e']=d['p_e']*np.sin(np.deg2rad(d['theta_e']))*np.sin(np.deg2rad(d['phi_e']))
-			d['pz_e']=d['p_e']*np.cos(np.deg2rad(d['theta_e']))
-			d['px_p']=d['p_p']*np.sin(np.deg2rad(d['theta_p']))*np.cos(np.deg2rad(d['phi_p']))
-			d['py_p']=d['p_p']*np.sin(np.deg2rad(d['theta_p']))*np.sin(np.deg2rad(d['phi_p']))
-			d['pz_p']=d['p_p']*np.cos(np.deg2rad(d['theta_p']))
-			d['px_pip']=d['p_pip']*np.sin(np.deg2rad(d['theta_pip']))*np.cos(np.deg2rad(d['phi_pip']))
-			d['py_pip']=d['p_pip']*np.sin(np.deg2rad(d['theta_pip']))*np.sin(np.deg2rad(d['phi_pip']))
-			d['pz_pip']=d['p_pip']*np.cos(np.deg2rad(d['theta_pip']))
-			d['px_pim']=d['p_pim']*np.sin(np.deg2rad(d['theta_pim']))*np.cos(np.deg2rad(d['phi_pim']))
-			d['py_pim']=d['p_pim']*np.sin(np.deg2rad(d['theta_pim']))*np.sin(np.deg2rad(d['phi_pim']))
-			d['pz_pim']=d['p_pim']*np.cos(np.deg2rad(d['theta_pim']))
-	else:
-		cols.extend(VARS)
-		cols=list(set(cols))#remove any VARS that was already in cols, which to being with was =['top','Q2','W']
-		print "Branches to load into DataFrame=",cols
-		#f = os.path.join(DATADIR,q2wdir,'recon/d2pi.root')
-		f=[]
-		for q2wdir in q2wdirs:
-			f.append(os.path.join(DATADIR,q2wdir,'recon/d2pi.root'))
-		arrT = root2array(f,'d2piTR/T/tT',branches=cols)
-		arrR = root2array(f,'d2piTR/R/tR',branches=cols)
-		dT = pd.DataFrame(arrT)
-		dR = pd.DataFrame(arrR)
-        
+	VARS=vars
+	f=[]
+	for q2wdir in q2wdirs:
+		f.append(os.path.join(DATADIR,q2wdir,'recon/d2pi.root'))
+	dT=atlib.tree2df(f,'d2piTR/T/tT',vars)
+	dR=atlib.tree2df(f,'d2piTR/R/tR',vars)
+
 	#-- get HRANGE,FRANGE
 	global HRANGE,FRANGE
 	HRANGE=hrange
@@ -178,7 +113,7 @@ def init(q2wdirs,q2binw,wbinw,variables,hrange,frange,tops):
 	print ["%.4f" % i for i in WBINS_LE]
 	print ["%.4f" % i for i in WBINS_UE]
     
-	#-- For the variables, create hres,hofst
+	#-- For the vars, create hres,hofst
 	global Q2BINS,WBINS
 	global HOFT,HRES
 	HOFT=[]
@@ -238,13 +173,7 @@ def plot_q2w():
 	axQ2vW_T.grid(1,linewidth=2)
 	axQ2vW_T.set_title('Q2 vs. W: ST',fontsize='xx-large')
 	axQ2vW_T.tick_params(axis='both', which='major', labelsize=20)
-	hist,xbins,ybins=np.histogram2d(w_T,q2_T,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
-#     hist,xbins,ybins=np.histogram2d(w_T,q2_T,bins=[WBINS,Q2BINS])
-	# Mask zeros
-	histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-	extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-	im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-	cb = fig.colorbar(im, ax=axQ2vW_T)
+	atlib.hist2D(w_T,q2_T,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
 	#-- ST region
 	plot_q2w_boundary(axQ2vW_T)
 	#-- W Th
@@ -256,13 +185,7 @@ def plot_q2w():
 	axQ2vW_R.grid(1,linewidth=2)
 	axQ2vW_R.set_title('Q2 vs. W: SR',fontsize='xx-large')
 	axQ2vW_R.tick_params(axis='both', which='major', labelsize=20)
-	hist,xbins,ybins=np.histogram2d(w_R,q2_R,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
-	#hist,xbins,ybins=np.histogram2d(w_R,q2_R,bins=[WBINS,Q2BINS])
-	# Mask zeros
-	histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-	extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-	im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-	cb = fig.colorbar(im, ax=axQ2vW_R)
+	atlib.hist2D(w_R,q2_R,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
 	#-- ST region
 	plot_q2w_boundary(axQ2vW_R)
 	#-- W Th
@@ -444,14 +367,8 @@ def plot_electron_diagnostics():
 				# plt.ylabel('p_%s'%part)
 				plt.xlabel('%s_%s'%(p[0],part))
 				plt.ylabel('%s_%s'%(p[1],part))
-				hist,xbins,ybins=np.histogram2d(d['%s_%s'%(p[0],part)][sel],d['%s_%s'%(p[1],part)][sel],bins=100,range=rng)
-				# Mask zeros
-				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-				cb = fig.colorbar(im)
-
-			
+				atlib.hist2D(d['%s_%s'%(p[0],part)][sel],d['%s_%s'%(p[1],part)][sel],bins=100,range=rng)
+							
 				for ikin,kin in enumerate(['Q2','W']):
 					xmin,xmax=0,0
 					if kin=='Q2':
@@ -468,13 +385,8 @@ def plot_electron_diagnostics():
 					plt.xlabel(kin)
 					#plt.ylabel('p_%s'%part)
 					plt.ylabel('%s_%s'%(p[0],part))
-					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[0],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[0]])
-					# Mask zeros
-					histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-					extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-					im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-					cb = fig.colorbar(im)
-
+					atlib.hist2D(d[kin][sel], d['%s_%s'%(p[0],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[0]])
+					
 					pltnum+=1
 					print "debug=",p,pltnum+(ip*ncols),kin,'%s_%s'%(p[1],part)
 					#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
@@ -482,12 +394,7 @@ def plot_electron_diagnostics():
 					plt.xlabel(kin)
 					#plt.ylabel('theta_%s'%part)
 					plt.ylabel('%s_%s'%(p[1],part))
-					hist,xbins,ybins=np.histogram2d(d[kin][sel], d['%s_%s'%(p[1],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[1]])
-					# Mask zeros
-					histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-					extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-					im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-					cb = fig.colorbar(im)
+					atlib.hist2D(d[kin][sel], d['%s_%s'%(p[1],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[1]])
 plt.show()
 
 def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
@@ -513,14 +420,8 @@ def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 			# plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
 			plt.xlabel('theta_%s'%part)
 			plt.ylabel('p_%s'%part)
-			hist,xbins,ybins=np.histogram2d(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100,range=[[0,150],[0,3]])
-			# Mask zeros
-			histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-			extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-			im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-			cb = fig.colorbar(im)
-
-			
+			atlib.hist2D(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100,range=[[0,150],[0,3]])
+						
 			for ikin,kin in enumerate(['Q2','W']):
 				xmin,xmax=0,0
 				if kin=='Q2':
@@ -535,24 +436,14 @@ def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 				# plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('p_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,3]])
-				# Mask zeros
-				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-				cb = fig.colorbar(im)
-
+				atlib.hist2D(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,3]])
+				
 				pltnum+=1
 				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
 				# plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
 				plt.xlabel(kin)
 				plt.ylabel('theta_%s'%part)
-				hist,xbins,ybins=np.histogram2d(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,150]])
-				# Mask zeros
-				histmasked = np.ma.masked_where(hist==0,hist) # Mask pixels with a value of zero
-				extent = [xbins.min(),xbins.max(),ybins.min(),ybins.max()]
-				im = plt.imshow(histmasked.T, interpolation='none', origin='lower', aspect='auto',extent=extent)
-				cb = fig.colorbar(im)
+				atlib.hist2D(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,150]])
 plt.show()
 
 def plot_mm(mm):
