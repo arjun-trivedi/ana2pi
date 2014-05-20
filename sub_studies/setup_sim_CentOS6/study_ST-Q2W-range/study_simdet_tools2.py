@@ -34,19 +34,17 @@ HRANGE,FRANGE=None,None
 SEL_TOPS=None
 
 PRCSN_Q2,PRCSN_W="%.4f","%.4f"
-Q2MIN,Q2MAX,NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,None,None
-WMIN, WMAX, NWBINS, WBINW, WBINS_LE, WBINS_UE, WBINS =None,None,None,None,None,None,None
+Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,None,None
+WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS =None,None,None,None,None,None,None
 HOFT,HRES=None,None
 
-def init(q2wdirs,q2binw,wbinw,vars,hrange,frange,tops):
+def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	"""
 	This function intializes the necessary information needed in studying the Simulated-Detector
     
 	Input arguments:
 	----------------
 	q2wdirs = list of q2wdirs relative to $STUDY_STQ2WRANGE_DATADIR,list of str
-	# nq2bins = Number of Q2 bins,int
-	# nwbins = Number of W bins,int
 	q2binw = Q2 bin width bins,float
 	wbinw= W bin width,float
 	vars = Variables for which offset and resolution is to be extracted,list of str
@@ -58,7 +56,6 @@ def init(q2wdirs,q2binw,wbinw,vars,hrange,frange,tops):
     
 	#-- Import data 
 	global dT,dR,VARS
-	cols=['top','Q2','W']
 	VARS=vars
 	f=[]
 	for q2wdir in q2wdirs:
@@ -73,55 +70,38 @@ def init(q2wdirs,q2binw,wbinw,vars,hrange,frange,tops):
 
 	#-- Determine Topologies to be used
 	global SEL_TOPS
-	SEL_TOPS=""
-	itr=0
-	for top in tops:
-		if itr==0:
-			SEL_TOPS+="(dR['top']==%d)"%top
-		else:
-			SEL_TOPS+="|(dR['top']==%d)"%top
-		itr+=1
+	SEL_TOPS=atlib.init_seltops(tops)
 	print "SEL_TOPS = %s"%SEL_TOPS
     
-	#-- Determine kinematic range of Simulated-Thrown (ST) Events
-	global Q2MIN,Q2MAX,WMIN,WMAX
-	Q2MIN=round(min(dT['Q2']),2)
-	Q2MAX=round(max(dT['Q2']),2)
-	WMIN=round(min(dT['W']),2)
-	WMAX=round(max(dT['W']),2)
-	print "Simulated-Thrown Q2,W = [%.4f,%.4f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
-    
-	#-- Determine Q2,W binning
-	global NQ2BINS,Q2BINW,Q2BINS_LE,Q2BINS_UE
-	global NWBINS,WBINW,WBINS_LE,WBINS_UE
-	Q2BINW=q2binw
-	NQ2BINS=int(round((Q2MAX-Q2MIN)/Q2BINW,0))
-	if NQ2BINS==0:NQ2BINS=1
-	Q2BINS_LE=[Q2MIN+(i*Q2BINW) for i in range(NQ2BINS)]
-	Q2BINS_UE=[Q2BINS_LE[i]+Q2BINW for i in range(NQ2BINS)]
+	#-- Determine Q2,W binning 
+	#-- For this study, reference = Simulated-Thrown (ST) events
+	global Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS
+	global WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS
+	q2bng,wbng=atlib.init_q2wbng(q2binw,wbinw,dT)
+	Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=q2bng
+	WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS=wbng
 	print "*** Q2 binning ***"
 	print "NQ2BINS=%d,Q2BINW=%.4f GeV^2"%(NQ2BINS,Q2BINW)
-	print ["%.4f" % i for i in Q2BINS_LE]
-	print ["%.4f" % i for i in Q2BINS_UE]
-	WBINW=wbinw
-	NWBINS=int(round((WMAX-WMIN)/WBINW,0))
-	if NWBINS==0:NWBINS=1
-	WBINS_LE=[WMIN+(i*WBINW) for i in range(NWBINS)]
-  	WBINS_UE=[WBINS_LE[i]+WBINW for i in range(NWBINS)]
+	print ["%.4f" % i for i in Q2BINS]
 	print "*** W binning ***"
 	print "NWBINS=%d,WBINW=%.4f GeV"%(NWBINS,WBINW)
-	print ["%.4f" % i for i in WBINS_LE]
-	print ["%.4f" % i for i in WBINS_UE]
+	print ["%.4f" % i for i in WBINS]
+	
+	#-- Print kinematic range of ST events
+	print "Simulated-Thrown Q2,W = [%.4f,%.4f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
+
+	# -- Create OUTDIR
+	global OUTDIR
+	OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs))
+
+	if not os.path.exists(OUTDIR):
+		os.makedirs(OUTDIR)
+	print "OUTDIR=%s"%OUTDIR
     
 	#-- For the vars, create hres,hofst
-	global Q2BINS,WBINS
 	global HOFT,HRES
 	HOFT=[]
 	HRES=[]
-	Q2BINS=Q2BINS_LE
-	Q2BINS.extend([Q2BINS_UE[-1]])
-	WBINS=WBINS_LE
-	WBINS.extend([WBINS_UE[-1]])
 	for var in VARS:
 		HOFT.append(Hist2D(WBINS,Q2BINS,name="%s_OFT"%var,title="%s Offset"%var))
 		HRES.append(Hist2D(WBINS,Q2BINS,name="%s_RES"%var,title="%s Resolution"%var))
@@ -130,15 +110,7 @@ def init(q2wdirs,q2binw,wbinw,vars,hrange,frange,tops):
 	print 'HOFT=',HOFT
 	print 'HRES=',HRES
         
-	# -- Create OUTDIR
-	global OUTDIR
-	#OUTDIR=os.path.join(ANADIR,q2wdir)
-	OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs))
-
-	if not os.path.exists(OUTDIR):
-		os.makedirs(OUTDIR)
-	print "OUTDIR=%s"%OUTDIR
-
+	
 def plot_q2w_boundary(axes):
 	axes.hlines(Q2MIN,WMIN,WMAX,colors='red',linewidth=1)#5DFC0A
 	axes.hlines(Q2MAX,WMIN,WMAX,colors='red',linewidth=1)
