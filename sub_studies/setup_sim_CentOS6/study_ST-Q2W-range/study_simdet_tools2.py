@@ -63,11 +63,6 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	dT=atlib.tree2df(f,'d2piTR/T/tT',vars)
 	dR=atlib.tree2df(f,'d2piTR/R/tR',vars)
 
-	#-- get HRANGE,FRANGE
-	global HRANGE,FRANGE
-	HRANGE=hrange
-	FRANGE=frange
-
 	#-- Determine Topologies to be used
 	global SEL_TOPS
 	SEL_TOPS=""
@@ -96,6 +91,11 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	
 	#-- Print kinematic range of ST events
 	print "Simulated-Thrown Q2,W = [%.4f,%.4f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
+
+	#-- get HRANGE,FRANGE
+	global HRANGE,FRANGE
+	HRANGE=hrange
+	FRANGE=frange
 
 	# -- Create OUTDIR
 	global OUTDIR

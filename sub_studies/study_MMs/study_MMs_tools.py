@@ -90,11 +90,6 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	print "Done"
 	
 
-	#-- get HRANGE,FRANGE
-	global HRANGE,FRANGE
-	HRANGE=hrange
-	FRANGE=frange
-    
 	#-- Determine Q2,W binning 
 	#-- For this study, reference = ER events
 	global Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS
@@ -109,8 +104,10 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	print "NWBINS=%d,WBINW=%.4f GeV"%(NWBINS,WBINW)
 	print ["%.4f" % i for i in WBINS]
 	
-	#-- Print kinematic range of ST events
-	print "Simulated-Thrown Q2,W = [%.4f,%.4f]GeV^2,[%.4f,%.4f]GeV"%(Q2MIN,Q2MAX,WMIN,WMAX)
+	#-- get HRANGE,FRANGE
+	global HRANGE,FRANGE
+	HRANGE=hrange
+	FRANGE=frange
 
 	# -- Create OUTDIR
 	global OUTDIR
