@@ -7,5 +7,5 @@ setenv PATH "${PATH}:${ANA2PI_STUDY_MMS}"
 ##- modify PYTHONPATH
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_MMS}"
 
-setenv STUDY_MMS_DATADIR "$E1F_SIM2PI_DATADIR/setup_sim_CentOS6"
+setenv STUDY_MMS_DATADIR "/data/trivedia/e1f/study_MMs"
 setenv STUDY_MMS_ANADIR  "${ANA2PI_STUDY_MMS}"
