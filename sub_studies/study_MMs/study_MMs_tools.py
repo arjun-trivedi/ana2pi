@@ -38,7 +38,7 @@ Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,N
 WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS =None,None,None,None,None,None,None
 HOFT,HRES=None,None
 
-def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
+def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
 	"""
 	This function intializes the necessary information needed in studying the Simulated-Detector
     
@@ -59,17 +59,26 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	VARS=vars
 	fexp=[]
 	fsim=[]
+	print "dbg:mcor=",mcor
 	for q2wdir in q2wdirs:
-		fexp.append(os.path.join(DATADIR,'%s-exp'%q2wdir,'recon/d2pi.root'))
+		print "dbg:mcor=",mcor
+		if mcor is True:
+			print "dbg:here"
+			print "dbg:using d2pi_yesmomcorr.root",
+			fexp.append(os.path.join(DATADIR,'%s-exp'%q2wdir,'recon/d2pi_yesmomcorr.root'))
+		else:
+			print "dbg:else here"
+			print "dbg:using d2pi_nomomcorr.root"
+			fexp.append(os.path.join(DATADIR,'%s-exp'%q2wdir,'recon/d2pi_nomomcorr.root'))
 		fsim.append(os.path.join(DATADIR,'%s-sim'%q2wdir,'recon/d2pi.root'))
 	dER=atlib.tree2df(fexp,'d2piR/tR',vars)
 	dSR=atlib.tree2df(fsim,'d2piR/tR',vars)
 
 	#-- In the DFs, keep data only from the relevant topologies
 	print "*** Going to keep only ",tops,"for dER and dSR ***"
-	dfs={}
-	dfs['dER']=(dER)#('dER',dER)
-	dfs['dSR']=(dSR)#'dSR',dSR)
+	dfs={'dER':dER,'dSR':dSR}
+	# dfs['dER']=(dER)#('dER',dER)
+	# dfs['dSR']=(dSR)#'dSR',dSR)
 	sel_tops={}
 	for df in dfs:
 		sel_tops[df]=""
@@ -434,7 +443,34 @@ def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
 plt.show()
 
 def plot_mm(mm):
-	sel=eval(SEL_TOPS)
-	x=dR[mm][sel]
-	plt.hist(x,bins=100)
+	#sel=eval(SEL_TOPS)
+	#x=dR[mm][sel]
+	dfs={'dER':dER,'dSR':dSR}
+	# dfs['dER']=(dER)#('dER',dER)
+	# dfs['dSR']=(dSR)#'dSR',dSR)
+	sel_q2w={}
+	wmin=0
+	wmax=2.0
+	for df in dfs:
+		sel_q2w[df]="(%s['W']>=%f)&(%s['W']<%f)"%(df,wmin,df,wmax)
+		print sel_q2w[df]
+	# plt.hist(dER[mm][eval(sel_q2w['dER'])],bins=100,alpha=0.5,label='ER',histtype='stepfilled')
+	# plt.hist(dSR[mm][eval(sel_q2w['dSR'])],bins=100,alpha=0.5,label='SR',histtype='stepfilled')
+	# plt.legend()
+
+	hER=Hist(100,0.0,0.2)
+	hSR=Hist(100,0.0,0.2)
+	ROOT.gStyle.SetOptFit(1111)
+	c=ROOT.TCanvas()
+	hER.fill_array(dER[mm][eval(sel_q2w['dER'])])
+	hSR.fill_array(dSR[mm][eval(sel_q2w['dSR'])])
+	hSR.DrawNormalized("",10000)
+	hERn=hER.DrawNormalized("sames",10000)
+	hERn.Fit("gaus","","sames",0.115,0.165)
+	c.Update()
+	st=hERn.GetListOfFunctions().FindObject("stats")
+	st.SetX1NDC(0.05)
+	st.SetX2NDC(0.30)
+	c.Draw()
+	c.SaveAs("test.eps")
 
