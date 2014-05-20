@@ -70,7 +70,14 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 
 	#-- Determine Topologies to be used
 	global SEL_TOPS
-	SEL_TOPS=atlib.init_seltops(tops)
+	SEL_TOPS=""
+	itr=0
+	for top in tops:
+		if itr==0:
+			SEL_TOPS+="(dR['top']==%d)"%top
+		else:
+			SEL_TOPS+="|(dR['top']==%d)"%top
+		itr+=1
 	print "SEL_TOPS = %s"%SEL_TOPS
     
 	#-- Determine Q2,W binning 

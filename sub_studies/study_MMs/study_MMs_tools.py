@@ -72,7 +72,14 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 
 	#-- Determine Topologies to be used
 	global SEL_TOPS
-	SEL_TOPS=atlib.init_seltops(tops)
+	SEL_TOPS=""
+	itr=0
+	for top in tops:
+		if itr==0:
+			SEL_TOPS+="(dR['top']==%d)"%top
+		else:
+			SEL_TOPS+="|(dR['top']==%d)"%top
+		itr+=1
 	print "SEL_TOPS = %s"%SEL_TOPS
     
 	#-- Determine Q2,W binning 
@@ -194,7 +201,7 @@ def plot_q2w():
 # 	#-- W Th
 # 	#plot_WTh(axW)
 
-def plot_res(min_entries=-1,max_spreading=1,use_frange=False):
+def plot_MMs(min_entries=-1,max_spreading=1,use_frange=False):
 	"""
 	Input arguments:
 	----------------
