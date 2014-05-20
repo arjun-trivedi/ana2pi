@@ -449,28 +449,41 @@ def plot_mm(mm):
 	# dfs['dER']=(dER)#('dER',dER)
 	# dfs['dSR']=(dSR)#'dSR',dSR)
 	sel_q2w={}
-	wmin=0
-	wmax=2.0
+	wmin=1.3#1.7
+	wmax=1.5#2.0
 	for df in dfs:
 		sel_q2w[df]="(%s['W']>=%f)&(%s['W']<%f)"%(df,wmin,df,wmax)
 		print sel_q2w[df]
 	# plt.hist(dER[mm][eval(sel_q2w['dER'])],bins=100,alpha=0.5,label='ER',histtype='stepfilled')
 	# plt.hist(dSR[mm][eval(sel_q2w['dSR'])],bins=100,alpha=0.5,label='SR',histtype='stepfilled')
 	# plt.legend()
-
+	fmin=0.1
+	fmax=0.17
 	hER=Hist(100,0.0,0.2)
 	hSR=Hist(100,0.0,0.2)
 	ROOT.gStyle.SetOptFit(1111)
 	c=ROOT.TCanvas()
 	hER.fill_array(dER[mm][eval(sel_q2w['dER'])])
 	hSR.fill_array(dSR[mm][eval(sel_q2w['dSR'])])
-	hSR.DrawNormalized("",10000)
-	hERn=hER.DrawNormalized("sames",10000)
-	hERn.Fit("gaus","","sames",0.115,0.165)
+	hSRn=hSR.DrawNormalized("",10000)
+	hSRn.Fit("gaus","","sames",fmin,fmax)
 	c.Update()
-	st=hERn.GetListOfFunctions().FindObject("stats")
-	st.SetX1NDC(0.05)
-	st.SetX2NDC(0.30)
+	stSR=hSRn.GetListOfFunctions().FindObject("stats")
+	stSR.SetX1NDC(0.15)
+	stSR.SetX2NDC(0.40)
+	stSR.SetY1NDC(0.50)
+	stSR.SetY2NDC(0.25)
+	stSR.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+	c.Update()
+	hERn=hER.DrawNormalized("sames",10000)
+	hERn.Fit("gaus","","sames",fmin,fmax)
+	c.Update()
+	f=hERn.GetFunction("gaus")
+	f.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+	stER=hERn.GetListOfFunctions().FindObject("stats")
+	stER.SetX1NDC(0.15)
+	stER.SetX2NDC(0.40)
+	stER.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
 	c.Draw()
 	c.SaveAs("test.eps")
 
