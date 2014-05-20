@@ -31,7 +31,7 @@ OUTDIR=None #OUTDIR = ANADIR/q2wdir
 dER,dSR=None,None
 VARS=None
 HRANGE,FRANGE=None,None
-SEL_TOPS=None
+#SEL_TOPS=None
 
 PRCSN_Q2,PRCSN_W="%.4f","%.4f"
 Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,None,None
@@ -65,22 +65,35 @@ def init(q2wdirs,q2binw,wbinw,tops,vars,hrange,frange):
 	dER=atlib.tree2df(fexp,'d2piR/tR',vars)
 	dSR=atlib.tree2df(fsim,'d2piR/tR',vars)
 
+	#-- In the DFs, keep data only from the relevant topologies
+	print "*** Going to keep only ",tops,"for dER and dSR ***"
+	dfs={}
+	dfs['dER']=(dER)#('dER',dER)
+	dfs['dSR']=(dSR)#'dSR',dSR)
+	sel_tops={}
+	for df in dfs:
+		sel_tops[df]=""
+		itr=0
+		for top in tops:
+			if itr==0:
+				sel_tops[df]+="(%s['top']==%d)"%(df,top)
+			else:
+				sel_tops[df]+="|(%s['top']==%d)"%(df,top)
+			itr+=1
+	print "Evaluating %s ..."%(sel_tops['dER'])
+	dER=dER[eval(sel_tops['dER'])]
+	print dER['top'].head()
+	print "Done"
+	print "Evaluating %s ..."%(sel_tops['dSR'])
+	dSR=dSR[eval(sel_tops['dSR'])]
+	print dSR['top'].head()
+	print "Done"
+	
+
 	#-- get HRANGE,FRANGE
 	global HRANGE,FRANGE
 	HRANGE=hrange
 	FRANGE=frange
-
-	#-- Determine Topologies to be used
-	global SEL_TOPS
-	SEL_TOPS=""
-	itr=0
-	for top in tops:
-		if itr==0:
-			SEL_TOPS+="(dR['top']==%d)"%top
-		else:
-			SEL_TOPS+="|(dR['top']==%d)"%top
-		itr+=1
-	print "SEL_TOPS = %s"%SEL_TOPS
     
 	#-- Determine Q2,W binning 
 	#-- For this study, reference = ER events
@@ -201,7 +214,7 @@ def plot_q2w():
 # 	#-- W Th
 # 	#plot_WTh(axW)
 
-def plot_MMs(min_entries=-1,max_spreading=1,use_frange=False):
+def plot_MMs_comp(min_entries=-1,max_spreading=1,use_frange=False):
 	"""
 	Input arguments:
 	----------------
@@ -232,8 +245,7 @@ def plot_MMs(min_entries=-1,max_spreading=1,use_frange=False):
 		for iwbin in range(NWBINS):
 			#print "Q2,W=[%0.2f,%0.2f][%0.2f,%0.2f],"%(Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin])
 			sel_q2w=(dT['Q2']>=Q2BINS_LE[iq2bin])&(dT['Q2']<Q2BINS_UE[iq2bin])&(dT['W']>=WBINS_LE[iwbin])&(dT['W']<WBINS_UE[iwbin])
-			sel=sel_q2w&eval(SEL_TOPS)
-            
+			            
 			for ivar,var in enumerate(VARS):
 				if len(dT[sel][var])==0: continue #if there is no data, continue 
 				diff=dT[sel][var]-dR[sel][var]
@@ -428,3 +440,4 @@ def plot_mm(mm):
 	sel=eval(SEL_TOPS)
 	x=dR[mm][sel]
 	plt.hist(x,bins=100)
+
