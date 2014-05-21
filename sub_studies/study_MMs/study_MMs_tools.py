@@ -449,8 +449,8 @@ def plot_mm(mm):
 	# dfs['dER']=(dER)#('dER',dER)
 	# dfs['dSR']=(dSR)#'dSR',dSR)
 	sel_q2w={}
-	wmin=1.3#1.7
-	wmax=1.5#2.0
+	wmin=1.7#1.3#1.7
+	wmax=2.0#1.5#2.0
 	for df in dfs:
 		sel_q2w[df]="(%s['W']>=%f)&(%s['W']<%f)"%(df,wmin,df,wmax)
 		print sel_q2w[df]
