@@ -44,7 +44,7 @@ def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
     
 	Input arguments:
 	----------------
-	q2wdirs = list of q2wdirs relative to $STUDY_STQ2WRANGE_DATADIR,list of str
+	q2wdirs = list of q2wdirs relative to DATADIR,list of str
 	q2binw = Q2 bin width bins,float
 	wbinw= W bin width,float
 	tops = Topology to be used, list of int
@@ -90,10 +90,10 @@ def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
 
 	
 	#-- Determine Q2,W binning 
-	#-- For this study, reference = ER events
+	#-- For this study, reference = ST events
 	global Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS
 	global WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS
-	q2bng,wbng=atlib.init_q2wbng(q2binw,wbinw,dER)
+	q2bng,wbng=atlib.init_q2wbng(q2binw,wbinw,range=[(1.9,2.5),(1.3,1.9)])
 	Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=q2bng
 	WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS=wbng
 	print "*** Q2 binning ***"
@@ -110,7 +110,10 @@ def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
 
 	# -- Create OUTDIR
 	global OUTDIR
-	OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs))
+	if mcor is True:
+		OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs),"yes_mcor")
+	else:
+		OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs),"no_mcor")
 
 	if not os.path.exists(OUTDIR):
 		os.makedirs(OUTDIR)
@@ -234,91 +237,73 @@ def plot_MMs_comp(min_entries=-1,max_spreading=1,use_frange=False):
 		HOFT[ivar].Reset()
 		HRES[ivar].Reset()
     
-	#-- For each q2wbin and therein, for each VAR:
-	#-- 1. Plot and save ST-SR distribiotn
-	#-- 2. Obtain offset and resolution from ST-SR distribution and fill HOFST,HRES    
+	#-- For Exp and Sim, in each q2wbin, obtain hmm[Exp] and hmm[Sim]:
+	#-- 1. Plot and save MM distribution
+	#-- 2. Obtain dmu/dsgma =mu/sgma(hmm[Sim])- mu/sgma(hmm[Exp])
 	for iq2bin in range(NQ2BINS):
 		for iwbin in range(NWBINS):
-			#print "Q2,W=[%0.2f,%0.2f][%0.2f,%0.2f],"%(Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin])
-			sel_q2w=(dT['Q2']>=Q2BINS_LE[iq2bin])&(dT['Q2']<Q2BINS_UE[iq2bin])&(dT['W']>=WBINS_LE[iwbin])&(dT['W']<WBINS_UE[iwbin])
-			            
-			for ivar,var in enumerate(VARS):
-				if len(dT[sel][var])==0: continue #if there is no data, continue 
-				diff=dT[sel][var]-dR[sel][var]
-				h=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_hdiff_%02d_%02d'%(var,iq2bin+1,iwbin+1),
-								title='%s:ST-SR for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
+			#-- For dER & dSR, zoom into q2wbin and get data for hmm
+			dfdict={'dER':dER,'dSR':dSR}
+			sel_q2w={}
+			data={}
+			for dfkey in dfdict:
+				print "dbg: %s before"%dfkey
+				print dfdict[dfkey].head()
+				sel_q2w[dfkey]="(%s['Q2']>=%f)&(%s['Q2']<%f)&(%s['W']>=%f)&(%s['W']<%f)"%(
+				dfkey,Q2BINS_LE[iq2bin],dfkey,Q2BINS_UE[iq2bin],dfkey,WBINS_LE[iwbin],dfkey,WBINS_UE[iwbin])
+				print sel_q2w[dfkey]
+				dfdict[dfkey]=dfdict[dfkey][eval(sel_q2w[dfkey])]
+				print "dbg: %s after"%dfkey
+				print dfdict[dfkey].head()
+				for ivar,var in enumerate(VARS):
+					data[dfkey]=dfdict[dfkey][var]
+			#-- Plot, Fit and save hmm[Exp] and hmm[Sim]
+			fmin=0.1
+			fmax=0.17
+			hER=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_ER_%02d_%02d'%(var,iq2bin+1,iwbin+1),
+								title='%s for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
 								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
-				h.fill_array(diff)
-				# #-- Require minimum number of entries
-				# if h.Integral()<min_entries:continue 
-				# #-- Require that "the spreading is not too much"    
-				# entries=h.GetEntries()
-				# uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
-				# if float(uoflow)/float(entries)>max_spreading: continue
-				c=ROOT.TCanvas(h.GetName(),h.GetName())
-				ROOT.gStyle.SetOptStat("nemMrRuo")
-				ROOT.gStyle.SetOptFit(1111)
-				if use_frange:
-					h.Fit("gaus","","",FRANGE[ivar][0],FRANGE[ivar][1])
-				else:
-					h.Fit("gaus")#,"","",FRANGE[ivar][0],FRANGE[ivar][1])
-				h.Draw()
-				fgaus=h.GetFunction("gaus")
-				mu,sgma=0,0
-				if fgaus:
-					#-- Before getting mu,sgma from fgaus, make sure that the histogram fitted to
-					#-- has minimum number of entries(h.Integral()) & that "the spreading is not too much"
-					integral=0
-					if use_frange:
-						binmin=h.GetXaxis().FindBin(FRANGE[ivar][0])
-						binmax=h.GetXaxis().FindBin(FRANGE[ivar][1])
-						integral=h.Integral(binmin,binmax)
-					else:
-						integral=h.Integral()
-					entries,uoflow=0,0	
-					entries=h.GetEntries()
-					uoflow=h.GetBinContent(0)+h.GetBinContent(h.GetNbinsX()+1)
-					if float(uoflow)/float(entries)<max_spreading and integral>min_entries:
-						mu=fgaus.GetParameter(1)
-						sgma=fgaus.GetParameter(2)
-				HOFT[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,mu)
-				HRES[ivar].Fill(WBINS_LE[iwbin]+WBINW/2,Q2BINS_LE[iq2bin]+Q2BINW/2,sgma)
-				#print "w,q2,RMS=%.2f,%.2f,%.2f"%(WBINS_LE[iwbin],Q2BINS_LE[iq2bin],h.GetRMS())
-				#c.SaveAs("%s/%02d_%02d.png"%(outdir,iq2bin+1,iwbin+1)) 
-				outdir=os.path.join(OUTDIR,var)
-				c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
-				c.Close()
-    
-	#-- For each VAR, plot and save HOFST,HRES
-	fig=plt.figure(figsize=(25,5*len(VARS)))
-	for ivar,var in enumerate(VARS):
-		for ihist,hist in enumerate([HOFT[ivar],HRES[ivar]]):
-			#-- Using matplotlib 
-			plt.subplot(len(VARS),2,(ivar+1)+ivar+ihist,title=hist.GetName());
-			plt.xticks(WBINS)
-			plt.yticks(Q2BINS)
-			plt.grid(1,linewidth=2)
-			z = np.array(hist.z()).T
-			# Mask zeroes
-			zmasked = np.ma.masked_where(z==0,z) # Mask pixels with a value of zero	
-			im = plt.imshow(zmasked,extent=[hist.xedges(0), hist.xedges(-1),
-						hist.yedges(0), hist.yedges(-1)],
-						interpolation='nearest',
-						aspect='auto',
-						origin='lower')
-			cb = plt.colorbar(im)
-			#hack for adjusting colorbar when there is just 1 bin
-			if len(Q2BINS)==2 and len(WBINS)==2:cb.ax.set_yticklabels(['', '%.3f'%max(z)])
-			#-- Using TCanvas
-			c=ROOT.TCanvas(hist.GetName(),hist.GetName())
-			c.SetGrid();
-			ROOT.gStyle.SetOptStat("ne")
-			hist.Draw("colz");
+			hER.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+			hER.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
+			hER.fill_array(data['dER'])
+			hSR=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_SR_%02d_%02d'%(var,iq2bin+1,iwbin+1),
+								title='%s for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
+								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
+			hSR.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+			hSR.SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
+			hSR.fill_array(data['dSR'])
+
+			ROOT.gStyle.SetOptFit(1111)
+			c=ROOT.TCanvas('%s_%02d_%02d'%(var,iq2bin+1,iwbin+1),'%s_%02d_%02d'%(var,iq2bin+1,iwbin+1))
+			hSRn=hSR.DrawNormalized("",10000)
+			hSRn.Fit("gaus","","sames",fmin,fmax)
+			c.Update()
+			stSR=hSRn.GetListOfFunctions().FindObject("stats")
+			# stSR.SetX1NDC(0.15)
+			# stSR.SetX2NDC(0.40)
+			stSR.SetY1NDC(0.50)
+			stSR.SetY2NDC(0.25)
+			stSR.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+			c.Update()
+			hERn=hER.DrawNormalized("sames",10000)
+			hERn.Fit("gaus","","sames",fmin,fmax)
+			c.Update()
+			f=hERn.GetFunction("gaus")
+			f.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+			stER=hERn.GetListOfFunctions().FindObject("stats")
+			# stER.SetX1NDC(0.15)
+			# stER.SetX2NDC(0.40)
+			stER.SetY1NDC(0.75)
+			stER.SetY2NDC(0.50)
+			stER.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+			c.Draw()
 			outdir=os.path.join(OUTDIR,var)
-			c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
+			c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
 			c.Close()
-	fig.savefig("%s/simdet_study.eps"%OUTDIR)       
-plt.show()
+			#c.SaveAs("test.eps")			
+
+
+	
 
 def plot_electron_diagnostics():
 	sel=eval(SEL_TOPS)
