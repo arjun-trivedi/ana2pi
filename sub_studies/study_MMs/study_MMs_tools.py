@@ -47,10 +47,11 @@ def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
 	q2wdirs = list of q2wdirs relative to $STUDY_STQ2WRANGE_DATADIR,list of str
 	q2binw = Q2 bin width bins,float
 	wbinw= W bin width,float
+	tops = Topology to be used, list of int
+	mcor = to select appropriate d2pi.root,bool
 	vars = Variables for which offset and resolution is to be extracted,list of str
 	hrange=for each variable, range for ST-SR histogram,list of [min,max]
 	frange=for each variable, range over which ST-SR histogram is fitted,list of [min,max]
-	tops = Topology to be used, list of int
 	"""
 	#print init.__doc__
     
@@ -76,29 +77,18 @@ def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
 
 	#-- In the DFs, keep data only from the relevant topologies
 	print "*** Going to keep only ",tops,"for dER and dSR ***"
-	dfs={'dER':dER,'dSR':dSR}
-	# dfs['dER']=(dER)#('dER',dER)
-	# dfs['dSR']=(dSR)#'dSR',dSR)
-	sel_tops={}
-	for df in dfs:
-		sel_tops[df]=""
-		itr=0
-		for top in tops:
-			if itr==0:
-				sel_tops[df]+="(%s['top']==%d)"%(df,top)
-			else:
-				sel_tops[df]+="|(%s['top']==%d)"%(df,top)
-			itr+=1
-	print "Evaluating %s ..."%(sel_tops['dER'])
-	dER=dER[eval(sel_tops['dER'])]
-	print dER['top'].head()
-	print "Done"
-	print "Evaluating %s ..."%(sel_tops['dSR'])
-	dSR=dSR[eval(sel_tops['dSR'])]
-	print dSR['top'].head()
-	print "Done"
-	
+	# print "dbg:dER before"
+	# print dER.head()
+	# print "dbg:dSR before"
+	# print dSR.head()
+	dER=atlib.sel_tops(dER,tops)
+	dSR=atlib.sel_tops(dSR,tops)
+	# print "dbg:dER after"
+	# print dER.head()
+	# print "dbg:dSR after"
+	# print dSR.head()
 
+	
 	#-- Determine Q2,W binning 
 	#-- For this study, reference = ER events
 	global Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS
