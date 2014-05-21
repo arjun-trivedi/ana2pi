@@ -242,14 +242,14 @@ void ProcD2pi::handle() {
 			Float_t mm2ppim    = _lvMM[TOP3].Mag2();
 			Float_t mm2pippim  = _lvMM[TOP4].Mag2();
 						
-			Bool_t t1a = gP && gPip && gPim;// && dH10->gpart == 4; //atrivedi: 071613
+			Bool_t t1a = gP && gPip && gPim;
 			Bool_t t1b = TMath::Abs(mm2ppippim) < 0.0005;
-			Bool_t t2a = gP && gPip && !gPim;// && dH10->gpart == 3; //atrivedi: 071613
-			Bool_t t2b = mm2ppip>0 && mm2ppip<0.04;// && dAna->d2pi.W < 1.1; //atrivedi tmp
-			Bool_t t3a = gP && gPim && !gPip;// && dH10->gpart == 3; //atrivedi: 071613
-			Bool_t t3b = mm2ppim>0 && mm2ppim<0.04;// && dAna->d2pi.top.W < 1.1; //atrivedi tmp
-			Bool_t t4a = gPip && gPim && !gP;// && dH10->gpart == 3; //atrivedi: 071613
-			Bool_t t4b = mm2pippim>0.8 && mm2pippim<1;
+			Bool_t t2a = gP && gPip && !gPim;
+			Bool_t t2b = mm2ppip>0 && mm2ppip<0.16;//0.04;
+			Bool_t t3a = gP && gPim && !gPip;
+			Bool_t t3b = mm2ppim>0 && mm2ppim<0.16;//0.04;
+			Bool_t t4a = gPip && gPim && !gP;
+			Bool_t t4b = mm2pippim>0.0 && mm2pippim<1.25;//mm2pippim>0.8 && mm2pippim<1;
 			
 			Bool_t t1 = t1a && t1b;
 			Bool_t t2 = t2a && t2b;
