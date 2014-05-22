@@ -114,86 +114,26 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 # 	print 'HRES=',HRES
         
 	
-def plot_q2w_boundary(axes):
-	axes.hlines(Q2MIN,WMIN,WMAX,colors='red',linewidth=1)#5DFC0A
-	axes.hlines(Q2MAX,WMIN,WMAX,colors='red',linewidth=1)
-	axes.vlines(WMIN,Q2MIN,Q2MAX,colors='red',linewidth=1)
-	axes.vlines(WMAX,Q2MIN,Q2MAX,colors='red',linewidth=1)
-def plot_q2_boundary(axes):
-	ylim=axes.get_ylim()
-	axes.vlines(Q2MIN,ylim[0],ylim[1],colors='red',linewidth=1)#5DFC0A
-	axes.vlines(Q2MAX,ylim[0],ylim[1],colors='red',linewidth=1)
-def plot_w_boundary(axes):
-	ylim=axes.get_ylim()
-	axes.vlines(WMIN,ylim[0],ylim[1],colors='red',linewidth=1)
-	axes.vlines(WMAX,ylim[0],ylim[1],colors='red',linewidth=1)
-def plot_WTh(axes):
-	ylim=axes.get_ylim()
-	axes.vlines(W_TH,ylim[0],ylim[1],colors='green',linewidth=2,linestyles='dashed')
-    
 def plot_q2w():
 	fig=plt.figure(figsize=(30,15))
- 	q2_ER=dER['Q2']
-	w_ER=dER['W']
-	q2_SR=dSR['Q2']
-	w_SR=dSR['W']
-    
-	nq2bins=4400
-	nwbins=100
+ 	q2=D['Q2']
+	w=D['W']
+	    
+	nq2bins=int((Q2MAX-Q2MIN)/(6*0.010))#Avg.. Res. Q2~0.010 GeV^2 as obtained for q2w2
+	nwbins=int((WMAX-WMIN)/(6*0.015))#Avg. Res. W~0.020 GeV^2 as obtained for q2w2
 
-	axQ2vW_ER=plt.subplot(221)
-	axQ2vW_ER.set_xticks(WBINS)
-	axQ2vW_ER.set_yticks(Q2BINS)
-	axQ2vW_ER.grid(1,linewidth=2)
-	axQ2vW_ER.set_title('Q2 vs. W: ER',fontsize='xx-large')
-	axQ2vW_ER.tick_params(axis='both', which='major', labelsize=20)
-	atlib.hist2D(w_ER,q2_ER,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
+	axQ2vW=plt.subplot(221)
+	axQ2vW.set_xticks(WBINS)
+	axQ2vW.set_yticks(Q2BINS)
+	axQ2vW.grid(1,linewidth=2)
+	axQ2vW.set_title('Q2 vs. W: ER',fontsize='xx-large')
+	axQ2vW.tick_params(axis='both', which='major', labelsize=20)
+	atlib.hist2D(w,q2,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
 	#-- ST region
 	#plot_q2w_boundary(axQ2vW_T)
 	#-- W Th
 	#plot_WTh(axQ2vW_T)
 
-	axQ2vW_SR=plt.subplot(222)
-	axQ2vW_SR.set_xticks(WBINS)
-	axQ2vW_SR.set_yticks(Q2BINS)
-	axQ2vW_SR.grid(1,linewidth=2)
-	axQ2vW_SR.set_title('Q2 vs. W: SR',fontsize='xx-large')
-	axQ2vW_SR.tick_params(axis='both', which='major', labelsize=20)
-	atlib.hist2D(w_SR,q2_SR,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
-	#-- ST region
-	#plot_q2w_boundary(axQ2vW_R)
-	#-- W Th
-	#plot_WTh(axQ2vW_R)
-    
-# 	axQ2=plt.subplot(223)
-# 	axQ2.set_xticks(Q2BINS)
-# 	axQ2.grid(1,linewidth=2)
-# 	axQ2.set_title('Q2[GeV^2]',fontsize='xx-large')
-# 	axQ2.set_xlabel('Q2[GeV^2]',fontsize='xx-large')
-# 	axQ2.tick_params(axis='both', which='major', labelsize=20)
-# 	r=plt.hist(q2_T,nq2bins,range=(Q2MIN-0.1,Q2MAX+0.1),alpha=0.5,label='ST',histtype='stepfilled')
-# 	r=plt.hist(q2_R,nq2bins,range=(Q2MIN-0.1,Q2MAX+0.1),alpha=0.5,label='SR',histtype='stepfilled')
-# #     r=plt.hist(q2_T,bins=Q2BINS,histtype='stepfilled',alpha=0.5,label='ST')
-# #     r=plt.hist(q2_R,bins=Q2BINS,histtype='stepfilled',alpha=0.5,label='SR')
-#     #-- ST region
-# 	plot_q2_boundary(axQ2)
-# 	axQ2.legend()
-
-# 	axW=plt.subplot(224)
-# 	axW.set_xticks(WBINS)
-# 	axW.grid(1,linewidth=2)
-# 	axW.set_title('W',fontsize='xx-large')
-# 	axW.set_xlabel('W[GeV]',fontsize='xx-large')
-# 	axW.tick_params(axis='both', which='major', labelsize=20)
-# 	r=plt.hist(w_T,nwbins,range=(WMIN-0.1,WMAX+0.1),alpha=0.5,label='ST',histtype='stepfilled')
-# 	r=plt.hist(w_R,nwbins,range=(WMIN-0.1,WMAX+0.1),alpha=0.5,label='SR',histtype='stepfilled')
-# #     r=plt.hist(w_T,bins=WBINS,histtype='stepfilled',alpha=0.5,label='ST')
-# #     r=plt.hist(w_R,bins=WBINS,histtype='stepfilled',alpha=0.5,label='SR')
-# 	#-- ST region
-# 	plot_w_boundary(axW)
-# 	axW.legend()
-# 	#-- W Th
-# 	#plot_WTh(axW)
 
 def plot_MMs_comp(min_entries=-1,max_spreading=1,use_frange=False):
 	"""
