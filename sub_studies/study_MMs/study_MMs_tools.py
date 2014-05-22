@@ -98,20 +98,20 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 
 	# -- Create OUTDIR
 	global OUTDIR
-	OUTDIR=os.path.join(ANADIR,r)
+	OUTDIR=os.path.join(ANADIR,q2wdir,r)
 	print "-----\nOUTDIR=%s \n-----"%OUTDIR
     
 	#-- For the vars, create hres,hofst
-# 	global HOFT,HRES
-# 	HOFT=[]
-# 	HRES=[]
-# 	for var in VARS:
-# 		HOFT.append(Hist2D(WBINS,Q2BINS,name="%s_OFT"%var,title="%s Offset"%var))
-# 		HRES.append(Hist2D(WBINS,Q2BINS,name="%s_RES"%var,title="%s Resolution"%var))
-# #         HOFT.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_OFT"%var,title="%s Offset"%var))
-# #         HRES.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_RES"%var,title="%s Resolution"%var))
-# 	print 'HOFT=',HOFT
-# 	print 'HRES=',HRES
+	global HOFT,HRES
+	HOFT=[]
+	HRES=[]
+	for var in VARS:
+		HOFT.append(Hist2D(WBINS,Q2BINS,name="%s_OFT"%var,title="%s Offset"%var))
+		HRES.append(Hist2D(WBINS,Q2BINS,name="%s_RES"%var,title="%s Resolution"%var))
+#         HOFT.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_OFT"%var,title="%s Offset"%var))
+#         HRES.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_RES"%var,title="%s Resolution"%var))
+	print 'HOFT=',HOFT
+	print 'HRES=',HRES
         
 	
 def plot_q2w():
@@ -129,11 +129,52 @@ def plot_q2w():
 	axQ2vW.set_title('Q2 vs. W',fontsize='xx-large')
 	axQ2vW.tick_params(axis='both', which='major', labelsize=20)
 	atlib.hist2D(w,q2,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
-	#-- ST region
-	#plot_q2w_boundary(axQ2vW_T)
-	#-- W Th
-	#plot_WTh(axQ2vW_T)
 
+def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
+	"""
+	Input arguments:
+	----------------
+	The followng input arguments control the quality the histograms, i.e. by observation, I have decided that 
+	the following basic critereon should be satisfied before I consider histogram to be "good"
+	enough to "trust" its Fit parameters
+	+ min_entries=-1: The minimum number of entries(Integral),int
+	+ max_spreading=1: The maximum permissible ratio of (under- + over-flow)/Entries,float
+	+ use_frange: If to use user defined Fit range when fitting histograms
+	"""
+	#-- Clear existing plots from outdir
+	for ivar,var in enumerate(VARS):
+		outdir=os.path.join(OUTDIR,var)
+		#print "outdir=",outdir
+		if os.path.exists(outdir):
+			shutil.rmtree(outdir)
+		os.makedirs(outdir)
+		#-- Following were added when running in interactive mode
+		HOFT[ivar].Reset()
+		HRES[ivar].Reset()
+    
+	#-- In each q2wbin, and therein, for each var, plot,fit & save histogam
+	#-- 
+	for iq2bin in range(NQ2BINS):
+		for iwbin in range(NWBINS):
+			sel_q2w=(D['Q2']>=Q2BINS_LE[iq2bin])&(D['Q2']<Q2BINS_UE[iq2bin])&(D['W']>=WBINS_LE[iwbin])&(D['W']<WBINS_UE[iwbin])
+			for ivar,var in enumerate(VARS):
+				data=D[var][sel_q2w]
+				#-- Plot, Fit and save hvar
+				h=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_%02d_%02d'%(var,iq2bin+1,iwbin+1),
+								title='%s for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
+								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
+				h.fill_array(data)
+				
+				ROOT.gStyle.SetOptFit(1111)
+				c=ROOT.TCanvas(h.GetName())
+				h.Fit("gaus")#,"","",fmin,fmax)
+				f=h.GetFunction("gaus")
+				mu,sg=None,None
+				if f:
+					mu=f.GetParameter(1)
+					sg=f.GetParameter(2)
+				c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
+				c.Close()
 
 def plot_MMs_comp(min_entries=-1,max_spreading=1,use_frange=False):
 	"""
