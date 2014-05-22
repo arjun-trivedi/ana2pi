@@ -58,24 +58,24 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	"""
 	#print init.__doc__
     
-	global VARS
-	VARS=vars
-
-	#-- Import rootfile(r) -> DataFrame(d)
+    #-- Import rootfile(r) -> DataFrame(d)
+	print "-----\nImporting d2pi.root -> DataFrame\n-----"
 	global D
 	f='%s/%s/%s/recon/d2pi.root'%(DATADIR,q2wdir,r)
-	print "Going to get d2pi(%s)"%r
+	print "Going to use d2pi(%s)"%r
 	print "File = %s"%f
-	#f=os.path.join(DATADIR,'%s'%q2wdir,'%s_%s'%(dtyp,mcor),'recon/d2pi.root')
+	#-- Read in vars that need to be loaded
+	global VARS
+	VARS=vars
 	D=atlib.tree2df(f,'d2piR/tR',vars)
 	
 	#-- In the DFs, keep data only from the relevant topologies
-	print "*** Going to keep only ",tops,"for dER and dSR ***"
-	# print "dbg:D before"
-	# print D.head()
+	print "-----\nTopology selection: tops to be used = ",tops,"\n-----"
+	print "dbg:D before"
+	print D.head()
 	D=atlib.sel_tops(D,tops)
-	# print "dbg:D after"
-	# print D.head()
+	print "dbg:D after"
+	print D.head()
 		
 	#-- Determine Q2,W binning 
 	#-- For this study, reference = ST events
@@ -84,10 +84,10 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	q2bng,wbng=atlib.init_q2wbng(q2binw,wbinw,range=[(1.9,2.5),(1.3,1.9)])
 	Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=q2bng
 	WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS=wbng
-	print "*** Q2 binning ***"
+	print "-----\nQ2 binning \n-----"
 	print "NQ2BINS=%d,Q2BINW=%.4f GeV^2"%(NQ2BINS,Q2BINW)
 	print ["%.4f" % i for i in Q2BINS]
-	print "*** W binning ***"
+	print "-----\nW binning \n-----"
 	print "NWBINS=%d,WBINW=%.4f GeV"%(NWBINS,WBINW)
 	print ["%.4f" % i for i in WBINS]
 	
@@ -99,7 +99,7 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	# -- Create OUTDIR
 	global OUTDIR
 	OUTDIR=os.path.join(ANADIR,r)
-	print "OUTDIR=%s"%OUTDIR
+	print "-----\nOUTDIR=%s \n-----"%OUTDIR
     
 	#-- For the vars, create hres,hofst
 # 	global HOFT,HRES
