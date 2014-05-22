@@ -154,6 +154,7 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
     
 	#-- In each q2wbin, and therein, for each var, plot,fit & save histogam
 	#-- 
+	hvar=[]
 	for iq2bin in range(NQ2BINS):
 		for iwbin in range(NWBINS):
 			sel_q2w=(D['Q2']>=Q2BINS_LE[iq2bin])&(D['Q2']<Q2BINS_UE[iq2bin])&(D['W']>=WBINS_LE[iwbin])&(D['W']<WBINS_UE[iwbin])
@@ -168,6 +169,7 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 				ROOT.gStyle.SetOptFit(1111)
 				c=ROOT.TCanvas(h.GetName())
 				h.Fit("gaus")#,"","",fmin,fmax)
+				hvar.append(h)
 				f=h.GetFunction("gaus")
 				mu,sg=None,None
 				if f:
@@ -175,7 +177,8 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 					sg=f.GetParameter(2)
 				c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
 				c.Close()
-
+	return hvar
+				
 def plot_MMs_comp(min_entries=-1,max_spreading=1,use_frange=False):
 	"""
 	Input arguments:
