@@ -119,14 +119,14 @@ def plot_q2w():
  	q2=D['Q2']
 	w=D['W']
 	    
-	nq2bins=int((Q2MAX-Q2MIN)/(6*0.010))#Avg.. Res. Q2~0.010 GeV^2 as obtained for q2w2
-	nwbins=int((WMAX-WMIN)/(6*0.015))#Avg. Res. W~0.020 GeV^2 as obtained for q2w2
+	nq2bins=int((Q2MAX-Q2MIN)/(0.010))#Avg.. Res. Q2~0.010 GeV^2 as obtained for q2w2
+	nwbins=int((WMAX-WMIN)/(0.015))#Avg. Res. W~0.015 GeV^2 as obtained for q2w2
 
 	axQ2vW=plt.subplot(221)
 	axQ2vW.set_xticks(WBINS)
 	axQ2vW.set_yticks(Q2BINS)
 	axQ2vW.grid(1,linewidth=2)
-	axQ2vW.set_title('Q2 vs. W: ER',fontsize='xx-large')
+	axQ2vW.set_title('Q2 vs. W',fontsize='xx-large')
 	axQ2vW.tick_params(axis='both', which='major', labelsize=20)
 	atlib.hist2D(w,q2,bins=[nwbins,nq2bins],range=[[WMIN-0.1,WMAX+0.1],[Q2MIN-0.1,Q2MAX+0.1]])
 	#-- ST region
