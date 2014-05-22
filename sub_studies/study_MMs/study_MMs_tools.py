@@ -28,7 +28,7 @@ DATADIR=os.environ['STUDY_MMS_DATADIR']
 ANADIR=os.environ['STUDY_MMS_ANADIR']
 OUTDIR=None #OUTDIR = ANADIR/q2wdir
 
-dER,dSR=None,None
+D=None
 VARS=None
 HRANGE,FRANGE=None,None
 #SEL_TOPS=None
@@ -38,57 +38,45 @@ Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,N
 WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS =None,None,None,None,None,None,None
 HOFT,HRES=None,None
 
-def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
+def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	"""
-	This function intializes the necessary information needed in studying the Simulated-Detector
+	This function ?
     
 	Input arguments:
 	----------------
-	q2wdirs = list of q2wdirs relative to DATADIR,list of str
-	q2binw = Q2 bin width bins,float
-	wbinw= W bin width,float
-	tops = Topology to be used, list of int
-	mcor = to select appropriate d2pi.root,bool
-	vars = Variables for which offset and resolution is to be extracted,list of str
-	hrange=for each variable, range for ST-SR histogram,list of [min,max]
-	frange=for each variable, range over which ST-SR histogram is fitted,list of [min,max]
+	q2wdir: q2wdir relative to DATADIR,list of str
+	q2binw: Q2 bin width bins,float
+	wbinw: W bin width,float
+	tops: Topology to be used, list of int
+	vars: Variables for which offset and resolution is to be extracted,list of str
+	hrange: for each variable, range for ST-SR histogram,list of [min,max]
+	frange: for each variable, range over which ST-SR histogram is fitted,list of [min,max]
+	r: vector in multi-dim space which for now is spanned by [dtyp,mcor]. Each variable is a function in this space: var = f(r). 
+	   For now r=[dtyp,mcor]; plan to extend it to r=[dtyp,mcor,ecor,effcor]
+	   dtyp=(exp,sim)
+	   mcor=(ymcor,nmcor)
 	"""
 	#print init.__doc__
     
-	#-- Import data 
-	global dER,dSR,VARS
+	global VARS
 	VARS=vars
-	fexp=[]
-	fsim=[]
-	print "dbg:mcor=",mcor
-	for q2wdir in q2wdirs:
-		print "dbg:mcor=",mcor
-		if mcor is True:
-			print "dbg:here"
-			print "dbg:using d2pi_yesmomcorr.root",
-			fexp.append(os.path.join(DATADIR,'%s-exp'%q2wdir,'recon/d2pi_yesmomcorr.root'))
-		else:
-			print "dbg:else here"
-			print "dbg:using d2pi_nomomcorr.root"
-			fexp.append(os.path.join(DATADIR,'%s-exp'%q2wdir,'recon/d2pi_nomomcorr.root'))
-		fsim.append(os.path.join(DATADIR,'%s-sim'%q2wdir,'recon/d2pi.root'))
-	dER=atlib.tree2df(fexp,'d2piR/tR',vars)
-	dSR=atlib.tree2df(fsim,'d2piR/tR',vars)
 
+	#-- Import rootfile(r) -> DataFrame(d)
+	global D
+	f='%s/%s/%s/recon/d2pi.root'%(DATADIR,q2wdir,r)
+	print "Going to get d2pi(%s)"%r
+	print "File = %s"%f
+	#f=os.path.join(DATADIR,'%s'%q2wdir,'%s_%s'%(dtyp,mcor),'recon/d2pi.root')
+	D=atlib.tree2df(f,'d2piR/tR',vars)
+	
 	#-- In the DFs, keep data only from the relevant topologies
 	print "*** Going to keep only ",tops,"for dER and dSR ***"
-	# print "dbg:dER before"
-	# print dER.head()
-	# print "dbg:dSR before"
-	# print dSR.head()
-	dER=atlib.sel_tops(dER,tops)
-	dSR=atlib.sel_tops(dSR,tops)
-	# print "dbg:dER after"
-	# print dER.head()
-	# print "dbg:dSR after"
-	# print dSR.head()
-
-	
+	# print "dbg:D before"
+	# print D.head()
+	D=atlib.sel_tops(D,tops)
+	# print "dbg:D after"
+	# print D.head()
+		
 	#-- Determine Q2,W binning 
 	#-- For this study, reference = ST events
 	global Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS
@@ -110,26 +98,20 @@ def init(q2wdirs,q2binw,wbinw,tops,mcor,vars,hrange,frange):
 
 	# -- Create OUTDIR
 	global OUTDIR
-	if mcor is True:
-		OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs),"yes_mcor")
-	else:
-		OUTDIR=os.path.join(ANADIR,"_".join(q2wdirs),"no_mcor")
-
-	if not os.path.exists(OUTDIR):
-		os.makedirs(OUTDIR)
+	OUTDIR=os.path.join(ANADIR,r)
 	print "OUTDIR=%s"%OUTDIR
     
 	#-- For the vars, create hres,hofst
-	global HOFT,HRES
-	HOFT=[]
-	HRES=[]
-	for var in VARS:
-		HOFT.append(Hist2D(WBINS,Q2BINS,name="%s_OFT"%var,title="%s Offset"%var))
-		HRES.append(Hist2D(WBINS,Q2BINS,name="%s_RES"%var,title="%s Resolution"%var))
-#         HOFT.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_OFT"%var,title="%s Offset"%var))
-#         HRES.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_RES"%var,title="%s Resolution"%var))
-	print 'HOFT=',HOFT
-	print 'HRES=',HRES
+# 	global HOFT,HRES
+# 	HOFT=[]
+# 	HRES=[]
+# 	for var in VARS:
+# 		HOFT.append(Hist2D(WBINS,Q2BINS,name="%s_OFT"%var,title="%s Offset"%var))
+# 		HRES.append(Hist2D(WBINS,Q2BINS,name="%s_RES"%var,title="%s Resolution"%var))
+# #         HOFT.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_OFT"%var,title="%s Offset"%var))
+# #         HRES.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_RES"%var,title="%s Resolution"%var))
+# 	print 'HOFT=',HOFT
+# 	print 'HRES=',HRES
         
 	
 def plot_q2w_boundary(axes):
