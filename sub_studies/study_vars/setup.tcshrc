@@ -1,0 +1,11 @@
+setenv ANA2PI_STUDY_VARS "${ANA2PI}/sub_studies/study_MMs"
+alias ana2pi_study_vars 'cd ${ANA2PI_STUDY_VARS}'
+
+##- modify PATH
+setenv PATH "${PATH}:${ANA2PI_STUDY_VARS}"
+
+##- modify PYTHONPATH
+setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_VARS}"
+
+setenv STUDY_VARS_DATADIR "/data/trivedia/e1f/study_MMs"
+setenv STUDY_VARS_ANADIR  "${ANA2PI_STUDY_VARS}"
