@@ -168,13 +168,14 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 				
 				ROOT.gStyle.SetOptFit(1111)
 				c=ROOT.TCanvas(h.GetName())
-				h.Fit("gaus")#,"","",fmin,fmax)
+				h.Draw()
 				hvar.append(h)
-				f=h.GetFunction("gaus")
-				mu,sg=None,None
-				if f:
-					mu=f.GetParameter(1)
-					sg=f.GetParameter(2)
+				# h.Fit("gaus")#,"","",fmin,fmax)
+				# f=h.GetFunction("gaus")
+				# mu,sg=None,None
+				# if f:
+				# 	mu=f.GetParameter(1)
+				# 	sg=f.GetParameter(2)
 				c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
 				c.Close()
 	return hvar
