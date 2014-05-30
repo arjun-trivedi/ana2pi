@@ -24,8 +24,8 @@ import shutil
 
 W_TH = 1.216
 
-DATADIR=os.environ['STUDY_MMS_DATADIR']
-ANADIR=os.environ['STUDY_MMS_ANADIR']
+DATADIR=os.environ['STUDY_VARS_DATADIR']
+ANADIR=os.environ['STUDY_VARS_ANADIR']
 OUTDIR=None #OUTDIR = ANADIR/q2wdir
 
 D=None
