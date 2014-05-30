@@ -187,11 +187,11 @@ def gauss_ppi_hack(v, par):
 	fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
 	return fitval;	
 
-def plot_comp_var(hX,XMU,XCUT,OUTDIR):
+def plot_comp_var(hX,XMU,XCUT,OUTDIR,frange):
 	ROOT.gStyle.SetOptStat("n")
 	ROOT.gStyle.SetOptFit(1111)
 
-	fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,0.0,0.2,3);
+	fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,frange[0],frange[1],3)#0.0,0.2,3);
 	fgauss.SetParameters(1,0,1);
 	fgauss.SetParName(0,"Entries")
 	fgauss.SetParName(1,"Mean")
@@ -227,7 +227,7 @@ def plot_comp_var(hX,XMU,XCUT,OUTDIR):
 			fgauss.SetParameters(1,0,1)
 			f=None
 			if ir==0: # Directly fit 1st histogram; all others are normalized to the 1st hist
-				hX[r][iq2w].Fit("fgauss","","",0.1,0.2)
+				hX[r][iq2w].Fit("fgauss","","",frange[0],frange[1])#0.0,0.2,3);
 				f=hX[r][iq2w].GetFunction("fgauss")
 				s=hX[r][iq2w].GetListOfFunctions().FindObject("stats")
 				s.SetX1NDC(0.60)
@@ -248,7 +248,7 @@ def plot_comp_var(hX,XMU,XCUT,OUTDIR):
 					Xmu[r].append(0) 
 					Xsg[r].append(0)
 			else: # the following histograms are normalized
-				hX[r][iq2w].Fit("fgauss","0","",0.1,0.2)
+				hX[r][iq2w].Fit("fgauss","0","",frange[0],frange[1])#0.0,0.2,3);
 				f=hX[r][iq2w].GetFunction("fgauss")
 				if f:
 					n=f.GetParameter(0)
@@ -256,7 +256,7 @@ def plot_comp_var(hX,XMU,XCUT,OUTDIR):
 					n=hX[r][iq2w].GetEntries()           
 				norm=n1*(hX[r][iq2w].GetEntries()/n)
 				hXn=hX[r][iq2w].DrawNormalized("sames",norm)
-				hXn.Fit("fgauss","","sames",0.1,0.2)
+				hXn.Fit("fgauss","","sames",frange[0],frange[1])#0.0,0.2,3);
 				s=hXn.GetListOfFunctions().FindObject("stats")
 				s.SetX1NDC(0.60)
 				s.SetX2NDC(1.00)
