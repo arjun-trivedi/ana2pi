@@ -41,7 +41,7 @@ HOFT,HRES=None,None
 def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	"""
 	This function ?
-    
+	
 	Input arguments:
 	----------------
 	q2wdir: q2wdir relative to DATADIR,list of str
@@ -57,8 +57,8 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	   mcor=(ymcor,nmcor)
 	"""
 	#print init.__doc__
-    
-    #-- Import rootfile(r) -> DataFrame(d)
+	
+	#-- Import rootfile(r) -> DataFrame(d)
 	print "-----\nImporting d2pi.root -> DataFrame\n-----"
 	global D
 	f='%s/%s/%s/recon/d2pi.root'%(DATADIR,q2wdir,r)
@@ -100,7 +100,7 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	global OUTDIR
 	OUTDIR=os.path.join(ANADIR,q2wdir,r)
 	print "-----\nOUTDIR=%s \n-----"%OUTDIR
-    
+	
 	#-- For the vars, create hres,hofst
 	global HOFT,HRES
 	HOFT=[]
@@ -112,13 +112,13 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 #         HRES.append(Hist2D(NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX,name="%s_RES"%var,title="%s Resolution"%var))
 	print 'HOFT=',HOFT
 	print 'HRES=',HRES
-        
+		
 	
 def plot_q2w():
 	fig=plt.figure(figsize=(30,15))
- 	q2=D['Q2']
+	q2=D['Q2']
 	w=D['W']
-	    
+		
 	nq2bins=int((Q2MAX-Q2MIN)/(0.010))#Avg.. Res. Q2~0.010 GeV^2 as obtained for q2w2
 	nwbins=int((WMAX-WMIN)/(0.015))#Avg. Res. W~0.015 GeV^2 as obtained for q2w2
 
@@ -151,7 +151,7 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 		#-- Following were added when running in interactive mode
 		HOFT[ivar].Reset()
 		HRES[ivar].Reset()
-    
+	
 	#-- In each q2wbin, and therein, for each var, plot,fit & save histogam
 	#-- 
 	hvar=[]
@@ -179,253 +179,106 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 				c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
 				c.Close()
 	return hvar
-				
-def plot_MMs_comp(min_entries=-1,max_spreading=1,use_frange=False):
-	"""
-	Input arguments:
-	----------------
-	The followng input arguments control the quality of ST-SR histograms i.e. by observation, I have decided that 
-	the following basic critereon should be satisfied before I consider a ST-SR histogram to be "good"
-	enough to extract OFT and RES
-	+ min_entries=-1: The minimum number of entries(Integral),int
-	+ max_spreading=1: The maximum permissible ratio of (under- + over-flow)/Entries,float
 
-	+ use_frange: If to use user defined Fit range when fitting ST_SR histograms
+def gauss_ppi_hack(v, par):
+	arg = 0;
+	if (par[2] != 0): arg = (v[0] - par[1])/par[2];
+	binw=((0.40-0.00)/100)
+	fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
+	return fitval;	
 
-	"""
-	#-- Clear existing plots from outdir
-	for ivar,var in enumerate(VARS):
-		outdir=os.path.join(OUTDIR,var)
-		#print "outdir=",outdir
-		if os.path.exists(outdir):
-			shutil.rmtree(outdir)
-		os.makedirs(outdir)
-		#-- Following were added when running in interactive mode
-		HOFT[ivar].Reset()
-		HRES[ivar].Reset()
-    
-	#-- For Exp and Sim, in each q2wbin, obtain hmm[Exp] and hmm[Sim]:
-	#-- 1. Plot and save MM distribution
-	#-- 2. Obtain dmu/dsgma =mu/sgma(hmm[Sim])- mu/sgma(hmm[Exp])
-	for iq2bin in range(NQ2BINS):
-		for iwbin in range(NWBINS):
-			#-- For dER & dSR, zoom into q2wbin and get data for hmm
-			dfdict={'dER':dER,'dSR':dSR}
-			sel_q2w={}
-			data={}
-			for dfkey in dfdict:
-				print "dbg: %s before"%dfkey
-				print dfdict[dfkey].head()
-				sel_q2w[dfkey]="(%s['Q2']>=%f)&(%s['Q2']<%f)&(%s['W']>=%f)&(%s['W']<%f)"%(
-				dfkey,Q2BINS_LE[iq2bin],dfkey,Q2BINS_UE[iq2bin],dfkey,WBINS_LE[iwbin],dfkey,WBINS_UE[iwbin])
-				print sel_q2w[dfkey]
-				dfdict[dfkey]=dfdict[dfkey][eval(sel_q2w[dfkey])]
-				print "dbg: %s after"%dfkey
-				print dfdict[dfkey].head()
-				for ivar,var in enumerate(VARS):
-					data[dfkey]=dfdict[dfkey][var]
-			#-- Plot, Fit and save hmm[Exp] and hmm[Sim]
-			fmin=0.1
-			fmax=0.17
-			hER=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_ER_%02d_%02d'%(var,iq2bin+1,iwbin+1),
-								title='%s for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
-								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
-			hER.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-			hER.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
-			hER.fill_array(data['dER'])
-			hSR=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_SR_%02d_%02d'%(var,iq2bin+1,iwbin+1),
-								title='%s for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
-								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
-			hSR.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-			hSR.SetMarkerColor(ROOT.gROOT.ProcessLine("kRed"))
-			hSR.fill_array(data['dSR'])
-
-			ROOT.gStyle.SetOptFit(1111)
-			c=ROOT.TCanvas('%s_%02d_%02d'%(var,iq2bin+1,iwbin+1),'%s_%02d_%02d'%(var,iq2bin+1,iwbin+1))
-			hSRn=hSR.DrawNormalized("",10000)
-			hSRn.Fit("gaus","","sames",fmin,fmax)
-			c.Update()
-			stSR=hSRn.GetListOfFunctions().FindObject("stats")
-			# stSR.SetX1NDC(0.15)
-			# stSR.SetX2NDC(0.40)
-			stSR.SetY1NDC(0.50)
-			stSR.SetY2NDC(0.25)
-			stSR.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
-			c.Update()
-			hERn=hER.DrawNormalized("sames",10000)
-			hERn.Fit("gaus","","sames",fmin,fmax)
-			c.Update()
-			f=hERn.GetFunction("gaus")
-			f.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-			stER=hERn.GetListOfFunctions().FindObject("stats")
-			# stER.SetX1NDC(0.15)
-			# stER.SetX2NDC(0.40)
-			stER.SetY1NDC(0.75)
-			stER.SetY2NDC(0.50)
-			stER.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
-			c.Draw()
-			outdir=os.path.join(OUTDIR,var)
-			c.SaveAs("%s/%s.png"%(outdir,c.GetName())) 
-			c.Close()
-			#c.SaveAs("test.eps")			
-
-
-	
-
-def plot_electron_diagnostics():
-	sel=eval(SEL_TOPS)
-	theta_min=12
-	theta_max=55
-
-	nrows=2
-	ncols=5
-	fig=plt.figure(figsize=(25,nrows*5))
-		
-	for i,d in enumerate([dR]):#[dT,dR]):
-		mc=''
-		if i==0:
-			mc='r'
-		else:
-			mc='b'
-
-		pltnum=0 #keep track of plot number in subplot()
-		for ipart,part in enumerate(['e']):
-			#pltnum=1
-			for ip,p in enumerate([['theta','p'],['px','py']]):
-				rng=''
-				if ip==0:
-					rng=[[5,50],[1,5]]
-				else:
-					rng=[[-3,3],[-3,3]]
-				pltnum=1
-				print "debug=",p,pltnum+(ip*ncols),'%s_%s'%(p[0],part),'%s_%s'%(p[1],part)
-				#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				plt.subplot(nrows,ncols,pltnum+(ip*ncols))#ncols*i+1)
-				# plt.xlabel('theta_%s'%part)
-				# plt.ylabel('p_%s'%part)
-				plt.xlabel('%s_%s'%(p[0],part))
-				plt.ylabel('%s_%s'%(p[1],part))
-				atlib.hist2D(d['%s_%s'%(p[0],part)][sel],d['%s_%s'%(p[1],part)][sel],bins=100,range=rng)
-							
-				for ikin,kin in enumerate(['Q2','W']):
-					xmin,xmax=0,0
-					if kin=='Q2':
-						xmin=Q2MIN
-						xmax=Q2MAX
-					else:
-						xmin=WMIN
-						xmax=WMAX
-
-					pltnum+=1
-					print "debug=",p,pltnum+(ip*ncols),kin,'%s_%s'%(p[0],part)
-					#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-					plt.subplot(nrows,ncols,pltnum+(ip*ncols))#ncols*i+1)
-					plt.xlabel(kin)
-					#plt.ylabel('p_%s'%part)
-					plt.ylabel('%s_%s'%(p[0],part))
-					atlib.hist2D(d[kin][sel], d['%s_%s'%(p[0],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[0]])
-					
-					pltnum+=1
-					print "debug=",p,pltnum+(ip*ncols),kin,'%s_%s'%(p[1],part)
-					#plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-					plt.subplot(nrows,ncols,pltnum+(ip*ncols))#ncols*i+1)
-					plt.xlabel(kin)
-					#plt.ylabel('theta_%s'%part)
-					plt.ylabel('%s_%s'%(p[1],part))
-					atlib.hist2D(d[kin][sel], d['%s_%s'%(p[1],part)][sel],bins=100,range=[[xmin-0.1,xmax+0.1],rng[1]])
-plt.show()
-
-def plot_hadron_diagnostics(hadrons=['p','pip','pim']):
-	sel=eval(SEL_TOPS)
-	theta_min=12
-	theta_max=55
-
-	nrows=3
-	ncols=5
-	fig=plt.figure(figsize=(25,nrows*5))
-	# nrows=2
-	for i,d in enumerate([dR]):#[dT,dR]):
-		mc=''
-		if i==0:
-			mc='r'
-		else:
-			mc='b'
-
-		pltnum=0 #keep track of plot number in subplot()
-		for ipart,part in enumerate(hadrons):
-			pltnum=1
-			plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-			# plt.scatter(d['theta_%s'%part], d['p_%s'%part],c=mc,alpha=0.5)
-			plt.xlabel('theta_%s'%part)
-			plt.ylabel('p_%s'%part)
-			atlib.hist2D(d['theta_%s'%part][sel],d['p_%s'%part][sel],bins=100,range=[[0,150],[0,3]])
-						
-			for ikin,kin in enumerate(['Q2','W']):
-				xmin,xmax=0,0
-				if kin=='Q2':
-					xmin=Q2MIN
-					xmax=Q2MAX
-				else:
-					xmin=WMIN
-					xmax=WMAX
-
-				pltnum+=1
-				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				# plt.scatter(d[kin], d['p_%s'%part],c=mc,alpha=0.5)
-				plt.xlabel(kin)
-				plt.ylabel('p_%s'%part)
-				atlib.hist2D(d[kin][sel], d['p_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,3]])
-				
-				pltnum+=1
-				plt.subplot(nrows,ncols,pltnum+(ipart*ncols))#ncols*i+1)
-				# plt.scatter(d[kin], d['theta_%s'%part],c=mc,alpha=0.5)
-				plt.xlabel(kin)
-				plt.ylabel('theta_%s'%part)
-				atlib.hist2D(d[kin][sel], d['theta_%s'%part][sel],bins=100,range=[[xmin-0.1,xmax+0.1],[0,150]])
-plt.show()
-
-def plot_mm(mm):
-	#sel=eval(SEL_TOPS)
-	#x=dR[mm][sel]
-	dfs={'dER':dER,'dSR':dSR}
-	# dfs['dER']=(dER)#('dER',dER)
-	# dfs['dSR']=(dSR)#'dSR',dSR)
-	sel_q2w={}
-	wmin=1.7#1.3#1.7
-	wmax=2.0#1.5#2.0
-	for df in dfs:
-		sel_q2w[df]="(%s['W']>=%f)&(%s['W']<%f)"%(df,wmin,df,wmax)
-		print sel_q2w[df]
-	# plt.hist(dER[mm][eval(sel_q2w['dER'])],bins=100,alpha=0.5,label='ER',histtype='stepfilled')
-	# plt.hist(dSR[mm][eval(sel_q2w['dSR'])],bins=100,alpha=0.5,label='SR',histtype='stepfilled')
-	# plt.legend()
-	fmin=0.1
-	fmax=0.17
-	hER=Hist(100,0.0,0.2)
-	hSR=Hist(100,0.0,0.2)
+def plot_comp_var(hX,XMU,XCUT,OUTDIR):
+	ROOT.gStyle.SetOptStat("n")
 	ROOT.gStyle.SetOptFit(1111)
-	c=ROOT.TCanvas()
-	hER.fill_array(dER[mm][eval(sel_q2w['dER'])])
-	hSR.fill_array(dSR[mm][eval(sel_q2w['dSR'])])
-	hSRn=hSR.DrawNormalized("",10000)
-	hSRn.Fit("gaus","","sames",fmin,fmax)
-	c.Update()
-	stSR=hSRn.GetListOfFunctions().FindObject("stats")
-	stSR.SetX1NDC(0.15)
-	stSR.SetX2NDC(0.40)
-	stSR.SetY1NDC(0.50)
-	stSR.SetY2NDC(0.25)
-	stSR.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
-	c.Update()
-	hERn=hER.DrawNormalized("sames",10000)
-	hERn.Fit("gaus","","sames",fmin,fmax)
-	c.Update()
-	f=hERn.GetFunction("gaus")
-	f.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-	stER=hERn.GetListOfFunctions().FindObject("stats")
-	stER.SetX1NDC(0.15)
-	stER.SetX2NDC(0.40)
-	stER.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
-	c.Draw()
-	c.SaveAs("test.eps")
+
+	fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,0.0,0.2,3);
+	fgauss.SetParameters(1,0,1);
+	fgauss.SetParName(0,"Entries")
+	fgauss.SetParName(1,"Mean")
+	fgauss.SetParName(2,"Sigma")
+
+	clrs=["kBlack","kRed","kGreen","kCyan","kBlue","kYellow","kMagenta",
+	  "kBlack+3","kRed+3","kGreen+3","kCyan+3","kBlue+3","kYellow+3","kMagenta+3",
+	  "kBlack+6","kRed+6","kGreen+6","kCyan+6","kBlue+6","kYellow+6","kMagenta+6"]
+
+	#-- Get R
+	R=hX.keys()	
+	#-- Xmu,Xsg=f(R)
+	Xmu={}
+	Xsg={}
+	for ir,r in enumerate(R):
+		Xmu[r]=[]
+		Xsg[r]=[]
+	
+	#-- nq2wbins 
+	nq2wbins=len(hX[R[0]])# nq2wbins should be same for all R    
+
+	#-- prepate TLine for mmppip and cut
+	l_X=ROOT.TLine(XMU,-50000,0.139,50000)
+	l_cut=ROOT.TLine(XCUT,-50000,0.2,50000)
+
+
+	for iq2w in range(nq2wbins):
+		c=ROOT.TCanvas('%02d'%(iq2w+1),'%02d'%(iq2w+1))
+		n1=None
+		for ir,r in enumerate(R):
+			hX[r][iq2w].SetLineColor(ROOT.gROOT.ProcessLine(clrs[ir]))
+			hX[r][iq2w].SetMarkerColor(ROOT.gROOT.ProcessLine(clrs[ir]))
+			fgauss.SetParameters(1,0,1)
+			f=None
+			if ir==0: # Directly fit 1st histogram; all others are normalized to the 1st hist
+				hX[r][iq2w].Fit("fgauss","","",0.1,0.2)
+				f=hX[r][iq2w].GetFunction("fgauss")
+				s=hX[r][iq2w].GetListOfFunctions().FindObject("stats")
+				s.SetX1NDC(0.60)
+				s.SetX2NDC(1.00)
+				s.SetY1NDC(0.9-(ir*0.3))
+				s.SetY2NDC(0.6-(ir*0.3))
+				s.SetFillStyle(4000)
+				s.SetTextColor(ROOT.gROOT.ProcessLine(clrs[ir]));
+				c.Update()
+				if f:
+					n1=f.GetParameter(0)
+					f.SetLineColor(ROOT.gROOT.ProcessLine(clrs[ir]))
+					Xmu[r].append(f.GetParameter(1)) 
+					Xsg[r].append(f.GetParameter(2))
+					c.Update()
+				else:
+					n1=hX[r][iq2w].GetEntries()
+					Xmu[r].append(0) 
+					Xsg[r].append(0)
+			else: # the following histograms are normalized
+				hX[r][iq2w].Fit("fgauss","0","",0.1,0.2)
+				f=hX[r][iq2w].GetFunction("fgauss")
+				if f:
+					n=f.GetParameter(0)
+				else:
+					n=hX[r][iq2w].GetEntries()           
+				norm=n1*(hX[r][iq2w].GetEntries()/n)
+				hXn=hX[r][iq2w].DrawNormalized("sames",norm)
+				hXn.Fit("fgauss","","sames",0.1,0.2)
+				s=hXn.GetListOfFunctions().FindObject("stats")
+				s.SetX1NDC(0.60)
+				s.SetX2NDC(1.00)
+				s.SetY1NDC(0.9-(ir*0.3))
+				s.SetY2NDC(0.6-(ir*0.3))
+				s.SetFillStyle(4000)
+				s.SetTextColor(ROOT.gROOT.ProcessLine(clrs[ir]));
+				c.Update()
+				f=hXn.GetFunction("fgauss")
+				if f:
+					f.SetLineColor(ROOT.gROOT.ProcessLine(clrs[ir]))
+					Xmu[r].append(f.GetParameter(1)) 
+					Xsg[r].append(f.GetParameter(2))
+					c.Update()
+				else:
+					Xmu[r].append(0) 
+					Xsg[r].append(0)
+			l_X.Draw("same")
+			l_cut.Draw("same")
+		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
+		c.Close()
+	return (Xmu,Xsg)
+
+
 
