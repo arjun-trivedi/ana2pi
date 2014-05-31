@@ -302,7 +302,7 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
 		ax.set_ylim(0.10,0.2)
 		ax.set_xlabel("W-bin")
 		ax.set_ylabel("mean")
-		ax.hlines(XMU,1,25)
+		ax.hlines(XMU,0,len(Xmu[r])-1)#1,25)
 		ax=plt.subplot(132)
 		ax.scatter(np.arange(len(Xsg[r])),Xsg[r],label=r,color=clrs[ir],s=50)#color=clrs[id])
 		ax.set_ylim(0,0.06)#[0]=0
@@ -334,9 +334,11 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	ax.set_ylabel("mean_mu")
 	#ax.hlines(XMU,1,25)
 	ax=plt.subplot(132)
-	ax.scatter(np.arange(len(R)),Xmu_avg.values())#,label=r,color=clrs[ir],s=50)#color=clrs[id])
-	ax.set_ylim(0,0.06)#[0]=0
+	ax.scatter(np.arange(len(R)),Xsg_avg.values())#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	#ax.set_ylim(0,0.06)#[0]=0
 	ax.set_xlabel("R")
+	ax.set_xticks(np.arange(len(R)))
+	ax.get_xaxis().set_ticklabels(R)
 	ax.set_ylabel("mean_sg")
 	# ax=plt.subplot(133)
 	# ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
