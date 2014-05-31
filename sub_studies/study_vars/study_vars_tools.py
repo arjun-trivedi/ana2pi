@@ -326,7 +326,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 
 	#clr=np.random.rand(3,1)
 	ax=plt.subplot(131)
-	ax.scatter(np.arange(len(R)),Xmu_avg.values())#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	ax.scatter(np.arange(len(R)),Xmu_avg.values(),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
 	#ax.set_ylim(0.10,0.2)
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
@@ -334,7 +334,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	ax.set_ylabel("mean_mu")
 	#ax.hlines(XMU,1,25)
 	ax=plt.subplot(132)
-	ax.scatter(np.arange(len(R)),Xsg_avg.values())#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	ax.scatter(np.arange(len(R)),Xsg_avg.values(),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
 	#ax.set_ylim(0,0.06)#[0]=0
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
