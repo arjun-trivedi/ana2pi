@@ -13,6 +13,8 @@ import ROOT
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as stats
+from scipy.integrate import quad
 
 #atlib
 import atlib
@@ -197,9 +199,15 @@ def plot_comp_var(hX,XMU,XCUT,OUTDIR,frange):
 	fgauss.SetParName(1,"Mean")
 	fgauss.SetParName(2,"Sigma")
 
-	clrs=["kBlack","kRed","kGreen","kCyan","kBlue","kYellow","kMagenta",
-	  "kBlack+3","kRed+3","kGreen+3","kCyan+3","kBlue+3","kYellow+3","kMagenta+3",
-	  "kBlack+6","kRed+6","kGreen+6","kCyan+6","kBlue+6","kYellow+6","kMagenta+6"]
+	# clrs=["kBlack","kRed","kGreen","kCyan","kBlue","kYellow","kMagenta",
+	#   "kBlack+3","kRed+3","kGreen+3","kCyan+3","kBlue+3","kYellow+3","kMagenta+3",
+	#   "kBlack+6","kRed+6","kGreen+6","kCyan+6","kBlue+6","kYellow+6","kMagenta+6"]
+
+	clrs=["kRed","kGreen","kBlue","kCyan","kYellow","kMagenta",
+		  "kRed+3","kGreen+3","kBlue+3","kCyan+3","kYellow+3","kMagenta+3",
+		  "kRed+6","kGreen+6","kBlue+6","kCyan+6","kYellow+6","kMagenta+6",
+		  "kRed+9","kGreen+9","kBlue+9","kCyan+9","kYellow+9","kMagenta+9",
+		  "kRed+12","kGreen+12","kBlue+12","kCyan+12","kYellow+12","kMagenta+12"]
 
 	#-- Get R
 	R=hX.keys()	
@@ -279,6 +287,61 @@ def plot_comp_var(hX,XMU,XCUT,OUTDIR,frange):
 		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
 		c.Close()
 	return (Xmu,Xsg)
+
+def plot_var_mu_sigma(Xmu,Xsg,XMU):
+	#-- Get R
+	R=Xmu.keys()
+	clrs=['red','green','blue','yellow']
+	fig=plt.figure(figsize=(20,5))
+	for ir,r in enumerate(R):
+		#print len(Xmu[r])
+		clr=np.random.rand(3,1)
+		ax=plt.subplot(131)
+		ax.scatter(np.arange(len(Xmu[r])),Xmu[r],label=r,color=clrs[ir],s=50)#color=clrs[id])
+		ax.set_ylim(0.10,0.2)
+		ax.set_xlabel("W-bin")
+		ax.set_ylabel("mean")
+		ax.hlines(XMU,1,25)
+		ax=plt.subplot(132)
+		ax.scatter(np.arange(len(Xsg[r])),Xsg[r],label=r,color=clrs[ir],s=50)#color=clrs[id])
+		ax.set_ylim(0,0.06)#[0]=0
+		ax.set_xlabel("W-bin")
+		ax.set_ylabel("sigma")
+		ax=plt.subplot(133)
+		ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
+		ax.legend(loc="center",prop={'size':10})
+
+# def plot_ana_var_cut(Xmu,Xsg,XMU):
+# 	#-- Get R
+# 	R=Xmu.keys()
+# 	zipped={}
+# 	rv={}#rv(r)
+# 	eff={}
+# 	for ir,r in enumerate(R):
+# 		zipped[r] = zip(Xmu[r],Xsg[r])
+# 		rv[r]=[stats.norm(i[0],i[1]) for i in zipped[r]]
+# 		eff[r]=np.array([quad(i.pdf,0,0.2)[0] for i in rv[r]])
+# 	err={}
+# 	err['exp_nmcor']=(1-(eff['exp_nmcor']/eff['sim_nmcor']))*100
+# 	err['exp_ymcor']=(1-(eff['exp_ymcor']/eff['sim_nmcor']))*100
+
+# 	fig=plt.figure(figsize=(10,5))
+# 	fig.suptitle('eff-exp and rel-error in yield(%) vs. W', fontsize=14, fontweight='bold')
+
+# 	plt.subplot(121)
+# 	plt.scatter(np.arange(len(eff['exp_nmcor'])),eff['exp_nmcor'],c='red',label='exp_nmcor',s=50)
+# 	plt.scatter(np.arange(len(eff['exp_ymcor'])),eff['exp_ymcor'],c='blue',label='exp_ymcor',s=50)
+# 	plt.ylim(0.8,1.1)
+# 	plt.ylabel("eff-exp")
+# 	plt.xlabel("W-bin")
+# 	plt.legend()
+# 	plt.subplot(122)
+# 	plt.scatter(np.arange(len(err['exp_nmcor'])),err['exp_nmcor'],c='red',label='exp_nmcor',s=50)
+# 	plt.scatter(np.arange(len(err['exp_ymcor'])),err['exp_ymcor'],c='blue',label='exp_ymcor',s=50)
+# 	plt.ylabel("rel-error in yield(%)")
+# 	plt.xlabel("W-bin")
+# 	plt.ylim(-20,20)
+# 	plt.legend()
 
 
 
