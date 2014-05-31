@@ -189,12 +189,25 @@ def gauss_ppi_hack(v, par):
 	binw=((0.40-0.00)/100)
 	fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
 	return fitval;	
+def gauss_pippim_hack(v, par):
+	arg = 0;
+	if (par[2] != 0): arg = (v[0] - par[1])/par[2];
+	binw=((1.20-0.60)/100)#((1.40-0.60)/100)
+	fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
+	return fitval;
 
 def plot_comp_var(hX,XMU,XCUT,OUTDIR,frange):
 	ROOT.gStyle.SetOptStat("n")
 	ROOT.gStyle.SetOptFit(1111)
 
-	fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,frange[0],frange[1],3)#0.0,0.2,3);
+	fgauss=None
+	if 'mmppip' in VARS or 'mmppim' in VARS:
+		fgauss = ROOT.TF1("fgauss",gauss_ppi_hack,frange[0],frange[1],3)#0.0,0.2,3);
+	elif 'mmpippim' in VARS:
+		fgauss = ROOT.TF1("fgauss",gauss_pippim_hack,0.6,2.0,3)
+	else:
+		print "Neither mmppip,mmppim or mmpippim in", VARS
+		return
 	fgauss.SetParameters(1,0,1);
 	fgauss.SetParName(0,"Entries")
 	fgauss.SetParName(1,"Mean")
@@ -299,7 +312,7 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
 		clr=np.random.rand(3,1)
 		ax=plt.subplot(131)
 		ax.scatter(np.arange(len(Xmu[r])),Xmu[r],label=r,color=clrs[ir],s=50)#color=clrs[id])
-		ax.set_ylim(0.10,0.2)
+		ax.set_ylim(XMU-.05,XMU+0.05)
 		ax.set_xlabel("W-bin")
 		ax.set_ylabel("mean")
 		ax.hlines(XMU,0,len(Xmu[r])-1)#1,25)
@@ -344,37 +357,35 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	# ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
 	# ax.legend(loc="center",prop={'size':10})
 
-# def plot_ana_var_cut(Xmu,Xsg,XMU):
-# 	#-- Get R
-# 	R=Xmu.keys()
-# 	zipped={}
-# 	rv={}#rv(r)
-# 	eff={}
-# 	for ir,r in enumerate(R):
-# 		zipped[r] = zip(Xmu[r],Xsg[r])
-# 		rv[r]=[stats.norm(i[0],i[1]) for i in zipped[r]]
-# 		eff[r]=np.array([quad(i.pdf,0,0.2)[0] for i in rv[r]])
-# 	err={}
-# 	err['exp_nmcor']=(1-(eff['exp_nmcor']/eff['sim_nmcor']))*100
-# 	err['exp_ymcor']=(1-(eff['exp_ymcor']/eff['sim_nmcor']))*100
+def plot_ana_varcut(Xmu,Xsg,XCUT):
+	#-- Get R
+	R=Xmu.keys()
+	
+	zipped={}
+	rv={}#rv(r)
+	eff={}
+	for ir,r in enumerate(R):
+		zipped[r] = zip(Xmu[r],Xsg[r])
+		rv[r]=[stats.norm(i[0],i[1]) for i in zipped[r]]
+		eff[r]=np.array([quad(i.pdf,0,XCUT)[0] for i in rv[r]])
+	err={}
+	err['exp_nmcor']=(1-(eff['exp_nmcor']/eff['sim_nmcor']))*100
+	err['exp_ymcor']=(1-(eff['exp_ymcor']/eff['sim_nmcor']))*100
 
-# 	fig=plt.figure(figsize=(10,5))
-# 	fig.suptitle('eff-exp and rel-error in yield(%) vs. W', fontsize=14, fontweight='bold')
+	fig=plt.figure(figsize=(10,5))
+	fig.suptitle('eff-exp and rel-error in yield(%) vs. W', fontsize=14, fontweight='bold')
 
-# 	plt.subplot(121)
-# 	plt.scatter(np.arange(len(eff['exp_nmcor'])),eff['exp_nmcor'],c='red',label='exp_nmcor',s=50)
-# 	plt.scatter(np.arange(len(eff['exp_ymcor'])),eff['exp_ymcor'],c='blue',label='exp_ymcor',s=50)
-# 	plt.ylim(0.8,1.1)
-# 	plt.ylabel("eff-exp")
-# 	plt.xlabel("W-bin")
-# 	plt.legend()
-# 	plt.subplot(122)
-# 	plt.scatter(np.arange(len(err['exp_nmcor'])),err['exp_nmcor'],c='red',label='exp_nmcor',s=50)
-# 	plt.scatter(np.arange(len(err['exp_ymcor'])),err['exp_ymcor'],c='blue',label='exp_ymcor',s=50)
-# 	plt.ylabel("rel-error in yield(%)")
-# 	plt.xlabel("W-bin")
-# 	plt.ylim(-20,20)
-# 	plt.legend()
-
-
-
+	plt.subplot(121)
+	plt.scatter(np.arange(len(eff['exp_nmcor'])),eff['exp_nmcor'],c='red',label='exp_nmcor',s=50)
+	plt.scatter(np.arange(len(eff['exp_ymcor'])),eff['exp_ymcor'],c='blue',label='exp_ymcor',s=50)
+	plt.ylim(0.8,1.1)
+	plt.ylabel("eff-exp")
+	plt.xlabel("W-bin")
+	plt.legend()
+	plt.subplot(122)
+	plt.scatter(np.arange(len(err['exp_nmcor'])),err['exp_nmcor'],c='red',label='exp_nmcor',s=50)
+	plt.scatter(np.arange(len(err['exp_ymcor'])),err['exp_ymcor'],c='blue',label='exp_ymcor',s=50)
+	plt.ylabel("rel-error in yield(%)")
+	plt.xlabel("W-bin")
+	plt.ylim(-20,20)
+	plt.legend()
