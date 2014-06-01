@@ -382,6 +382,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	ax.scatter(np.arange(len(R)),np.divide(Xmu_avg.values(),norm_mu),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
 	#ax.set_ylim(0.10,0.2)
 	ax.grid()
+	ax.hlines(1,0,len(R))
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
 	ax.get_xaxis().set_ticklabels(R,rotation=90)
@@ -392,6 +393,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	ax.scatter(np.arange(len(R)),np.divide(Xsg_avg.values(),norm_sg),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
 	#ax.set_ylim(0,0.06)#[0]=0
 	ax.grid()
+	ax.hlines(1,0,len(R))
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
 	ax.get_xaxis().set_ticklabels(R,rotation=90)
