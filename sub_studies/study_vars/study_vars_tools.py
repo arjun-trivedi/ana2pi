@@ -33,7 +33,7 @@ OUTDIR=None #OUTDIR = ANADIR/q2wdir
 
 D=None
 VARS=None
-HRANGE,FRANGE=None,None
+HBNG,FRANGE=None,None
 #SEL_TOPS=None
 
 PRCSN_Q2,PRCSN_W="%.4f","%.4f"
@@ -41,7 +41,7 @@ Q2MIN,Q2MAX,Q2BINW,NQ2BINS,Q2BINS_LE,Q2BINS_UE,Q2BINS=None,None,None,None,None,N
 WMIN, WMAX, WBINW, NWBINS, WBINS_LE, WBINS_UE, WBINS =None,None,None,None,None,None,None
 HOFT,HRES=None,None
 
-def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
+def init(q2wdir,q2binw,wbinw,tops,vars,hbng,frange,r):
 	"""
 	This function ?
 	
@@ -52,7 +52,7 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	wbinw: W bin width,float
 	tops: Topology to be used, list of int
 	vars: Variables for which offset and resolution is to be extracted,list of str
-	hrange: for each variable, range for ST-SR histogram,list of [min,max]
+	hbng: for each variable, bng of histogram. list of [bins,xmin,xmax]
 	frange: for each variable, range over which ST-SR histogram is fitted,list of [min,max]
 	r: vector in multi-dim space which for now is spanned by [dtyp,mcor]. Each variable is a function in this space: var = f(r). 
 	   For now r=[dtyp,mcor]; plan to extend it to r=[dtyp,mcor,ecor,effcor]
@@ -94,9 +94,9 @@ def init(q2wdir,q2binw,wbinw,tops,vars,hrange,frange,r):
 	print "NWBINS=%d,WBINW=%.4f GeV"%(NWBINS,WBINW)
 	print ["%.4f" % i for i in WBINS]
 	
-	#-- get HRANGE,FRANGE
-	global HRANGE,FRANGE
-	HRANGE=hrange
+	#-- get HBNG,FRANGE
+	global HBNG,FRANGE
+	HBNG=hbng
 	FRANGE=frange
 
 	# -- Create OUTDIR
@@ -164,7 +164,7 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 			for ivar,var in enumerate(VARS):
 				data=D[var][sel_q2w]
 				#-- Plot, Fit and save hvar
-				h=Hist(100,HRANGE[ivar][0],HRANGE[ivar][1],name='%s_%02d_%02d'%(var,iq2bin+1,iwbin+1),
+				h=Hist(HBNG[ivar][0],HBNG[ivar][1],HBNG[ivar][2],name='%s_%02d_%02d'%(var,iq2bin+1,iwbin+1),
 								title='%s for Q2,W=[%.4f,%.4f],[%.4f,%.4f]'%
 								(var,Q2BINS_LE[iq2bin],Q2BINS_UE[iq2bin],WBINS_LE[iwbin],WBINS_UE[iwbin]))
 				h.fill_array(data)
@@ -186,7 +186,7 @@ def plot_var(min_entries=-1,max_spreading=1,use_frange=False):
 def gauss_ppi_hack(v, par):
 	arg = 0;
 	if (par[2] != 0): arg = (v[0] - par[1])/par[2];
-	binw=((0.40-0.00)/100)
+	binw=((0.50-0.00)/100)
 	fitval = par[0]*(1/(sqrt(2*pi)*par[2]))*exp(-0.5*arg*arg)*binw;
 	return fitval;	
 def gauss_pippim_hack(v, par):
@@ -302,6 +302,41 @@ def plot_comp_var(hX,XMU,XCUT,OUTDIR,frange):
 		c.Close()
 	return (Xmu,Xsg)
 
+def plot_comp_var2(hX,OUTDIR,frange):
+	ROOT.gStyle.SetOptStat("n")
+	ROOT.gStyle.SetOptFit(1111)
+
+	#-- Get R
+	R=hX.keys()	
+	#-- Xmu,Xsg=f(R)
+	Xmu=OrderedDict()#{}
+	Xsg=OrderedDict()#{}
+	for ir,r in enumerate(R):
+		Xmu[r]=[]
+		Xsg[r]=[]
+	
+	#-- nq2wbins 
+	nq2wbins=len(hX[R[0]])# nq2wbins should be same for all R    
+
+	for ir,r in enumerate(R):
+		c=ROOT.TCanvas('%s'%r,'%s'%r)
+		if nq2wbins<4:
+			c.Divide(nq2wbins,1)
+		else:
+			ncols=4
+			nrows=nq2wbins/ncols
+			print ncols,nrows
+			c.Divide(ncols,nrows)
+		for iq2w in range(nq2wbins):
+			hX[r][iq2w].Fit("gaus","","",frange[0],frange[1])
+			f=hX[r][iq2w].GetFunction("gaus")
+			if f:
+				Xmu[r].append(f.GetParameter(1)) 
+				Xsg[r].append(f.GetParameter(2))
+		c.SaveAs("%s/%s.png"%(OUTDIR,c.GetName()))
+		c.Close()
+	return (Xmu,Xsg)
+
 def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
 	#-- Get R
 	R=Xmu.keys()
@@ -329,29 +364,37 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	#-- Get R
 	R=Xmu.keys()
 	clrs=['red','green','blue','yellow']
-	fig=plt.figure(figsize=(20,5))
+	#fig=plt.figure(figsize=(20,5))
 
 	Xmu_avg=OrderedDict()
 	Xsg_avg=OrderedDict()
 	for ir,r in enumerate(R):
 		Xmu_avg[r]=np.mean(Xmu[r])
 		Xsg_avg[r]=np.mean(Xsg[r])
+	
+	#-- norm to noramalize Xmu_avg,Xsg_avg
+	norm_mu=Xmu_avg['exp_nmcor']
+	norm_sg=Xsg_avg['exp_nmcor']
 
 	#clr=np.random.rand(3,1)
-	ax=plt.subplot(131)
-	ax.scatter(np.arange(len(R)),Xmu_avg.values(),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	fig=plt.figure(figsize=(20,5))
+	ax=plt.subplot(111)
+	ax.scatter(np.arange(len(R)),np.divide(Xmu_avg.values(),norm_mu),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
 	#ax.set_ylim(0.10,0.2)
+	ax.grid()
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
-	ax.get_xaxis().set_ticklabels(R)
+	ax.get_xaxis().set_ticklabels(R,rotation=90)
 	ax.set_ylabel("mean_mu")
 	#ax.hlines(XMU,1,25)
-	ax=plt.subplot(132)
-	ax.scatter(np.arange(len(R)),Xsg_avg.values(),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	fig=plt.figure(figsize=(20,5))
+	ax=plt.subplot(111)
+	ax.scatter(np.arange(len(R)),np.divide(Xsg_avg.values(),norm_sg),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
 	#ax.set_ylim(0,0.06)#[0]=0
+	ax.grid()
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
-	ax.get_xaxis().set_ticklabels(R)
+	ax.get_xaxis().set_ticklabels(R,rotation=90)
 	ax.set_ylabel("mean_sg")
 	# ax=plt.subplot(133)
 	# ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
@@ -360,7 +403,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 def plot_ana_varcut(Xmu,Xsg,XCUT):
 	#-- Get R
 	R=Xmu.keys()
-	
+
 	zipped={}
 	rv={}#rv(r)
 	eff={}
