@@ -360,7 +360,7 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
 		ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
 		ax.legend(loc="center",prop={'size':10})
 
-def plot_varpar_vs_R(Xmu,Xsg,norm='exp_nmcor'):
+def plot_varpar_vs_R(Xmu,Xsg):#,norm='exp_nmcor'):
 	#-- Get R
 	R=Xmu.keys()
 	clrs=['red','green','blue','yellow']
@@ -373,36 +373,40 @@ def plot_varpar_vs_R(Xmu,Xsg,norm='exp_nmcor'):
 		Xsg_avg[r]=np.mean(Xsg[r])
 	
 	#-- norm to noramalize Xmu_avg,Xsg_avg;default = 1 i.e. no normalization
-	norm_mu,norm_sg=1,1
-	if norm=='exp_nmcor':
-		norm_mu=Xmu_avg['exp_nmcor']
-		norm_sg=Xsg_avg['exp_nmcor']
-	elif norm=='exp_ymcor':
-		norm_mu=Xmu_avg['exp_ymcor']
-		norm_sg=Xsg_avg['exp_ymcor']
+	# norm_mu,norm_sg=1,1
+	# if norm=='exp_nmcor':
+	# 	norm_mu=Xmu_avg['exp_nmcor']
+	# 	norm_sg=Xsg_avg['exp_nmcor']
+	# elif norm=='exp_ymcor':
+	# 	norm_mu=Xmu_avg['exp_ymcor']
+	# 	norm_sg=Xsg_avg['exp_ymcor']
 
 	#clr=np.random.rand(3,1)
 	fig=plt.figure(figsize=(20,5))
 	ax=plt.subplot(111)
-	ax.scatter(np.arange(len(R)),np.divide(Xmu_avg.values(),norm_mu),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	ax.scatter(np.arange(len(R)),np.divide(Xmu_avg.values(),Xmu_avg['exp_nmcor']),s=50,label='norm=exp_nmcor',c='red')#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	ax.scatter(np.arange(len(R)),np.divide(Xmu_avg.values(),Xmu_avg['exp_ymcor']),s=50,label='norm=exp_ymcor',c='green')
 	#ax.set_ylim(0.10,0.2)
 	ax.grid()
 	ax.hlines(1,0,len(R))
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
 	ax.get_xaxis().set_ticklabels(R,rotation=90)
-	ax.set_ylabel("<mu>/<mu>_%s"%norm)
+	ax.set_ylabel("<mu>/norm")
+	ax.legend()
 	#ax.hlines(XMU,1,25)
 	fig=plt.figure(figsize=(20,5))
 	ax=plt.subplot(111)
-	ax.scatter(np.arange(len(R)),np.divide(Xsg_avg.values(),norm_sg),s=50)#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	ax.scatter(np.arange(len(R)),np.divide(Xsg_avg.values(),Xsg_avg['exp_nmcor']),s=50,label='norm=exp_nmcor',c='red')#,label=r,color=clrs[ir],s=50)#color=clrs[id])
+	ax.scatter(np.arange(len(R)),np.divide(Xsg_avg.values(),Xsg_avg['exp_ymcor']),s=50,label='norm=exp_ymcor',c='green')
 	#ax.set_ylim(0,0.06)#[0]=0
 	ax.grid()
 	ax.hlines(1,0,len(R))
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
 	ax.get_xaxis().set_ticklabels(R,rotation=90)
-	ax.set_ylabel("<sg>/<sg>_%s"%norm)
+	ax.set_ylabel("<sg>/norm")
+	ax.legend()
 	# ax=plt.subplot(133)
 	# ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
 	# ax.legend(loc="center",prop={'size':10})
