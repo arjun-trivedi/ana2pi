@@ -360,7 +360,7 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
 		ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
 		ax.legend(loc="center",prop={'size':10})
 
-def plot_varpar_vs_R(Xmu,Xsg,XMU):
+def plot_varpar_vs_R(Xmu,Xsg,norm='exp_nmcor'):
 	#-- Get R
 	R=Xmu.keys()
 	clrs=['red','green','blue','yellow']
@@ -372,9 +372,14 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 		Xmu_avg[r]=np.mean(Xmu[r])
 		Xsg_avg[r]=np.mean(Xsg[r])
 	
-	#-- norm to noramalize Xmu_avg,Xsg_avg
-	norm_mu=Xmu_avg['exp_nmcor']
-	norm_sg=Xsg_avg['exp_nmcor']
+	#-- norm to noramalize Xmu_avg,Xsg_avg;default = 1 i.e. no normalization
+	norm_mu,norm_sg=1,1
+	if norm=='exp_nmcor':
+		norm_mu=Xmu_avg['exp_nmcor']
+		norm_sg=Xsg_avg['exp_nmcor']
+	elif norm=='exp_ymcor':
+		norm_mu=Xmu_avg['exp_ymcor']
+		norm_sg=Xsg_avg['exp_ymcor']
 
 	#clr=np.random.rand(3,1)
 	fig=plt.figure(figsize=(20,5))
@@ -386,7 +391,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
 	ax.get_xaxis().set_ticklabels(R,rotation=90)
-	ax.set_ylabel("mean_mu")
+	ax.set_ylabel("<mu>/<mu>_%s"%norm)
 	#ax.hlines(XMU,1,25)
 	fig=plt.figure(figsize=(20,5))
 	ax=plt.subplot(111)
@@ -397,7 +402,7 @@ def plot_varpar_vs_R(Xmu,Xsg,XMU):
 	ax.set_xlabel("R")
 	ax.set_xticks(np.arange(len(R)))
 	ax.get_xaxis().set_ticklabels(R,rotation=90)
-	ax.set_ylabel("mean_sg")
+	ax.set_ylabel("<sg>/<sg>_%s"%norm)
 	# ax=plt.subplot(133)
 	# ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
 	# ax.legend(loc="center",prop={'size':10})
