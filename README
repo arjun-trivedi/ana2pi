@@ -16,4 +16,14 @@ ana2pi Branches
                                1.iv. Added functionality for a single instantiation of ProcD2pi to make `d2pi` for Thrown and Reconstructed events (earlier a single instantiation could make `d2pi` for Thrown or Reconstructed events)  
 		2. Moved "top" from DataAna to Data2pi (Code integrity)
 		3. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
+			+ extract_obs [06-12-14]: After 'setup_sim_CentOS6', where I set up the simulation on the new CentOS6 machine, along with developing a lot of infrastructure to understand and study (see handwritten and other notes for details):
+				- Detector resolution & offsets and its affect on finally reconstructed quantities
+				- Affects of various corrections - mcor,ecor,"effcor" - on finally reconstructed quantities,
+			I was ready to move on to finally extracting observables, now with a better understanding of details that I was earlier unclear about.
+
+			In order to move on, I realized that I had to address some issues directly and accomodate any other new issues that would arise now that I am thinking about the data in a different perspective. I will try to keep here a note of the salient changes/new features that I will implement in this new branch:
+				- Address large memory consumption while making topX/h8
+				- New process to make obsX-sim/exp.root
+				- New process to display the observables for final publication and diagnosis
+
 				
