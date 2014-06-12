@@ -15,7 +15,7 @@ class ProcD2pi : public EpProcessor {
 
 public:
 	ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-			 bool procT, bool procR);
+			 bool procT, bool procR, bool make_hist, bool make_tree);
 	~ProcD2pi();
 	void handle();
 	void write();
@@ -35,8 +35,8 @@ protected:
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
-    bool _procT; 
-    bool _procR;
+    bool _procT,_procR;
+    bool _make_hist,_make_tree;
     TObjArray* _hists_ana_MM;    
     TObjArray* _yields_R[NTOPS];
 	TObjArray* _hists_MM_R[NTOPS];
@@ -70,10 +70,12 @@ protected:
 };
 
 ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-				   bool procT, bool procR)
+				   bool procT, bool procR, bool make_hist, bool make_tree)
 				 :EpProcessor(td, dataH10, dataAna) {
 	_procT=procT;
 	_procR=procR;
+	_make_hist=make_hist;
+	_make_tree=make_tree;
 	_lvE0_ST.SetPxPyPzE(0,0,5.499,TMath::Sqrt(5.499*5.499+MASS_E*MASS_E));
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
@@ -104,12 +106,16 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		else subdir=dirout;
 
 		subdir->cd();
-		_yields_T    =dAna->makeYields();
-		_hists_MM_T  =dAna->makeHistsMM();
-		_hists_ekin_T=dAna->makeHistsEkin();
+		if (_make_hist){
+			_yields_T    =dAna->makeYields();
+			_hists_MM_T  =dAna->makeHistsMM();
+			_hists_ekin_T=dAna->makeHistsEkin();
+		}
 		
-		_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
-		AddBranches(_tT,kTRUE);
+		if (_make_tree){
+			_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
+			AddBranches(_tT,kTRUE);
+		}
 	}
 	if (_procR) {
 		TDirectory* subdir=NULL;
@@ -118,16 +124,20 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 
 		subdir->cd();
 		_hists_ana_MM = dAna->makeHistsMM();
-		for (int iTop = 0; iTop < NTOPS; ++iTop)
-		{
-			subdir->mkdir(TString::Format("top%d",iTop+1))->cd();
-			_yields_R[iTop]    =dAna->makeYields();
-			_hists_MM_R[iTop]  =dAna->makeHistsMM();
-			_hists_ekin_R[iTop]=dAna->makeHistsEkin();
+		if (_make_hist){
+			for (int iTop = 0; iTop < NTOPS; ++iTop)
+			{
+				subdir->mkdir(TString::Format("top%d",iTop+1))->cd();
+				_yields_R[iTop]    =dAna->makeYields();
+				_hists_MM_R[iTop]  =dAna->makeHistsMM();
+				_hists_ekin_R[iTop]=dAna->makeHistsEkin();
+			}
 		}
 		subdir->cd();
-		_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
-		AddBranches(_tR);
+		if (_make_tree){
+			_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
+			AddBranches(_tR);
+		}
 	}
 }
 
@@ -152,7 +162,7 @@ void ProcD2pi::handle() {
 	/*const TLorentzVector lvE0 = dH10->lvE0;
 	const TLorentzVector lvP0 = dH10->lvP0;*/
 	TLorentzVector lvE0=_lvE0;
-	TLorentzVector lvP0 = _lvP0;
+	TLorentzVector lvP0=_lvP0;
 
 	ResetLvs();
 	
