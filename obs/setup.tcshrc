@@ -1,0 +1,12 @@
+setenv ANA2PI_OBS "${ANA2PI}/obs"
+alias ana2pi_obs 'cd ${ANA2PI_OBS}'
+
+##- modify PATH
+setenv PATH "${PATH}:${ANA2PI_OBS}"
+
+##- modify PYTHONPATH
+setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_OBS}"
+
+setenv OBS_DATADIR "/data/trivedia/e1f/2pi"
+setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim/2pi_1B_060214/recon"
+setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
