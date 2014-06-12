@@ -207,41 +207,41 @@ TObjArray* DataAna::makeHistsMM()
 
 TObjArray* DataAna::makeYields()
 {
-	Int_t numHists = 3; 
-	TObjArray *ret = new TObjArray(numHists);
-	Int_t hdim = 8;
+	Int_t numHists=3; 
+	TObjArray *ret=new TObjArray(numHists);
+	Int_t hdim=8;
 	
-	bngQ2.bins = 100;
-	bngQ2.xmin = 0.0;
-	bngQ2.xmax = 5.0;
+	bngQ2.bins=10; //0.5 GeV^2/bin
+	bngQ2.xmin=0.0;
+	bngQ2.xmax=5.0;
 	
-	bngW.bins  = 400;
-	bngW.xmin = 1.0;
-	bngW.xmax = 3.0;
+	bngW.bins=80; //25 MeV/bin
+	bngW.xmin=1.0;
+	bngW.xmax=3.0;
 	
-	bngMppip.bins = 80; //~22 MeV/bin
-	bngMppip.xmin = 0.938 + 0.140;
-	bngMppip.xmax = bngW.xmax - 0.140;
+	bngMppip.bins=80; //~22 MeV/bin
+	bngMppip.xmin=0.938 + 0.140;
+	bngMppip.xmax=bngW.xmax - 0.140;
 	
-	bngMppim.bins = 80; //~22 MeV/bin;
-	bngMppim.xmin = 0.938 + 0.140;
-	bngMppim.xmax = bngW.xmax - 0.140;
+	bngMppim.bins=80; //~22 MeV/bin;
+	bngMppim.xmin=0.938 + 0.140;
+	bngMppim.xmax=bngW.xmax - 0.140;
 	
-	bngMpippim.bins = 80; //~22 MeV/bin;
-	bngMpippim.xmin = 0.140 + 0.140;
-	bngMpippim.xmax = bngW.xmax - 0.938;
+	bngMpippim.bins=80; //~22 MeV/bin;
+	bngMpippim.xmin=0.140 + 0.140;
+	bngMpippim.xmax=bngW.xmax - 0.938;
 	
-	bngTheta.bins = 10; //10;
-	bngTheta.xmin = 0;
-	bngTheta.xmax = 180;
+	bngTheta.bins=10; //10;
+	bngTheta.xmin=0;
+	bngTheta.xmax=180;
 	
-	bngPhi.bins = 10; //10;
-	bngPhi.xmin = 0;
-	bngPhi.xmax = 360;
+	bngPhi.bins=10; //10;
+	bngPhi.xmin=0;
+	bngPhi.xmax=360;
 	
-	bngAlpha.bins = 1;
-	bngAlpha.xmin = 0;
-	bngAlpha.xmax = 360;
+	bngAlpha.bins=1;
+	bngAlpha.xmin=0;
+	bngAlpha.xmax=360;
 	
 	/* Varset 1*/
 	//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_pim,     phi_pim,     alpha[p'pip][ppim]}
@@ -255,10 +255,9 @@ TObjArray* DataAna::makeYields()
 	gDirectory->Append(hN1);
 	ret->Add(hN1);
 
-	//atrivedi:080213	
 	/* Varset 2*/
 	//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
-	/*Int_t bins2[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+	Int_t bins2[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 	Double_t xmin2[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 	Double_t xmax2[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
 	THnSparse* hN2 = new THnSparseF("yield_varset2", 
@@ -266,11 +265,11 @@ TObjArray* DataAna::makeYields()
 	hdim, bins2, xmin2, xmax2);
 	hN2->Sumw2();
 	gDirectory->Append(hN2);
-	ret->Add(hN2);*/
+	ret->Add(hN2);
 	
 	/* Varset 3*/
 	//                    {  h,  Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
-	/*Int_t bins3[]    =    {  3,  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+	Int_t bins3[]    =    {  3,  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 	Double_t xmin3[] =    { -1,  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 	Double_t xmax3[] =    {  2,  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
 	THnSparse* hN3 = new THnSparseF("yield_varset3", 
@@ -278,7 +277,7 @@ TObjArray* DataAna::makeYields()
 	hdim, bins3, xmin3, xmax3);
 	hN3->Sumw2();
 	gDirectory->Append(hN3);
-	ret->Add(hN3);*/
+	ret->Add(hN3);
 	
 	return ret;
 }
@@ -574,16 +573,17 @@ void DataAna::fillYields(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	if (useMc) tp = &d2pi_mc;
 	THnSparse* hN1 = (THnSparse*)hists->At(0);
 	//Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->varset1.M1, tp->varset1.M2, tp->varset1.theta, tp->varset1.phi, tp->varset1.alpha };
-	Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->M_ppip, tp->M_pippim, tp->theta_cms_pim, tp->phi_cms_pim, tp->alpha_1 };
+	Double_t coord1[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_pippim,tp->theta_cms_pim,tp->phi_cms_pim,tp->alpha_1 };
 	hN1->Fill(coord1);
 	
-	//atrivedi:080231
-	/*THnSparse* hN2 = (THnSparse*)hists->At(1);
-	Double_t coord2[] = { tp->h, tp->Q2, tp->W, tp->varset2.M1, tp->varset2.M2, tp->varset2.theta, tp->varset2.phi, tp->varset2.alpha  };
+	THnSparse* hN2 = (THnSparse*)hists->At(1);
+	//Double_t coord2[] = { tp->h, tp->Q2, tp->W, tp->varset2.M1, tp->varset2.M2, tp->varset2.theta, tp->varset2.phi, tp->varset2.alpha  };
+	Double_t coord2[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_pippim,tp->theta_cms_p,tp->phi_cms_p,tp->alpha_2};
 	hN2->Fill(coord2);
 	
 	THnSparse* hN3 = (THnSparse*)hists->At(2);
-	Double_t coord3[] = { tp->h, tp->Q2, tp->W, tp->varset3.M1, tp->varset3.M2, tp->varset3.theta, tp->varset3.phi, tp->varset3.alpha  };
-	hN3->Fill(coord3);*/
+	//Double_t coord3[] = { tp->h, tp->Q2, tp->W, tp->varset3.M1, tp->varset3.M2, tp->varset3.theta, tp->varset3.phi, tp->varset3.alpha  };
+	Double_t coord3[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_ppim,tp->theta_cms_pip,tp->phi_cms_pip,tp->alpha_3};
+	hN3->Fill(coord3);
 		
 }

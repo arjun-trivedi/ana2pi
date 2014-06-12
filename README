@@ -23,7 +23,8 @@ ana2pi Branches
 
 			In order to move on, I realized that I had to address some issues directly and accomodate any other new issues that would arise now that I am thinking about the data in a different perspective. I will try to keep here a note of the salient changes/new features that I will implement in this new branch:
 				1. Address large memory consumption while making topX/h8
-					- Enabled user to decide if ProcD2pi should output data in TTree format(along with default option of Histogrammed data) (New feature)
+					i. ProcD2pi::ProcD2pi(): Enabled user to decide if output data should also be in TTree format(along with default option of Histogrammed data) (New feature)
+					ii. DataAna::makeYields(): Reduced binning of Q2,W in h8 from 100,400 bins to 10,80 bins (0.5 GeV^2/bin,25 MeV/bin) respectively
 				2. New process to make obsX-sim/exp.root
 				3. New process to display the observables for final publication and diagnosis
 
