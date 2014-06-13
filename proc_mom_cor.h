@@ -8,6 +8,7 @@
 #include <TROOT.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <stdlib.h> 
 
 using namespace ParticleConstants;
 
@@ -32,7 +33,11 @@ protected:
 ProcMomCor::ProcMomCor(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 						 :EpProcessor(td, dataH10, dataAna)
 {
-	_pcorr = new MomCorr_e1f("/home/trivedia/CLAS/workspace/ana2pi/MomCorr");
+	TString path;
+  	path=getenv("WORKSPACE");
+  	TString fpcorr=TString::Format("%s/ana2pi/MomCorr",path.Data());
+  	_pcorr = new MomCorr_e1f((char *)fpcorr.Data());
+	//_pcorr = new MomCorr_e1f("/home/trivedia/CLAS/workspace/ana2pi/MomCorr");
 }
 
 ProcMomCor::~ProcMomCor()
