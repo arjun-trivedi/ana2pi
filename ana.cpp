@@ -7,6 +7,7 @@
 #include "proc_efid.h"
 #include "proc_pid.h"
 #include "proc_skim_q.h"
+#include "proc_skim_q2w.h"
 #include "proc_mom_cor.h"
 #include "proc_d2pi.h"
 //#include "proc_top.h"
@@ -189,6 +190,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
+         else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
          else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);

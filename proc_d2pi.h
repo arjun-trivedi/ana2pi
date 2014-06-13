@@ -7,6 +7,7 @@
 #include "particle_constants.h"
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
+#include <TRandom.h> //atrivedi[06-13-14]: for _rand: tmp to generate random values for alpha
 
 using namespace TMath;
 using namespace ParticleConstants;
@@ -35,6 +36,7 @@ protected:
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
+    TRandom* _rand; //atrivedi[06-13-14]: for _rand
     bool _procT,_procR;
     bool _make_tree;
     TObjArray* _hists_ana_MM;    
@@ -72,6 +74,7 @@ protected:
 ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 				   bool procT, bool procR, bool make_tree/*=kFALSE*/)
 				 :EpProcessor(td, dataH10, dataAna) {
+	_rand=new TRandom(); //atrivedi[06-13-14]: for _rand
 	_procT=procT;
 	_procR=procR;
 	_make_tree=make_tree;
@@ -149,6 +152,7 @@ ProcD2pi::~ProcD2pi() {
     delete _yields_T;
 	delete _hists_MM_T;
 	delete _hists_ekin_T;
+	delete _rand; //atrivedi[06-13-14]: for _rand
 }
 
 void ProcD2pi::handle() {
@@ -637,9 +641,10 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->phi_cms_pip=getPhi(_lvPipCMS);
 	tp->phi_cms_pim=getPhi(_lvPimCMS);
 
-	tp->alpha_1=180;
-	tp->alpha_2=180;
-	tp->alpha_3=180;
+	tp->alpha_1=_rand->Uniform(0,1)*360;//180;
+	tp->alpha_2=_rand->Uniform(0,1)*360;//180;
+	tp->alpha_3=_rand->Uniform(0,1)*360;//180;
+	//cout<<"alphas="<<tp->alpha_1<<":"<<tp->alpha_2<<":"<<tp->alpha_3<<endl;
 
 	/*tp->varset1.M1 = Mppip;
 	tp->varset1.M2 = Mpippim;

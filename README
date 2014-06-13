@@ -25,6 +25,7 @@ ana2pi Branches
 				1. Address large memory consumption while making topX/h8
 					i. ProcD2pi::ProcD2pi(): Enabled user to decide if output data should also be in TTree format(along with default option of Histogrammed data) (New feature)
 					ii. DataAna::makeYields(): Reduced binning of Q2,W in h8 from 100,400 bins to 10,80 bins (0.5 GeV^2/bin,25 MeV/bin) respectively
+					iii. ProcSkimQ2W: Am now using this processor to filter my 'q2wFull' simulation into subsets of q2w i.e. q2wA,q2wB, etc, for processing q2wFull was using up too much memory.
 				2. New process to make obsX-sim/exp.root
 				3. New process to display the observables for final publication and diagnosis
 

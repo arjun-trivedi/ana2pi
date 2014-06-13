@@ -239,7 +239,7 @@ TObjArray* DataAna::makeYields()
 	bngPhi.xmin=0;
 	bngPhi.xmax=360;
 	
-	bngAlpha.bins=1;
+	bngAlpha.bins=10; //10
 	bngAlpha.xmin=0;
 	bngAlpha.xmax=360;
 	
@@ -571,6 +571,7 @@ void DataAna::fillYields(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 {
 	Data2pi *tp = &d2pi;
 	if (useMc) tp = &d2pi_mc;
+	//cout<<"alphas2="<<tp->alpha_1<<":"<<tp->alpha_2<<":"<<tp->alpha_3<<endl;
 	THnSparse* hN1 = (THnSparse*)hists->At(0);
 	//Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->varset1.M1, tp->varset1.M2, tp->varset1.theta, tp->varset1.phi, tp->varset1.alpha };
 	Double_t coord1[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_pippim,tp->theta_cms_pim,tp->phi_cms_pim,tp->alpha_1 };

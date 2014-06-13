@@ -12,34 +12,47 @@ class ProcSkimQ2W : public EpProcessor
 {
 
 public:
-	ProcSkimQ2W(TDirectory *td, DataAna* dataAna, TString h10type);
+	ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
 	~ProcSkimQ2W();
 	
-	void handle(DataH10* dH10);
+	void handle();
+
+	//TObjArray* _hists_ekin;
 	
 protected:
 	static const Int_t NUM_EVTCUTS = 2;
 	enum { EVT_NULL, EVT, EVT_PASS };
 	
-	void updateEkin(DataH10* dH10, Bool_t useMc = kFALSE);
+	void updateEkin(Bool_t useMc = kFALSE);
+	bool _useMc;
 };
 
-ProcSkimQ2W::ProcSkimQ2W(TDirectory *td, DataAna* dataAna, TString h10type) : EpProcessor(td, dataAna, h10type)
+ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
+						 : EpProcessor(td, dataH10, dataAna)
 {
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"pass Q2W skim");
+	//! atrivedi [06-13-14]: The following logic is based on
+	//! the assumption that when making subsets of 'q2wFull',
+	//!   - for simulation, Q2W filtering will be done at ST level
+	//!   - for experiment, Q2W filtering will be done at ER level
+	_useMc=kFALSE;
+	if (dH10->dtyp=="sim") {
+		_useMc=kTRUE;
+	}
 }
 
 ProcSkimQ2W::~ProcSkimQ2W()
 {
 	delete hevtsum;
 	delete hists;
+	//delete _hists_ekin;
 }
 
-void ProcSkimQ2W::handle(DataH10* dH10)
+void ProcSkimQ2W::handle()
 {
 	//Info("ProcSkimQ2W::handle()", "");
 	pass = kFALSE;
@@ -55,33 +68,34 @@ void ProcSkimQ2W::handle(DataH10* dH10)
 		}
 	}
 	
-	updateEkin(dH10);
 	
+	updateEkin(_useMc);
+		
 	if (dAna->d2pi.top == 0) { //i.e inclusive event
-		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
+		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC],_useMc);
 	}else{ //i.e 2pi event
-		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1]);
+		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1],_useMc);
 	}
 	
-	
-	//if ( (dAna->eKin.Q2 >= 1.3 && dAna->eKin.Q2 <= 1.6 && dAna->eKin.W >=1.5 && dAna->eKin.W <= 1.9) ) { //!q2w range 1
-	if ( (dAna->eKin.Q2 >= 1.9 && dAna->eKin.Q2 <= 2.5 && dAna->eKin.W >=1.3 && dAna->eKin.W <= 1.9) ) { //!q2w range 2; Evgeny Isupov	 
+	DataEkin *ekin = &dAna->eKin;
+	if (_useMc) ekin = &dAna->eKin_mc;
+	if ( (ekin->Q2 >= 1.9 && ekin->Q2 <= 2.5 && ekin->W >=1.3 && ekin->W <= 1.9) ) { //!q2w range 2; Evgeny Isupov	 
 		if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
 			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
 			dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
 		}
-		dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC]);
+		dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
 		
 		hevtsum->Fill(EVT_PASS);
 		pass = kTRUE;
-		EpProcessor::handle(dH10);
+		EpProcessor::handle();
 	}
 	
 }
 
-void ProcSkimQ2W::updateEkin(DataH10* dH10, Bool_t useMc /*= kFALSE*/) {
-	const TLorentzVector _4vE0 = dH10->_4vE0;
-	const TLorentzVector _4vP0 = dH10->_4vP0;
+void ProcSkimQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
+	const TLorentzVector _4vE0 = dH10->lvE0;
+	const TLorentzVector _4vP0 = dH10->lvP0;
 	TLorentzVector _4vE1;
 		
 	DataEkin *ekin = &dAna->eKin;
