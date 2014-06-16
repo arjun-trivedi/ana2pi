@@ -10,6 +10,7 @@
 #include <TLorentzVector.h>
 #include <TObjArray.h>
 #include <TMath.h>
+#include <stdio.h>
 
 using namespace TMath;
 using namespace ParticleConstants;
@@ -45,8 +46,12 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
                  Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
                  :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
 {
-	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
-	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");
+	TString path;
+  	path=getenv("WORKSPACE");
+  	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
+	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
+	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
 
     if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {

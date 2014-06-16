@@ -1,7 +1,0 @@
-#!/usr/bin/python
-import os,glob
-f=open("h10.lst","wb")
-l=glob.glob('*[1-9].root')
-for i in l:
-	f.write('%s/%s\n'%(os.getcwd(),i))
-f.close()

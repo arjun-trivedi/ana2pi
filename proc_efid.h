@@ -21,13 +21,18 @@ public:
 protected:	
 	Bool_t inFid();
 	void updateEFid();
+	static const Int_t NUM_EVTCUTS = 2;
+	enum { EVT_NULL, EVT, EVT_PASS};
 };
 
 ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
                    Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
                    :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
 {
-	
+	td->cd();
+	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
+	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"pass");
 }
 
 ProcEFid::~ProcEFid()
@@ -39,6 +44,7 @@ void ProcEFid::handle()
 {
 	//Info("ProcEFid::handle()", "");
 	pass = kFALSE;
+	hevtsum->Fill(EVT);
 	
 	if (mon||mononly)
 	{
@@ -70,6 +76,7 @@ void ProcEFid::handle()
 	dAna->efid.fidE = inFid();
 	if (dAna->efid.fidE)
 	{
+		hevtsum->Fill(EVT_PASS);
 		if (mon)
 		{
 			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
