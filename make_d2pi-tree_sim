@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-1000000000}
+ana -i h10.lst -t e1f:sim:2pi -p d2piT_tree:eid:efid:qskim:pid:d2piR_tree -n $nentries
