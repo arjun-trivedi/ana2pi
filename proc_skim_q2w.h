@@ -79,7 +79,7 @@ void ProcSkimQ2W::handle()
 	
 	DataEkin *ekin = &dAna->eKin;
 	if (_useMc) ekin = &dAna->eKin_mc;
-	if ( (ekin->Q2 >= 1.9 && ekin->Q2 <= 2.5 && ekin->W >=1.3 && ekin->W <= 1.9) ) { //!q2w range 2; Evgeny Isupov	 
+	if ( (ekin->Q2 >= 1.2 && ekin->Q2 <= 5.2 && ekin->W >=1.12 && ekin->W <= 3.01) ) { //!q2w range 2; Evgeny Isupov	 
 		if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
 			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
 			dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
