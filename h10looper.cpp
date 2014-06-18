@@ -3,10 +3,17 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TSystem.h>
 
 void H10Looper::Loop(Long64_t nentries)
 {
    if (fChain == 0) return;
+
+   //! Track memory usage
+   MemInfo_t meminfo;
+   gSystem->GetMemInfo(&meminfo);
+   int mem_start=meminfo.fMemUsed+meminfo.fSwapUsed;
+
 
    //Long64_t nentries = fChain->GetEntriesFast();
    Int_t nentries_chain = fChain->GetEntries();
@@ -42,4 +49,7 @@ void H10Looper::Loop(Long64_t nentries)
       //3. Call proc_chain
       proc_chain->handle();
    }
+   gSystem->GetMemInfo(&meminfo);
+   int mem_end=meminfo.fMemUsed+meminfo.fSwapUsed;
+   Info("H10Looper::Loop", "Total memory used = %dMB\n",mem_end-mem_start);
 }
