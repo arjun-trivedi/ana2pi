@@ -27,6 +27,7 @@ ana2pi Branches
 					ii. DataAna::makeYields(): Reduced binning of Q2,W in h8 from 100,400 bins to 10,80 bins (0.5 GeV^2/bin,25 MeV/bin) respectively
 					iii. ProcSkimQ2W: Am now using this processor to filter my 'q2wFull' simulation into subsets of q2w i.e. q2wA,q2wB, etc, for processing q2wFull was using up too much memory.
 					iV. ProcEid & ProcMomCor: Changed filepath of cut-par files relative to $WORKSPACE so that they could run seamlessly on ifarm too
+					iv. H10Looper: Gave it capability to monitor memory usage
 				2. Miscellaneous improvements/new features
 					i. ProcEFid: Added hevtsum histogram 
 				3. New process to make obsX-sim/exp.root
