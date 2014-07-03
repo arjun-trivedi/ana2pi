@@ -136,6 +136,7 @@ def run(dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 				vstdir=q2wbindir.mkdir(vst_name)           
 				print "*** Processing %s,%s ***"%(q2wbin,vst_name)
 				#! First, for h8-ST/SR/ER, set appropriate ranges for HEL,Q2&W
+				print "*** h8 range setting for HEL,Q2 & W dimensions ... ***"
 				if EXP:seq_h8=['R']
 				if SIM:seq_h8=['T','R']
 				for seq in seq_h8:
@@ -163,56 +164,12 @@ def run(dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 					cq2w=ROOT.TCanvas(hq2w[vst_name,seq].GetName(),hq2w[vst_name,seq].GetTitle())
 					hq2w[vst_name,seq].Draw("colz")
 					cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
+				print "*** Done h8 range setting"
 				#! 1. h8->h5 
 				proc_h5()
 				#! 2. h5->h1
 				proc_h1()
 	FOUT.Close()
-# Following defined by UI
-# TOPS=[1,2,3,4] # as per UI
-# VSTS=[1,2,3] # as per UI
-
-# Q2W='q2w2' # as per UI's q2w range
-# Q2BNG,WBNG=None,None
-# if Q2W=='q2w2':
-# 	q2w=[[2.0,2.5,0.5],[1.3,1.9,0.025]] #min,max,width; as per UI
-# 	Q2BNG,WBNG=atlib.init_q2wbng2(q2w)
-# # #! Test Q2WBNG, WBNG
-# # print "Q2 bins=",Q2BNG['BINS']
-# # print "W bins=",WBNG['BINS']
-# # for i in range(Q2BNG['NBINS']):
-# #     print "Q2 bin:",i+1
-# #     print Q2BNG['BINS_LE'][i]
-# #     print Q2BNG['BINS_UE'][i]
-# # for i in range(WBNG['NBINS']):
-# #     print "W bin:",i+1
-# #     print WBNG['BINS_LE'][i]
-# #     print WBNG['BINS_UE'][i]
-
-# #EXP/SIM was per UI
-# EXP=False
-# SIM=True
-# if not(EXP or SIM):
-# 	sys.exit("dtyp is neither EXP or SIM! Exiting")
-# SIM_NUM='sim_1'
-# if EXP:
-# 	#SEQ=SEQ_EXP
-# 	DATADIR=os.environ['OBS_DATADIR_EXP']
-# 	ANADIR=os.path.join(os.environ['ANA2PI_OBS'],Q2W)
-# 	FIN=os.path.join(DATADIR,'d2pi.root')
-# 	FIN_SIMYIELD=ROOT.TFile(os.path.join(ANADIR,"yield_sim.root"))
-# 	FOUT=ROOT.TFile(os.path.join(ANADIR,"yield_exp.root"),"RECREATE")
-# if SIM:
-# 	#SEQ=SEQ_SIM
-# 	DATADIR=os.environ['OBS_DATADIR_SIM']
-# 	ANADIR=os.path.join(os.environ['ANA2PI_OBS'],Q2W)
-# 	FIN=os.path.join(DATADIR,Q2W,SIM_NUM,'d2pi.root')
-# 	FOUT=ROOT.TFile(os.path.join(ANADIR,"yield_sim.root"),"RECREATE")
-
-# print "DATADIR=",DATADIR
-# print "ANADIR=",ANADIR
-# if not os.path.exists(ANADIR):
-# 	ANADIR=os.makedirs(ANADIR)
 
 def get_h8():
 	#! Fetch h8-ST/SR/ER directly from file (Add all tops)
@@ -236,37 +193,7 @@ def get_h8():
 
 def proc_h5():
 	#global h5
-	print "*** 1. Processing h8->h5 ***"
-	# #! First, for h8-ST/SR/ER, set appropriate ranges for HEL,Q2&W
-	# if EXP:SEQ_h8=['R']
-	# if SIM:SEQ_h8=['T','R']
-	# for seq in SEQ_h8:
-	# 	#!-- HEL: include all helicities
-	# 	h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
-	# 	#!-- Q2
-	# 	q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(Q2BNG['BINS_LE'][i])
-	# 	q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(Q2BNG['BINS_UE'][i])
-	# 	h8[vst_name,seq].GetAxis(H8_DIM['Q2']).SetRange(q2bin_le,q2bin_ue)
-	# 	#!-- W
-	# 	wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(WBNG['BINS_LE'][j])
-	# 	wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(WBNG['BINS_UE'][j])
-	# 	h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
-	# 	print "For h8(%s,%s),finished setting Q2-,W-bin range = [%d,%d],[%d,%d] ***"%(vst_name,seq,q2bin_le,q2bin_ue,wbin_le,wbin_ue)
-	# 	#! Project out hq2w & save (to FOUT & OS)
-	# 	hq2w[vst_name,seq]=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
-	# 	hq2w[vst_name,seq].SetName('h_q2_v_w')
-	# 	hq2w[vst_name,seq].SetTitle("%s_%s_%s_q2wbin"%(q2wbin,vst_name,seq))
-	# 	outdir=os.path.join(ANADIR,q2wbin,vst_name,seq)
-	# 	if not os.path.exists(outdir):
-	# 		os.makedirs(outdir)
-	# 	#! cd into FOUT.q2wbindir.vstdir.seqdir
-	# 	vstdir.mkdir(seq).cd()
-	# 	hq2w[vst_name,seq].Write()
-	# 	cq2w=ROOT.TCanvas(hq2w[vst_name,seq].GetName(),hq2w[vst_name,seq].GetTitle())
-	# 	hq2w[vst_name,seq].Draw("colz")
-	# 	cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
-			
-	#! 1.2 Finally project out h5 & save them to file
+	print "*** Processing h8->h5 ***"
 	#! Project out h5-T/R
 	if EXP:SEQ_h5=['R']
 	if SIM:SEQ_h5=['T','R']
@@ -365,39 +292,3 @@ def calcNorm(h5D_EA,h5D_SA):
 		nSimEvts+=h5D_SA.GetBinContent(iSimBin)
 	norm=nExpEvts/nSimEvts;
 	return norm
-
-# <codecell>
-
-# #! Fetch h8{}
-# h8=OrderedDict()
-# f=ROOT.TFile(FIN)
-# get_h8()
-
-# # #! Debug h8{}
-# # for k in h8:
-# #     print k,h8[k].GetEntries()   
-  
-
-# # <codecell>
-
-# #! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
-# FOUT=ROOT.TFile(os.path.join(ANADIR,"yield_sim.root"),"RECREATE")
-# for i in range(Q2BNG['NBINS']):
-# 	for j in range(WBNG['NBINS']):
-# 		if j>0: break
-# 		q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(Q2BNG['BINS_LE'][i],Q2BNG['BINS_UE'][i],WBNG['BINS_LE'][i],WBNG['BINS_UE'][i])
-# 		q2wbindir=FOUT.mkdir(q2wbin)
-# 		hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
-# 		for vst in VSTS:
-# 			vst_name='VST%d'%vst
-# 			vstdir=q2wbindir.mkdir(vst_name)           
-# 			print "*** Processing %s,%s ***"%(q2wbin,vst_name)
-# 			#! 1. h8->h5 
-# 			proc_h5()
-# 			#! 2. h5->h1
-# 			proc_h1()
-# FOUT.Close()
-
-# <codecell>
-
-
