@@ -39,7 +39,7 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 
 # SEQ_SIM=['ST','SR','SA','SC','SH','SF']
 # SEQ_EXP=['ER','EC','EH','EF']
-SEQ=['T','R','A','C','H','F']
+#SEQ=['T','R','A','C','H','F']
 
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
@@ -69,6 +69,7 @@ def run(dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 	if dtyp=='exp':EXP=True
 	if not(EXP or SIM):
 		sys.exit("dtyp is neither EXP or SIM! Exiting")
+	print "dtyp=%s"%dtyp
 	SIM_NUM='sim_1'
 	TOPS=tops # as per UI
 	VSTS=vsts # as per UI
@@ -97,12 +98,14 @@ def run(dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 		FIN=ROOT.TFile(os.path.join(DATADIR,'d2pi.root'))
 		FIN_SIMYIELD=ROOT.TFile(os.path.join(ANADIR,"yield_sim.root"))
 		FOUT=ROOT.TFile(os.path.join(ANADIR,"yield_exp.root"),"RECREATE")
+		print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(DATADIR,ANADIR,FIN,FIN_SIMYIELD,FOUT)
 	if SIM:
 	#SEQ=SEQ_SIM
 		DATADIR=os.environ['OBS_DATADIR_SIM']
 		ANADIR=os.path.join(os.environ['ANA2PI_OBS'],Q2W)
 		FIN=ROOT.TFile(os.path.join(DATADIR,Q2W,SIM_NUM,'d2pi.root'))
 		FOUT=ROOT.TFile(os.path.join(ANADIR,"yield_sim.root"),"RECREATE")
+		print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFOUT=%s"%(DATADIR,ANADIR,FIN,FOUT)
 
 	print "DATADIR=",DATADIR
 	print "ANADIR=",ANADIR
@@ -133,9 +136,9 @@ def run(dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 				vstdir=q2wbindir.mkdir(vst_name)           
 				print "*** Processing %s,%s ***"%(q2wbin,vst_name)
 				#! First, for h8-ST/SR/ER, set appropriate ranges for HEL,Q2&W
-				if EXP:SEQ_h8=['R']
-				if SIM:SEQ_h8=['T','R']
-				for seq in SEQ_h8:
+				if EXP:seq_h8=['R']
+				if SIM:seq_h8=['T','R']
+				for seq in seq_h8:
 					#!-- HEL: include all helicities
 					h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
 					#!-- Q2
@@ -149,8 +152,8 @@ def run(dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 					print "For h8(%s,%s),finished setting Q2-,W-bin range = [%d,%d],[%d,%d] ***"%(vst_name,seq,q2bin_le,q2bin_ue,wbin_le,wbin_ue)
 					#! Project out hq2w & save (to FOUT & OS)
 					hq2w[vst_name,seq]=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
-					hq2w[vst_name,seq].SetName('h_q2_v_w')
-					hq2w[vst_name,seq].SetTitle("%s_%s_%s_q2wbin"%(q2wbin,vst_name,seq))
+					hq2w[vst_name,seq].SetName('h_q2Vw')
+					hq2w[vst_name,seq].SetTitle("%s_%s_%s_q2w"%(q2wbin,vst_name,seq))
 					outdir=os.path.join(ANADIR,q2wbin,vst_name,seq)
 					if not os.path.exists(outdir):
 						os.makedirs(outdir)
@@ -284,10 +287,12 @@ def proc_h5():
 		thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'A']);
 		h5[vst_name,'A'].SetName('h5')
 		h5[vst_name,'A'].SetTitle('%s_%s_%s'%(q2wbin,vst_name,'A'))
-		vstdir.mkdir('A').cd()
-		h5[vst_name,'A'].Write()
+		# vstdir.mkdir('A').cd()
+		# h5[vst_name,'A'].Write()
 	if EXP:
 		h5[vst_name,'A']=FIN_SIMYIELD.Get('%s/%s/A/h5'%(q2wbin,vst_name))
+	vstdir.mkdir('A').cd()
+	h5[vst_name,'A'].Write()
 	#! Calculate Corrected yields
 	h5[vst_name,'C']=h5[vst_name,'R'].Clone()
 	h5[vst_name,'C'].Divide(h5[vst_name,'A'])
@@ -315,7 +320,8 @@ def proc_h5():
 		#!normalize exp-HOLE
 		h5[vst_name,'H'].Scale(norm);
 		thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H']);
-		h5[vst_name,'H'].Write();
+	vstdir.mkdir('H').cd()
+	h5[vst_name,'H'].Write()
 	#! Calculate F
 	h5[vst_name,'F']=h5[vst_name,'C'].Clone()
 	h5[vst_name,'F'].Add(h5[vst_name,'H'],1)
@@ -328,7 +334,9 @@ def proc_h5():
 def proc_h1():
 	#global h1
 	print "*** Processing h5->h1 ... ***"
-	for seq in SEQ:
+	if EXP:seq_h1=['R','C','A','H','F']
+	if SIM:seq_h1=['T','R','C','A','H','F']
+	for seq in seq_h1:
 		#! Create outdir in OS (I am currently saving 1D hist plots to view with gqview)
 		outdir=os.path.join(ANADIR,q2wbin,vst_name,seq)
 		if not os.path.exists(outdir):
