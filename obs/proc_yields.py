@@ -98,6 +98,7 @@ class ProcYields:
 				if j>0: break
 				q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][i],self.WBNG['BINS_UE'][i])
 				q2wbindir=self.FOUT.mkdir(q2wbin)
+				q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][i],self.WBNG['BINS_UE'][i])
 				#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
 				# self.hq2w.clear()
 				# self.h5.clear()
@@ -114,32 +115,32 @@ class ProcYields:
 						#!-- HEL: include all helicities
 						h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
 						#!-- Q2
-						q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(Q2BNG['BINS_LE'][i])
-						q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(Q2BNG['BINS_UE'][i])
+						q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i])
+						q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_UE'][i])
 						h8[vst_name,seq].GetAxis(H8_DIM['Q2']).SetRange(q2bin_le,q2bin_ue)
 						#!-- W
-						wbin_le=h8[self.vst_name,seq].GetAxis(H8_DIM['W']).FindBin(WBNG['BINS_LE'][j])
-						wbin_ue=h8[self.vst_name,seq].GetAxis(H8_DIM['W']).FindBin(WBNG['BINS_UE'][j])
+						wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_LE'][j])
+						wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_UE'][j])
 						h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
-						print "For h8(%s,%s),finished setting Q2-,W-bin range = [%d,%d],[%d,%d] ***"%(vst_name,seq,q2bin_le,q2bin_ue,wbin_le,wbin_ue)
+						print "For h8(%s,%s),finished setting range for Q2-,W-bin = %s ***"%(vst_name,seq,q2wbintitle)
 						#! Project out hq2w & save (to FOUT & OS)
-						hq2w[vst_name,seq]=h8[self.vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
-						hq2w[vst_name,seq].SetName('h_q2Vw')
-						hq2w[vst_name,seq].SetTitle("%s_%s_%s_q2w"%(q2wbin,vst_name,seq))
+						hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
+						hq2w.SetName('h_q2Vw')
+						hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
 						outdir=os.path.join(self.ANADIR,q2wbin,vst_name,seq)
 						if not os.path.exists(outdir):
 							os.makedirs(outdir)
 						#! cd into FOUT.q2wbindir.vstdir.seqdir
 						vstdir.mkdir(seq).cd()
-						hq2w[vst_name,seq].Write()
-						cq2w=ROOT.TCanvas(hq2w[self.vst_name,seq].GetName(),hq2w[self.vst_name,seq].GetTitle())
-						hq2w[self.vst_name,seq].Draw("colz")
+						hq2w.Write()
+						cq2w=ROOT.TCanvas(hq2w.GetName(),hq2w.GetTitle())
+						hq2w.Draw("colz")
 						cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
 					print "*** Done h8 range setting"
 					#! 1. h8->h5 
-					h5=self.proc_h5(h8,q2wbin,q2wbindir,vst_name,vstdir)
+					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
 					#! 2. h5->h1
-					self.proc_h1(h5,q2wbin,q2wbindir,vst_name,vstdir)
+					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
 		self.FOUT.Close()
 
 	def get_h8(self):
@@ -164,7 +165,7 @@ class ProcYields:
 					print "Done gettng and adding to top1",'d2piR/top%d/yield_varset%d'%(top,vst)
 		return h8
 
-	def proc_h5(self,h8,q2wbin,q2wbindir,vst_name,vstdir):
+	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
 		#global h5
 		h5=OrderedDict()
 		print "*** Processing h8->h5 ***"
@@ -175,7 +176,7 @@ class ProcYields:
 			h5[vst_name,seq]=h8[vst_name,seq].Projection(5,H5_PROJDIM,"E")
 			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,seq]);
 			h5[vst_name,seq].SetName('h5')
-			h5[vst_name,seq].SetTitle('%s_%s_%s'%(q2wbin,vst_name,seq))
+			h5[vst_name,seq].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,seq))
 			if vstdir.GetDirectory(seq)==None:
 				vstdir.mkdir(seq).cd()
 			else:
@@ -187,7 +188,7 @@ class ProcYields:
 			h5[vst_name,'A'].Divide(h5[vst_name,'T'])
 			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'A']);
 			h5[vst_name,'A'].SetName('h5')
-			h5[vst_name,'A'].SetTitle('%s_%s_%s'%(q2wbin,vst_name,'A'))
+			h5[vst_name,'A'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'A'))
 			# vstdir.mkdir('A').cd()
 			# h5[vst_name,'A'].Write()
 		if self.EXP:
@@ -199,7 +200,7 @@ class ProcYields:
 		h5[vst_name,'C'].Divide(h5[vst_name,'A'])
 		thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'C']);
 		h5[vst_name,'C'].SetName('h5')
-		h5[vst_name,'C'].SetTitle('%s_%s_%s'%(q2wbin,vst_name,'C'))
+		h5[vst_name,'C'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'C'))
 		vstdir.mkdir('C').cd()
 		h5[vst_name,'C'].Write()
 		#! Calculate H
@@ -208,16 +209,16 @@ class ProcYields:
 			h5[vst_name,'H'].Add(h5[vst_name,'C'],-1)
 			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H'])
 			h5[vst_name,'H'].SetName('h5')
-			h5[vst_name,'H'].SetTitle('%s_%s_%s'%(q2wbin,vst_name,'H'))
-			vstdir.mkdir('H').cd()
-			h5[vst_name,'H'].Write()
+			h5[vst_name,'H'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'H'))
+			# vstdir.mkdir('H').cd()
+			# h5[vst_name,'H'].Write()
 		if self.EXP:
 			#!first copy sim-HOLE into exp-HOLE
 			h5[vst_name,'H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5'%(q2wbin,vst_name))
 			#!now get SC for obtaining normalization factor
 			h5_SIM_C=self.FIN_SIMYIELD.Get('%s/%s/C/h5'%(q2wbin,vst_name))
 			#!calculate normalization factor
-			norm=calcNorm(h5[vst_name,'C'],h5_SIM_C);
+			norm=self.calcNorm(h5[vst_name,'C'],h5_SIM_C);
 			#!normalize exp-HOLE
 			h5[vst_name,'H'].Scale(norm);
 			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H']);
@@ -227,14 +228,14 @@ class ProcYields:
 		h5[vst_name,'F']=h5[vst_name,'C'].Clone()
 		h5[vst_name,'F'].Add(h5[vst_name,'H'],1)
 		h5[vst_name,'F'].SetName('h5')
-		h5[vst_name,'F'].SetTitle('%s_%s_%s'%(q2wbin,vst_name,'F'))
+		h5[vst_name,'F'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'F'))
 		vstdir.mkdir('F').cd()
 		h5[vst_name,'F'].Write()
 		print "*** Done processing h8->h5 ***"
 		return h5
 
-	def proc_h1(self,h5,q2wbin,q2wbindir,vst_name,vstdir):
-		#global h1
+	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
+		h1=OrderedDict()
 		print "*** Processing h5->h1 ... ***"
 		if self.EXP:seq_h1=['R','C','A','H','F']
 		if self.SIM:seq_h1=['T','R','C','A','H','F']
@@ -249,7 +250,7 @@ class ProcYields:
 			for var in VARS:
 				h1[vst_name,seq,var]=h5[vst_name,seq].Projection(H5_DIM[var],"E")
 				h1[vst_name,seq,var].SetName('h_%s'%var)
-				h1[vst_name,seq,var].SetTitle("%s_%s_%s_%s"%(q2wbin,vst_name,seq,var))
+				h1[vst_name,seq,var].SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
 				h1[vst_name,seq,var].Write()
 				c1=ROOT.TCanvas(h1[vst_name,seq,var].GetName(),h1[vst_name,seq,var].GetTitle())
 				h1[vst_name,seq,var].Draw()
