@@ -1,5 +1,5 @@
-setenv ANA2PI_OBS "${ANA2PI}/obs"
-alias ana2pi_obs 'cd ${ANA2PI_OBS}'
+setenv ANA2PI_OBS_DIR "${ANA2PI}/obs"
+alias ana2pi_obs 'cd ${ANA2PI_OBS_DIR}'
 
 ##- modify PATH
 setenv PATH "${PATH}:${ANA2PI_OBS}"
