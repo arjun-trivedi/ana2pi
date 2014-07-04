@@ -31,14 +31,14 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 class ProcYields:
-	def __init__(self,dtyp,sim_num='sim_1',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
+	def __init__(self,dtyp,sim_num='sim_12345',tops=[1,2,3,4],vsts=[1,2,3],q2w='q2w2'):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
 		if not(self.EXP or self.SIM):
 			sys.exit("dtyp is neither EXP or SIM! Exiting")
 		print "dtyp=%s"%dtyp
-		self.SIM_NUM='sim_1'
+		self.SIM_NUM=sim_num
 
 		self.TOPS=tops 
 		self.VSTS=vsts 
@@ -62,20 +62,21 @@ class ProcYields:
 
 		if self.EXP:
 			self.DATADIR=os.environ['OBS_DATADIR_EXP']
-			self.ANADIR=os.path.join(os.environ['ANA2PI_OBS'],self.Q2W)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"))
+			self.ANADIR=os.path.join(os.environ['ANA2PI_OBS'],self.Q2W)
+			if not os.path.exists(self.ANADIR):
+				os.makedirs(self.ANADIR)
+			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.ANADIR,self.SIM_NUM,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_exp.root"),"RECREATE")
 			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN,self.FIN_SIMYIELD,self.FOUT)
 		if self.SIM:
-			self.DATADIR=os.environ['OBS_DATADIR_SIM']
-			self.ANADIR=os.path.join(os.environ['ANA2PI_OBS'],self.Q2W)
-			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,self.Q2W,self.SIM_NUM,'d2pi.root'))
+			self.DATADIR=os.path.join(os.environ['OBS_DATADIR_SIM'],self.Q2W,self.SIM_NUM)
+			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
+			self.ANADIR=os.path.join(os.environ['ANA2PI_OBS'],self.Q2W,self.SIM_NUM)
+			if not os.path.exists(self.ANADIR):
+				os.makedirs(self.ANADIR)
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"),"RECREATE")
 			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN,self.FOUT)
-
-		if not os.path.exists(self.ANADIR):
-			os.makedirs(self.ANADIR)
 
 		# self.h8=OrderedDict()
 		# self.q2wbin,self.q2wbindir=None,None
