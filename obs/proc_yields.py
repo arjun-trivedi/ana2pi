@@ -32,7 +32,7 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 class ProcYields:
-	def __init__(self,q2w='q2w2',dtyp,sim_num='sim_12345',tops=[1,2,3,4],vsts=[1,2,3]):
+	def __init__(self,q2w,dtyp,sim_num='sim_12345',tops=[1,2,3,4],vsts=[1,2,3]):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
@@ -97,7 +97,7 @@ class ProcYields:
 		#! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
 		for i in range(self.Q2BNG['NBINS']):
 			for j in range(self.WBNG['NBINS']):
-				if j>0: break
+				#if j>0: break
 				q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][i],self.WBNG['BINS_UE'][i])
 				q2wbindir=self.FOUT.mkdir(q2wbin)
 				q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][i],self.WBNG['BINS_UE'][i])

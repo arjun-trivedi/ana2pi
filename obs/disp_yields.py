@@ -6,7 +6,7 @@ from collections import OrderedDict
 import os,sys
 
 class DispYields:
-	def __init__(self,q2w='q2w2'):
+	def __init__(self,q2w):
 		self.Q2W=q2w
 		self.FEXP=root_open(os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W,'yield_exp.root'))
 		self.FSIM=root_open(os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W,'yield_sim.root'))
