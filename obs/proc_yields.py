@@ -52,14 +52,16 @@ class ProcYields:
 		# #! Test Q2WBNG, WBNG
 		# print "Q2 bins=",Q2BNG['BINS']
 		# print "W bins=",WBNG['BINS']
-		# for i in range(Q2BNG['NBINS']):
+		# for i in range(self.Q2BNG['NBINS']):
 		#     print "Q2 bin:",i+1
-		#     print Q2BNG['BINS_LE'][i]
-		#     print Q2BNG['BINS_UE'][i]
-		# for i in range(WBNG['NBINS']):
+		#     print self.Q2BNG['BINS_LE'][i]
+		#     print self.Q2BNG['BINS_UE'][i]
+		#     print self.Q2BNG['BINW']
+		# for i in range(self.WBNG['NBINS']):
 		#     print "W bin:",i+1
-		#     print WBNG['BINS_LE'][i]
-		#     print WBNG['BINS_UE'][i]
+		#     print self.WBNG['BINS_LE'][i]
+		#     print self.WBNG['BINS_UE'][i]
+		#     print self.WBNG['BINW']
 
 		if self.EXP:
 			self.DATADIR=os.environ['OBS_DATADIR_EXP']
@@ -97,10 +99,10 @@ class ProcYields:
 		#! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
 		for i in range(self.Q2BNG['NBINS']):
 			for j in range(self.WBNG['NBINS']):
-				#if j>0: break
-				q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][i],self.WBNG['BINS_UE'][i])
+				if j>4: break
+				q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				q2wbindir=self.FOUT.mkdir(q2wbin)
-				q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][i],self.WBNG['BINS_UE'][i])
+				q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
 				# self.hq2w.clear()
 				# self.h5.clear()
@@ -117,12 +119,12 @@ class ProcYields:
 						#!-- HEL: include all helicities
 						h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
 						#!-- Q2
-						q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i])
-						q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_UE'][i])
+						q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i]+self.Q2BNG['BINW']/2)
+						q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_UE'][i]-self.Q2BNG['BINW']/2)
 						h8[vst_name,seq].GetAxis(H8_DIM['Q2']).SetRange(q2bin_le,q2bin_ue)
 						#!-- W
-						wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_LE'][j])
-						wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_UE'][j])
+						wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_LE'][j]+self.WBNG['BINW']/2)
+						wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_UE'][j]-self.WBNG['BINW']/2)
 						h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
 						print "For h8(%s,%s),finished setting range for Q2-,W-bin = %s ***"%(vst_name,seq,q2wbintitle)
 						#! Project out hq2w & save (to FOUT & OS)
