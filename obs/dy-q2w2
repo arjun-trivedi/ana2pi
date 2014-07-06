@@ -1,0 +1,4 @@
+#!/usr/bin/python
+from disp_yields import DispYields
+dy=DispYields('q2w2')
+dy.disp_1D()
