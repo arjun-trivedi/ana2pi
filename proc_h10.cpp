@@ -1,3 +1,4 @@
+#include "proc_h10.h"
 #include "data_h10.h"
 #include "data_ana.h"
 #include "h10looper.h"
@@ -48,8 +49,7 @@ H10Looper* h10looper;
 void parseArgs(int argc, char* const argv[]);
 TDirectory* mkdir(const char* dirname);
 EpProcessor* SetupProcs();
-
-
+EpProcessor* SetupProcSkimQ2W();
 
 int main(int argc,  char* const argv[])
 {
@@ -210,6 +210,17 @@ EpProcessor* SetupProcs(){
       //Info("SlaveBegin","last processor = %s", lastProcName->GetName());
    }
    return proc_chain;
+}
+
+EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim){
+	Float_t q2min,q2max,wmin,wmax=0.0;
+	TString str_q2wnum=proc_q2wskim.Remove(0,7);//removing "q2wskim" from "q2wskimX"
+	Int_t num=str_q2wnum.Atoi();
+	q2min=q2w[num-1].q2min;
+    q2max=q2w[num-1].q2max;
+    wmin=q2w[num-1].wmin;
+    wmax=q2w[num-1].wmax;
+    //EpProcessor* proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
 }
 
 
