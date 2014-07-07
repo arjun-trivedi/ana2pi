@@ -214,6 +214,10 @@ TObjArray* DataAna::makeYields()
 	bngQ2.bins=10; //0.5 GeV^2/bin
 	bngQ2.xmin=0.0;
 	bngQ2.xmax=5.0;
+	//! Q2 variable binning (taken directly from ana notes)
+	//! [1.2,1.6),[1.6,2.0),[2.0,2.4),[2.4,3.0),[3.0,3.5),[3.5,4.2),[4.2,5.0)
+	Int_t q2_nbins=7;
+	Float_t q2_bins[8]={1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0};
 	
 	bngW.bins=80; //25 MeV/bin
 	bngW.xmin=1.0;
@@ -252,6 +256,8 @@ TObjArray* DataAna::makeYields()
 	"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
 	hdim, bins1, xmin1, xmax1);
 	hN1->Sumw2();
+	//! Make variable Q2-binning
+	hN1->GetAxis(1)->Set(q2_nbins,q2_bins);
 	gDirectory->Append(hN1);
 	ret->Add(hN1);
 
@@ -264,6 +270,8 @@ TObjArray* DataAna::makeYields()
 	"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][p^{'}p]}", 
 	hdim, bins2, xmin2, xmax2);
 	hN2->Sumw2();
+	//! Make variable Q2-binning
+	hN2->GetAxis(1)->Set(q2_nbins,q2_bins);
 	gDirectory->Append(hN2);
 	ret->Add(hN2);
 	
@@ -276,6 +284,8 @@ TObjArray* DataAna::makeYields()
 	"h, Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
 	hdim, bins3, xmin3, xmax3);
 	hN3->Sumw2();
+	//! Make variable Q2-binning
+	hN3->GetAxis(1)->Set(q2_nbins,q2_bins);
 	gDirectory->Append(hN3);
 	ret->Add(hN3);
 	
