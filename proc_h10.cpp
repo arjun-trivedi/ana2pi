@@ -199,12 +199,6 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("d2piT_tree"))      proc = new ProcD2pi(mkdir("d2piT"),dH10,dAna,kTRUE,kFALSE,kTRUE);
          else if (str.EqualTo("d2piR_tree"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE,kTRUE);
          else if (str.EqualTo("d2piTR_tree"))     proc = new ProcD2pi(mkdir("d2piTR"),dH10,dAna,kTRUE,kTRUE,kTRUE);
-
-
-         //else if (str.EqualTo("top"))        proc = new ProcTop(mkdir("top"),dH10,dAna);
-         /*else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
-         else if (str.EqualTo("fillskim"))   proc = new ProcFillSkim(mkdir("skim"),dH10,dAna);
-         else if (str.EqualTo("copyh10")) proc = new ProcCopyH10(fFileOut,dH10,dAna);*/
          else {
             Info("Init","%s unrecognized processor\n",str.Data());
             continue;
