@@ -74,7 +74,7 @@ def main(argv):
 
 
 	#! Finall call proc_h10
-	cmd="proc_h10 -i h10lst -t h10type -p procorder -o fout -n nentries"
+	cmd="proc_h10 -i h10lst -t h10type -p procorder -o output -n nentries"
 	
 if __name__ == "__main__":
 	main(sys.argv[1:])

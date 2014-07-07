@@ -28,6 +28,7 @@ using namespace std;
 //user input
 TString fin=""; //h10.lst
 TString procorder="";
+TString output="";
 /*TString expt="";
 TString dtyp="";
 TString rctn="";*/ 
@@ -56,9 +57,9 @@ int main(int argc,  char* const argv[])
 	parseArgs(argc, argv);
 	
 	/*if (fin==""||procorder==""||expt==""||dtyp==""||rctn==""){*/
-	if (fin==""||h10type==""||procorder==""){
+	if (fin==""||h10type==""||procorder==""||output==""){
 		printf("Not all arguments entered\n");
-		printf("Execute \"ana -h\" to see correct usage\n");
+		printf("Execute \"proc_h10 -h\" to see correct usage\n");
 		return 0;
 	}
 
@@ -85,9 +86,10 @@ int main(int argc,  char* const argv[])
 	TFileCollection fc("fileList", "", fin.Data());
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 		
-	TString fout_name = TString::Format("d%s.root",rctn.Data());
+	//TString fout_name = TString::Format("d%s.root",rctn.Data());
+	//TString fout_name = TString::Format("d%s.root",rctn.Data());
 	
-	fout = new TFile(fout_name,"RECREATE");
+	fout = new TFile(output,"RECREATE");
 
 	h10type=TString::Format("%s:%s:%s",expt.Data(),dtyp.Data(),rctn.Data());
 	dH10 = new DataH10(h10type);
@@ -107,13 +109,13 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, "hi:t:p:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:t:p:o:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("ana2pi -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -n <nevts>\n");
+			printf("ana2pi -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
-			printf("<rctn>=2pi/elast\n");
+			printf("<rctn>=2pi/elast/2pi_userana/elast_userana\n");
 			break;
 		case 'i':
 			fin = optarg;
@@ -124,15 +126,9 @@ void parseArgs(int argc, char* const argv[]){
 		case 'p':
 			procorder = optarg;
 			break;
-		/*case 'e':
-			expt = optarg;
+		case 'o':
+			output = optarg;
 			break;
-		case 'd':
-			dtyp = optarg;
-			break;
-		case 'r':
-			rctn = optarg;
-			break;*/
 		case 'n':
 			str_nentries = optarg;
 			nentries = str_nentries.Atoll();
