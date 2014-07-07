@@ -7,6 +7,7 @@ ana2pi Branches
 (Listed in accordance with tree-level heirarchy which is set up by executing 'git branch sub-branch' when the top level branch is checked out)
 ==================================================================
 + master: pre-DNP code; pretty much should reproduce DNP results
+
 	+ elastic: Here I started the effort to setup Simulation on CentOS6 (the idea as to use elastic simulations, hence the name) and also reorganzed a lot of code which mainly affected the production of processed data from h10-data (See handwritten notes). Also a lot of new scripts etc may have been added. 
 		+ setup_sim_CentOS6 [02-05-14]: I realized that setting up Simulation was getting to be a more involved task; It was not as simple as directly comparing sim-elastic-data with exp-elastic-data. A lot of details important to my analysis emerged, to list the important ones, Momentum Correction, Energy Loss, "Effective Corrections/Beam Tuning" for Sim and Exp, and also that I should not just compare Elastic data for Sim. & Exp., but also the Missing Mass distributions in my reaction channel. The increasing complexity of this task, made me want to make more change, to not only add new functionality, but also to improve the code's readability and integerity, hence I made this new branch. Some of the salient changes:
 		1. proc_top & data_top -> proc_d2pi & data_2pi (Code readability)
@@ -16,6 +17,7 @@ ana2pi Branches
                                1.iv. Added functionality for a single instantiation of ProcD2pi to make `d2pi` for Thrown and Reconstructed events (earlier a single instantiation could make `d2pi` for Thrown or Reconstructed events)  
 		2. Moved "top" from DataAna to Data2pi (Code integrity)
 		3. ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() -> ProcD2pi::UpdateMM(), ProcD2pi::UpdateVarsets() (Code integrity and readability)
+
 			+ extract_obs [06-12-14]: After 'setup_sim_CentOS6', where I set up the simulation on the new CentOS6 machine, along with developing a lot of infrastructure to understand and study (see handwritten and other notes for details):
 				- Detector resolution & offsets and its affect on finally reconstructed quantities
 				- Affects of various corrections - mcor,ecor,"effcor" - on finally reconstructed quantities,
@@ -32,5 +34,7 @@ ana2pi Branches
 					i. ProcEFid: Added hevtsum histogram 
 				3. New process to make obsX-sim/exp.root
 				4. New process to display the observables for final publication and diagnosis
+
+				+ extract_obs_test-new-proch10 [07-07-14]: Test branch created to test new procedure to process h10 -> q2w/output. Once tested, this branch will be merged with extract_obs and deleted.
 
 				

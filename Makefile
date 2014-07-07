@@ -11,19 +11,19 @@ INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incd
 SRC = epconfig.cpp h10looper.cpp ep_processor.cpp data_h10.cpp data_ana.cpp eid.cpp data_eid.cpp data_ekin.cpp data_efid.cpp data_skim_q.cpp data_mom.cpp data_pid.cpp data_2pi.cpp data_elastic.cpp
 OBJS = $(patsubst %.cpp,obj/%.o,$(SRC)) 
 LIBS =          $(shell root-config --glibs)
-LIBOUT =        $(WORKSPACE)/ana2pi/sobj/libana.so
-TARGET = ana
+LIBOUT =        $(WORKSPACE)/ana2pi/sobj/lib_proc_h10.so
+TARGET = proc_h10
 
 obj/%.o: %.cpp
 	$(CXX) $(INCS) $(CXXFLAGS) -c $< -o $@
 
-$(TARGET):	lib obj/ana.o 
-	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/ana.o $(INCS) $(LIBS) -L. $(LIBOUT)
+$(TARGET):	lib obj/proc_h10.o 
+	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/proc_h10.o $(INCS) $(LIBS) -L. $(LIBOUT)
 
 all: dict lib $(TARGET) 
 
 clean:
-	-rm -f $(OBJS) $(LIBOUT) ana obj/ana.o
+	-rm -f $(OBJS) $(LIBOUT) proc_h10 obj/proc_h10.o
 
 $(OBJS): | obj
 
