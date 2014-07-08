@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-import sys,os,getopt
+import sys,os,subprocess#,shlex
+import getopt
 
 def main(argv):
 	h10type=''
@@ -40,7 +41,7 @@ def main(argv):
 
 	expt,dtyp,rctn=h10type.split(":")
 	print "expt,dtyp,rctn=",expt,dtyp,rctn
-	if dtyp=='sim' & sim_num=='':
+	if dtyp=='sim' and sim_num=='':
 		print "sim_num num not entered for simulation"
 
 	#! Prepare h10lst,output
@@ -50,8 +51,8 @@ def main(argv):
 	if dtyp=='sim': 
 		obs_datadir=os.environ['OBS_DATADIR_SIM']
 		subdir=sim_num
-	h10lst=os.path.join(obs_datadir,subdir,h10.lst))
-	outdir=os.path.join(os.environ['ANA2PI_OBS_DIR'],subdir,q2w))
+	h10lst=os.path.join(obs_datadir,subdir,"h10.lst")
+	outdir=os.path.join(os.environ['ANA2PI_OBS_DIR'],subdir,q2w)
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 	fout=os.path.join(outdir,"%s.root"%output)
@@ -59,14 +60,14 @@ def main(argv):
 	#! Determine procorder
 
 	#! First determine proc_q2wskim
-	if q2w==''
+	if q2w=='':
 		proc_q2wskim=''
 	else:
 		num=q2w.split('q2w')[1]
-		proc_q2wskim='q2wskim%d'num	
+		proc_q2wskim='q2wskim%d'%num	
 
 	if dtyp=='exp':
-		if output='d2pi':
+		if output=='d2pi':
 			procorder="%s:eid:efid:qskim:mom:pid:d2piR"%proc_q2wskim
 	if dtyp=='sim':
 		if output=='d2pi':
@@ -74,7 +75,9 @@ def main(argv):
 
 
 	#! Finall call proc_h10
-	cmd="proc_h10 -i h10lst -t h10type -p procorder -o output -n nentries"
+	cmd=["proc_h10","-i",h10lst,"-t",h10type,"-p",procorder,"-o",fout,"-n",nentries]
+	print ">>>",cmd
+	subprocess.check_output(cmd)
 	
 if __name__ == "__main__":
 	main(sys.argv[1:])

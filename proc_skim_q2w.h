@@ -12,12 +12,13 @@ class ProcSkimQ2W : public EpProcessor
 {
 
 public:
-	ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
+	ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
+				Float_t q2min=1.2,Float_t q2max=5.20,Float_t wmin=1.3,Float_t wmax=3.0);
 	~ProcSkimQ2W();
 	
 	void handle();
 
-	//TObjArray* _hists_ekin;
+	Float_t _q2min,_q2max,_wmin,_wmax;
 	
 protected:
 	static const Int_t NUM_EVTCUTS = 2;
@@ -27,9 +28,14 @@ protected:
 	bool _useMc;
 };
 
-ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
+ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
+						Float_t q2min/*=1.2*/,Float_t q2max/*=5.20*/,Float_t wmin/*=1.3*/,Float_t wmax/*=3.0*/)
 						 : EpProcessor(td, dataH10, dataAna)
 {
+	_q2min=q2min;
+	_q2max=q2max;
+	_wmin=wmin;
+	_wmax=wmax;
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->SetMinimum(0);

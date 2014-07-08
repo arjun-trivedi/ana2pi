@@ -1,4 +1,4 @@
-#include "proc_h10.h"
+#include "q2w_bng.h"
 #include "data_h10.h"
 #include "data_ana.h"
 #include "h10looper.h"
@@ -214,12 +214,12 @@ EpProcessor* SetupProcs(){
 
 EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim){
 	Float_t q2min,q2max,wmin,wmax=0.0;
-	TString str_q2wnum=proc_q2wskim.Remove(0,7);//removing "q2wskim" from "q2wskimX"
-	Int_t num=str_q2wnum.Atoi();
-	q2min=q2w[num-1].q2min;
-    q2max=q2w[num-1].q2max;
-    wmin=q2w[num-1].wmin;
-    wmax=q2w[num-1].wmax;
+	TString str_q2w_binnum=proc_q2wskim.Remove(0,7);//removing "q2wskim" from "q2wskimX"
+	Int_t binnum=str_q2w_binnum.Atoi();
+	q2min=kQ2Wbin[binnum-1].q2min;
+    q2max=kQ2Wbin[binnum-1].q2max;
+    wmin=kQ2Wbin[binnum-1].wmin;
+    wmax=kQ2Wbin[binnum-1].wmax;
     //EpProcessor* proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
 }
 
