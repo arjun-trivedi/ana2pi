@@ -8,7 +8,7 @@ def main(argv):
 	sim_num=''
 	q2w=''
 	output=''
-	nentries=1000000000
+	nentries='1000000000'
 	try:
 		opts, args = getopt.getopt(argv,"h",["h10type=","sim_num=","q2w=","output=","nentries="])
 	except getopt.GetoptError:
