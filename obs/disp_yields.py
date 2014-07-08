@@ -8,9 +8,9 @@ import os,sys
 class DispYields:
 	def __init__(self,q2w):
 		self.Q2W=q2w
-		self.FEXP=root_open(os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W,'yield_exp.root'))
-		self.FSIM=root_open(os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W,'yield_sim.root'))
-		self.ANADIR=os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W)
+		self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.Q2W,'yield_exp.root'))
+		self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.Q2W,'yield_sim.root'))
+		self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.Q2W)
 		if not os.path.exists(self.ANADIR):
 			sys.exit("%s does not exist!"%self.ANADIR)
 

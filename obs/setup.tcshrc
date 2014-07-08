@@ -7,6 +7,7 @@ setenv PATH "${PATH}:${ANA2PI_OBS_DIR}"
 ##- modify PYTHONPATH
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_OBS_DIR}"
 
+##-- dir where h10.lst and d2pi are kept
 if ($HOST == "gothe14") then
   setenv OBS_DATADIR "/data/trivedia/e1f/2pi"
   setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
@@ -16,3 +17,5 @@ else if ($HOST =~ "ifarm*") then
   setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
   setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
 endif
+##-- dir where where yields and their displays are kept
+setenv OBS_DIR "${OBS_DATADIR}/obs"
