@@ -42,17 +42,20 @@ def main(argv):
 	expt,dtyp,rctn=h10type.split(":")
 	print "expt,dtyp,rctn=",expt,dtyp,rctn
 	if dtyp=='sim' and sim_num=='':
-		print "sim_num num not entered for simulation"
+		sys.exit("sim_num num not entered for simulation")
 
 	#! Prepare h10lst,output
-	subdir=''#! sim outputs have a sim_num subdirectory
+	# subdir=''#! sim outputs have a sim_num subdirectory
 	if dtyp=='exp':
 		obs_datadir=os.environ['OBS_DATADIR_EXP']
+		outdir=os.path.join(obs_datadir,q2w)
+		h10lst=os.path.join(obs_datadir,"h10.lst")
 	if dtyp=='sim': 
 		obs_datadir=os.environ['OBS_DATADIR_SIM']
-		subdir=sim_num
-	h10lst=os.path.join(obs_datadir,subdir,"h10.lst")
-	outdir=os.path.join(os.environ['ANA2PI_OBS_DIR'],subdir,q2w)
+		outdir=os.path.join(obs_datadir,sim_num,q2w)
+		h10lst=os.path.join(obs_datadir,sim_num,"h10.lst")
+	# h10lst=os.path.join(obs_datadir,subdir,"h10.lst")
+	# outdir=os.path.join(os.environ['ANA2PI_OBS_DIR'],subdir,q2w)
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 	fout=os.path.join(outdir,"%s.root"%output)

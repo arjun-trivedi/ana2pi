@@ -8,11 +8,11 @@ setenv PATH "${PATH}:${ANA2PI_OBS_DIR}"
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_OBS_DIR}"
 
 if ($HOST == "gothe14") then
-  setenv OBS_DATADIR "/data/trivedia/e1f"
-  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim/2pi"#2pi_1B_060214/recon"
-  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp/2pi"
+  setenv OBS_DATADIR "/data/trivedia/e1f/2pi"
+  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
+  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
 else if ($HOST =~ "ifarm*") then
-  setenv OBS_DATADIR "${EG3HOME}/data/e1f"
-  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim/2pi"#2pi_1B_060214/recon"
-  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp/2pi"
+  setenv OBS_DATADIR "${EG3HOME}/data/e1f/2pi"
+  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
+  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
 endif
