@@ -61,17 +61,17 @@ def main(argv):
 
 	#! First determine proc_q2wskim
 	if q2w=='':
-		proc_q2wskim=''
+		proc_q2wskim_dcptr=''
 	else:
 		num=q2w.split('q2w')[1]
-		proc_q2wskim='q2wskim%d'%num	
+		proc_q2wskim_dcptr='q2wskim%s'%num	
 
 	if dtyp=='exp':
 		if output=='d2pi':
-			procorder="%s:eid:efid:qskim:mom:pid:d2piR"%proc_q2wskim
+			procorder="eid:%s:efid:qskim:mom:pid:d2piR"%proc_q2wskim_dcptr
 	if dtyp=='sim':
 		if output=='d2pi':
-			procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim
+			procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim_dcptr
 
 
 	#! Finall call proc_h10

@@ -20,6 +20,7 @@
 #include <TChain.h>
 #include <TFileCollection.h>
 #include <TFile.h>
+#include <TRegexp.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -49,7 +50,7 @@ H10Looper* h10looper;
 void parseArgs(int argc, char* const argv[]);
 TDirectory* mkdir(const char* dirname);
 EpProcessor* SetupProcs();
-EpProcessor* SetupProcSkimQ2W();
+EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr);
 
 int main(int argc,  char* const argv[])
 {
@@ -188,6 +189,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
          else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
+         else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
          else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
@@ -212,15 +214,16 @@ EpProcessor* SetupProcs(){
    return proc_chain;
 }
 
-EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim){
+EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr){
 	Float_t q2min,q2max,wmin,wmax=0.0;
-	TString str_q2w_binnum=proc_q2wskim.Remove(0,7);//removing "q2wskim" from "q2wskimX"
+	TString str_q2w_binnum=proc_q2wskim_dcptr.Remove(0,7);//removing "q2wskim" from "q2wskimXX"
 	Int_t binnum=str_q2w_binnum.Atoi();
-	q2min=kQ2Wbin[binnum-1].q2min;
-    q2max=kQ2Wbin[binnum-1].q2max;
-    wmin=kQ2Wbin[binnum-1].wmin;
-    wmax=kQ2Wbin[binnum-1].wmax;
-    //EpProcessor* proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
+	q2min=kQ2W_CrsBin[binnum-1].q2min;
+    q2max=kQ2W_CrsBin[binnum-1].q2max;
+    wmin=kQ2W_CrsBin[binnum-1].wmin;
+    wmax=kQ2W_CrsBin[binnum-1].wmax;
+    EpProcessor* proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,q2min,q2max,wmin,wmax);
+    return proc;
 }
 
 

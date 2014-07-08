@@ -5,6 +5,7 @@
 #include <THnSparse.h>
 #include <TMath.h>
 #include "particle_constants.h"
+#include "q2w_bng.h"
 
 #include <iostream>
 using namespace std;
@@ -211,17 +212,25 @@ TObjArray* DataAna::makeYields()
 	TObjArray *ret=new TObjArray(numHists);
 	Int_t hdim=8;
 	
-	bngQ2.bins=10; //0.5 GeV^2/bin
-	bngQ2.xmin=0.0;
-	bngQ2.xmax=5.0;
-	//! Q2 variable binning (taken directly from ana notes)
-	//! [1.2,1.6),[1.6,2.0),[2.0,2.4),[2.4,3.0),[3.0,3.5),[3.5,4.2),[4.2,5.0)
-	Int_t q2_nbins=7;
-	Float_t q2_bins[8]={1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0};
-	
-	bngW.bins=80; //25 MeV/bin
-	bngW.xmin=1.0;
-	bngW.xmax=3.0;
+	// bngQ2.bins=10; //0.5 GeV^2/bin
+	// bngQ2.xmin=0.0;
+	// bngQ2.xmax=5.0;
+
+	//! Note, the following is just a place holder
+	//! to be used when creating h8. One the h8 is
+	//! created, the binning in Q2 will be replaced
+	//! by the define variable binning
+	bngQ2.bins=10; 
+	bngQ2.xmin=kQ2_min;
+	bngQ2.xmax=kQ2_max;
+
+	// bngW.bins=80; //25 MeV/bin
+	// bngW.xmin=1.0;
+	// bngW.xmax=3.0;
+
+	bngW.bins=kW_NAnaBins; //25 MeV/bin
+	bngW.xmin=kW_min;
+	bngW.xmax=kW_max;
 	
 	bngMppip.bins=80; //~22 MeV/bin
 	bngMppip.xmin=0.938 + 0.140;
@@ -257,7 +266,7 @@ TObjArray* DataAna::makeYields()
 	hdim, bins1, xmin1, xmax1);
 	hN1->Sumw2();
 	//! Make variable Q2-binning
-	hN1->GetAxis(1)->Set(q2_nbins,q2_bins);
+	hN1->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
 	gDirectory->Append(hN1);
 	ret->Add(hN1);
 
@@ -271,7 +280,7 @@ TObjArray* DataAna::makeYields()
 	hdim, bins2, xmin2, xmax2);
 	hN2->Sumw2();
 	//! Make variable Q2-binning
-	hN2->GetAxis(1)->Set(q2_nbins,q2_bins);
+	hN2->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
 	gDirectory->Append(hN2);
 	ret->Add(hN2);
 	
@@ -285,7 +294,7 @@ TObjArray* DataAna::makeYields()
 	hdim, bins3, xmin3, xmax3);
 	hN3->Sumw2();
 	//! Make variable Q2-binning
-	hN3->GetAxis(1)->Set(q2_nbins,q2_bins);
+	hN3->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
 	gDirectory->Append(hN3);
 	ret->Add(hN3);
 	

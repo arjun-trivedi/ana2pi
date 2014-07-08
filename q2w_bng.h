@@ -3,10 +3,18 @@
 
 #include <TROOT.h>
 
-//! See ana2pi notes (tb) for details
-const Int_t kNCrsQ2bins=7;
-const Int_t kNCrsWbins=7;
-const Int_t kNCrsQ2Wbins=49;
+
+/* 
+This file defines the Coarse and Analysis binning for Q2W and should
+be referenced by all the other code in the analysis that need to know
+about the binning.
+See ana2pi notes (tomboy) for details.
+*/
+
+//! 1. Set up coarse Q2W binning
+const Int_t kQ2_NCrsBins=7;
+const Int_t kW_NCrsBins=7;
+const Int_t kQ2W_NCrsBins=49;
 
 //! Use for coarse Q2,W,Q2W bin ranges
 struct BinRange{
@@ -21,7 +29,7 @@ struct Q2WBinRange{
   Float_t wmax;
 };
 
-BinRange kQ2bin[kNCrsQ2bins]={
+const BinRange kQ2_CrsBin[kQ2_NCrsBins]={
 	{1.2,1.6},
 	{1.6,2.0},
 	{2.0,2.4},
@@ -31,7 +39,10 @@ BinRange kQ2bin[kNCrsQ2bins]={
 	{4.2,5.0}
 };
 
-BinRange kWbin[kNCrsWbins]={
+//! Ensure that kW_CrsBin[kW_NCrsBins-1].xmax - kW_CrsBin[0].xmin is 
+//! a multiple of 0.025 GeV, since these values are later used to 
+//! to determine the number of analysis-bins i.e. for h8 binning
+const BinRange kW_CrsBin[kW_NCrsBins]={
 	{1.3,1.7},
 	{1.7,2.0},
 	{2.0,2.2},
@@ -41,67 +52,93 @@ BinRange kWbin[kNCrsWbins]={
 	{2.8,3.0} 
 };
 
-//! Q2 variable binning
-Int_t kQ2bin_nbins=7;
-Float_t kQ2bin_bins[8]={1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0};
-
-Q2WBinRange kQ2Wbin[kNCrsQ2Wbins]={
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[0].xmin,kQ2bin[0].xmax,kWbin[6].xmin,kWbin[6].xmax},
+const Q2WBinRange kQ2W_CrsBin[kQ2W_NCrsBins]={
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
 
 
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[1].xmin,kQ2bin[1].xmax,kWbin[6].xmin,kWbin[6].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
 
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[2].xmin,kQ2bin[2].xmax,kWbin[6].xmin,kWbin[6].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
 
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[3].xmin,kQ2bin[3].xmax,kWbin[6].xmin,kWbin[6].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
 
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[4].xmin,kQ2bin[4].xmax,kWbin[6].xmin,kWbin[6].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
 
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[5].xmin,kQ2bin[5].xmax,kWbin[6].xmin,kWbin[6].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
 
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[0].xmin,kWbin[0].xmax},
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[1].xmin,kWbin[1].xmax},
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[2].xmin,kWbin[2].xmax},
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[3].xmin,kWbin[3].xmax},
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[4].xmin,kWbin[4].xmax},
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[5].xmin,kWbin[5].xmax},
-{kQ2bin[6].xmin,kQ2bin[6].xmax,kWbin[6].xmin,kWbin[6].xmax}
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
+{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax}
 };
+
+//! 2. Set up Ana Q2W binning
+//! The following is used by DataAna::makeYields for h8 bng
+
+//! Q2 variable binning
+const Int_t kQ2_NAnaBins=kQ2_NCrsBins;
+//const Float_t kQ2_AnaBins[kQ2_NAnaBins]={1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0};
+const Float_t kQ2_AnaBins[kQ2_NAnaBins+1]={
+	kQ2_CrsBin[0].xmin,
+	kQ2_CrsBin[1].xmin,
+	kQ2_CrsBin[2].xmin,
+	kQ2_CrsBin[3].xmin,
+	kQ2_CrsBin[4].xmin,
+	kQ2_CrsBin[5].xmin,
+	kQ2_CrsBin[6].xmin,
+	kQ2_CrsBin[6].xmax
+};
+const Int_t kQ2_min=kQ2_CrsBin[0].xmin;
+const Int_t kQ2_max=kQ2_CrsBin[kQ2_NCrsBins-1].xmax;
+
+//~ W binning
+const Int_t kW_min=kW_CrsBin[0].xmin;
+const Int_t kW_max=kW_CrsBin[kW_NCrsBins-1].xmax;
+const Float_t kW_binw=0.025;
+const Int_t kW_NAnaBins=(kW_max-kW_min)/kW_binw;
+
+
+
+//! W binning
+Int_t kW_Nbins=80; //25 MeV/bin
 
 #endif // Q2BNG_H
