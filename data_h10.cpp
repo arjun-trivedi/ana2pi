@@ -167,12 +167,23 @@ void DataH10::Reconcile() {
 	}
 }
 
+void DataH10::set_ientry_h10chain(Int_t ientry)
+{
+	_ientry_h10chain=ientry;
+}
+
+Int_t DataH10::get_ientry_h10chain()
+{
+	return _ientry_h10chain;
+}
+
 DataH10::~DataH10()
 {
 }
 
 void DataH10::Clear()
 {	
+	_ientry_h10chain=-1;
 	//SEB
 	evntid = 0;
 	evthel = 0;
