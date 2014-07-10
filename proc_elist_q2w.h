@@ -76,7 +76,7 @@ void ProcEListQ2W::handle()
 				ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
 				Int_t bin=(i+1)*(j+1)+(i*8);
 				Int_t bin_idx=bin-1;
-				el[bin_idx]->Entry(XXX,dH10->h10chain);
+				el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
 
 				hevtsum->Fill(EVT_PASS);
 				pass = kTRUE;

@@ -28,10 +28,11 @@ void H10Looper::Loop(Long64_t nentries)
       dH10->Clear();
       dAna->Clear();
 
-      // 2.Load Branches into dH10
+      // 2.Load Branches into dH10 & set dH10::_ientry_h10chain
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
+      dH10->set_ientry_h10chain(jentry);
 
       // 2.1 If needed, Reconcile dH10
       if (dH10->rctn=="2pi_userana" || 
