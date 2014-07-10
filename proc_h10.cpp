@@ -32,6 +32,8 @@ TString output="";
 TString dtyp="";
 TString rctn="";*/ 
 TString h10type="";
+TString str_use_q2w_elist;
+Bool_t use_q2w_elist=kFALSE;
 TString str_nentries="";
 Long64_t nentries=1000000000;
 
@@ -78,6 +80,9 @@ int main(int argc,  char* const argv[])
 		printf("Incorrect rctn entered: %s\n", rctn.Data());
 		return 0;
 	}
+	if (use_q2w_elist){
+		printf("Going to use q2w_elist\n");
+	}
 
 
 	h10chain = new TChain("h10");
@@ -93,7 +98,7 @@ int main(int argc,  char* const argv[])
 	dH10 = new DataH10(h10type);
 	dAna = new DataAna();
 	proc_chain = SetupProcs();
-	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain);
+	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain,use_q2w_elist);
 	h10looper->Loop(nentries);
 
 	fout->Write();
@@ -107,13 +112,14 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, "hi:t:p:o:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:t:p:o:l:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("ana2pi -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -n <nevts>\n");
+			printf("ana2pi -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -l <use_q2w_elist>-n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<rctn>=2pi/elast/2pi_userana/elast_userana\n");
+			printf("<use_q2w_elist>=true/[false]\n");
 			break;
 		case 'i':
 			fin = optarg;
@@ -126,6 +132,12 @@ void parseArgs(int argc, char* const argv[]){
 			break;
 		case 'o':
 			output = optarg;
+			break;
+		case 'l':
+			str_use_q2w_elist = optarg;
+			if (str_use_q2w_elist.EqualTo("true")){
+				use_q2w_elist=kTRUE;
+			}
 			break;
 		case 'n':
 			str_nentries = optarg;

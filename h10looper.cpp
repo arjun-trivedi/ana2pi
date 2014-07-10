@@ -4,6 +4,7 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TSystem.h>
+#include <TEntryList.h>
 
 void H10Looper::Loop(Long64_t nentries)
 {
@@ -16,7 +17,19 @@ void H10Looper::Loop(Long64_t nentries)
 
 
    //Long64_t nentries = fChain->GetEntriesFast();
-   Int_t nentries_chain = fChain->GetEntries();
+   Int_t nentries_chain;// = fChain->GetEntries();
+   TEntryList* el=NULL;
+   if (_use_q2w_elist){
+      //! Get EntryList from file and set it for TChain
+      TFile* fel=new TFile("test");
+      el=(TEntryList*)fel->Get("q2welist/elist_q2w_1");
+      nentries_chain = el->GetN();
+      fChain->SetEntryList(el);
+      //! Output file
+      // fout=new TFile("test_use_el.root","RECREATE");
+   } else {
+      nentries_chain=fChain->GetEntries();
+   }
    Int_t nentries_to_proc=0;
    nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
    Info("H10Looper::Loop", "Number of entries in Chain =  %d\n",nentries_chain);
@@ -29,10 +42,24 @@ void H10Looper::Loop(Long64_t nentries)
       dAna->Clear();
 
       // 2.Load Branches into dH10 & set dH10::_ientry_h10chain
-      Long64_t ientry = LoadTree(jentry);
+      Long64_t chainEntry=-1;
+      if (_use_q2w_elist){
+         Int_t treenum=0;
+         Long64_t treeEntry = el->GetEntryAndTree(jentry,treenum);
+         chainEntry = treeEntry+fChain->GetTreeOffset()[treenum];
+         printf("listEntry=%lld, treeEntry=%lld, chainEntry=%lld, treenum=%d\n"
+            ,jentry,treeEntry,chainEntry,treenum);
+      }else{
+         chainEntry=jentry;
+      }
+      Long64_t ientry = fChain->LoadTree(chainEntry);
       if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      dH10->set_ientry_h10chain(jentry);
+      nb = fChain->GetEntry(chainEntry);   nbytes += nb;
+      dH10->set_ientry_h10chain(chainEntry);
+      // Long64_t ientry = LoadTree(jentry);
+      // if (ientry < 0) break;
+      // nb = fChain->GetEntry(jentry);   nbytes += nb;
+      // dH10->set_ientry_h10chain(jentry);
 
       // 2.1 If needed, Reconcile dH10
       if (dH10->rctn=="2pi_userana" || 

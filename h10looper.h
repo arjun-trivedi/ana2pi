@@ -17,19 +17,21 @@
 
 class H10Looper {
 public :
-   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+   TChain          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
    DataH10* dH10;
    DataAna* dAna;
    EpProcessor* proc_chain;
 
-   H10Looper(TTree *tree=0,DataH10* dataH10=0,DataAna* dataAna=0,EpProcessor* processor_chain=0);
+   Bool_t _use_q2w_elist;
+
+   H10Looper(TChain *tree=0,DataH10* dataH10=0,DataAna* dataAna=0,EpProcessor* processor_chain=0,Bool_t use_q2w_elist=kFALSE);
    virtual ~H10Looper();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
-   virtual void     Init(TTree *tree);
+   virtual void     Init(TChain *tree);
    virtual void     Loop(Long64_t nentries);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
@@ -38,7 +40,7 @@ public :
 #endif
 
 #ifdef H10Looper_cxx
-H10Looper::H10Looper(TTree *tree, DataH10* dataH10, DataAna* dataAna, EpProcessor* processor_chain) : fChain(0) 
+H10Looper::H10Looper(TChain *tree, DataH10* dataH10, DataAna* dataAna, EpProcessor* processor_chain,Bool_t use_q2w_elist/*=kFALSE*/) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -55,6 +57,8 @@ H10Looper::H10Looper(TTree *tree, DataH10* dataH10, DataAna* dataAna, EpProcesso
 
    proc_chain = processor_chain;
    //SetupProcs();
+
+   _use_q2w_elist=use_q2w_elist;
 
    Init(tree);
 }
@@ -84,7 +88,7 @@ Long64_t H10Looper::LoadTree(Long64_t entry)
    return centry;
 }
 
-void H10Looper::Init(TTree *tree)
+void H10Looper::Init(TChain *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
