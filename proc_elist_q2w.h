@@ -40,7 +40,7 @@ ProcEListQ2W::ProcEListQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 
 	//! Create Q2W TEntryLists
 	for(int i=0;i<kQ2W_NCrsBins;i++){
-		el[i]=new TEntryList(TString::Format("elist_q2w_%d",i+1),TString::Format("elist_q2w_%d",i+1));
+		_el[i]=new TEntryList(TString::Format("elist_q2w_%d",i+1),TString::Format("elist_q2w_%d",i+1));
 	}
 
 	//! atrivedi [06-13-14]: The following logic is based on
@@ -55,6 +55,7 @@ ProcEListQ2W::ProcEListQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 
 ProcEListQ2W::~ProcEListQ2W()
 {
+	delete _el;
 	delete hevtsum;
 	delete hists;
 	//delete _hists_ekin;
@@ -62,21 +63,23 @@ ProcEListQ2W::~ProcEListQ2W()
 
 void ProcEListQ2W::handle()
 {
-	//Info("ProcEListQ2W::handle()", "");
+	Info("ProcEListQ2W::handle()", "");
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
 	
 	updateEkin(_useMc);
-		
+	Info("ProcEListQ2W::handle()", "updated Ekin");	
 	DataEkin *ekin = &dAna->eKin;
 	if (_useMc) ekin = &dAna->eKin_mc;
 	for(int i=0;i<kQ2_NCrsBins;i++){
-		for(int j=0;j<kQ2_NCrsBins;j++){
+		for(int j=0;j<kW_NCrsBins;j++){
 			if (ekin->Q2>=kQ2_CrsBin[i].xmin && ekin->Q2<kQ2_CrsBin[i].xmax && 
 				ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
-				Int_t bin=(i+1)*(j+1)+(i*8);
+				Int_t bin=(j+1)+(i*7);
 				Int_t bin_idx=bin-1;
-				el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
+				Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
+				_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
+				Info("ProcEListQ2W::handle()", "update _el");
 
 				hevtsum->Fill(EVT_PASS);
 				pass = kTRUE;

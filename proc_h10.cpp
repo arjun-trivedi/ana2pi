@@ -9,13 +9,10 @@
 #include "proc_pid.h"
 #include "proc_skim_q.h"
 #include "proc_skim_q2w.h"
+#include "proc_elist_q2w.h"
 #include "proc_mom_cor.h"
 #include "proc_d2pi.h"
 #include "proc_copy_h10.h"
-//#include "proc_top.h"
-/*#include "proc_skim_q2w.h"
-#include "proc_fill_skim.h"
-#include "proc_copy_h10.h"*/
 
 #include <TChain.h>
 #include <TFileCollection.h>
@@ -54,7 +51,7 @@ EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr);
 
 int main(int argc,  char* const argv[])
 {
-	Info("ana2pi::main()", "\n");
+	Info("proc_h10::main()", "\n");
 	parseArgs(argc, argv);
 	
 	/*if (fin==""||procorder==""||expt==""||dtyp==""||rctn==""){*/
@@ -190,6 +187,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
          else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
          else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
+         else if (str.EqualTo("q2welist"))   proc = new ProcEListQ2W(mkdir("q2welist"),dH10,dAna);
          else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
