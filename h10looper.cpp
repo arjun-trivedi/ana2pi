@@ -22,7 +22,7 @@ void H10Looper::Loop(Long64_t nentries)
    if (_use_q2w_elist){
       //! Get EntryList from file and set it for TChain
       TFile* fel=new TFile("test");
-      el=(TEntryList*)fel->Get("q2welist/elist_q2w_1");
+      el=(TEntryList*)fel->Get("q2welist/elist_q2w_6");
       nentries_chain = el->GetN();
       fChain->SetEntryList(el);
       //! Output file
