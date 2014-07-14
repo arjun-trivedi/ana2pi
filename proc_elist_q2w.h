@@ -63,12 +63,12 @@ ProcEListQ2W::~ProcEListQ2W()
 
 void ProcEListQ2W::handle()
 {
-	Info("ProcEListQ2W::handle()", "");
+	// Info("ProcEListQ2W::handle()", "");
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
 	
 	updateEkin(_useMc);
-	Info("ProcEListQ2W::handle()", "updated Ekin");	
+	// Info("ProcEListQ2W::handle()", "updated Ekin");	
 	DataEkin *ekin = &dAna->eKin;
 	if (_useMc) ekin = &dAna->eKin_mc;
 	for(int i=0;i<kQ2_NCrsBins;i++){
@@ -77,9 +77,9 @@ void ProcEListQ2W::handle()
 				ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
 				Int_t bin=(j+1)+(i*7);
 				Int_t bin_idx=bin-1;
-				Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
+				// Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
 				_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
-				Info("ProcEListQ2W::handle()", "update _el");
+				// Info("ProcEListQ2W::handle()", "update _el");
 
 				hevtsum->Fill(EVT_PASS);
 				pass = kTRUE;
@@ -125,15 +125,15 @@ void ProcEListQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	if (!useMc) {ekin->sector = dH10->sc_sect[dH10->sc[0]-1];}
 	ekin->W = (_4vQ+_4vP0).Mag();
 	ekin->Q2 = -1*_4vQ.Mag2();
-	ekin->nu = _4vQ.E();
-	ekin->xb = ekin->Q2/(2*MASS_P*ekin->nu);
-	ekin->E1 = _4vE1.E();
-	ekin->theta1 = _4vE1.Theta()*RadToDeg();
-	Double_t phitmp = _4vE1.Phi()*RadToDeg(); //phitmp = [-180,180]
-	ekin->phi1 = phitmp<-30 ? phitmp+360 : phitmp;
-	ekin->theta = _4vQ.Theta()*RadToDeg();
-	phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
-	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
+	// ekin->nu = _4vQ.E();
+	// ekin->xb = ekin->Q2/(2*MASS_P*ekin->nu);
+	// ekin->E1 = _4vE1.E();
+	// ekin->theta1 = _4vE1.Theta()*RadToDeg();
+	// Double_t phitmp = _4vE1.Phi()*RadToDeg(); //phitmp = [-180,180]
+	// ekin->phi1 = phitmp<-30 ? phitmp+360 : phitmp;
+	// ekin->theta = _4vQ.Theta()*RadToDeg();
+	// phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
+	// ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
 }
 
 #endif // PROCELISTQ2W_H
