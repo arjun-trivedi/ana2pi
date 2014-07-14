@@ -45,7 +45,6 @@ def main(argv):
 		sys.exit("sim_num num not entered for simulation")
 
 	#! Prepare h10lst,output
-	# subdir=''#! sim outputs have a sim_num subdirectory
 	if dtyp=='exp':
 		obs_datadir=os.environ['OBS_DATADIR_EXP']
 		outdir=os.path.join(obs_datadir,q2w)
@@ -54,8 +53,6 @@ def main(argv):
 		obs_datadir=os.environ['OBS_DATADIR_SIM']
 		outdir=os.path.join(obs_datadir,sim_num,q2w)
 		h10lst=os.path.join(obs_datadir,sim_num,"h10.lst")
-	# h10lst=os.path.join(obs_datadir,subdir,"h10.lst")
-	# outdir=os.path.join(os.environ['OBS_DIR'],subdir,q2w)
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 	fout=os.path.join(outdir,"%s.root"%output)
