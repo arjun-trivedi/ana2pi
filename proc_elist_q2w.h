@@ -90,25 +90,24 @@ void ProcEListQ2W::handle()
 	DataEkin *ekin = &dAna->eKin;
 	if (_useMc) ekin = &dAna->eKin_mc;
 	for(int i=0;i<kQ2_NCrsBins;i++){
-		if (ekin->Q2>=kQ2_CrsBin[i].xmin && ekin->Q2<kQ2_CrsBin[i].xmax){ //&& 
 		for(int j=0;j<kW_NCrsBins;j++){
-			if (ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
-					Int_t bin=(j+1)+(i*7);
-					Int_t bin_idx=bin-1;
-					// Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
-					_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
-					// Info("ProcEListQ2W::handle()", "update _el");
+		if (ekin->Q2>=kQ2_CrsBin[i].xmin && ekin->Q2<kQ2_CrsBin[i].xmax && 
+			ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
+				Int_t bin=(j+1)+(i*7);
+				Int_t bin_idx=bin-1;
+				// Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
+				_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
+				// Info("ProcEListQ2W::handle()", "update _el");
 
-					if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
-						TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-						dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
-					}
-					dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
-
-					hevtsum->Fill(EVT_PASS);
-					pass = kTRUE;
-					EpProcessor::handle();
+				if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
+					TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
+					dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
 				}
+				dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
+
+				hevtsum->Fill(EVT_PASS);
+				pass = kTRUE;
+				EpProcessor::handle();
 			}
 		}
 	}

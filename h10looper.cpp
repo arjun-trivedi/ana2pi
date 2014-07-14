@@ -21,8 +21,8 @@ void H10Looper::Loop(Long64_t nentries)
    TEntryList* el=NULL;
    if (_use_q2w_elist){
       //! Get EntryList from file and set it for TChain
-      TFile* fel=new TFile("test");
-      el=(TEntryList*)fel->Get("q2welist/elist_q2w_6");
+      TFile* fel=new TFile("q2w_elist.root");
+      el=(TEntryList*)fel->Get("q2welist/elist_q2w_1");
       nentries_chain = el->GetN();
       fChain->SetEntryList(el);
       //! Output file
@@ -47,8 +47,8 @@ void H10Looper::Loop(Long64_t nentries)
          Int_t treenum=0;
          Long64_t treeEntry = el->GetEntryAndTree(jentry,treenum);
          chainEntry = treeEntry+fChain->GetTreeOffset()[treenum];
-         printf("listEntry=%lld, treeEntry=%lld, chainEntry=%lld, treenum=%d\n"
-            ,jentry,treeEntry,chainEntry,treenum);
+         // printf("listEntry=%lld, treeEntry=%lld, chainEntry=%lld, treenum=%d\n"
+         //    ,jentry,treeEntry,chainEntry,treenum);
       }else{
          chainEntry=jentry;
       }
