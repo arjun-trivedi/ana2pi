@@ -32,12 +32,17 @@ TString output="";
 TString dtyp="";
 TString rctn="";*/ 
 TString h10type="";
+
 TString str_use_q2w_elist;
 Bool_t use_q2w_elist=kFALSE;
+TString q2w="";
+TString fname_q2w_el="";
+TFile* f_q2w_el=NULL;
+
 TString str_nentries="";
 Long64_t nentries=1000000000;
 
-//objects setup by ana2pi
+//objects setup by proc_h10
 //TString h10type;
 TChain* h10chain;
 TFile* fout;
@@ -81,7 +86,9 @@ int main(int argc,  char* const argv[])
 		return 0;
 	}
 	if (use_q2w_elist){
-		printf("Going to use q2w_elist\n");
+		Info("proc_h10","Going to use q2w_elist\n");
+	}else{
+		Info("proc_h10","Not going to use q2w_elist\n");	
 	}
 
 
@@ -98,7 +105,7 @@ int main(int argc,  char* const argv[])
 	dH10 = new DataH10(h10type);
 	dAna = new DataAna();
 	proc_chain = SetupProcs();
-	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain,use_q2w_elist);
+	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain,use_q2w_elist,f_q2w_el,q2w);
 	h10looper->Loop(nentries);
 
 	fout->Write();
@@ -112,14 +119,14 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, "hi:t:p:o:l:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:t:p:o:l:m:q:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("ana2pi -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -l <use_q2w_elist>-n <nevts>\n");
+			printf("proc_h10 -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -l <use_q2w_elist> -m <fname_q2w_el> -q=<q2wX>-n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<rctn>=2pi/elast/2pi_userana/elast_userana\n");
-			printf("<use_q2w_elist>=true/[false]\n");
+			printf("<use_q2w_elist>=True/[false]\n");
 			break;
 		case 'i':
 			fin = optarg;
@@ -135,9 +142,17 @@ void parseArgs(int argc, char* const argv[]){
 			break;
 		case 'l':
 			str_use_q2w_elist = optarg;
-			if (str_use_q2w_elist.EqualTo("true")){
+			if (str_use_q2w_elist.EqualTo("True")){
 				use_q2w_elist=kTRUE;
 			}
+			break;
+		case 'm':
+			fname_q2w_el=optarg;
+			f_q2w_el=new TFile(fname_q2w_el);
+			printf("%s",f_q2w_el->GetName());
+			break;
+		case 'q':
+			q2w=optarg;
 			break;
 		case 'n':
 			str_nentries = optarg;
@@ -170,7 +185,7 @@ TDirectory* mkdir(const char* dirname)
 EpProcessor* SetupProcs(){
    //Get list of processors
    TCollection *procorder_tokens = procorder.Tokenize(":");
-   Info("ana2pi::SetupProcs()", "procorder = %s\n", procorder.Data());
+   Info("proc_h10::SetupProcs()", "procorder = %s\n", procorder.Data());
    procorder_tokens->Print();
          
    //instantiate topProc; by design, topProc "builds" a cascaded chain of Procs

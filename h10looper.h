@@ -25,8 +25,12 @@ public :
    EpProcessor* proc_chain;
 
    Bool_t _use_q2w_elist;
+   TFile* _f_q2w_el;
+   TString _q2w;
+   TEntryList* _el;
 
-   H10Looper(TChain *tree=0,DataH10* dataH10=0,DataAna* dataAna=0,EpProcessor* processor_chain=0,Bool_t use_q2w_elist=kFALSE);
+   H10Looper(TChain *tree=0,DataH10* dataH10=0,DataAna* dataAna=0,EpProcessor* processor_chain=0,
+             Bool_t use_q2w_elist=kFALSE,TFile* f_q2w_el=NULL,TString q2w="");
    virtual ~H10Looper();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -40,7 +44,8 @@ public :
 #endif
 
 #ifdef H10Looper_cxx
-H10Looper::H10Looper(TChain *tree, DataH10* dataH10, DataAna* dataAna, EpProcessor* processor_chain,Bool_t use_q2w_elist/*=kFALSE*/) : fChain(0) 
+H10Looper::H10Looper(TChain *tree, DataH10* dataH10, DataAna* dataAna, EpProcessor* processor_chain,
+                     Bool_t use_q2w_elist/*=kFALSE*/,TFile* f_q2w_el/*=NULL*/,TString q2w/*=""*/) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -59,6 +64,9 @@ H10Looper::H10Looper(TChain *tree, DataH10* dataH10, DataAna* dataAna, EpProcess
    //SetupProcs();
 
    _use_q2w_elist=use_q2w_elist;
+   _f_q2w_el=f_q2w_el;
+   _q2w=q2w;
+   _el=NULL;
 
    Init(tree);
 }

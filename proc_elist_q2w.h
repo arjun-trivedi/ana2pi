@@ -40,13 +40,13 @@ ProcEListQ2W::ProcEListQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 
 	//! Create Q2W TEntryLists
 	for(int i=0;i<kQ2W_NCrsBins;i++){
-		_el[i]=new TEntryList(TString::Format("elist_q2w_%d",i+1),TString::Format("elist_q2w_%d",i+1));
+		_el[i]=new TEntryList(TString::Format("q2w%d",i+1),TString::Format("q2w%d",i+1));
 	}
 
 	//! atrivedi [07-14-14]: The following logic is based on
 	//! the assumption that when making q2w-elist,
-	//!   - for simulation, Q2W filtering will be done at ST level
-	//!   - for experiment, Q2W filtering will be done at ER level
+	//!   - for simulation, Q2W elist will be made at ST level
+	//!   - for experiment, Q2W elist will be made at ER level
 	_useMc=kFALSE;
 	if (dH10->dtyp=="sim") {
 		_useMc=kTRUE;
