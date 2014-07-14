@@ -22,8 +22,8 @@ void H10Looper::Loop(Long64_t nentries)
    if (_use_q2w_elist){
       //! Get EntryList from file and set it for TChain
       //TFile* fel=new TFile("q2w_elist.root");
-      Info("H10Looper::Debug","Here\n");
-      Info("H10Looper::Debug","file name =%s",_f_q2w_el->GetName());
+      // Info("H10Looper::Debug","Here\n");
+      // Info("H10Looper::Debug","file name =%s",_f_q2w_el->GetName());
       _el=(TEntryList*)_f_q2w_el->Get(TString::Format("q2welist/%s",_q2w.Data()));
       nentries_chain = _el->GetN();
       fChain->SetEntryList(_el);

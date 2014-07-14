@@ -87,6 +87,8 @@ int main(int argc,  char* const argv[])
 	}
 	if (use_q2w_elist){
 		Info("proc_h10","Going to use q2w_elist\n");
+		f_q2w_el=new TFile(fname_q2w_el);
+		// printf("%s",f_q2w_el->GetName());
 	}else{
 		Info("proc_h10","Not going to use q2w_elist\n");	
 	}
@@ -148,8 +150,6 @@ void parseArgs(int argc, char* const argv[]){
 			break;
 		case 'm':
 			fname_q2w_el=optarg;
-			f_q2w_el=new TFile(fname_q2w_el);
-			printf("%s",f_q2w_el->GetName());
 			break;
 		case 'q':
 			q2w=optarg;
