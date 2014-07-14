@@ -43,8 +43,8 @@ ProcEListQ2W::ProcEListQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 		_el[i]=new TEntryList(TString::Format("elist_q2w_%d",i+1),TString::Format("elist_q2w_%d",i+1));
 	}
 
-	//! atrivedi [06-13-14]: The following logic is based on
-	//! the assumption that when making subsets of 'q2wFull',
+	//! atrivedi [07-14-14]: The following logic is based on
+	//! the assumption that when making q2w-elist,
 	//!   - for simulation, Q2W filtering will be done at ST level
 	//!   - for experiment, Q2W filtering will be done at ER level
 	_useMc=kFALSE;
@@ -66,24 +66,49 @@ void ProcEListQ2W::handle()
 	// Info("ProcEListQ2W::handle()", "");
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
+
+	if (dAna->d2pi.top==0 && histsEkin[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
+		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
+		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
+	}else if(dAna->d2pi.top!=0 && histsEkin[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
+			dAna->makeHistsEkin(histsEkin[MONMODE][iTop], dirmon);
+		}
+	}
 	
 	updateEkin(_useMc);
+
+	if (dAna->d2pi.top == 0) { //i.e inclusive event
+		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC],_useMc);
+	}else{ //i.e 2pi event
+		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1],_useMc);
+	}
+
+
 	// Info("ProcEListQ2W::handle()", "updated Ekin");	
 	DataEkin *ekin = &dAna->eKin;
 	if (_useMc) ekin = &dAna->eKin_mc;
 	for(int i=0;i<kQ2_NCrsBins;i++){
+		if (ekin->Q2>=kQ2_CrsBin[i].xmin && ekin->Q2<kQ2_CrsBin[i].xmax){ //&& 
 		for(int j=0;j<kW_NCrsBins;j++){
-			if (ekin->Q2>=kQ2_CrsBin[i].xmin && ekin->Q2<kQ2_CrsBin[i].xmax && 
-				ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
-				Int_t bin=(j+1)+(i*7);
-				Int_t bin_idx=bin-1;
-				// Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
-				_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
-				// Info("ProcEListQ2W::handle()", "update _el");
+			if (ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
+					Int_t bin=(j+1)+(i*7);
+					Int_t bin_idx=bin-1;
+					// Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
+					_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
+					// Info("ProcEListQ2W::handle()", "update _el");
 
-				hevtsum->Fill(EVT_PASS);
-				pass = kTRUE;
-				EpProcessor::handle();
+					if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
+						TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
+						dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
+					}
+					dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
+
+					hevtsum->Fill(EVT_PASS);
+					pass = kTRUE;
+					EpProcessor::handle();
+				}
 			}
 		}
 	}

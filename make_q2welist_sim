@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-1000000000}
+proc_h10 -i h10.lst -t e1f:sim:2pi -p q2welist -o q2w_elist.root -n $nentries
