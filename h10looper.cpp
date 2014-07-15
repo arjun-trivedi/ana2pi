@@ -71,8 +71,11 @@ void H10Looper::Loop(Long64_t nentries)
       }
       
       if (jentry%100000==0) {
-         Info("H10Looper::Loop", "Processing entry# %d\n",jentry);
-         Info("H10Looper::Loop", "%5.2f%% entries processed\n",(float)jentry/nentries_to_proc*100);  
+         Info("H10Looper::Loop", "Processing entry# %d",jentry);
+         Info("H10Looper::Loop", "%5.2f%% entries processed",(float)jentry/nentries_to_proc*100);  
+         gSystem->GetMemInfo(&meminfo);
+         int mem=meminfo.fMemUsed+meminfo.fSwapUsed;
+         Info("H10Looper::Loop", "Total memory used = %dMB",mem-mem_start);
       }
       //Reset proc_chain
       //3. Call proc_chain
