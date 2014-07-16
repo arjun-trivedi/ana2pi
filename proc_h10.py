@@ -91,16 +91,16 @@ def main(argv):
 
 	if dtyp=='exp':
 		if output=='d2pi':
-			#procorder="eid:%s:efid:qskim:mom:pid:d2piR"%proc_q2wskim_dcptr
-			procorder="eid:efid:qskim:mom:pid:d2piR"
+			procorder="eid:%s:efid:qskim:mom:pid:d2piR"%proc_q2wskim_dcptr
+			#procorder="eid:efid:qskim:mom:pid:d2piR"
 		elif output=='q2welist':
 			procorder='eid:q2welist'
 		else:
 			sys.exit("output=%s not recognized"%output)
 	if dtyp=='sim':
 		if output=='d2pi':
-			#procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim_dcptr
-			procorder="d2piT:eid:efid:qskim:pid:d2piR"
+			procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim_dcptr
+			#procorder="d2piT:eid:efid:qskim:pid:d2piR"
 		elif output=='q2welist':
 			procorder='q2welist'
 		else:

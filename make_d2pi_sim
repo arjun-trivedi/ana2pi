@@ -4,6 +4,6 @@ nentries=${1:-1000000000}
 for i in `seq 1 49`;
 do
  echo "*** Making /sim/sim1/q2w$i/d2pi.root *** "
- #proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --nentries=$nentries
- proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --use_q2w_elist=True --nentries=$nentries
+ proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --nentries=$nentries
+ #proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --use_q2w_elist=True --nentries=$nentries
 done
