@@ -32,7 +32,7 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 class ProcYields:
-	def __init__(self,q2w,dtyp,sim_num='sim_12345',tops=[1,2,3,4],vsts=[1,2,3]):
+	def __init__(self,q2w,dtyp,sim_num='sim1',tops=[1,2,3,4],vsts=[1,2,3]):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
@@ -46,9 +46,25 @@ class ProcYields:
 
 		self.Q2W=q2w
 		self.Q2BNG,self.WBNG=None,None
-		if self.Q2W=='q2w2':
-			q2w_bng=[[2.0,2.5,0.5],[1.3,1.9,0.025]]
-			self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng)
+		#! DNP=13 bng
+		# if self.Q2W=='q2w2':
+		# 	q2w_bng=[[2.0,2.5,0.5],[1.3,1.9,0.025]]
+		# 	self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng)
+		#! new bng
+		q2w_bng=None
+		if self.Q2W=='q2w1':
+			q2w_bng=[[1.2,1.6,0.4],[1.3,1.7,0.025]]
+		elif self.Q2W=='q2w2':
+			q2w_bng=[[1.2,1.6,0.4],[1.7,2.0,0.025]]
+		elif self.Q2W=='q2w3':
+			q2w_bng=[[1.2,1.6,0.4],[2.0,2.2,0.025]]
+		elif self.Q2W=='q2w4':
+			q2w_bng=[[1.2,1.6,0.4],[2.2,2.4,0.025]]
+		else:
+			sys.exit("Exiting. %s binning not recognized"%self.Q2W)
+
+		self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng)
+
 		# #! Test Q2WBNG, WBNG
 		# print "Q2 bins=",Q2BNG['BINS']
 		# print "W bins=",WBNG['BINS']
@@ -66,20 +82,20 @@ class ProcYields:
 		if self.EXP:
 			self.DATADIR=os.environ['OBS_DATADIR_EXP']
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			self.ANADIR=os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W)
+			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.Q2W)
 			if not os.path.exists(self.ANADIR):
 				os.makedirs(self.ANADIR)
 			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.ANADIR,self.SIM_NUM,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_exp.root"),"RECREATE")
 			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN,self.FIN_SIMYIELD,self.FOUT)
 		if self.SIM:
-			self.DATADIR=os.path.join(os.environ['OBS_DATADIR_SIM'],self.Q2W,self.SIM_NUM)
+			self.DATADIR=os.path.join(os.environ['OBS_DATADIR_SIM'],self.SIM_NUM,self.Q2W)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			self.ANADIR=os.path.join(os.environ['ANA2PI_OBS_DIR'],self.Q2W,self.SIM_NUM)
+			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
 			if not os.path.exists(self.ANADIR):
 				os.makedirs(self.ANADIR)
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"),"RECREATE")
-			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN,self.FOUT)
+			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN.GetName(),self.FOUT.GetName())
 
 		# self.h8=OrderedDict()
 		# self.q2wbin,self.q2wbindir=None,None
