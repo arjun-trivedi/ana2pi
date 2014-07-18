@@ -91,8 +91,8 @@ def main(argv):
 
 	if dtyp=='exp':
 		if output=='d2pi':
-			procorder="eid:%s:efid:qskim:mom:pid:d2piR"%proc_q2wskim_dcptr
-			#procorder="eid:efid:qskim:mom:pid:d2piR"
+			#procorder="eid:%s:efid:qskim:mom:pid:d2piR"%proc_q2wskim_dcptr
+			procorder="eid:efid:qskim:mom:pid:d2piR"
 		elif output=='q2welist':
 			procorder='eid:q2welist'
 		else:
