@@ -167,12 +167,12 @@ void DataH10::Reconcile() {
 	}
 }
 
-void DataH10::set_ientry_h10chain(Int_t ientry)
+void DataH10::set_ientry_h10chain(Long64_t ientry)
 {
 	_ientry_h10chain=ientry;
 }
 
-Int_t DataH10::get_ientry_h10chain()
+Long64_t DataH10::get_ientry_h10chain()
 {
 	return _ientry_h10chain;
 }

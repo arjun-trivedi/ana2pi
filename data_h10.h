@@ -27,8 +27,8 @@ public:
 	void Bind(TTree* tree);
 	void Reconcile();
 	void Clear();
-	void set_ientry_h10chain(Int_t ientry);
-	Int_t get_ientry_h10chain();
+	void set_ientry_h10chain(Long64_t ientry);
+	Long64_t get_ientry_h10chain();
 
 	TString expt,dtyp,rctn;
 	TTree* h10chain;
