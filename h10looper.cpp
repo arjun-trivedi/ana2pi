@@ -16,26 +16,18 @@ void H10Looper::Loop(Long64_t nentries)
    int mem_start=meminfo.fMemUsed+meminfo.fSwapUsed;
 
 
-   //Long64_t nentries = fChain->GetEntriesFast();
-   Int_t nentries_chain;// = fChain->GetEntries();
-   // TEntryList* el=NULL;
+   Long64_t nentries_chain;// = fChain->GetEntries();
    if (_use_q2w_elist){
-      //! Get EntryList from file and set it for TChain
-      //TFile* fel=new TFile("q2w_elist.root");
-      // Info("H10Looper::Debug","Here\n");
-      // Info("H10Looper::Debug","file name =%s",_f_q2w_el->GetName());
       _el=(TEntryList*)_f_q2w_el->Get(TString::Format("q2welist/%s",_q2w.Data()));
       nentries_chain = _el->GetN();
       fChain->SetEntryList(_el);
-      //! Output file
-      // fout=new TFile("test_use__el.root","RECREATE");
    } else {
       nentries_chain=fChain->GetEntries();
    }
-   Int_t nentries_to_proc=0;
+   Long64_t nentries_to_proc=0;
    nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
-   Info("H10Looper::Loop", "Number of entries in Chain =  %d\n",nentries_chain);
-   Info("H10Looper::Loop", "Number of entries to processess =  %d\n",nentries_to_proc);
+   Info("H10Looper::Loop", "Number of entries in Chain =  %d",nentries_chain);
+   Info("H10Looper::Loop", "Number of entries to processess =  %d",nentries_to_proc);
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries_to_proc;jentry++) {
@@ -49,7 +41,7 @@ void H10Looper::Loop(Long64_t nentries)
          Int_t treenum=0;
          Long64_t treeEntry = _el->GetEntryAndTree(jentry,treenum);
          chainEntry = treeEntry+fChain->GetTreeOffset()[treenum];
-         // printf("listEntry=%lld, treeEntry=%lld, chainEntry=%lld, treenum=%d\n"
+         // Info("H10Looper::Loop","listEntry=%lld, treeEntry=%lld, chainEntry=%lld, treenum=%d\n"
          //    ,jentry,treeEntry,chainEntry,treenum);
       }else{
          chainEntry=jentry;
@@ -58,11 +50,7 @@ void H10Looper::Loop(Long64_t nentries)
       if (ientry < 0) break;
       nb = fChain->GetEntry(chainEntry);   nbytes += nb;
       dH10->set_ientry_h10chain(chainEntry);
-      // Long64_t ientry = LoadTree(jentry);
-      // if (ientry < 0) break;
-      // nb = fChain->GetEntry(jentry);   nbytes += nb;
-      // dH10->set_ientry_h10chain(jentry);
-
+      
       // 2.1 If needed, Reconcile dH10
       if (dH10->rctn=="2pi_userana" || 
           dH10->rctn=="elast_userana" ||
