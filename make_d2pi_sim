@@ -1,7 +1,7 @@
 #!/bin/bash
 nentries=${1:-1000000000}
 #ana -i h10.lst -t e1f:sim:2pi -p d2piT:eid:efid:qskim:pid:d2piR -n $nentries
-for i in `seq 5 49`;
+for i in `seq 1 49`;
 do
  echo "*** Making /sim/sim1/q2w$i/d2pi.root *** "
  proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --nentries=$nentries
