@@ -28,13 +28,29 @@ ana2pi Branches
 					i. ProcD2pi::ProcD2pi(): Enabled user to decide if output data should also be in TTree format(along with default option of Histogrammed data) (New feature)
 					ii. DataAna::makeYields(): Reduced binning of Q2,W in h8 from 100,400 bins to 10,80 bins (0.5 GeV^2/bin,25 MeV/bin) respectively
 					iii. ProcSkimQ2W: Am now using this processor to filter my 'q2wFull' simulation into subsets of q2w i.e. q2wA,q2wB, etc, for processing q2wFull was using up too much memory.
-					iV. ProcEid & ProcMomCor: Changed filepath of cut-par files relative to $WORKSPACE so that they could run seamlessly on ifarm too
 					iv. H10Looper: Gave it capability to monitor memory usage
+					v. Updated process to make q2wX/d2pi.root from h10 (proc_h10).See handwritten notes for details.
+						Added:
+							- proc_h10.cpp/h
+							- proc_h10.py
+							- q2w_bng.h
+							- proc_elist_q2w.h (I am not using this though; am using proc_skim_q2w.h)
+						Removed:
+							- ana.cpp
+						Noteable modifications:
+							- DataAna::MakeYields: Implemented variable binning for Q2
+							- proc_skim_q2w.h: To help proc_h10 to produce q2wX/d2pi
+							The following modifications were made for using proc_elist_q2w with proc_h10, but I am not using them since for for technical and practical reasons,I found it simpler to use proc_skim_q2w. Skimming and making q2wX, I preferred to make TEntryList, because the latter seemed to offer not much advantage in saving time because I would make q2wX/d2pi.root for simulation on the farm anyway and there were additional difficulties presenting themselves in making TEntryList, namely, one odd empty h10 file in a TChain of 10000 h10 files!
+							- DataH10 now has methods
+								+ set_ientry_h10chain
+								+ get_ientry_h10chain
+							 that H10Looper uses if the TEntryList made by proc_elist_q2w is to be used.
+							
+
 				2. Miscellaneous improvements/new features
 					i. ProcEFid: Added hevtsum histogram 
-				3. New process to make obsX-sim/exp.root
-				4. New process to display the observables for final publication and diagnosis
-
-				+ extract_obs_test-new-proch10 [07-07-14]: Test branch created to test new procedure to process h10 -> q2w/output. Once tested, this branch will be merged with extract_obs and deleted.
+					ii. ProcEid & ProcMomCor: Changed filepath of cut-par files relative to $WORKSPACE so that they could run seamlessly on ifarm too
+				3. New files added to process and display yields from d2pi: proc_yields.py and disp_yields.py				
+				
 
 				
