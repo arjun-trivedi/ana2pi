@@ -1,3 +1,4 @@
+#include "q2w_bng.h"
 #include "data_h10.h"
 #include "data_ana.h"
 #include "h10looper.h"
@@ -8,17 +9,15 @@
 #include "proc_pid.h"
 #include "proc_skim_q.h"
 #include "proc_skim_q2w.h"
+#include "proc_elist_q2w.h"
 #include "proc_mom_cor.h"
 #include "proc_d2pi.h"
 #include "proc_copy_h10.h"
-//#include "proc_top.h"
-/*#include "proc_skim_q2w.h"
-#include "proc_fill_skim.h"
-#include "proc_copy_h10.h"*/
 
 #include <TChain.h>
 #include <TFileCollection.h>
 #include <TFile.h>
+#include <TRegexp.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -28,14 +27,22 @@ using namespace std;
 //user input
 TString fin=""; //h10.lst
 TString procorder="";
+TString output="";
 /*TString expt="";
 TString dtyp="";
 TString rctn="";*/ 
 TString h10type="";
+
+TString str_use_q2w_elist;
+Bool_t use_q2w_elist=kFALSE;
+TString q2w="";
+TString fname_q2w_el="";
+TFile* f_q2w_el=NULL;
+
 TString str_nentries="";
 Long64_t nentries=1000000000;
 
-//objects setup by ana2pi
+//objects setup by proc_h10
 //TString h10type;
 TChain* h10chain;
 TFile* fout;
@@ -47,18 +54,17 @@ H10Looper* h10looper;
 void parseArgs(int argc, char* const argv[]);
 TDirectory* mkdir(const char* dirname);
 EpProcessor* SetupProcs();
-
-
+EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr);
 
 int main(int argc,  char* const argv[])
 {
-	Info("ana2pi::main()", "\n");
+	Info("proc_h10::main()", "\n");
 	parseArgs(argc, argv);
 	
 	/*if (fin==""||procorder==""||expt==""||dtyp==""||rctn==""){*/
-	if (fin==""||h10type==""||procorder==""){
+	if (fin==""||h10type==""||procorder==""||output==""){
 		printf("Not all arguments entered\n");
-		printf("Execute \"ana -h\" to see correct usage\n");
+		printf("Execute \"proc_h10 -h\" to see correct usage\n");
 		return 0;
 	}
 
@@ -79,21 +85,29 @@ int main(int argc,  char* const argv[])
 		printf("Incorrect rctn entered: %s\n", rctn.Data());
 		return 0;
 	}
+	if (use_q2w_elist){
+		Info("proc_h10","Going to use q2w_elist\n");
+		f_q2w_el=new TFile(fname_q2w_el);
+		// printf("%s",f_q2w_el->GetName());
+	}else{
+		Info("proc_h10","Not going to use q2w_elist\n");	
+	}
 
 
 	h10chain = new TChain("h10");
 	TFileCollection fc("fileList", "", fin.Data());
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 		
-	TString fout_name = TString::Format("d%s.root",rctn.Data());
+	//TString fout_name = TString::Format("d%s.root",rctn.Data());
+	//TString fout_name = TString::Format("d%s.root",rctn.Data());
 	
-	fout = new TFile(fout_name,"RECREATE");
+	fout = new TFile(output,"RECREATE");
 
 	h10type=TString::Format("%s:%s:%s",expt.Data(),dtyp.Data(),rctn.Data());
 	dH10 = new DataH10(h10type);
 	dAna = new DataAna();
 	proc_chain = SetupProcs();
-	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain);
+	h10looper = new H10Looper(h10chain,dH10,dAna,proc_chain,use_q2w_elist,f_q2w_el,q2w);
 	h10looper->Loop(nentries);
 
 	fout->Write();
@@ -107,13 +121,14 @@ void parseArgs(int argc, char* const argv[]){
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 
-	while ((c = getopt(argc, argv, "hi:t:p:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:t:p:o:l:m:q:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("ana2pi -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -n <nevts>\n");
+			printf("proc_h10 -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -l <use_q2w_elist> -m <fname_q2w_el> -q=<q2wX>-n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
-			printf("<rctn>=2pi/elast\n");
+			printf("<rctn>=2pi/elast/2pi_userana/elast_userana\n");
+			printf("<use_q2w_elist>=True/[false]\n");
 			break;
 		case 'i':
 			fin = optarg;
@@ -124,15 +139,21 @@ void parseArgs(int argc, char* const argv[]){
 		case 'p':
 			procorder = optarg;
 			break;
-		/*case 'e':
-			expt = optarg;
+		case 'o':
+			output = optarg;
 			break;
-		case 'd':
-			dtyp = optarg;
+		case 'l':
+			str_use_q2w_elist = optarg;
+			if (str_use_q2w_elist.EqualTo("True")){
+				use_q2w_elist=kTRUE;
+			}
 			break;
-		case 'r':
-			rctn = optarg;
-			break;*/
+		case 'm':
+			fname_q2w_el=optarg;
+			break;
+		case 'q':
+			q2w=optarg;
+			break;
 		case 'n':
 			str_nentries = optarg;
 			nentries = str_nentries.Atoll();
@@ -164,7 +185,7 @@ TDirectory* mkdir(const char* dirname)
 EpProcessor* SetupProcs(){
    //Get list of processors
    TCollection *procorder_tokens = procorder.Tokenize(":");
-   Info("ana2pi::SetupProcs()", "procorder = %s\n", procorder.Data());
+   Info("proc_h10::SetupProcs()", "procorder = %s\n", procorder.Data());
    procorder_tokens->Print();
          
    //instantiate topProc; by design, topProc "builds" a cascaded chain of Procs
@@ -192,6 +213,8 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
          else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
+         else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
+         else if (str.EqualTo("q2welist"))   proc = new ProcEListQ2W(mkdir("q2welist"),dH10,dAna);
          else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
@@ -203,12 +226,6 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("d2piT_tree"))      proc = new ProcD2pi(mkdir("d2piT"),dH10,dAna,kTRUE,kFALSE,kTRUE);
          else if (str.EqualTo("d2piR_tree"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE,kTRUE);
          else if (str.EqualTo("d2piTR_tree"))     proc = new ProcD2pi(mkdir("d2piTR"),dH10,dAna,kTRUE,kTRUE,kTRUE);
-
-
-         //else if (str.EqualTo("top"))        proc = new ProcTop(mkdir("top"),dH10,dAna);
-         /*else if (str.EqualTo("q2wskim")) proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
-         else if (str.EqualTo("fillskim"))   proc = new ProcFillSkim(mkdir("skim"),dH10,dAna);
-         else if (str.EqualTo("copyh10")) proc = new ProcCopyH10(fFileOut,dH10,dAna);*/
          else {
             Info("Init","%s unrecognized processor\n",str.Data());
             continue;
@@ -220,6 +237,18 @@ EpProcessor* SetupProcs(){
       //Info("SlaveBegin","last processor = %s", lastProcName->GetName());
    }
    return proc_chain;
+}
+
+EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr){
+	Float_t q2min,q2max,wmin,wmax=0.0;
+	TString str_q2w_binnum=proc_q2wskim_dcptr.Remove(0,7);//removing "q2wskim" from "q2wskimXX"
+	Int_t binnum=str_q2w_binnum.Atoi();
+	q2min=kQ2W_CrsBin[binnum-1].q2min;
+    q2max=kQ2W_CrsBin[binnum-1].q2max;
+    wmin=kQ2W_CrsBin[binnum-1].wmin;
+    wmax=kQ2W_CrsBin[binnum-1].wmax;
+    EpProcessor* proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,q2min,q2max,wmin,wmax);
+    return proc;
 }
 
 

@@ -1,24 +1,24 @@
-#ifndef PROCSKIMQ2W_H
-#define PROCSKIMQ2W_H
+#ifndef PROCELISTQ2W_H
+#define PROCELISTQ2W_H
 
 #include "ep_processor.h" // Base class: EpProcessor
 #include "data_h10.h"
 #include "particle_constants.h"
 #include <TH1.h>
+#include <TEntryList.h>
 
 using namespace ParticleConstants;
 
-class ProcSkimQ2W : public EpProcessor
+class ProcEListQ2W : public EpProcessor
 {
 
 public:
-	ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-				Float_t q2min=1.2,Float_t q2max=5.20,Float_t wmin=1.3,Float_t wmax=3.0);
-	~ProcSkimQ2W();
+	ProcEListQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
+	~ProcEListQ2W();
 	
 	void handle();
 
-	Float_t _q2min,_q2max,_wmin,_wmax;
+	TEntryList* _el[kQ2W_NCrsBins];
 	
 protected:
 	static const Int_t NUM_EVTCUTS = 2;
@@ -28,42 +28,45 @@ protected:
 	bool _useMc;
 };
 
-ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-						Float_t q2min/*=1.2*/,Float_t q2max/*=5.20*/,Float_t wmin/*=1.3*/,Float_t wmax/*=3.0*/)
+ProcEListQ2W::ProcEListQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 						 : EpProcessor(td, dataH10, dataAna)
 {
-	_q2min=q2min;
-	_q2max=q2max;
-	_wmin=wmin;
-	_wmax=wmax;
+	
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->SetMinimum(0);
-	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"pass Q2W skim");
-	//! atrivedi [06-13-14]: The following logic is based on
-	//! the assumption that when making subsets of 'q2wFull',
-	//!   - for simulation, Q2W filtering will be done at ST level
-	//!   - for experiment, Q2W filtering will be done at ER level
+	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total Events");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"Events in ana-region");
+
+	//! Create Q2W TEntryLists
+	for(int i=0;i<kQ2W_NCrsBins;i++){
+		_el[i]=new TEntryList(TString::Format("q2w%d",i+1),TString::Format("q2w%d",i+1));
+	}
+
+	//! atrivedi [07-14-14]: The following logic is based on
+	//! the assumption that when making q2w-elist,
+	//!   - for simulation, Q2W elist will be made at ST level
+	//!   - for experiment, Q2W elist will be made at ER level
 	_useMc=kFALSE;
 	if (dH10->dtyp=="sim") {
 		_useMc=kTRUE;
 	}
 }
 
-ProcSkimQ2W::~ProcSkimQ2W()
+ProcEListQ2W::~ProcEListQ2W()
 {
+	delete _el;
 	delete hevtsum;
 	delete hists;
 	//delete _hists_ekin;
 }
 
-void ProcSkimQ2W::handle()
+void ProcEListQ2W::handle()
 {
-	//Info("ProcSkimQ2W::handle()", "");
+	// Info("ProcEListQ2W::handle()", "");
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
-	
+
 	if (dAna->d2pi.top==0 && histsEkin[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
 		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
 		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], dirmon);
@@ -74,32 +77,43 @@ void ProcSkimQ2W::handle()
 		}
 	}
 	
-	
 	updateEkin(_useMc);
-		
+
 	if (dAna->d2pi.top == 0) { //i.e inclusive event
 		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC],_useMc);
 	}else{ //i.e 2pi event
 		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1],_useMc);
 	}
-	
+
+
+	// Info("ProcEListQ2W::handle()", "updated Ekin");	
 	DataEkin *ekin = &dAna->eKin;
 	if (_useMc) ekin = &dAna->eKin_mc;
-	if ( (ekin->Q2>=_q2min && ekin->Q2<_q2max && ekin->W>=_wmin && ekin->W<_wmax) ) { //!q2w range 2; Evgeny Isupov	 
-		if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
-			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-			dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
+	for(int i=0;i<kQ2_NCrsBins;i++){
+		for(int j=0;j<kW_NCrsBins;j++){
+		if (ekin->Q2>=kQ2_CrsBin[i].xmin && ekin->Q2<kQ2_CrsBin[i].xmax && 
+			ekin->W>=kW_CrsBin[j].xmin && ekin->W<kW_CrsBin[j].xmax){
+				Int_t bin=(j+1)+(i*7);
+				Int_t bin_idx=bin-1;
+				// Info("ProcEListQ2W::handle()", "i,j,bin,bin_idx=%d,%d,%d,%d",i,j,bin,bin_idx);
+				_el[bin_idx]->Enter(dH10->get_ientry_h10chain(),dH10->h10chain);
+				// Info("ProcEListQ2W::handle()", "update _el");
+
+				if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
+					TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
+					dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
+				}
+				dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
+
+				hevtsum->Fill(EVT_PASS);
+				pass = kTRUE;
+				EpProcessor::handle();
+			}
 		}
-		dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
-		
-		hevtsum->Fill(EVT_PASS);
-		pass = kTRUE;
-		EpProcessor::handle();
 	}
-	
 }
 
-void ProcSkimQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
+void ProcEListQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	const TLorentzVector _4vE0 = dH10->lvE0;
 	const TLorentzVector _4vP0 = dH10->lvP0;
 	TLorentzVector _4vE1;
@@ -135,15 +149,15 @@ void ProcSkimQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	if (!useMc) {ekin->sector = dH10->sc_sect[dH10->sc[0]-1];}
 	ekin->W = (_4vQ+_4vP0).Mag();
 	ekin->Q2 = -1*_4vQ.Mag2();
-	ekin->nu = _4vQ.E();
-	ekin->xb = ekin->Q2/(2*MASS_P*ekin->nu);
-	ekin->E1 = _4vE1.E();
-	ekin->theta1 = _4vE1.Theta()*RadToDeg();
-	Double_t phitmp = _4vE1.Phi()*RadToDeg(); //phitmp = [-180,180]
-	ekin->phi1 = phitmp<-30 ? phitmp+360 : phitmp;
-	ekin->theta = _4vQ.Theta()*RadToDeg();
-	phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
-	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
+	// ekin->nu = _4vQ.E();
+	// ekin->xb = ekin->Q2/(2*MASS_P*ekin->nu);
+	// ekin->E1 = _4vE1.E();
+	// ekin->theta1 = _4vE1.Theta()*RadToDeg();
+	// Double_t phitmp = _4vE1.Phi()*RadToDeg(); //phitmp = [-180,180]
+	// ekin->phi1 = phitmp<-30 ? phitmp+360 : phitmp;
+	// ekin->theta = _4vQ.Theta()*RadToDeg();
+	// phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
+	// ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
 }
 
-#endif // PROCSKIMQ2W_H
+#endif // PROCELISTQ2W_H
