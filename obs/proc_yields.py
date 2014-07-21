@@ -82,10 +82,12 @@ class ProcYields:
 		if self.EXP:
 			self.DATADIR=os.environ['OBS_DATADIR_EXP']
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.Q2W)
+			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
 			if not os.path.exists(self.ANADIR):
-				os.makedirs(self.ANADIR)
-			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.ANADIR,self.SIM_NUM,"yield_sim.root"))
+				#! This path should already exist when making yield_sim
+				sys.exit("Path %s does not exist. Exiting."%self.ANADIR)
+				#os.makedirs(self.ANADIR)
+			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_exp.root"),"RECREATE")
 			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN,self.FIN_SIMYIELD,self.FOUT)
 		if self.SIM:
@@ -96,6 +98,8 @@ class ProcYields:
 				os.makedirs(self.ANADIR)
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"),"RECREATE")
 			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN.GetName(),self.FOUT.GetName())
+
+		self.wmax=None #Used for setM1M2axisrange()
 
 		# self.h8=OrderedDict()
 		# self.q2wbin,self.q2wbindir=None,None
@@ -119,6 +123,7 @@ class ProcYields:
 				q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				q2wbindir=self.FOUT.mkdir(q2wbin)
 				q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
+				self.wmax=self.WBNG['BINS_UE'][j]
 				#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
 				# self.hq2w.clear()
 				# self.h5.clear()
@@ -255,7 +260,7 @@ class ProcYields:
 		return h5
 
 	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
-		h1=OrderedDict()
+		#h1=OrderedDict()
 		print "*** Processing h5->h1 ... ***"
 		if self.EXP:seq_h1=['R','C','A','H','F']
 		if self.SIM:seq_h1=['T','R','C','A','H','F']
@@ -268,16 +273,32 @@ class ProcYields:
 			vstdir.cd(seq)
 			#! Project out h1s
 			for var in VARS:
-				h1[vst_name,seq,var]=h5[vst_name,seq].Projection(H5_DIM[var],"E")
-				h1[vst_name,seq,var].SetName('h_%s'%var)
-				h1[vst_name,seq,var].SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
-				h1[vst_name,seq,var].Write()
-				c1=ROOT.TCanvas(h1[vst_name,seq,var].GetName(),h1[vst_name,seq,var].GetTitle())
-				h1[vst_name,seq,var].Draw()
+				# h1[vst_name,seq,var]=h5[vst_name,seq].Projection(H5_DIM[var],"E")
+				# if var=='M1' or var=='M2':
+				# 	self.setM1M2axisrange(h1[vst_name,seq,var],vst_name,var)
+				# h1[vst_name,seq,var].SetName('h_%s'%var)
+				# h1[vst_name,seq,var].SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
+				# h1[vst_name,seq,var].Write()
+				# c1=ROOT.TCanvas(h1[vst_name,seq,var].GetName(),h1[vst_name,seq,var].GetTitle())
+				# h1[vst_name,seq,var].Draw()
+				h1=h5[vst_name,seq].Projection(H5_DIM[var],"E")
+				if var=='M1' or var=='M2':
+					self.setM1M2axisrange(h1,vst_name,var)
+				h1.SetName('h_%s'%var)
+				h1.SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
+				h1.Write()
+				c1=ROOT.TCanvas(h1.GetName(),h1.GetTitle())
+				h1.Draw()
 				c1.SaveAs("%s/%s.png"%(outdir,c1.GetName()))
 				c1.Close()
 		print "*** Done processing h5->h1 ***"
 
+	def setM1M2axisrange(self,h,vst_name,var):
+		if (vst_name=="VST1" and var=='M1') or (vst_name=="VST3" and var=='M2'):
+			h.GetXaxis().SetRangeUser(1.1000,self.wmax-0.14)
+		if (vst_name=="VST2" and var=='M2'):
+			h.GetXaxis().SetRangeUser(0.2780,self.wmax-0.938)
+	
 	def calcNorm(self,h5D_EA,h5D_SA):
 		norm,nExpEvts,nSimEvts=0,0,0
 		expBinCoord=np.zeros(5,'i')
