@@ -348,13 +348,31 @@ class DispYields:
 
 		#! plot
 		c=ROOT.TCanvas()
-		#hW['SIM','T'].DrawNormalized("P",1000)
-		for ikey,key in enumerate(hW.keys()):
-			hW[key].SetMaximum(800000)
-			if ikey==0:
-				hW[key].DrawNormalized("P",1000)
-			else:
-				hW[key].DrawNormalized("P sames",1000)
+		hW['EXP','F'].Draw("P")
+		hW['EXP','C'].Draw("P sames")
+		hW['EXP','H'].Draw("P sames")
+		# hsim=h_dpp['SIM','F'][0].DrawNormalized("sames",1000)
+		# hexp.SetMinimum(0.)
+		# hsim.SetMinimum(0.)
+		# maximum=hexp.GetMaximum()
+		# if hsim.GetMaximum()>hexp.GetMaximum():
+		# 	maximum=hsim.GetMaximum()
+		# hexp.SetMaximum(maximum+10)
+		# hsim.SetMaximum(maximum+10)
+		# hF=hexp.Clone()
+		# hF.Divide(h_dpp['EXP','F'][0])
+		# h_dpp['EXP','C'][0].Multiply(hF)
+		# h_dpp['EXP','C'][0].Draw("sames")
+		# h_dpp['EXP','H'][0].Multiply(hF)
+		# h_dpp['EXP','H'][0].Draw("sames")
+		# #h_dpp['EXP','H'][0].DrawNormalized("sames",1000)
+		# h_dpp['SIM','T'][0].DrawNormalized("sames",1000)
+		# pad.Update()
+		# for ikey,key in enumerate(hW.keys()):
+		# 	if ikey==0:
+		# 		hW[key].DrawNormalized("P",1000)
+		# 	else:
+		# 		hW[key].DrawNormalized("P sames",1000)
 		c.SaveAs("%s/cW.png"%(self.ANADIR))
 
 
