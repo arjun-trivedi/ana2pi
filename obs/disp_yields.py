@@ -5,6 +5,12 @@ from collections import OrderedDict
 
 import os,sys
 
+ROOT.gROOT.ProcessLine(".L THnTool.C+")
+from ROOT import THnTool
+
+# Tools 
+thntool=THnTool()
+
 class DispYields:
 	def __init__(self,q2w,sim_num='sim1'):
 		self.SIM_NUM=sim_num
@@ -221,17 +227,10 @@ class DispYields:
 
 	def disp_1D(self):
 		"""
-		Walk the ROOT file and extract 1D observable histograms. The ROOT file is arranged in a Tree Structure. The
-		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
-		q2wbin/vst/seq/hists
+		Walk the ROOT file and extract 1D observable histograms. 
 		"""
 		#! First get all q2wbin directories from file
-		q2ws=[]
-		for path,dirs,files in self.FEXP.walk():
-			if path=="":continue #! Avoid root path
-			path_arr=path.split("/")
-			if len(path_arr)==1:
-				q2ws.append(path)
+		q2ws=self.get_q2ws()
 		print q2ws
 
 		#! Now get relevant histograms, plot and save them
@@ -273,3 +272,102 @@ class DispYields:
 							if dtyp=='SIM' and seq=='T':
 								 h.SetMarkerStyle(mst)
 			self.plot_obs_1D(q2w,h_dpp,h_rho,h_dzr)
+
+	def disp_integ(self):
+		"""
+		Walk the ROOT file and obtain yield(Q2) vs. W. 
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2ws()
+		print q2ws
+
+		#! Prepare hW
+		ws=[]
+		for q2w in q2ws:
+			ws.append(q2w.split('_')[1].split('-')[0])
+		#print ws
+		ws = [float(x) for x in ws]
+		ws.sort()
+		#print ws
+		nbins=len(ws)-1
+		xmin=min(ws)
+		xmax=max(ws)
+		print nbins,xmin,xmax
+		hW=OrderedDict()
+		for dtyp in ['EXP','SIM']:
+			for seq in ['T','C','H','F']:
+				if dtyp=='EXP' and seq=='T': continue
+				if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+				hW[dtyp,seq]=ROOT.TH1F("hW_%s_%s"%(dtyp,seq),"hW_%s_%s"%(dtyp,seq),nbins,xmin,xmax)
+
+		#! Now get relevant histograms, plot and save them
+		for q2w in q2ws:
+			w=float(q2w.split('_')[1].split('-')[0])
+			for dtyp in ['EXP','SIM']:
+				for seq in ['T','C','H','F']:
+					if dtyp=='EXP' and seq=='T': continue
+					if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+
+					if dtyp=='EXP':
+						f=ROOT.TFile(self.FEXP.GetName())
+					if dtyp=='SIM':
+						f=ROOT.TFile(self.FSIM.GetName())
+					
+					h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+					y=thntool.GetIntegral(h5)
+					hW[dtyp,seq].Fill(w+0.025/2,y)
+					print "w=",w,";y=",y
+					#hW[dtyp,seq].SetBinContent(hW[dtyp,seq].FindBin(w),y)
+		#! hW Cosmetics
+		for key in hW.keys():
+			if dtyp=='EXP' and seq=='T': continue
+			if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+			dtyp=key[0]
+			seq=key[1]
+			if dtyp=='EXP':
+				if seq=='C':
+					col=ROOT.gROOT.ProcessLine("kCyan")
+					mst=ROOT.gROOT.ProcessLine("kFullCircle")
+				if seq=='F':
+					col=ROOT.gROOT.ProcessLine("kBlue")
+					mst=ROOT.gROOT.ProcessLine("kFullCircle")
+				if seq=='H':
+					col=ROOT.gROOT.ProcessLine("kBlack")
+					mst=ROOT.gROOT.ProcessLine("kFullCircle")
+			
+			if dtyp=='SIM':
+				if seq=='F':
+					col=ROOT.gROOT.ProcessLine("kRed")
+					mst=ROOT.gROOT.ProcessLine("kFullCircle")
+				if seq=='T':
+					col=ROOT.gROOT.ProcessLine("kGreen")
+					mst=ROOT.gROOT.ProcessLine("kPlus")
+			hW[dtyp,seq].SetLineColor(col)
+			hW[dtyp,seq].SetMarkerColor(col)
+			hW[dtyp,seq].SetMarkerStyle(mst)
+
+		#! plot
+		c=ROOT.TCanvas()
+		#hW['SIM','T'].DrawNormalized("P",1000)
+		for ikey,key in enumerate(hW.keys()):
+			hW[key].SetMaximum(800000)
+			if ikey==0:
+				hW[key].DrawNormalized("P",1000)
+			else:
+				hW[key].DrawNormalized("P sames",1000)
+		c.SaveAs("%s/cW.png"%(self.ANADIR))
+
+
+	def get_q2ws(self):
+		"""
+		The ROOT file is arranged in a Tree Structure. The
+		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
+		q2wbin/vst/seq/hists
+		"""
+		q2ws=[]
+		for path,dirs,files in self.FEXP.walk():
+			if path=="":continue #! Avoid root path
+			path_arr=path.split("/")
+			if len(path_arr)==1:
+				q2ws.append(path)
+		return q2ws
