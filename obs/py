@@ -1,0 +1,9 @@
+#!/usr/bin/python
+from proc_yields import ProcYields
+from disp_yields import DispYields
+
+#for q2w in ['q2w1','q2w2','q2w3','q2w4']:
+for q2w in ['q2w2']:#1','q2w3','q2w4']:
+	for dtyp in ['sim','exp']:
+		py=ProcYields(q2w,dtyp)
+		py.proc()
