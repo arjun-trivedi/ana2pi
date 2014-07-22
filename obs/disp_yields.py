@@ -33,6 +33,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_dpp['EXP','F'][0])
+		h_dpp['EXP','C'][0].Multiply(hF)
+		h_dpp['EXP','C'][0].Draw("sames")
 		h_dpp['EXP','H'][0].Multiply(hF)
 		h_dpp['EXP','H'][0].Draw("sames")
 		#h_dpp['EXP','H'][0].DrawNormalized("sames",1000)
@@ -53,6 +55,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_rho['EXP','F'][0])
+		h_rho['EXP','C'][0].Multiply(hF)
+		h_rho['EXP','C'][0].Draw("sames")
 		h_rho['EXP','H'][0].Multiply(hF)
 		h_rho['EXP','H'][0].Draw("sames")
 		#h_rho['EXP','H'][0].DrawNormalized("sames",1000)
@@ -73,6 +77,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_dzr['EXP','F'][0])
+		h_dzr['EXP','C'][0].Multiply(hF)
+		h_dzr['EXP','C'][0].Draw("sames")
 		h_dzr['EXP','H'][0].Multiply(hF)
 		h_dzr['EXP','H'][0].Draw("sames")
 		#h_dzr['EXP','H'][0].DrawNormalized("sames",1000)
@@ -93,6 +99,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_dpp['EXP','F'][1])
+		h_dpp['EXP','C'][1].Multiply(hF)
+		h_dpp['EXP','C'][1].Draw("sames")
 		h_dpp['EXP','H'][1].Multiply(hF)
 		h_dpp['EXP','H'][1].Draw("sames")
 		#h_dpp['EXP','H'][1].DrawNormalized("sames",1000)
@@ -113,6 +121,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_rho['EXP','F'][1])
+		h_rho['EXP','C'][1].Multiply(hF)
+		h_rho['EXP','C'][1].Draw("sames")
 		h_rho['EXP','H'][1].Multiply(hF)
 		h_rho['EXP','H'][1].Draw("sames")
 		#h_rho['EXP','H'][1].DrawNormalized("sames",1000)
@@ -133,6 +143,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_dzr['EXP','F'][1])
+		h_dzr['EXP','C'][1].Multiply(hF)
+		h_dzr['EXP','C'][1].Draw("sames")
 		h_dzr['EXP','H'][1].Multiply(hF)
 		h_dzr['EXP','H'][1].Draw("sames")
 		#h_dzr['EXP','H'][1].DrawNormalized("sames",1000)
@@ -153,6 +165,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_dpp['EXP','F'][2])
+		h_dpp['EXP','C'][2].Multiply(hF)
+		h_dpp['EXP','C'][2].Draw("sames")
 		h_dpp['EXP','H'][2].Multiply(hF)
 		h_dpp['EXP','H'][2].Draw("sames")
 		#h_dpp['EXP','H'][2].DrawNormalized("sames",1000)
@@ -173,6 +187,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_rho['EXP','F'][2])
+		h_rho['EXP','C'][2].Multiply(hF)
+		h_rho['EXP','C'][2].Draw("sames")
 		h_rho['EXP','H'][2].Multiply(hF)
 		h_rho['EXP','H'][2].Draw("sames")
 		#h_rho['EXP','H'][2].DrawNormalized("sames",1000)
@@ -193,6 +209,8 @@ class DispYields:
 		hsim.SetMaximum(maximum+10)
 		hF=hexp.Clone()
 		hF.Divide(h_dzr['EXP','F'][2])
+		h_dzr['EXP','C'][2].Multiply(hF)
+		h_dzr['EXP','C'][2].Draw("sames")
 		h_dzr['EXP','H'][2].Multiply(hF)
 		h_dzr['EXP','H'][2].Draw("sames")
 		#h_dzr['EXP','H'][2].DrawNormalized("sames",1000)
@@ -220,12 +238,14 @@ class DispYields:
 		for q2w in q2ws:
 			h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
 			for dtyp in ['EXP','SIM']:
-				for seq in ['T','H','F']:
+				for seq in ['T','C','H','F']:
 					if dtyp=='EXP' and seq=='T': continue
-					if dtyp=='SIM' and seq=='H': continue
+					if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
 
 					if dtyp=='EXP':
 						f=self.FEXP
+						if seq=='C':
+							col=ROOT.gROOT.ProcessLine("kCyan")
 						if seq=='F':
 							col=ROOT.gROOT.ProcessLine("kBlue")
 						if seq=='H':
