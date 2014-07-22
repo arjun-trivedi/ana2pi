@@ -82,11 +82,7 @@ class ProcYields:
 		if self.EXP:
 			self.DATADIR=os.environ['OBS_DATADIR_EXP']
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-<<<<<<< HEAD
 			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
-=======
-			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.Q2W)
->>>>>>> extract_obs_test-new-proch10
 			if not os.path.exists(self.ANADIR):
 				#! This path should already exist when making yield_sim
 				sys.exit("Path %s does not exist. Exiting."%self.ANADIR)
@@ -97,11 +93,7 @@ class ProcYields:
 		if self.SIM:
 			self.DATADIR=os.path.join(os.environ['OBS_DATADIR_SIM'],self.SIM_NUM,self.Q2W)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-<<<<<<< HEAD
 			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
-=======
-			self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.Q2W,self.SIM_NUM)
->>>>>>> extract_obs_test-new-proch10
 			if not os.path.exists(self.ANADIR):
 				os.makedirs(self.ANADIR)
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"),"RECREATE")

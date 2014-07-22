@@ -9,15 +9,9 @@ class DispYields:
 	def __init__(self,q2w,sim_num='sim1'):
 		self.SIM_NUM=sim_num
 		self.Q2W=q2w
-<<<<<<< HEAD
 		self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_exp.root'))
 		self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_sim.root'))
 		self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
-=======
-		self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.Q2W,'yield_exp.root'))
-		self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.Q2W,'yield_sim.root'))
-		self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.Q2W)
->>>>>>> extract_obs_test-new-proch10
 		if not os.path.exists(self.ANADIR):
 			sys.exit("%s does not exist!"%self.ANADIR)
 
