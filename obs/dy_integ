@@ -5,13 +5,25 @@ from disp_yields import DispYields
 import collections
 
 #for q2w in ['q2w1','q2w2','q2w3','q2w4']:
-for q2w in ['q2w1']:#,'q2w3','q2w4']:
+y={}
+for q2w in ['q2w1','q2w3','q2w4']:
 	dy=DispYields(q2w)
-	y=dy.get_integ_yield()
+	y[q2w]=dy.get_integ_yield()
+        print "integrated yields for",q2w
+        print "**************************"
         for seq in ['C','H','F']:
-        	oy=collections.OrderedDict(sorted(y[seq].items()))
+        	oy=collections.OrderedDict(sorted(y[q2w][seq].items()))
                 print "yield for",seq
                 print oy
-        #print y['C']
-	#print y['H']
-	#print y['F']
+#! Now put all yields together
+print "Total yields"
+print "****************"
+yt={}
+for seq in ['C','F','H']:
+    yt[seq]=dict(y['q2w1'][seq].items()+y['q2w3'][seq].items()+y['q2w4'][seq].items())
+for seq in ['C','H','F']:
+        oy=collections.OrderedDict(sorted(yt[seq].items()))
+        print "yield for",seq
+	print oy 
+#oy=collections.OrderedDict(sorted(yt.items()))
+#print oy
