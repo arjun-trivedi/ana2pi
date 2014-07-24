@@ -3,6 +3,7 @@ from proc_yields import ProcYields
 from disp_yields import DispYields
 
 import collections
+import os
 
 import matplotlib.pyplot as plt
 
@@ -36,7 +37,10 @@ for seq in ['C','H','F']:
 	print oyt 
 #! Now plot the yields
 fig=plt.figure()
-plt.scatter(oyt['F'].keys(),oyt['F'].values(),c='blue',marker='o')
-plt.scatter(oyt['H'].keys(),oyt['H'].values(),c='black',marker='o')
-plt.scatter(oyt['C'].keys(),oyt['C'].values(),c='cyan',marker='o')
-fig.savefig('test.png')
+plt.scatter(oyt['C'].keys(),oyt['C'].values(),label='EC',c='cyan',marker='o')
+plt.scatter(oyt['H'].keys(),oyt['H'].values(),label='EH',c='black',marker='o')
+plt.scatter(oyt['F'].keys(),oyt['F'].values(),label='EF',c='blue',marker='o')
+plt.xlabel('W[GeV]')
+plt.ylabel('Yield')
+outdir=os.path.join(os.environ['OBS_DIR'],'sim1')
+fig.savefig('%s/integ_yield.png'%(outdir))
