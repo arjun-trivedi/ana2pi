@@ -273,84 +273,99 @@ class DispYields:
 								 h.SetMarkerStyle(mst)
 			self.plot_obs_1D(q2w,h_dpp,h_rho,h_dzr)
 
-	def disp_integ(self):
+	def get_integ_yield(self):
 		"""
-		Walk the ROOT file and obtain yield(Q2) vs. W. 
+		Walk the ROOT file and obtain y(w) 
 		"""
 		#! First get all q2wbin directories from file
 		q2ws=self.get_q2ws()
 		print q2ws
 
-		#! Prepare hW
-		ws=[]
-		for q2w in q2ws:
-			ws.append(q2w.split('_')[1].split('-')[0])
-		#print ws
-		ws = [float(x) for x in ws]
-		ws.sort()
-		#print ws
-		nbins=len(ws)-1
-		xmin=min(ws)
-		xmax=max(ws)
-		print nbins,xmin,xmax
-		hW=OrderedDict()
-		for dtyp in ['EXP','SIM']:
-			for seq in ['T','C','H','F']:
-				if dtyp=='EXP' and seq=='T': continue
-				if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
-				hW[dtyp,seq]=ROOT.TH1F("hW_%s_%s"%(dtyp,seq),"hW_%s_%s"%(dtyp,seq),nbins,xmin,xmax)
+		#! Prepare y(w)
+		y={}
+		# for q2w in q2ws:
+		# 	ws.append(q2w.split('_')[1].split('-')[0])
+		# #print ws
+		# ws = [float(x) for x in ws]
+		# ws.sort()
+		# #print ws
+		# nbins=len(ws)-1
+		# xmin=min(ws)
+		# xmax=max(ws)
+		# print nbins,xmin,xmax
+		# hW=OrderedDict()
+		# for dtyp in ['EXP','SIM']:
+		# 	for seq in ['T','C','H','F']:
+		# 		if dtyp=='EXP' and seq=='T': continue
+		# 		if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+		# 		hW[dtyp,seq]=ROOT.TH1F("hW_%s_%s"%(dtyp,seq),"hW_%s_%s"%(dtyp,seq),nbins,xmin,xmax)
 
 		#! Now get relevant histograms, plot and save them
-		for q2w in q2ws:
-			w=float(q2w.split('_')[1].split('-')[0])
-			for dtyp in ['EXP','SIM']:
-				for seq in ['T','C','H','F']:
-					if dtyp=='EXP' and seq=='T': continue
-					if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+		f=ROOT.TFile(self.FEXP.GetName())
+		for seq in ['C','H','F']:
+			tmp={}
+			for q2w in q2ws:
+				w=float(q2w.split('_')[1].split('-')[0])
+				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+				#y=thntool.GetIntegral(h5)
+				#hW[dtyp,seq].Fill(w+0.025/2,y)
+				tmp[w]=thntool.GetIntegral(h5)
+				#print "w=",w,";y=",y
+				#hW[dtyp,seq].SetBinContent(hW[dtyp,seq].FindBin(w),y)
+			y[seq]=tmp
+		return y
+		# for q2w in q2ws:
+		# 	w=float(q2w.split('_')[1].split('-')[0])
+		# 	for dtyp in ['EXP','SIM']:
+		# 		for seq in ['T','C','H','F']:
+		# 			if dtyp=='EXP' and seq=='T': continue
+		# 			if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
 
-					if dtyp=='EXP':
-						f=ROOT.TFile(self.FEXP.GetName())
-					if dtyp=='SIM':
-						f=ROOT.TFile(self.FSIM.GetName())
+		# 			if dtyp=='EXP':
+		# 				f=ROOT.TFile(self.FEXP.GetName())
+		# 			if dtyp=='SIM':
+		# 				f=ROOT.TFile(self.FSIM.GetName())
 					
-					h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
-					y=thntool.GetIntegral(h5)
-					hW[dtyp,seq].Fill(w+0.025/2,y)
-					print "w=",w,";y=",y
-					#hW[dtyp,seq].SetBinContent(hW[dtyp,seq].FindBin(w),y)
+		# 			h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+		# 			#y=thntool.GetIntegral(h5)
+		# 			#hW[dtyp,seq].Fill(w+0.025/2,y)
+		# 			y[w]=thntool.GetIntegral(h5)
+		# 			print "w=",w,";y=",y
+		# 			#hW[dtyp,seq].SetBinContent(hW[dtyp,seq].FindBin(w),y)
+		# return y
 		#! hW Cosmetics
-		for key in hW.keys():
-			if dtyp=='EXP' and seq=='T': continue
-			if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
-			dtyp=key[0]
-			seq=key[1]
-			if dtyp=='EXP':
-				if seq=='C':
-					col=ROOT.gROOT.ProcessLine("kCyan")
-					mst=ROOT.gROOT.ProcessLine("kFullCircle")
-				if seq=='F':
-					col=ROOT.gROOT.ProcessLine("kBlue")
-					mst=ROOT.gROOT.ProcessLine("kFullCircle")
-				if seq=='H':
-					col=ROOT.gROOT.ProcessLine("kBlack")
-					mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# for key in hW.keys():
+		# 	if dtyp=='EXP' and seq=='T': continue
+		# 	if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+		# 	dtyp=key[0]
+		# 	seq=key[1]
+		# 	if dtyp=='EXP':
+		# 		if seq=='C':
+		# 			col=ROOT.gROOT.ProcessLine("kCyan")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# 		if seq=='F':
+		# 			col=ROOT.gROOT.ProcessLine("kBlue")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# 		if seq=='H':
+		# 			col=ROOT.gROOT.ProcessLine("kBlack")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
 			
-			if dtyp=='SIM':
-				if seq=='F':
-					col=ROOT.gROOT.ProcessLine("kRed")
-					mst=ROOT.gROOT.ProcessLine("kFullCircle")
-				if seq=='T':
-					col=ROOT.gROOT.ProcessLine("kGreen")
-					mst=ROOT.gROOT.ProcessLine("kPlus")
-			hW[dtyp,seq].SetLineColor(col)
-			hW[dtyp,seq].SetMarkerColor(col)
-			hW[dtyp,seq].SetMarkerStyle(mst)
+		# 	if dtyp=='SIM':
+		# 		if seq=='F':
+		# 			col=ROOT.gROOT.ProcessLine("kRed")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# 		if seq=='T':
+		# 			col=ROOT.gROOT.ProcessLine("kGreen")
+		# 			mst=ROOT.gROOT.ProcessLine("kPlus")
+		# 	hW[dtyp,seq].SetLineColor(col)
+		# 	hW[dtyp,seq].SetMarkerColor(col)
+		# 	hW[dtyp,seq].SetMarkerStyle(mst)
 
 		#! plot
-		c=ROOT.TCanvas()
-		hW['EXP','F'].Draw("P")
-		hW['EXP','C'].Draw("P sames")
-		hW['EXP','H'].Draw("P sames")
+		# c=ROOT.TCanvas()
+		# hW['EXP','F'].Draw("P")
+		# hW['EXP','C'].Draw("P sames")
+		# hW['EXP','H'].Draw("P sames")
 		# hsim=h_dpp['SIM','F'][0].DrawNormalized("sames",1000)
 		# hexp.SetMinimum(0.)
 		# hsim.SetMinimum(0.)
@@ -373,7 +388,7 @@ class DispYields:
 		# 		hW[key].DrawNormalized("P",1000)
 		# 	else:
 		# 		hW[key].DrawNormalized("P sames",1000)
-		c.SaveAs("%s/cW.png"%(self.ANADIR))
+		# c.SaveAs("%s/cW.png"%(self.ANADIR))
 
 
 	def get_q2ws(self):
