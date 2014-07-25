@@ -15,6 +15,7 @@ import ROOT
 import os,sys
 
 import atlib as atlib
+import q2w_bng
 
 ROOT.gROOT.ProcessLine(".L THnTool.C+")
 from ROOT import THnTool
@@ -44,26 +45,36 @@ class ProcYields:
 		self.TOPS=tops 
 		self.VSTS=vsts 
 
+		#! Set up q2w bng
 		self.Q2W=q2w
 		self.Q2BNG,self.WBNG=None,None
-		#! DNP=13 bng
+		q2w_num=int(self.Q2W.split('q2w')[1])
+		try:
+			self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[q2w_num-1])
+		except IndexError:
+			print "IndexError while setting q2w bng. Exiting"
+		except:
+			print "The following exception occured. Exiting."
+			raise
+    		#sys.exit()
+    	#! DNP=13 bng
 		# if self.Q2W=='q2w2':
 		# 	q2w_bng=[[2.0,2.5,0.5],[1.3,1.9,0.025]]
 		# 	self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng)
 		#! new bng
-		q2w_bng=None
-		if self.Q2W=='q2w1':
-			q2w_bng=[[1.2,1.6,0.4],[1.3,1.7,0.025]]
-		elif self.Q2W=='q2w2':
-			q2w_bng=[[1.2,1.6,0.4],[1.7,2.0,0.025]]
-		elif self.Q2W=='q2w3':
-			q2w_bng=[[1.2,1.6,0.4],[2.0,2.2,0.025]]
-		elif self.Q2W=='q2w4':
-			q2w_bng=[[1.2,1.6,0.4],[2.2,2.4,0.025]]
-		else:
-			sys.exit("Exiting. %s binning not recognized"%self.Q2W)
+		# q2w_bng=None
+		# if self.Q2W=='q2w1':
+		# 	q2w_bng=[[1.2,1.6,0.4],[1.3,1.7,0.025]]
+		# elif self.Q2W=='q2w2':
+		# 	q2w_bng=[[1.2,1.6,0.4],[1.7,2.0,0.025]]
+		# elif self.Q2W=='q2w3':
+		# 	q2w_bng=[[1.2,1.6,0.4],[2.0,2.2,0.025]]
+		# elif self.Q2W=='q2w4':
+		# 	q2w_bng=[[1.2,1.6,0.4],[2.2,2.4,0.025]]
+		# else:
+		# 	sys.exit("Exiting. %s binning not recognized"%self.Q2W)
 
-		self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng)
+		# self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng)
 
 		# #! Test Q2WBNG, WBNG
 		# print "Q2 bins=",Q2BNG['BINS']
