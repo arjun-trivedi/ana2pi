@@ -7,30 +7,33 @@ import os
 
 import matplotlib.pyplot as plt
 
-#for q2w in ['q2w1','q2w2','q2w3','q2w4']:
+
 q2wl=['q2w1','q2w2','q2w3','q2w4']
+#! Get y(seq,w) for each q2w bin
 y={}
 for q2w in q2wl: 
 	dy=DispYields(q2w)
 	y[q2w]=dy.get_integ_yield()
-        print "integrated yields for",q2w
-        print "**************************"
-        for seq in ['C','H','F']:
-        	oy=collections.OrderedDict(sorted(y[q2w][seq].items()))
-                print "yield for",seq
-                print oy
-#! Now put all yields together
-print "Total yields"
-print "****************"
+        # print "integrated yields for",q2w
+        # print "**************************"
+        # for seq in ['C','H','F']:
+        # 	oy=collections.OrderedDict(sorted(y[q2w][seq].items()))
+        #         print "yield for",seq
+        #         print oy
+#! Now prepare to concatenate yields from all q2w bins
 yt={}
 oyt={}
+#! Concatenate y(seq,w) from all q2w bins
 for seq in ['C','F','H']:
     for iq2w,q2w in enumerate(q2wl):
         if iq2w==0:
-		yt[seq]=y[q2w][seq]
+		  yt[seq]=y[q2w][seq]
         else:
-		yt[seq].update(y[q2w][seq])
-    #yt[seq]=dict(y['q2w1'][seq].items()+y['q2w3'][seq].items()+y['q2w4'][seq].items())
+		  yt[seq].update(y[q2w][seq])
+    
+#! Make sure y(seq,w) are in in order i.e. y(w) is laid out in ascending order for w
+print "Total yields"
+print "****************"
 for seq in ['C','H','F']:
         oyt[seq]=collections.OrderedDict(sorted(yt[seq].items()))
         print "yield for",seq
