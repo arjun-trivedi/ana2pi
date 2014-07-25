@@ -152,15 +152,15 @@ class ProcYields:
 						hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
 						hq2w.SetName('h_q2Vw')
 						hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
-						outdir=os.path.join(self.ANADIR,q2wbin,vst_name,seq)
-						if not os.path.exists(outdir):
-							os.makedirs(outdir)
+						# outdir=os.path.join(self.ANADIR,q2wbin,vst_name,seq)
+						# if not os.path.exists(outdir):
+						# 	os.makedirs(outdir)
 						#! cd into FOUT.q2wbindir.vstdir.seqdir
 						vstdir.mkdir(seq).cd()
 						hq2w.Write()
-						cq2w=ROOT.TCanvas(hq2w.GetName(),hq2w.GetTitle())
-						hq2w.Draw("colz")
-						cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
+						# cq2w=ROOT.TCanvas(hq2w.GetName(),hq2w.GetTitle())
+						# hq2w.Draw("colz")
+						# cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
 					print "*** Done h8 range setting"
 					#! 1. h8->h5 
 					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
@@ -262,35 +262,29 @@ class ProcYields:
 	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
 		#h1=OrderedDict()
 		print "*** Processing h5->h1 ... ***"
-		if self.EXP:seq_h1=['R','C','A','H','F']
-		if self.SIM:seq_h1=['T','R','C','A','H','F']
+		if self.EXP:
+			seq_h1=['R','C','A','H','F']
+		if self.SIM:
+			seq_h1=['T','R','C','A','H','F']
 		for seq in seq_h1:
 			#! Create outdir in OS (I am currently saving 1D hist plots to view with gqview)
-			outdir=os.path.join(self.ANADIR,q2wbin,vst_name,seq)
-			if not os.path.exists(outdir):
-				os.makedirs(outdir)
+			# outdir=os.path.join(self.ANADIR,q2wbin,vst_name,seq)
+			# if not os.path.exists(outdir):
+			# 	os.makedirs(outdir)
 			#! cd into FOUT.q2wbindir.vstdir.seqdir(note seqdir already create in proc_h5)
 			vstdir.cd(seq)
 			#! Project out h1s
 			for var in VARS:
-				# h1[vst_name,seq,var]=h5[vst_name,seq].Projection(H5_DIM[var],"E")
-				# if var=='M1' or var=='M2':
-				# 	self.setM1M2axisrange(h1[vst_name,seq,var],vst_name,var)
-				# h1[vst_name,seq,var].SetName('h_%s'%var)
-				# h1[vst_name,seq,var].SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
-				# h1[vst_name,seq,var].Write()
-				# c1=ROOT.TCanvas(h1[vst_name,seq,var].GetName(),h1[vst_name,seq,var].GetTitle())
-				# h1[vst_name,seq,var].Draw()
 				h1=h5[vst_name,seq].Projection(H5_DIM[var],"E")
 				if var=='M1' or var=='M2':
 					self.setM1M2axisrange(h1,vst_name,var)
 				h1.SetName('h_%s'%var)
 				h1.SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
 				h1.Write()
-				c1=ROOT.TCanvas(h1.GetName(),h1.GetTitle())
-				h1.Draw()
-				c1.SaveAs("%s/%s.png"%(outdir,c1.GetName()))
-				c1.Close()
+				# c1=ROOT.TCanvas(h1.GetName(),h1.GetTitle())
+				# h1.Draw()
+				# c1.SaveAs("%s/%s.png"%(outdir,c1.GetName()))
+				# c1.Close()
 		print "*** Done processing h5->h1 ***"
 
 	def setM1M2axisrange(self,h,vst_name,var):

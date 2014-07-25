@@ -223,7 +223,7 @@ class DispYields:
 		h_dzr['SIM','T'][2].DrawNormalized("sames",1000)
 		pad.Update()
 		
-		c.SaveAs("%s/c%s.png"%(self.ANADIR,q2wbin))
+		c.SaveAs("%s/c1D_%s.png"%(self.ANADIR,q2wbin))
 
 	def disp_1D(self):
 		"""
