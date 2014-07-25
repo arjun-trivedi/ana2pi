@@ -1,0 +1,46 @@
+#!/bin/bash
+echo "Enter sim_num for which to make d2pi:"
+read sim_num
+if [[ $HOST == "gothe14" ]]; then
+ for q2w_num in `seq 1 49`;
+ do
+   make_d2pi_sim $sim_num $q2w_num
+ done 
+elif [[ $HOST == *farm* ]]; then
+ SUBDIR=${BSUBDIR}/e1f/2pi/sim/make_d2pi_sim-sim$sim_num
+ OUTDIR=${OBS_DATADIR_SIM}/sim$sim_num
+ mkdir -p ${SUBDIR}
+ mkdir -p ${OUTDIR}
+ for q2w_num in `seq 1 49`;
+ do
+  JSUBFILE=${SUBDIR}/q2w$q2w_num.sub
+  if [ -f "${JSUBFILE}" ]; then
+   echo "q2w$q2w_num.sub exists. Deleting it before creating new one."
+   rm ${JSUBFILE}
+  fi
+  echo "JOBNAME: e1f_make_d2pi_sim-sim"$sim_num"_q2w"$q2w_num     >> ${JSUBFILE}
+  echo "PROJECT: E1F"      >> ${JSUBFILE}
+  echo "SINGLE_JOB: true"  >> ${JSUBFILE}
+  echo "OS: centos62"         >> ${JSUBFILE}
+  echo "TRACK: analysis" >> ${JSUBFILE}
+  echo "DISK_SPACE: 5000 MB" >> ${JSUBFILE}
+  echo "MEMORY: 9500 MB" >> ${JSUBFILE}
+  echo "TIME: 1600" >> ${JSUBFILE}
+  echo " "                 >> ${JSUBFILE}
+  #echo "COMMAND: ./proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim$sim_num"  >> ${JSUBFILE}
+  echo "COMMAND: make_d2pi_sim $sim_num $q2w_num"  >> ${JSUBFILE}
+  echo " "                 >> ${JSUBFILE}
+  #echo "OTHER_FILES: ${WORKSPACE}/ana2pi/proc_h10.py" >> ${JSUBFILE}
+  #echo "OTHER_FILES: ${WORKSPACE}/ana2pi/proc_h10" >> ${JSUBFILE}
+  #for j in $(cat $OBS_DATADIR_SIM/sim$sim_num/h10.lst)
+  #do
+  #  echo "OTHER_FILES: $BDATADIR/e1f/sim/Jun14/2pi_1B_06194/recon/$j" >> ${JSUBFILE}
+  #done  
+  #echo "INPUT_FILES: $OBS_DATADIR_SIM/sim$sim_num/h10.lst" >> ${JSUBFILE}
+  #echo "INPUT_DATA: h10.lst" >> ${JSUBFILE}
+  #echo "OUTPUT_DATA: d2pi.root" >> ${JSUBFILE}
+  #echo "OUTPUT_TEMPLATE: ${OUTDIR}/q2w$i/d2pi.root" >> ${JSUBFILE}
+  jsub ${JSUBFILE}
+  echo "submitted jobs for q2w$q2w_num"
+ done
+fi

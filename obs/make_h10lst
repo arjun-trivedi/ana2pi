@@ -1,0 +1,14 @@
+#!/bin/bash
+#$1=Directory on Tape where h10 files are located.
+if [[ -z "$1" ]]; then
+ echo "Please enter directory where h10 files are located"
+ exit
+fi
+for i in `ls $1/*.root | grep -v "ana"`;
+do
+ if [[ $HOST == "gothe14" ]]; then
+  echo "$i" >> h10.lst
+ elif [[ $HOST == *farm* ]]; then
+  echo "/cache/$i" >> h10.lst
+ fi
+done
