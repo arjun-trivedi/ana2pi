@@ -1,9 +1,11 @@
 #!/bin/bash
-nentries=${1:-1000000000}
-#ana -i h10.lst -t e1f:sim:2pi -p d2piT:eid:efid:qskim:pid:d2piR -n $nentries
-for i in `seq 1 49`;
-do
- echo "*** Making /sim/sim1/q2w$i/d2pi.root *** "
- proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --nentries=$nentries
- #proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --q2w=q2w$i --sim_num=sim1 --use_q2w_elist=True --nentries=$nentries
-done
+sim_num=$1
+q2w_num=$2
+nentries=${3:-1000000000}
+
+echo "*** Making /sim/sim$sim_num/q2w$q2w_num/d2pi.root *** "
+echo ">>> ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num"
+ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num
+proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --sim_num=sim$sim_num --q2w=q2w$q2w_num  --nentries=$nentries
+echo ">>> ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num"
+ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num

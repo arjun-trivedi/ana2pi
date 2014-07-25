@@ -110,7 +110,8 @@ def main(argv):
 	#! Finall call proc_h10
 	cmd=["proc_h10","-i",h10lst,"-t",h10type,"-p",procorder,"-o",fout,"-l",str(use_q2w_elist),"-m",f_q2w_el,"-q",q2w,"-n",nentries]
 	print ">>>",cmd
-	subprocess.check_output(cmd)
+	#subprocess.check_output(cmd)
+	subprocess.call(cmd)
 	
 if __name__ == "__main__":
 	main(sys.argv[1:])
