@@ -1,0 +1,47 @@
+#!/usr/bin/python
+from proc_yields import ProcYields
+from disp_yields import DispYields
+
+import collections
+import os
+
+import matplotlib.pyplot as plt
+
+#for q2w in ['q2w1','q2w2','q2w3','q2w4']:
+q2wl=['q2w1','q2w2','q2w3','q2w4']
+y={}
+for q2w in q2wl: 
+	dy=DispYields(q2w)
+	y[q2w]=dy.get_integ_yield()
+        print "integrated yields for",q2w
+        print "**************************"
+        for seq in ['C','H','F']:
+        	oy=collections.OrderedDict(sorted(y[q2w][seq].items()))
+                print "yield for",seq
+                print oy
+#! Now put all yields together
+print "Total yields"
+print "****************"
+yt={}
+oyt={}
+for seq in ['C','F','H']:
+    for iq2w,q2w in enumerate(q2wl):
+        if iq2w==0:
+		yt[seq]=y[q2w][seq]
+        else:
+		yt[seq].update(y[q2w][seq])
+    #yt[seq]=dict(y['q2w1'][seq].items()+y['q2w3'][seq].items()+y['q2w4'][seq].items())
+for seq in ['C','H','F']:
+        oyt[seq]=collections.OrderedDict(sorted(yt[seq].items()))
+        print "yield for",seq
+	print oyt 
+#! Now plot the yields
+fig=plt.figure()
+plt.scatter(oyt['C'].keys(),oyt['C'].values(),label='EC',c='cyan',marker='o')
+plt.scatter(oyt['H'].keys(),oyt['H'].values(),label='EH',c='black',marker='o')
+plt.scatter(oyt['F'].keys(),oyt['F'].values(),label='EF',c='blue',marker='o')
+plt.xlabel('W[GeV]')
+plt.ylabel('Yield')
+plt.legend()
+outdir=os.path.join(os.environ['OBS_DIR'],'sim1')
+fig.savefig('%s/integ_yield.png'%(outdir))

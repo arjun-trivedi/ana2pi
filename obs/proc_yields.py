@@ -89,7 +89,7 @@ class ProcYields:
 				#os.makedirs(self.ANADIR)
 			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.ANADIR,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.ANADIR,"yield_exp.root"),"RECREATE")
-			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN,self.FIN_SIMYIELD,self.FOUT)
+			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUT.GetName())
 		if self.SIM:
 			self.DATADIR=os.path.join(os.environ['OBS_DATADIR_SIM'],self.SIM_NUM,self.Q2W)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))

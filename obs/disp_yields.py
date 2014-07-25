@@ -5,6 +5,12 @@ from collections import OrderedDict
 
 import os,sys
 
+ROOT.gROOT.ProcessLine(".L THnTool.C+")
+from ROOT import THnTool
+
+# Tools 
+thntool=THnTool()
+
 class DispYields:
 	def __init__(self,q2w,sim_num='sim1'):
 		self.SIM_NUM=sim_num
@@ -18,133 +24,383 @@ class DispYields:
 	def plot_obs_1D(self,q2wbin,h_dpp,h_rho,h_dzr):
 		c=ROOT.TCanvas()
 		c.Divide(3,3)
+
 		pad=c.cd(1)
-		hexp=h_dpp['EXP'][0].DrawNormalized("",1000)
-		hsim=h_dpp['SIM'][0].DrawNormalized("sames",1000)
+		# h_dpp['EXP','F'][0].Draw()
+		# h_dpp['EXP','H'][0].Draw("sames")
+		hexp=h_dpp['EXP','F'][0].DrawNormalized("",1000)
+		hsim=h_dpp['SIM','F'][0].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_dpp['EXP','F'][0])
+		h_dpp['EXP','C'][0].Multiply(hF)
+		h_dpp['EXP','C'][0].Draw("sames")
+		h_dpp['EXP','H'][0].Multiply(hF)
+		h_dpp['EXP','H'][0].Draw("sames")
+		#h_dpp['EXP','H'][0].DrawNormalized("sames",1000)
+		h_dpp['SIM','T'][0].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(2)
-		hexp=h_rho['EXP'][0].DrawNormalized("",1000)
-		hsim=h_rho['SIM'][0].DrawNormalized("sames",1000)
+		# h_rho['EXP','F'][0].Draw()
+		# h_rho['EXP','H'][0].Draw("sames")
+		hexp=h_rho['EXP','F'][0].DrawNormalized("",1000)
+		hsim=h_rho['SIM','F'][0].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_rho['EXP','F'][0])
+		h_rho['EXP','C'][0].Multiply(hF)
+		h_rho['EXP','C'][0].Draw("sames")
+		h_rho['EXP','H'][0].Multiply(hF)
+		h_rho['EXP','H'][0].Draw("sames")
+		#h_rho['EXP','H'][0].DrawNormalized("sames",1000)
+		h_rho['SIM','T'][0].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(3)
-		hexp=h_dzr['EXP'][0].DrawNormalized("",1000)
-		hsim=h_dzr['SIM'][0].DrawNormalized("sames",1000)
+		# h_dzr['EXP','F'][0].Draw()
+		# h_dzr['EXP','H'][0].Draw("sames")
+		hexp=h_dzr['EXP','F'][0].DrawNormalized("",1000)
+		hsim=h_dzr['SIM','F'][0].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
-		pad.Update()
+		hF=hexp.Clone()
+		hF.Divide(h_dzr['EXP','F'][0])
+		h_dzr['EXP','C'][0].Multiply(hF)
+		h_dzr['EXP','C'][0].Draw("sames")
+		h_dzr['EXP','H'][0].Multiply(hF)
+		h_dzr['EXP','H'][0].Draw("sames")
+		#h_dzr['EXP','H'][0].DrawNormalized("sames",1000)
+		h_dzr['SIM','T'][0].DrawNormalized("sames",1000)
+		# pad.Update()
 
 		pad=c.cd(4)
-		hexp=h_dpp['EXP'][1].DrawNormalized("",1000)
-		hsim=h_dpp['SIM'][1].DrawNormalized("sames",1000)
+		# h_dpp['EXP','F'][1].Draw()
+		# h_dpp['EXP','H'][1].Draw("sames")
+		hexp=h_dpp['EXP','F'][1].DrawNormalized("",1000)
+		hsim=h_dpp['SIM','F'][1].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_dpp['EXP','F'][1])
+		h_dpp['EXP','C'][1].Multiply(hF)
+		h_dpp['EXP','C'][1].Draw("sames")
+		h_dpp['EXP','H'][1].Multiply(hF)
+		h_dpp['EXP','H'][1].Draw("sames")
+		#h_dpp['EXP','H'][1].DrawNormalized("sames",1000)
+		h_dpp['SIM','T'][1].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(5)
-		hexp=h_rho['EXP'][1].DrawNormalized("",1000)
-		hsim=h_rho['SIM'][1].DrawNormalized("sames",1000)
+		# h_rho['EXP','F'][1].Draw()
+		# h_rho['EXP','H'][1].Draw("sames")
+		hexp=h_rho['EXP','F'][1].DrawNormalized("",1000)
+		hsim=h_rho['SIM','F'][1].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_rho['EXP','F'][1])
+		h_rho['EXP','C'][1].Multiply(hF)
+		h_rho['EXP','C'][1].Draw("sames")
+		h_rho['EXP','H'][1].Multiply(hF)
+		h_rho['EXP','H'][1].Draw("sames")
+		#h_rho['EXP','H'][1].DrawNormalized("sames",1000)
+		h_rho['SIM','T'][1].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(6)
-		hexp=h_dzr['EXP'][1].DrawNormalized("",1000)
-		hsim=h_dzr['SIM'][1].DrawNormalized("sames",1000)
+		# h_dzr['EXP','F'][1].Draw()
+		# h_dzr['EXP','H'][1].Draw("sames")
+		hexp=h_dzr['EXP','F'][1].DrawNormalized("",1000)
+		hsim=h_dzr['SIM','F'][1].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_dzr['EXP','F'][1])
+		h_dzr['EXP','C'][1].Multiply(hF)
+		h_dzr['EXP','C'][1].Draw("sames")
+		h_dzr['EXP','H'][1].Multiply(hF)
+		h_dzr['EXP','H'][1].Draw("sames")
+		#h_dzr['EXP','H'][1].DrawNormalized("sames",1000)
+		h_dzr['SIM','T'][1].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(7)
-		hexp=h_dpp['EXP'][2].DrawNormalized("",1000)
-		hsim=h_dpp['SIM'][2].DrawNormalized("sames",1000)
+		# h_dpp['EXP','F'][2].Draw()
+		# h_dpp['EXP','H'][2].Draw("sames")
+		hexp=h_dpp['EXP','F'][2].DrawNormalized("",1000)
+		hsim=h_dpp['SIM','F'][2].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_dpp['EXP','F'][2])
+		h_dpp['EXP','C'][2].Multiply(hF)
+		h_dpp['EXP','C'][2].Draw("sames")
+		h_dpp['EXP','H'][2].Multiply(hF)
+		h_dpp['EXP','H'][2].Draw("sames")
+		#h_dpp['EXP','H'][2].DrawNormalized("sames",1000)
+		h_dpp['SIM','T'][2].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(8)
-		hexp=h_rho['EXP'][2].DrawNormalized("",1000)
-		hsim=h_rho['SIM'][2].DrawNormalized("sames",1000)
+		# h_rho['EXP','F'][2].Draw()
+		# h_rho['EXP','H'][2].Draw("sames")
+		hexp=h_rho['EXP','F'][2].DrawNormalized("",1000)
+		hsim=h_rho['SIM','F'][2].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_rho['EXP','F'][2])
+		h_rho['EXP','C'][2].Multiply(hF)
+		h_rho['EXP','C'][2].Draw("sames")
+		h_rho['EXP','H'][2].Multiply(hF)
+		h_rho['EXP','H'][2].Draw("sames")
+		#h_rho['EXP','H'][2].DrawNormalized("sames",1000)
+		h_rho['SIM','T'][2].DrawNormalized("sames",1000)
 		pad.Update()
 
 		pad=c.cd(9)
-		hexp=h_dzr['EXP'][2].DrawNormalized("",1000)
-		hsim=h_dzr['SIM'][2].DrawNormalized("sames",1000)
+		# h_dzr['EXP','F'][2].Draw()
+		# h_dzr['EXP','H'][2].Draw("sames")
+		hexp=h_dzr['EXP','F'][2].DrawNormalized("",1000)
+		hsim=h_dzr['SIM','F'][2].DrawNormalized("sames",1000)
+		hexp.SetMinimum(0.)
+		hsim.SetMinimum(0.)
 		maximum=hexp.GetMaximum()
 		if hsim.GetMaximum()>hexp.GetMaximum():
 			maximum=hsim.GetMaximum()
 		hexp.SetMaximum(maximum+10)
 		hsim.SetMaximum(maximum+10)
+		hF=hexp.Clone()
+		hF.Divide(h_dzr['EXP','F'][2])
+		h_dzr['EXP','C'][2].Multiply(hF)
+		h_dzr['EXP','C'][2].Draw("sames")
+		h_dzr['EXP','H'][2].Multiply(hF)
+		h_dzr['EXP','H'][2].Draw("sames")
+		#h_dzr['EXP','H'][2].DrawNormalized("sames",1000)
+		h_dzr['SIM','T'][2].DrawNormalized("sames",1000)
 		pad.Update()
 		
 		c.SaveAs("%s/c%s.png"%(self.ANADIR,q2wbin))
 
 	def disp_1D(self):
 		"""
-		Walk the ROOT file and extract 1D observable histograms. The ROOT file is arranged in a Tree Structure. The
-		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
-		q2wbin/vst/seq/hists
+		Walk the ROOT file and extract 1D observable histograms. 
 		"""
 		#! First get all q2wbin directories from file
-		q2ws=[]
-		for path,dirs,files in self.FEXP.walk():
-			if path=="":continue #! Avoid root path
-			path_arr=path.split("/")
-			if len(path_arr)==1:
-				q2ws.append(path)
+		q2ws=self.get_q2ws()
 		print q2ws
 
 		#! Now get relevant histograms, plot and save them
 		for q2w in q2ws:
 			h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
 			for dtyp in ['EXP','SIM']:
-				if dtyp=='EXP':
-					f=self.FEXP
-					col=ROOT.gROOT.ProcessLine("kBlue")
-				if dtyp=='SIM':
-					f=self.FSIM
-					col=ROOT.gROOT.ProcessLine("kRed")
-				h_dpp[dtyp]=[f.Get("%s/%s"%(q2w,"VST1/F/h_M1")),f.Get("%s/%s"%(q2w,"VST1/F/h_THETA")),
-							 f.Get("%s/%s"%(q2w,"VST1/F/h_ALPHA"))]
-				h_rho[dtyp]=[f.Get("%s/%s"%(q2w,"VST2/F/h_M2")),f.Get("%s/%s"%(q2w,"VST2/F/h_THETA")),
-							 f.Get("%s/%s"%(q2w,"VST2/F/h_ALPHA"))]
-				h_dzr[dtyp]=[f.Get("%s/%s"%(q2w,"VST3/F/h_M2")),f.Get("%s/%s"%(q2w,"VST3/F/h_THETA")),
-							 f.Get("%s/%s"%(q2w,"VST3/F/h_ALPHA"))]
-				for hists in [h_dpp[dtyp],h_rho[dtyp],h_dzr[dtyp]]:
-					#print hists
-					for h in hists:
-						#print h
-						h.SetLineColor(col)
-						h.SetMarkerColor(col)
+				for seq in ['T','C','H','F']:
+					if dtyp=='EXP' and seq=='T': continue
+					if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+
+					if dtyp=='EXP':
+						f=self.FEXP
+						if seq=='C':
+							col=ROOT.gROOT.ProcessLine("kCyan")
+						if seq=='F':
+							col=ROOT.gROOT.ProcessLine("kBlue")
+						if seq=='H':
+							col=ROOT.gROOT.ProcessLine("kBlack")
+					if dtyp=='SIM':
+						f=self.FSIM
+						if seq=='F':
+							col=ROOT.gROOT.ProcessLine("kRed")
+						if seq=='T':
+							col=ROOT.gROOT.ProcessLine("kGreen")
+							mst=ROOT.gROOT.ProcessLine("kPlus")
+
+					h_dpp[dtyp,seq]=[f.Get("%s/VST1/%s/h_M1"%(q2w,seq)),f.Get("%s/VST1/%s/h_THETA"%(q2w,seq)),
+								 	f.Get("%s/VST1/%s/h_ALPHA"%(q2w,seq))]
+					h_rho[dtyp,seq]=[f.Get("%s/VST2/%s/h_M2"%(q2w,seq)),f.Get("%s/VST2/%s/h_THETA"%(q2w,seq)),
+								 	f.Get("%s/VST2/%s/h_ALPHA"%(q2w,seq))]
+					h_dzr[dtyp,seq]=[f.Get("%s/VST3/%s/h_M2"%(q2w,seq)),f.Get("%s/VST3/%s/h_THETA"%(q2w,seq)),
+								 	f.Get("%s/VST3/%s/h_ALPHA"%(q2w,seq))]
+					for hists in [h_dpp[dtyp,seq],h_rho[dtyp,seq],h_dzr[dtyp,seq]]:
+						#print hists
+						for h in hists:
+							#print h
+							h.SetLineColor(col)
+							h.SetMarkerColor(col)
+							if dtyp=='SIM' and seq=='T':
+								 h.SetMarkerStyle(mst)
 			self.plot_obs_1D(q2w,h_dpp,h_rho,h_dzr)
+
+	def get_integ_yield(self):
+		"""
+		Walk the ROOT file and obtain y(w) 
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2ws()
+		print q2ws
+
+		#! Prepare y(w)
+		y={}
+		# for q2w in q2ws:
+		# 	ws.append(q2w.split('_')[1].split('-')[0])
+		# #print ws
+		# ws = [float(x) for x in ws]
+		# ws.sort()
+		# #print ws
+		# nbins=len(ws)-1
+		# xmin=min(ws)
+		# xmax=max(ws)
+		# print nbins,xmin,xmax
+		# hW=OrderedDict()
+		# for dtyp in ['EXP','SIM']:
+		# 	for seq in ['T','C','H','F']:
+		# 		if dtyp=='EXP' and seq=='T': continue
+		# 		if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+		# 		hW[dtyp,seq]=ROOT.TH1F("hW_%s_%s"%(dtyp,seq),"hW_%s_%s"%(dtyp,seq),nbins,xmin,xmax)
+
+		#! Now get relevant histograms, plot and save them
+		f=ROOT.TFile(self.FEXP.GetName())
+		for seq in ['C','H','F']:
+			tmp={}
+			for q2w in q2ws:
+				w=float(q2w.split('_')[1].split('-')[0])
+				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+				#y=thntool.GetIntegral(h5)
+				#hW[dtyp,seq].Fill(w+0.025/2,y)
+				tmp[w]=thntool.GetIntegral(h5)
+				#print "w=",w,";y=",y
+				#hW[dtyp,seq].SetBinContent(hW[dtyp,seq].FindBin(w),y)
+			y[seq]=tmp
+		return y
+		# for q2w in q2ws:
+		# 	w=float(q2w.split('_')[1].split('-')[0])
+		# 	for dtyp in ['EXP','SIM']:
+		# 		for seq in ['T','C','H','F']:
+		# 			if dtyp=='EXP' and seq=='T': continue
+		# 			if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+
+		# 			if dtyp=='EXP':
+		# 				f=ROOT.TFile(self.FEXP.GetName())
+		# 			if dtyp=='SIM':
+		# 				f=ROOT.TFile(self.FSIM.GetName())
+					
+		# 			h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+		# 			#y=thntool.GetIntegral(h5)
+		# 			#hW[dtyp,seq].Fill(w+0.025/2,y)
+		# 			y[w]=thntool.GetIntegral(h5)
+		# 			print "w=",w,";y=",y
+		# 			#hW[dtyp,seq].SetBinContent(hW[dtyp,seq].FindBin(w),y)
+		# return y
+		#! hW Cosmetics
+		# for key in hW.keys():
+		# 	if dtyp=='EXP' and seq=='T': continue
+		# 	if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
+		# 	dtyp=key[0]
+		# 	seq=key[1]
+		# 	if dtyp=='EXP':
+		# 		if seq=='C':
+		# 			col=ROOT.gROOT.ProcessLine("kCyan")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# 		if seq=='F':
+		# 			col=ROOT.gROOT.ProcessLine("kBlue")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# 		if seq=='H':
+		# 			col=ROOT.gROOT.ProcessLine("kBlack")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+			
+		# 	if dtyp=='SIM':
+		# 		if seq=='F':
+		# 			col=ROOT.gROOT.ProcessLine("kRed")
+		# 			mst=ROOT.gROOT.ProcessLine("kFullCircle")
+		# 		if seq=='T':
+		# 			col=ROOT.gROOT.ProcessLine("kGreen")
+		# 			mst=ROOT.gROOT.ProcessLine("kPlus")
+		# 	hW[dtyp,seq].SetLineColor(col)
+		# 	hW[dtyp,seq].SetMarkerColor(col)
+		# 	hW[dtyp,seq].SetMarkerStyle(mst)
+
+		#! plot
+		# c=ROOT.TCanvas()
+		# hW['EXP','F'].Draw("P")
+		# hW['EXP','C'].Draw("P sames")
+		# hW['EXP','H'].Draw("P sames")
+		# hsim=h_dpp['SIM','F'][0].DrawNormalized("sames",1000)
+		# hexp.SetMinimum(0.)
+		# hsim.SetMinimum(0.)
+		# maximum=hexp.GetMaximum()
+		# if hsim.GetMaximum()>hexp.GetMaximum():
+		# 	maximum=hsim.GetMaximum()
+		# hexp.SetMaximum(maximum+10)
+		# hsim.SetMaximum(maximum+10)
+		# hF=hexp.Clone()
+		# hF.Divide(h_dpp['EXP','F'][0])
+		# h_dpp['EXP','C'][0].Multiply(hF)
+		# h_dpp['EXP','C'][0].Draw("sames")
+		# h_dpp['EXP','H'][0].Multiply(hF)
+		# h_dpp['EXP','H'][0].Draw("sames")
+		# #h_dpp['EXP','H'][0].DrawNormalized("sames",1000)
+		# h_dpp['SIM','T'][0].DrawNormalized("sames",1000)
+		# pad.Update()
+		# for ikey,key in enumerate(hW.keys()):
+		# 	if ikey==0:
+		# 		hW[key].DrawNormalized("P",1000)
+		# 	else:
+		# 		hW[key].DrawNormalized("P sames",1000)
+		# c.SaveAs("%s/cW.png"%(self.ANADIR))
+
+
+	def get_q2ws(self):
+		"""
+		The ROOT file is arranged in a Tree Structure. The
+		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
+		q2wbin/vst/seq/hists
+		"""
+		q2ws=[]
+		for path,dirs,files in self.FEXP.walk():
+			if path=="":continue #! Avoid root path
+			path_arr=path.split("/")
+			if len(path_arr)==1:
+				q2ws.append(path)
+		return q2ws
