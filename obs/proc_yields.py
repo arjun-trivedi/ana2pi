@@ -111,12 +111,6 @@ class ProcYields:
 			print "DATADIR=%s\nANADIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.ANADIR,self.FIN.GetName(),self.FOUT.GetName())
 
 		self.wmax=None #Used for setM1M2axisrange()
-
-		# self.h8=OrderedDict()
-		# self.q2wbin,self.q2wbindir=None,None
-		# self.vst_name,self.vstdir=None,None
-		# #! The following variables used per q2wbin
-		# self.hq2w,self.h5,self.h1=OrderedDict(),OrderedDict(),OrderedDict()
 	
 	def proc(self):
 		#! Fetch h8{}
