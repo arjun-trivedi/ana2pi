@@ -1,0 +1,17 @@
+#!/usr/bin/python
+from proc_yields import ProcYields
+from disp_yields import DispYields
+
+import collections
+import os
+
+import matplotlib.pyplot as plt
+
+
+q2wl=['q2w1','q2w2','q2w3','q2w4']
+#! Get y(seq,w) for each q2w bin
+ss={}
+for q2w in q2wl: 
+	dy=DispYields(q2w)
+	ss[q2w]=dy.get_sim_stats()
+        print ss[q2w]
