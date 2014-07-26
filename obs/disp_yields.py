@@ -298,6 +298,27 @@ class DispYields:
 			y[seq]=tmp
 		return y	
 
+	def get_sim_stats(self):
+		"""
+		Walk the ROOT file and obtain simstats(ss), where
+		ss=nbins{'T':<#nbins>,'R':<#nbins>}
+
+		The nbins are averaged over all q2w bins
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2ws()
+		print q2ws
+
+		ss={'T':0,'R':0}
+		f=ROOT.TFile(self.FSIM.GetName())
+		for seq in ['T','R']:
+			for q2w in q2ws:
+				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+				ss[seq]+=thntool.GetNbinsNotEq0(h5)
+			#! Compute average
+			ss[seq]=ss[seq]/len(q2ws)
+		return ss
+
 
 	def get_q2ws(self):
 		"""
