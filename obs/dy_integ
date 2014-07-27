@@ -8,43 +8,41 @@ import os
 import matplotlib.pyplot as plt
 
 
-q2wl=['q2w1','q2w2','q2w3','q2w4']
-#! Get y(seq,w) for each q2w bin
-y={}
-for q2w in q2wl: 
-	dy=DispYields(q2w)
-	y[q2w]=dy.get_integ_yield()
-        # print "integrated yields for",q2w
-        # print "**************************"
-        # for seq in ['C','H','F']:
-        # 	oy=collections.OrderedDict(sorted(y[q2w][seq].items()))
-        #         print "yield for",seq
-        #         print oy
-#! Now prepare to concatenate yields from all q2w bins
+q2wl1=['q2w1','q2w2','q2w3','q2w4']
+q2wl2=['q2w8','q2w9','q2w10','q2w11']
+#! Get y(seq,w) for each q2wl:q2w bin
+#y={}
 yt={}
 oyt={}
-#! Concatenate y(seq,w) from all q2w bins
-for seq in ['C','F','H']:
-    for iq2w,q2w in enumerate(q2wl):
-        if iq2w==0:
-		  yt[seq]=y[q2w][seq]
-        else:
-		  yt[seq].update(y[q2w][seq])
+for iq2wl,q2wl in enumerate([q2wl1,q2wl2]):
+        y={}
+	for q2w in q2wl: 
+		dy=DispYields(q2w)
+		y[q2w]=dy.get_integ_yield()
+	#! Now prepare to concatenate yields from all q2w bins
+	#! Concatenate y(seq,w) from all q2w bins
+	for seq in ['C','F','H']:
+    		for iq2w,q2w in enumerate(q2wl):
+        		if iq2w==0:
+				yt[iq2wl,seq]=y[q2w][seq]
+        		else:
+				yt[iq2wl,seq].update(y[q2w][seq])
     
-#! Make sure y(seq,w) are in in order i.e. y(w) is laid out in ascending order for w
-print "Total yields"
-print "****************"
-for seq in ['C','H','F']:
-        oyt[seq]=collections.OrderedDict(sorted(yt[seq].items()))
-        print "yield for",seq
-	print oyt 
+	#! Make sure y(seq,w) are in in order i.e. y(w) is laid out in ascending order for w
+	print "Total yields"
+	print "****************"
+	for seq in ['C','H','F']:
+        	oyt[iq2wl,seq]=collections.OrderedDict(sorted(yt[iq2wl,seq].items()))
+        	print "yield for",seq
+		print oyt[iq2wl,seq] 
 #! Now plot the yields
 fig=plt.figure()
-plt.scatter(oyt['C'].keys(),oyt['C'].values(),label='EC',c='cyan',marker='o')
-plt.scatter(oyt['H'].keys(),oyt['H'].values(),label='EH',c='black',marker='o')
-plt.scatter(oyt['F'].keys(),oyt['F'].values(),label='EF',c='blue',marker='o')
-plt.xlabel('W[GeV]')
-plt.ylabel('Yield')
-plt.legend()
+for iq2wl,q2wl in enumerate([q2wl1,q2wl2]):
+	plt.scatter(oyt[iq2wl,'C'].keys(),oyt[iq2wl,'C'].values(),label='EC',c='cyan',marker='o')
+	plt.scatter(oyt[iq2wl,'H'].keys(),oyt[iq2wl,'H'].values(),label='EH',c='black',marker='o')
+	plt.scatter(oyt[iq2wl,'F'].keys(),oyt[iq2wl,'F'].values(),label='EF',c='blue',marker='o')
+	plt.xlabel('W[GeV]')
+	plt.ylabel('Yield')
+	plt.legend()
 outdir=os.path.join(os.environ['OBS_DIR'],'sim1')
 fig.savefig('%s/integ_yield.png'%(outdir))
