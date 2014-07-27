@@ -25,7 +25,7 @@ q2wl=os.listdir(os.path.join(datadir,siml[0]))
 print "q2w list=",q2wl
 
 
-#! Finally, do 'hadd'
+#! Finally, do 'hadd targetfile sourcefile1 sourcefile2 ... sourcefileN'
 for q2w in q2wl:
     tf=os.path.join(datadir,cum_sim,q2w,'d2pi.root')
     sf=[]
