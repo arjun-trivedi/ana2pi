@@ -2,7 +2,8 @@
 from proc_yields import ProcYields
 from disp_yields import DispYields
 
-#for q2w in ['q2w1','q2w2','q2w3','q2w4']:
-for q2w in ['q2w1']:#,'q2w3','q2w4']:
+q2wl=['q2w%i'%i for i in range(1,50)]
+#for q2w in ['q2w2']:#,'q2w3','q2w4']:
+for q2w in q2wl:
 	dy=DispYields(q2w)
 	dy.disp_1D()
