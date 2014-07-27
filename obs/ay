@@ -21,12 +21,15 @@ cum_sim="".join(siml)
 print "Cumulative simulation result will be stored in:", cum_sim
 
 #! Get list of all q2ws in each sim
-q2wl=os.listdir(os.path.join(datadir,siml[0]))
+q2wl=glob.glob(os.path.join(datadir,siml[0],'q2w*'))
+q2wl=[os.path.basename(i) for i in q2wl]
 print "q2w list=",q2wl
 
 
 #! Finally, do 'hadd targetfile sourcefile1 sourcefile2 ... sourcefileN'
 for q2w in q2wl:
+    if not os.path.exists(os.path.join(datadir,cum_sim,q2w)):
+        os.makedirs(os.path.join(datadir,cum_sim,q2w))
     tf=os.path.join(datadir,cum_sim,q2w,'d2pi.root')
     sf=[]
     for sim in siml:
@@ -34,4 +37,4 @@ for q2w in q2wl:
     cmd=["hadd",tf]
     cmd+=sf
     print ">>>%s\n"%cmd
-
+    subprocess.call(cmd)
