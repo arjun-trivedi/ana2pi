@@ -33,7 +33,7 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 class ProcYields:
-	def __init__(self,q2w,dtyp,sim_num='sim1',tops=[1,2,3,4],vsts=[1,2,3]):
+	def __init__(self,q2w,dtyp,sim_num='siml',tops=[1,2,3,4],vsts=[1,2,3]):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True

@@ -9,6 +9,6 @@ q2wl=['q2w%i'%i for i in range(49,50)]
 #for q2w in ['q2w8','q2w9','q2w10','q2w11']:#,'q2w3','q2w4']:
 for q2w in q2wl:
         print "*** Preparing to display yields for %s ***"%q2w
-	dy=DispYields(q2w)
+	dy=DispYields(q2w,'sim1sim2')
 	dy.disp_1D()
         print "*** Done display yields for %s ***"%q2w

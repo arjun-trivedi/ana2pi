@@ -12,7 +12,7 @@ from ROOT import THnTool
 thntool=THnTool()
 
 class DispYields:
-	def __init__(self,q2w,sim_num='sim1'):
+	def __init__(self,q2w,sim_num='siml'):
 		self.SIM_NUM=sim_num
 		self.Q2W=q2w
 		self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_exp.root'))

@@ -5,5 +5,5 @@ q2wl=['q2w%i'%i for i in range(1,50)]
 for q2w in q2wl:
 #for q2w in ['q2w1','q2w2']:
 	for dtyp in ['sim','exp']:
-                cmd=["py",q2w,dtyp,'sim1']
+                cmd=["py",q2w,dtyp,'sim1sim2']
                 subprocess.call(cmd)
