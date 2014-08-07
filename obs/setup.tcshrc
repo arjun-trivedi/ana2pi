@@ -16,6 +16,7 @@ else if ($HOST =~ "*farm*") then
   setenv OBS_DATADIR "${EG3HOME}/data/e1f/2pi"
   setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
   setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
+  setenv OBS_DATADIR_SIM_VOL "${VOLHOME}/data/e1f/2pi/sim"
 endif
 ##-- dir where where yields and their displays are kept
 setenv OBS_DIR "${OBS_DATADIR}/obs"
