@@ -1,5 +1,9 @@
 #!/bin/bash
-#$1=Directory on Tape where h10 files are located.
+#$1=Directory where h10 files are located.
+if [[ -e h10.lst ]];then
+  echo "h10.lst exists."
+  exit
+fi
 if [[ -z "$1" ]]; then
  echo "Please enter directory where h10 files are located"
  exit
@@ -9,6 +13,10 @@ do
  if [[ $HOST == "gothe14" ]]; then
   echo "$i" >> h10.lst
  elif [[ $HOST == *farm* ]]; then
-  echo "/cache/$i" >> h10.lst
+  if [[ $1 == *mss* ]];then
+    echo "/cache/$i" >> h10.lst
+  else
+    echo $i >> h10.lst 
+  fi
  fi
 done
