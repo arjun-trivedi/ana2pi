@@ -12,6 +12,6 @@ q2wl=[x for x in q2wl if x not in q2wl_bad]
 
 for q2w in q2wl:
         print "*** Preparing to display yields for %s ***"%q2w
-	dy=DispYields(q2w,'sim1sim2')
+	dy=DispYields(q2w,'sim1sim2sim3')
 	dy.disp_1D()
         print "*** Done display yields for %s ***"%q2w
