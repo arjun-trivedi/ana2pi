@@ -14,6 +14,7 @@ datadir=os.environ['OBS_DATADIR_SIM']
 siml=glob.glob(os.path.join(datadir,'sim[0-9]'))
 siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
 siml=[os.path.basename(i) for i in siml]
+siml.sort()
 print "List of indovidual simulations=",siml
 
 #! Prepare outdir
