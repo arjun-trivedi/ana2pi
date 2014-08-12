@@ -304,8 +304,6 @@ class DispYields:
 		ss={'T':[[q21,w1,nevts,nbins],...,[q2N,wN,nevts,nbins]],
 		    'R':[[q21,w1,nevts,nbins],...,[q2N,wN,nevts,nbins]],
 		    'H':[[q21,w1,nevts,nbins],...,[q2N,wN,nevts,nbins]]}
-
-		The nbins are averaged over all q2w bins
 		"""
 		#! First get all q2wbin directories from file
 		q2ws=self.get_q2ws()
