@@ -301,25 +301,36 @@ class DispYields:
 	def get_sim_stats(self):
 		"""
 		Walk the ROOT file and obtain simstats(ss), where
-		ss={'T':[nevts,nbins],'R':[nevts,nbins],'H':[nevts,nbins]}
+		ss={'T':[[q21,w1,nevts,nbins],...,[q2N,wN,nevts,nbins]],
+		    'R':[[q21,w1,nevts,nbins],...,[q2N,wN,nevts,nbins]],
+		    'H':[[q21,w1,nevts,nbins],...,[q2N,wN,nevts,nbins]]}
 
 		The nbins are averaged over all q2w bins
 		"""
 		#! First get all q2wbin directories from file
 		q2ws=self.get_q2ws()
+		print "Processing sim_stats for %s:"%self.Q2W
 		print q2ws
 
 		ss={'T':[],'R':[],'H':[]}
 		f=ROOT.TFile(self.FSIM.GetName())
 		for seq in ['T','R','H']:
 			for q2w in q2ws:
-				nevts,nbins=0,0
+				#! Determine q2,w
+				q2bin=q2w.split('_')[0]
+				wbin=q2w.split('_')[1]
+				#print q2bin,wbin
+				q2=float(q2bin.split('-')[0])
+				w=float(wbin.split('-')[0])
+				#print q2,w
+				#! Determine nevts,nbins for this q2,w
 				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
-				nevts+=thntool.GetIntegral(h5)
-				nbins+=thntool.GetNbinsNotEq0(h5)
-			#! Compute average
-			ss[seq].append(nevts/len(q2ws))
-			ss[seq].append(nbins/len(q2ws))
+				nevts=thntool.GetIntegral(h5)
+				nbins=thntool.GetNbinsNotEq0(h5)
+				ss[seq].append([q2,w,nevts,nbins])
+			# #! Compute average
+			# ss[seq].append(nevts/len(q2ws))
+			# ss[seq].append(nbins/len(q2ws))
 		return ss
 
 

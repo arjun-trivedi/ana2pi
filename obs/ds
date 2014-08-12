@@ -43,48 +43,55 @@ q2wl=[x for x in q2wl if x not in q2wl_bad]
 #ss={}
 #q2,w,nevts,nbins=[],[],[],[]
 
-h=ROOT.TH2F("h_Q2_v_W","h_Q2_v_W",7,1.2,5.0,7,1.3,3.0)
-w_bins=array("d", [1.3,1.7,2.0,2.2,2.4,2.6,2.8,3.0])
-q2_bins=array("d",[1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
-h.GetXaxis().Set(7,w_bins)
-h.GetYaxis().Set(7,q2_bins)
+#! The following binning should match up with q2w_bng.h/.py
+#! It is slightly modified here for "aesthetic" purposes
+h=ROOT.TH2F("h_Q2_v_W","h_Q2_v_W",80,1.0,3.0,7,1.2,5.0)
+#w_bins=array("d", [1.3,1.7,2.0,2.2,2.4,2.6,2.8,3.0])
+q2_bins=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
+#h.GetXaxis().Set(7,w_bins)
+h.GetYaxis().Set(8,q2_bins)
 
-q2,w,nevts,nbins={},{},{},{}
-for sim in siml:
-	q2[sim]=[]
-	w[sim]=[]
-	nevts[sim]=[]
-	nbins[sim]=[]
-print q2,w,nevts,nbins
+# q2,w,nevts,nbins={},{},{},{}
+# for sim in siml:
+# 	q2[sim]=[]
+# 	w[sim]=[]
+# 	nevts[sim]=[]
+# 	nbins[sim]=[]
+# print q2,w,nevts,nbins
 
 for sim in siml:
 	for q2w in q2wl: 
 		dy=DispYields(q2w,sim)
 		ss=dy.get_sim_stats()
-		q2w_num=int(q2w.split('q2w')[1])
-		q2bng,wbng=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[q2w_num-1])
-		print "Q2,W=%f,%f"%(q2bng['BINS_LE'][0],wbng['BINS_LE'][0])
-		q2[sim].append(q2bng['BINS_LE'][0])
-		w[sim].append(wbng['BINS_LE'][0])
-		nevts[sim].append(ss['T'][0])
-		nbins[sim].append(ss['H'][1])
-
-		binx=h.GetXaxis().FindBin(wbng['BINS_LE'][0]);
-		biny=h.GetYaxis().FindBin(q2bng['BINS_LE'][0]);
-		bin=h.GetBin(binx,biny)
-		h.SetBinContent(bin,ss['H'][1])
+		# q2w_num=int(q2w.split('q2w')[1])
+		# q2bng,wbng=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[q2w_num-1])
+		# print "Q2,W=%f,%f"%(q2bng['BINS_LE'][0],wbng['BINS_LE'][0])
+		# q2[sim].append(q2bng['BINS_LE'][0])
+		# w[sim].append(wbng['BINS_LE'][0])
+		# nevts[sim].append(ss['T'][0])
+		# nbins[sim].append(ss['H'][1])
+		# binx=h.GetXaxis().FindBin(wbng['BINS_LE'][0]);
+		# biny=h.GetYaxis().FindBin(q2bng['BINS_LE'][0]);
+		# bin=h.GetBin(binx,biny)
+		# h.SetBinContent(bin,ss['H'][1])
+		ssT=ss['T']
+		for d in ss['T']:
+			binx=h.GetXaxis().FindBin(d[1]+(0.025/2));
+			biny=h.GetYaxis().FindBin(d[0]);
+			bin=h.GetBin(binx,biny)
+			h.SetBinContent(bin,d[3])
 
 c=ROOT.TCanvas()
 h.Draw("colz")
 c.SaveAs("test.png")
 	
-for sim in siml:
-	for q2w in q2wl:
-		print "ss for %s,%s"%(sim,q2w)
-		print q2[sim]
-		print w[sim]
-		print nbins[sim]
-		print nevts[sim]
+# for sim in siml:
+# 	for q2w in q2wl:
+# 		print "ss for %s,%s"%(sim,q2w)
+# 		print q2[sim]
+# 		print w[sim]
+# 		print nbins[sim]
+# 		print nevts[sim]
 
 # fig = plt.figure()
 # ax = fig.add_subplot(111, projection='3d')
