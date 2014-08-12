@@ -40,10 +40,15 @@ q2bins,q2min,q2max=7,1.2,5.0 # place-holder bng, for it will be modified by vari
 q2_varbins=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
 h={}
 for seq in ['T','R','H']:
-	h[seq]=ROOT.TH2F("h_nbins%s"%seq,"nbins%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
-	h[seq].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
-	h[seq].SetXTitle("W [GeV]")
-	h[seq].SetYTitle("Q^2 [GeV^2]")
+	h[seq,'nevts']=ROOT.TH2F("h_nevts%s"%seq,"nevts%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
+	h[seq,'nevts'].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+	h[seq,'nevts'].SetXTitle("W [GeV]")
+	h[seq,'nevts'].SetYTitle("Q^2 [GeV^2]")
+
+	h[seq,'nbins']=ROOT.TH2F("h_nbins%s"%seq,"nbins%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
+	h[seq,'nbins'].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+	h[seq,'nbins'].SetXTitle("W [GeV]")
+	h[seq,'nbins'].SetYTitle("Q^2 [GeV^2]")
 
 for q2w in q2wl: 
 	dy=DispYields(q2w,sim)
@@ -51,21 +56,35 @@ for q2w in q2wl:
 	for seq in ['T','R','H']:
 		for d in ss[seq]:
 			q2,w,nevts,nbins=d[0],d[1],d[2],d[3]
-			binx=h[seq].GetXaxis().FindBin(w+(0.025/2));
-			biny=h[seq].GetYaxis().FindBin(q2);
-			bin=h[seq].GetBin(binx,biny)
-			h[seq].SetBinContent(bin,nbins)
+			binx=h[seq,'nevts'].GetXaxis().FindBin(w+(0.025/2));
+			biny=h[seq,'nevts'].GetYaxis().FindBin(q2);
+			bin=h[seq,'nevts'].GetBin(binx,biny)
+			h[seq,'nevts'].SetBinContent(bin,nevts)
+			h[seq,'nbins'].SetBinContent(bin,nbins)
 	
 ROOT.gStyle.SetOptStat(0)
-c=ROOT.TCanvas()
-c.Divide(3,1)
-c.cd(1)
-h['T'].Draw("colz")
-c.cd(2)
-h['R'].Draw("colz")
-c.cd(3)
-h['H'].Draw("colz")
-c.SaveAs("test.png")
+
+c_nevts=ROOT.TCanvas()
+c_nevts.Divide(3,1)
+c_nevts.cd(1)
+h['T','nevts'].Draw("colz")
+c_nevts.cd(2)
+h['R','nevts'].Draw("colz")
+c_nevts.cd(3)
+h['H','nevts'].Divide(h['T','nevts'])
+h['H','nevts'].Draw("colz")
+c_nevts.SaveAs("test_nevts.png")
+
+c_nbins=ROOT.TCanvas()
+c_nbins.Divide(3,1)
+c_nbins.cd(1)
+h['T','nbins'].Draw("colz")
+c_nbins.cd(2)
+h['R','nbins'].Draw("colz")
+c_nbins.cd(3)
+h['H','nbins'].Divide(h['T','nbins'])
+h['H','nbins'].Draw("colz")
+c_nbins.SaveAs("test_nbins.png")
 	
 # fig = plt.figure()
 # ax = fig.add_subplot(111, projection='3d')
