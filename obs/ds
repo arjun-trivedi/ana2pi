@@ -7,37 +7,60 @@ import q2w_bng
 
 import collections
 import os,sys
-
+import glob
 import matplotlib.pyplot as plt
+import matplotlib
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 
-if len(sys.argv)<2:
-        sim='sim1sim2sim3'
-else:
-        sim=sys.argv[1]
+# if len(sys.argv)<2:
+#         sim='sim1sim2sim3'
+# else:
+#         sim=sys.argv[1]
 
-q2wl=['q2w1','q2w2','q2w3','q2w4',
-      'q2w8','q2w10','q2w11','q2w12']
+datadir=os.environ['OBS_DATADIR_SIM']
+#! Get list of all sims
+# siml=glob.glob(os.path.join(datadir,'sim[0-9]'))
+# siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
+# siml=[os.path.basename(i) for i in siml]
+# siml.sort()
+siml=['sim1','sim1sim2','sim1sim2sim3']
+print "List of cumulative simulations=",siml
+
+q2wl=['q2w1','q2w2']#,'q2w3','q2w4','q2w8','q2w10','q2w11','q2w12']
 #! Get ss(q2w)
-ss={}
-q2,w,nevts,nbins=[],[],[],[]
-for q2w in q2wl: 
-	dy=DispYields(q2w,sim)
-	ss[q2w]=dy.get_sim_stats()
-	q2w_num=int(q2w.split('q2w')[1])
-	q2bng,wbng=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[q2w_num-1])
-	print "Q2,W=%f,%f"%(q2bng['BINS_LE'][0],wbng['BINS_LE'][0])
-	q2.append(q2bng['BINS_LE'][0])
-	w.append(wbng['BINS_LE'][0])
-	nevts.append(ss[q2w]['T'][0])
-	nbins.append(ss[q2w]['H'][1])
-for q2w in q2wl:
-	print "ss for %s"%q2w
-	print ss[q2w]
+#ss={}
+#q2,w,nevts,nbins=[],[],[],[]
+q2,w,nevts,nbins={},{},{},{}
+for sim in siml:
+	q2[sim]=[]
+	w[sim]=[]
+	nevts[sim]=[]
+	nbins[sim]=[]
+print q2,w,nevts,nbins
+
+for sim in siml:
+	for q2w in q2wl: 
+		dy=DispYields(q2w,sim)
+		ss=dy.get_sim_stats()
+		q2w_num=int(q2w.split('q2w')[1])
+		q2bng,wbng=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[q2w_num-1])
+		print "Q2,W=%f,%f"%(q2bng['BINS_LE'][0],wbng['BINS_LE'][0])
+		q2[sim].append(q2bng['BINS_LE'][0])
+		w[sim].append(wbng['BINS_LE'][0])
+		nevts[sim].append(ss['T'][0])
+		nbins[sim].append(ss['H'][1])
+	
+for sim in siml:
+	for q2w in q2wl:
+		print "ss for %s,%s"%(sim,q2w)
+		print q2[sim]
+		print w[sim]
+		print nbins[sim]
+		print nevts[sim]
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -47,7 +70,13 @@ n = 100
 #     ys = randrange(n, 0, 100)
 #     zs = randrange(n, zl, zh)
 #     ax.scatter(xs, ys, zs, c=c, marker=m)
-ax.scatter(q2,w,nbins)
+c=cm.rainbow(np.linspace(0, 1, len(siml)))
+l,l_proxy=[],[]
+for isim,sim in enumerate(siml):
+	l.append(ax.scatter(q2[sim],w[sim],nbins[sim],c=c[isim],marker='o',label=sim))
+	l_proxy.append(matplotlib.lines.Line2D([0],[0], linestyle="none",c=c[isim],marker='o'))
+
+ax.legend(l_proxy,siml,prop={'size':9})
 
 ax.set_xlabel('Q2')
 ax.set_ylabel('W')
