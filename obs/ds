@@ -2,16 +2,55 @@
 from proc_yields import ProcYields
 from disp_yields import DispYields
 
+import atlib as atlib
+import q2w_bng
+
 import collections
-import os
+import os,sys
 
 import matplotlib.pyplot as plt
 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import numpy as np
 
-q2wl=['q2w1','q2w2','q2w3','q2w4']
-#! Get y(seq,w) for each q2w bin
+if len(sys.argv)<2:
+        sim='sim1sim2sim3'
+else:
+        sim=sys.argv[1]
+
+q2wl=['q2w1','q2w2','q2w3','q2w4',
+      'q2w8','q2w10','q2w11','q2w12']
+#! Get ss(q2w)
 ss={}
+q2,w,nevts,nbins=[],[],[],[]
 for q2w in q2wl: 
-	dy=DispYields(q2w)
+	dy=DispYields(q2w,sim)
 	ss[q2w]=dy.get_sim_stats()
-        print ss[q2w]
+	q2w_num=int(q2w.split('q2w')[1])
+	q2bng,wbng=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[q2w_num-1])
+	print "Q2,W=%f,%f"%(q2bng['BINS_LE'][0],wbng['BINS_LE'][0])
+	q2.append(q2bng['BINS_LE'][0])
+	w.append(wbng['BINS_LE'][0])
+	nevts.append(ss[q2w]['T'][0])
+	nbins.append(ss[q2w]['H'][1])
+for q2w in q2wl:
+	print "ss for %s"%q2w
+	print ss[q2w]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+n = 100
+# for c, m, zl, zh in [('r', 'o', -50, -25), ('b', '^', -30, -5)]:
+#     xs = randrange(n, 23, 32)
+#     ys = randrange(n, 0, 100)
+#     zs = randrange(n, zl, zh)
+#     ax.scatter(xs, ys, zs, c=c, marker=m)
+ax.scatter(q2,w,nbins)
+
+ax.set_xlabel('Q2')
+ax.set_ylabel('W')
+ax.set_zlabel('nbins')
+
+plt.show()

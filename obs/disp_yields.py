@@ -301,7 +301,7 @@ class DispYields:
 	def get_sim_stats(self):
 		"""
 		Walk the ROOT file and obtain simstats(ss), where
-		ss=nbins{'T':<#nbins>,'R':<#nbins>}
+		ss={'T':[nevts,nbins],'R':[nevts,nbins],'H':[nevts,nbins]}
 
 		The nbins are averaged over all q2w bins
 		"""
@@ -309,14 +309,17 @@ class DispYields:
 		q2ws=self.get_q2ws()
 		print q2ws
 
-		ss={'T':0,'R':0}
+		ss={'T':[],'R':[],'H':[]}
 		f=ROOT.TFile(self.FSIM.GetName())
-		for seq in ['T','R']:
+		for seq in ['T','R','H']:
 			for q2w in q2ws:
+				nevts,nbins=0,0
 				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
-				ss[seq]+=thntool.GetNbinsNotEq0(h5)
+				nevts+=thntool.GetIntegral(h5)
+				nbins+=thntool.GetNbinsNotEq0(h5)
 			#! Compute average
-			ss[seq]=ss[seq]/len(q2ws)
+			ss[seq].append(nevts/len(q2ws))
+			ss[seq].append(nbins/len(q2ws))
 		return ss
 
 
