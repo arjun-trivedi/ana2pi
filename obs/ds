@@ -27,13 +27,25 @@ datadir=os.environ['OBS_DATADIR_SIM']
 # siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
 # siml=[os.path.basename(i) for i in siml]
 # siml.sort()
-siml=['sim1','sim1sim2','sim1sim2sim3']
+siml=['sim1']#,'sim1sim2','sim1sim2sim3']
 print "List of cumulative simulations=",siml
 
-q2wl=['q2w1','q2w2']#,'q2w3','q2w4','q2w8','q2w10','q2w11','q2w12']
+q2wl=['q2w%i'%i for i in range(1,50)]
+#! Remove "bad" bins (cases where there is no data in yields_exp.root)
+q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
+q2wl=[x for x in q2wl if x not in q2wl_bad]
+#q2wl=['q2w1','q2w2']#,'q2w3','q2w4','q2w8','q2w10','q2w11','q2w12']
 #! Get ss(q2w)
 #ss={}
 #q2,w,nevts,nbins=[],[],[],[]
+
+h=ROOT.TH2F("h_Q2_v_W","h_Q2_v_W",7,1.2,5.0,7,1.3,3.0)
+q2_bins=array("d",[1.2,1.6,2,0,2.4,3.0,3.5,4.2,5.0])
+w_bins=array("d", [1.3,1.7,2.0,2.2,2.4,2.6,2.8,3.0])
+print xbins
+h.GetXaxis().Set(2,xbins)
+h.GetYaxis().Set(2,ybins)
+
 q2,w,nevts,nbins={},{},{},{}
 for sim in siml:
 	q2[sim]=[]
@@ -62,24 +74,24 @@ for sim in siml:
 		print nbins[sim]
 		print nevts[sim]
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-n = 100
-# for c, m, zl, zh in [('r', 'o', -50, -25), ('b', '^', -30, -5)]:
-#     xs = randrange(n, 23, 32)
-#     ys = randrange(n, 0, 100)
-#     zs = randrange(n, zl, zh)
-#     ax.scatter(xs, ys, zs, c=c, marker=m)
-c=cm.rainbow(np.linspace(0, 1, len(siml)))
-l,l_proxy=[],[]
-for isim,sim in enumerate(siml):
-	l.append(ax.scatter(q2[sim],w[sim],nbins[sim],c=c[isim],marker='o',label=sim))
-	l_proxy.append(matplotlib.lines.Line2D([0],[0], linestyle="none",c=c[isim],marker='o'))
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# n = 100
+# # for c, m, zl, zh in [('r', 'o', -50, -25), ('b', '^', -30, -5)]:
+# #     xs = randrange(n, 23, 32)
+# #     ys = randrange(n, 0, 100)
+# #     zs = randrange(n, zl, zh)
+# #     ax.scatter(xs, ys, zs, c=c, marker=m)
+# c=cm.rainbow(np.linspace(0, 1, len(siml)))
+# l,l_proxy=[],[]
+# for isim,sim in enumerate(siml):
+# 	l.append(ax.scatter(q2[sim],w[sim],nbins[sim],c=c[isim],marker='o',label=sim))
+# 	l_proxy.append(matplotlib.lines.Line2D([0],[0], linestyle="none",c=c[isim],marker='o'))
 
-ax.legend(l_proxy,siml,prop={'size':9})
+# ax.legend(l_proxy,siml,prop={'size':9})
 
-ax.set_xlabel('Q2')
-ax.set_ylabel('W')
-ax.set_zlabel('nbins')
+# ax.set_xlabel('Q2')
+# ax.set_ylabel('W')
+# ax.set_zlabel('nbins')
 
-plt.show()
+# plt.show()
