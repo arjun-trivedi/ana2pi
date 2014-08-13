@@ -8,7 +8,7 @@ setenv PATH "${PATH}:${ANA2PI_OBS_DIR}"
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_OBS_DIR}"
 
 ##-- dir where h10.lst and d2pi are kept
-if ($HOST == "gothe14") then
+if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
   setenv OBS_DATADIR "/data/trivedia/e1f/2pi"
   setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
   setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
