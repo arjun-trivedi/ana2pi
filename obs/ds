@@ -43,6 +43,7 @@ q2wl=['q2w%i'%i for i in range(1,50)]
 #! Remove "bad" bins (cases where there is no data in yields_exp.root)
 q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
 q2wl=[x for x in q2wl if x not in q2wl_bad]
+#q2wl=['q2w1','q2w2']
 
 #! + The following binning should match up with q2w_bng.h/.py
 #! + It is slightly modified here for "aesthetic" purposes
@@ -75,27 +76,78 @@ for q2w in q2wl:
 	
 ROOT.gStyle.SetOptStat(0)
 
-c_nevts=ROOT.TCanvas("cnevts","cnevts",1000,500)
-c_nevts.Divide(3,1)
+c_nevts=ROOT.TCanvas("cnevts","cnevts",1000,1000)
+c_nevts.Divide(2,2)
 c_nevts.cd(1)
 h['T','nevts'].Draw("colz")
 c_nevts.cd(2)
 h['R','nevts'].Draw("colz")
 c_nevts.cd(3)
-h['H','nevts'].Divide(h['T','nevts'])
-h['H','nevts'].Draw("colz")
+hT=h['T','nevts'].Clone()
+hT.Divide(h['T','nbins'])
+hT.SetName("T")
+hT.SetTitle("<nevts/bin>T")
+hT.Draw("colz")
+c_nevts.cd(4)
+hR=h['R','nevts'].Clone()
+hR.Divide(h['R','nbins'])
+hR.SetName("R")
+hR.SetTitle("<nevts/bin>R")
+hR.Draw("colz")
+# c_nevts.cd(3)
+# hist=h['H','nevts'].Clone()
+# hist.Divide(h['T','nevts'])
+# hist.SetName("h")
+# hist.SetTitle("frac_evt_hole")
+# hist.Draw("colz")
 c_nevts.SaveAs("%s/nevts.png"%outdir)
 
+print("here")
 c_nbins=ROOT.TCanvas("cnbins","cnbins",1000,500)
 c_nbins.Divide(3,1)
 c_nbins.cd(1)
 h['T','nbins'].Draw("colz")
+print("here2")
 c_nbins.cd(2)
 h['R','nbins'].Draw("colz")
+print("here3")
 c_nbins.cd(3)
-h['H','nbins'].Divide(h['T','nbins'])
-h['H','nbins'].Draw("colz")
+# h_fracH=h['H','nbins'].Clone()
+# print("here4")
+# h_fracH.Divide(h['T','nbins'])
+# h_fracH.SetName("fracH")
+# h_fracH.SetTitle("nbinsH/nbinsT(Q2,W)")
+# print("here5")
+# h_fracH.Draw("colz")
+# print("here6")
 c_nbins.SaveAs("%s/nbins.png"%outdir)
+print("here7")
+
+# print("here\n")
+# c_nevts_per_bin=ROOT.TCanvas("cnevts_per_bin","cnevts_per_bin",1000,500)
+# c_nevts_per_bin.Divide(2,1)
+
+# pad=c_nevts_per_bin.cd(1)
+# hT=h['T','nevts'].Clone()
+# hT.Divide(h['T','nbins'])
+# hT.SetName("T")
+# hT.SetTitle("<nevts/bin>T")
+# hT.Draw("colz")
+
+# pad=c_nevts_per_bin.cd(2)
+# hR=h['R','nevts'].Clone()
+# hR.Divide(h['R','nbins'])
+# hR.SetName("R")
+# hR.SetTitle("<nevts/bin>R")
+# hR.Draw("colz")
+
+# c_nevts_per_bin.cd(3)
+# h['H','nevts'].Divide(h['T','nevts'])
+# h['H','nevts'].Draw("colz")
+
+# c_nevts_per_bin.SaveAs("%s/test.png"%outdir)
+# print("here9\n")
+
 	
 #! I was trying to using matplotlib's 3d plotting but abandoned it for TH2F
 
