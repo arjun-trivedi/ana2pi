@@ -20,13 +20,24 @@ import numpy as np
 
 import ROOT
 
+"""
+This script displays simstats for user entered sim (siml by default):
+	+ nevts-T,R,H(Q2,W)
+	+ nbins-T,R,H(Q2,W)
+The display is saved in $OBS_DIR/sim
+"""
+
 #! User input sim, else use siml
 if len(sys.argv)<2:
 	sim='siml'
 else:
 	sim=sys.argv[1]
+print "Displaying simstats for %s"%sim
 
 datadir=os.environ['OBS_DATADIR_SIM']
+outdir=os.path.join(os.environ['OBS_DIR'],sim,'simstats')
+if not os.path.exists(outdir):
+	os.makedirs(outdir)
 
 q2wl=['q2w%i'%i for i in range(1,50)]
 #! Remove "bad" bins (cases where there is no data in yields_exp.root)
@@ -64,7 +75,7 @@ for q2w in q2wl:
 	
 ROOT.gStyle.SetOptStat(0)
 
-c_nevts=ROOT.TCanvas()
+c_nevts=ROOT.TCanvas("cnevts","cnevts",1000,500)
 c_nevts.Divide(3,1)
 c_nevts.cd(1)
 h['T','nevts'].Draw("colz")
@@ -73,9 +84,9 @@ h['R','nevts'].Draw("colz")
 c_nevts.cd(3)
 h['H','nevts'].Divide(h['T','nevts'])
 h['H','nevts'].Draw("colz")
-c_nevts.SaveAs("test_nevts.png")
+c_nevts.SaveAs("%s/nevts.png"%outdir)
 
-c_nbins=ROOT.TCanvas()
+c_nbins=ROOT.TCanvas("cnbins","cnbins",1000,500)
 c_nbins.Divide(3,1)
 c_nbins.cd(1)
 h['T','nbins'].Draw("colz")
@@ -84,8 +95,10 @@ h['R','nbins'].Draw("colz")
 c_nbins.cd(3)
 h['H','nbins'].Divide(h['T','nbins'])
 h['H','nbins'].Draw("colz")
-c_nbins.SaveAs("test_nbins.png")
+c_nbins.SaveAs("%s/nbins.png"%outdir)
 	
+#! I was trying to using matplotlib's 3d plotting but abandoned it for TH2F
+
 # fig = plt.figure()
 # ax = fig.add_subplot(111, projection='3d')
 # n = 100
