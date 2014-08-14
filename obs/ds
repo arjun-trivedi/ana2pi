@@ -65,6 +65,12 @@ for seq in ['T','R','A','H']:
 		#! Fix z-scale for h[seq,'nbins'] as per maximum number of PS bins(VST1)
 		if par=='nbins':
 			h[seq,par].GetZaxis().SetRangeUser(0,5000000)
+		# #! Fix z-scale for h['T','mu']
+		# if seq=='T' and par=='mu':
+		# 	h[seq,par].GetZaxis().SetRangeUser(0,150)
+		# #! Fix z-scale for h['R','mu']
+		# if seq=='R' and par=='mu':
+		# 	h[seq,par].GetZaxis().SetRangeUser(0,15)
 		#! Fix z-scale for h['A','mu']
 		if seq=='A' and par=='mu':
 			h[seq,par].GetZaxis().SetRangeUser(0,0.5)
@@ -129,7 +135,7 @@ ROOT.gStyle.SetOptStat(0)
 c_pars=ROOT.TCanvas("cpars","cpars",1000,1500)
 c_pars.Divide(2,3)
 pad=c_pars.cd(1)
-pad.SetLogz()
+#pad.SetLogz()
 h['T','nbins'].Draw("colz")
 c_pars.cd(2)
 h['H','nbins'].Divide(h['T','nbins'])
