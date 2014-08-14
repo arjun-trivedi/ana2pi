@@ -71,7 +71,7 @@ for seq in ['T','R','A','H']:
 #! Some histograms that I could have obtain using TH2F::Divide(), but due to to bug
 #! noted, have to create these and fill them manually
 #! 1. h_A_relerr
-h_A_relerr=ROOT.TH2F("h_relerr_A","mu_A)/sg_A(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
+h_A_relerr=ROOT.TH2F("h_relerr_A","mu_A/sg_A(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
 h_A_relerr.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
 h_A_relerr.SetXTitle("W [GeV]")
 h_A_relerr.SetYTitle("Q^2 [GeV^2]")
