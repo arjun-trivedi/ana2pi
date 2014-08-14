@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import division
 import ROOT
 
 from proc_yields import ProcYields
@@ -44,6 +45,7 @@ if not os.path.exists(outdir):
 # #! Remove "bad" bins (cases where there is no data in yields_exp.root)
 # q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
 # q2wl=[x for x in q2wl if x not in q2wl_bad]
+#! q2wl for debugging
 q2wl=['q2w1','q2w2']
 
 #! + The following binning should match up with q2w_bng.h/.py
@@ -53,19 +55,38 @@ q2bins,q2min,q2max=7,1.2,5.0 # place-holder bng, for it will be modified by vari
 q2_varbins=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
 h={}
 for seq in ['T','R','A','H']:
-	h[seq,'nevts']=ROOT.TH2F("h_nevts%s"%seq,"nevts%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
-	h[seq,'nevts'].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
-	h[seq,'nevts'].SetXTitle("W [GeV]")
-	h[seq,'nevts'].SetYTitle("Q^2 [GeV^2]")
-	print("bins for h(%s,nevts=%d,%d)"%(seq,h[seq,'nevts'].GetXaxis().GetNbins(),
-		h[seq,'nevts'].GetYaxis().GetNbins()))
+	for par in ['nbins','mu','sg']:
+		h[seq,par]=ROOT.TH2F("h_%s_%s"%(par,seq),"%s_%s(Q2,W)"%(par,seq),wbins,wmin,wmax,q2bins,q2min,q2max)
+		h[seq,par].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+		h[seq,par].SetXTitle("W [GeV]")
+		h[seq,par].SetYTitle("Q^2 [GeV^2]")
+		print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
+			h[seq,par].GetYaxis().GetNbins()))
+		if seq=='A' and par=='mu':
+			h[seq,par].GetZaxis().SetRangeUser(0,0.5)
+#! Some histograms that I could have obtain using TH2F::Divide(), but due to to bug
+#! noted, have to create these and fill them manually
+h_A_relerr=ROOT.TH2F("h_relerr_A","mu/sg_A(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
+h_A_relerr.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+h_A_relerr.SetXTitle("W [GeV]")
+h_A_relerr.SetYTitle("Q^2 [GeV^2]")
+print("bins for h_A_relerr=%d,%d"%(h_A_relerr.GetXaxis().GetNbins(),
+	h_A_relerr.GetYaxis().GetNbins()))
+h_A_relerr.GetZaxis().SetRangeUser(0,1)
 
-	h[seq,'nbins']=ROOT.TH2F("h_nbins%s"%seq,"nbins%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
-	h[seq,'nbins'].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
-	h[seq,'nbins'].SetXTitle("W [GeV]")
-	h[seq,'nbins'].SetYTitle("Q^2 [GeV^2]")
-	print("bins for h(%s,nbins=%d,%d)"%(seq,h[seq,'nbins'].GetXaxis().GetNbins(),
-		h[seq,'nbins'].GetYaxis().GetNbins()))
+	# h[seq,par]=ROOT.TH2F("h_nevts%s"%seq,"nevts%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
+	# h[seq,par].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+	# h[seq,par].SetXTitle("W [GeV]")
+	# h[seq,par].SetYTitle("Q^2 [GeV^2]")
+	# print("bins for h(%s,nevts=%d,%d)"%(seq,h[seq,par].GetXaxis().GetNbins(),
+	# 	h[seq,par].GetYaxis().GetNbins()))
+
+	# h[seq,'nbins']=ROOT.TH2F("h_nbins%s"%seq,"nbins%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
+	# h[seq,'nbins'].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+	# h[seq,'nbins'].SetXTitle("W [GeV]")
+	# h[seq,'nbins'].SetYTitle("Q^2 [GeV^2]")
+	# print("bins for h(%s,nbins=%d,%d)"%(seq,h[seq,'nbins'].GetXaxis().GetNbins(),
+	# 	h[seq,'nbins'].GetYaxis().GetNbins()))
 
 for q2w in q2wl: 
 	dy=DispYields(q2w,sim)
@@ -73,40 +94,70 @@ for q2w in q2wl:
 	for seq in ['T','R','A','H']:
 		for d in ss[seq]:
 			q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
-			binx=h[seq,'nevts'].GetXaxis().FindBin(w+(0.025/2));
-			biny=h[seq,'nevts'].GetYaxis().FindBin(q2);
-			bin=h[seq,'nevts'].GetBin(binx,biny)
+			binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
+			biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
+			bin=h[seq,'nbins'].GetBin(binx,biny)
 			h[seq,'nbins'].SetBinContent(bin,nbins)
-			h[seq,'nevts'].SetBinContent(bin,N)
+			h[seq,'mu'].SetBinContent(bin,mu)
+			h[seq,'sg'].SetBinContent(bin,sg)
+			#! Following has to be done due to PyROOT:TH2F(varbin):Divide() bug
+			if seq=='A':
+				h_A_relerr.SetBinContent(bin,mu/sg)
 			
 	
-#ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetOptStat(0)
+c_pars=ROOT.TCanvas("cpars","cpars",1000,1000)
+c_pars.Divide(2,2)
+c_pars.cd(1)
+h['T','mu'].Draw("colz")
+c_pars.cd(2)
+h['R','mu'].Draw("colz")
+c_pars.cd(3)
+h['A','mu'].Draw("colz")
+c_pars.cd(4)
+h_A_relerr.Draw("colz")
+# h_A_relerr=h['A','mu'].Clone()
+# h_A_relerr.Divide(h['A','sg'])
+# h_A_relerr.SetName('h_A_relerr')
+# h_A_relerr.SetTitle('mu/sg_A(Q2,W)')
+c_pars.SaveAs("%s/pars.png"%outdir)
+
+# c_pars.cd(1)
+# h['T','nbins'].Draw("colz")
+# c_pars.cd(2)
+# h['H','nbins'].Divide(h['T','nbins'])
+# h['H','nbins'].Draw("colz")
+# c_pars.cd(3)
+# h['A','mu'].Draw("colz")
+# c_pars.cd(4)
+# h['A','sg'].Draw("colz")
+# c_pars.SaveAs("%s/pars.png"%outdir)
 
 # c_nevts=ROOT.TCanvas("cnevts","cnevts",1000,1000)
-# h['T','nevts'].Draw("colz")
+# h['T',par].Draw("colz")
 # c_nevts.SaveAs("%s/nevts.png"%outdir)
 
 # c_nevts=ROOT.TCanvas("cnevts","cnevts",1000,1000)
 # c_nevts.Divide(2,2)
 # c_nevts.cd(1)
-# h['T','nevts'].Draw("colz")
+# h['T',par].Draw("colz")
 # c_nevts.cd(2)
-# h['R','nevts'].Draw("colz")
+# h['R',par].Draw("colz")
 # c_nevts.cd(3)
-# hT=h['T','nevts'].Clone()
+# hT=h['T',par].Clone()
 # hT.SetName("T")
 # hT.Draw("colz")
 # hT.SetTitle("<nevts/bin>T")
 # hT.Divide(h['T','nbins'])
 # c_nevts.cd(4)
-# hR=h['R','nevts'].Clone()
+# hR=h['R',par].Clone()
 # hR.Divide(h['R','nbins'])
 # hR.SetName("R")
 # hR.SetTitle("<nevts/bin>R")
 # hR.Draw("colz")
 # # # c_nevts.cd(3)
-# # # hist=h['H','nevts'].Clone()
-# # # hist.Divide(h['T','nevts'])
+# # # hist=h['H',par].Clone()
+# # # hist.Divide(h['T',par])
 # # # hist.SetName("h")
 # # # hist.SetTitle("frac_evt_hole")
 # # # hist.Draw("colz")
@@ -143,22 +194,22 @@ for q2w in q2wl:
 # c_nevts_per_bin.Divide(2,1)
 
 # pad=c_nevts_per_bin.cd(1)
-# hT=h['T','nevts'].Clone()
+# hT=h['T',par].Clone()
 # hT.Divide(h['T','nbins'])
 # hT.SetName("T")
 # hT.SetTitle("<nevts/bin>T")
 # hT.Draw("colz")
 
 # pad=c_nevts_per_bin.cd(2)
-# hR=h['R','nevts'].Clone()
+# hR=h['R',par].Clone()
 # hR.Divide(h['R','nbins'])
 # hR.SetName("R")
 # hR.SetTitle("<nevts/bin>R")
 # hR.Draw("colz")
 
 # c_nevts_per_bin.cd(3)
-# h['H','nevts'].Divide(h['T','nevts'])
-# h['H','nevts'].Draw("colz")
+# h['H',par].Divide(h['T',par])
+# h['H',par].Draw("colz")
 
 # c_nevts_per_bin.SaveAs("%s/test.png"%outdir)
 # print("here9\n")
