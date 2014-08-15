@@ -117,8 +117,8 @@ for q2w in q2wl:
 			binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
 			biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
 			bin=h[seq,'nbins'].GetBin(binx,biny)
-			h[seq,'N'].SetBinContent(bin,nbins)
 			h[seq,'nbins'].SetBinContent(bin,nbins)
+			h[seq,'N'].SetBinContent(bin,N)
 			h[seq,'mu'].SetBinContent(bin,mu)
 			h[seq,'sg'].SetBinContent(bin,sg)
 			#! Following has to be done due to PyROOT:TH2F(varbin):Divide() bug
@@ -159,8 +159,8 @@ h['R','sg'].Draw("colz")
 c_pars.cd(9)
 h['A','mu'].Draw("colz")
 c_pars.cd(10)
-#h['A','sg'].Draw("colz")
-h_A_relerr.Draw("colz")
+h['A','sg'].Draw("colz")
+#h_A_relerr.Draw("colz")
 c_pars.SaveAs("%s/pars.png"%outdir)
 
 # c_pars.Divide(2,3)
