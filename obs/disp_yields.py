@@ -344,6 +344,60 @@ class DispYields:
 			# ss[seq].append(nbins/len(q2ws))
 		return ss
 
+	def get_sim_stats_commonbins(self):
+		"""
+		The same as get_sim_stats(), but with the difference that mu,sg
+		are obtained only for R-PS bins. I am currently not using this since
+		this process takes impractically long.
+
+		Walk the ROOT file and obtain simstats(ss) for a h5 in a Q2-W bin:
+		ss={'T':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+		    'R':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+		    'A':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+		    'H':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
+
+		where:
+			+ nbins=number of filled bins in a h5
+			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5)
+			+ mu=average({n_i}) (average of number of events per bin)
+				+ Note, average computed over only R-PS bins
+			+ sg=(RMS({n_i}) (RMS of number of events per bin)
+				+ Note, average computed over only R-PS bins
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2ws()
+		print "Processing sim_stats for %s:"%self.Q2W
+		print q2ws
+
+		ss={'T':[],'R':[],'A':[],'H':[]}
+		f=ROOT.TFile(self.FSIM.GetName())
+		for q2w in q2ws:
+			print "Processing %s..."%q2w
+			#! Determine q2,w
+			q2bin=q2w.split('_')[0]
+			wbin=q2w.split('_')[1]
+			#print q2bin,wbin
+			q2=float(q2bin.split('-')[0])
+			w=float(wbin.split('-')[0])
+			#print q2,w
+			#! First get all h5s
+			h5={}
+			for seq in ['T','R','A','H']:
+				h5[seq]=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+			#! Now get simstats	
+			for seq in ['T','R','A','H']:
+				#! Determine nbins,N,mu,sg for this q2,w
+				nbins=thntool.GetNbinsNotEq0(h5[seq])
+				N=thntool.GetIntegral(h5[seq])
+				binc_stats=np.zeros(2,'f')
+				print "here"
+				thntool.GetBinContentDistStatsCommonBins(h5[seq],h5['R'],binc_stats)
+				print "here1"
+				mu=binc_stats[0]
+				sg=binc_stats[1]
+				ss[seq].append([q2,w,nbins,N,mu,sg])
+		return ss
+
 
 	def get_q2ws(self):
 		"""
