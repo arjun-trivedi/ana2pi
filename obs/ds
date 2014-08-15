@@ -29,6 +29,76 @@ Issues while running this script:
 division operation (This seems to not be an issue when using CINT)
 """
 
+#! + The following binning should match up with q2w_bng.h/.py
+#! + It is slightly modified here for "aesthetic" purposes
+nwbins,wmin,wmax=80,1.0,3.0 #25 MeV/bin
+nq2bins,q2min,q2max=7,1.2,5.0 # place-holder bng, for it will be modified by variable bng
+q2_varbins=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
+
+def make_h_nbins_vs_Q2W():
+	"""
+	This function returns a histrogram with theoretically calculate number of PS-bins vs. Q2,W (for VST1)
+	"""
+	Mpi=0.139
+	Mp=0.938
+	Mppip_th=1.1
+	Mpippim_th=0.2780
+
+	wbinw=0.025
+	w=[wmin+(i*wbinw) for i in np.arange(nwbins)]
+	nbins_Mppip=[((x-Mpi)-Mppip_th)/0.025 for x in w]
+	nbins_Mpippim=[((x-Mp)-Mpippim_th)/0.025 for x in w]
+	nbins=[M1*M2*10*10*10 for M1,M2 in zip(nbins_Mppip,nbins_Mpippim)]
+	
+	#! Create nbins_vs_w
+	nbins_vs_w=zip(w,nbins)
+	#print nbins_vs_w
+
+	#! Create histogram
+	h=ROOT.TH2F("h_nbins","nbins(Q2,W)",nwbins,wmin,wmax,nq2bins,q2min,q2max)
+	h.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+	h.SetXTitle("W [GeV]")
+	h.SetYTitle("Q^2 [GeV^2]")
+	print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
+
+	#! Fill h
+	for q2 in q2_varbins:
+		for id,d in enumerate(nbins_vs_w):
+			w=nbins_vs_w[id][0]
+			nbins=nbins_vs_w[id][1]
+			#print q2,w,nbins
+			binx=h.GetXaxis().FindBin(w+(0.025/2));
+			biny=h.GetYaxis().FindBin(q2);
+			bin=h.GetBin(binx,biny)
+			h.SetBinContent(bin,nbins)
+	return h
+
+def divide(h1,h2):
+	"""
+	Creates a new histogram, h and fills it bins as per:
+	h=h1/h2
+
+	Returns h
+	"""
+	h=ROOT.TH2F("h","h",nwbins,wmin,wmax,nq2bins,q2min,q2max)
+	h.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
+	h.SetXTitle("W [GeV]")
+	h.SetYTitle("Q^2 [GeV^2]")
+	num_wbins=h.GetXaxis().GetNbins()
+	num_q2bins=h.GetYaxis().GetNbins()
+	for iwbin in range(num_wbins):
+		for iq2bin in range(num_q2bins):
+			bin=h.GetBin(iwbin+1,iq2bin+1)
+			num=h1.GetBinContent(bin)
+			den=h2.GetBinContent(bin)
+			res=0
+			if den!=0:
+				res=num/den
+			h.SetBinContent(bin,res)
+			#print num,den,res
+	return h
+
+
 #! User input sim, else use siml
 if len(sys.argv)<2:
 	sim='siml'
@@ -48,23 +118,23 @@ q2wl=[x for x in q2wl if x not in q2wl_bad]
 #! q2wl for debugging
 #q2wl=['q2w1','q2w2']
 
-#! + The following binning should match up with q2w_bng.h/.py
-#! + It is slightly modified here for "aesthetic" purposes
-wbins,wmin,wmax=80,1.0,3.0 #25 MeV/bin
-q2bins,q2min,q2max=7,1.2,5.0 # place-holder bng, for it will be modified by variable bng
-q2_varbins=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
+# #! + The following binning should match up with q2w_bng.h/.py
+# #! + It is slightly modified here for "aesthetic" purposes
+# nwbins,wmin,wmax=80,1.0,3.0 #25 MeV/bin
+# nq2bins,q2min,q2max=7,1.2,5.0 # place-holder bng, for it will be modified by variable bng
+# q2_varbins=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
 h={}
 for seq in ['T','R','A','H']:
 	for par in ['nbins','N','mu','sg']:
-		h[seq,par]=ROOT.TH2F("h_%s_%s"%(par,seq),"%s_%s(Q2,W)"%(par,seq),wbins,wmin,wmax,q2bins,q2min,q2max)
+		h[seq,par]=ROOT.TH2F("h_%s_%s"%(par,seq),"%s_%s(Q2,W)"%(par,seq),nwbins,wmin,wmax,nq2bins,q2min,q2max)
 		h[seq,par].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
 		h[seq,par].SetXTitle("W [GeV]")
 		h[seq,par].SetYTitle("Q^2 [GeV^2]")
 		print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
 			h[seq,par].GetYaxis().GetNbins()))
-		#! Fix z-scale for h[seq,'nbins'] as per maximum number of PS bins(VST1)
-		if par=='nbins':
-			h[seq,par].GetZaxis().SetRangeUser(0,5000000)
+		# #! Fix z-scale for h[seq,'nbins'] as per maximum number of PS bins(VST1)
+		# if par=='nbins':
+		# 	h[seq,par].GetZaxis().SetRangeUser(0,5000000)
 		# #! Fix z-scale for h['T','mu']
 		# if seq=='T' and par=='mu':
 		# 	h[seq,par].GetZaxis().SetRangeUser(0,150)
@@ -77,10 +147,12 @@ for seq in ['T','R','A','H']:
 		#! Fix z-scale for h['A','sg']
 		if seq=='A' and par=='sg':
 			h[seq,par].GetZaxis().SetRangeUser(0,2.5)
+#! Create histogram for theoretically possible nbins(Q2,W)
+h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 #! Some histograms that I could have obtain using TH2F::Divide(), but due to to bug
 #! noted, have to create these and fill them manually
 #! 1. h_A_relerr
-h_A_relerr=ROOT.TH2F("h_relerr_A","sg_A/mu_A(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
+h_A_relerr=ROOT.TH2F("h_relerr_A","sg_A/mu_A(Q2,W)",nwbins,wmin,wmax,nq2bins,q2min,q2max)
 h_A_relerr.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
 h_A_relerr.SetXTitle("W [GeV]")
 h_A_relerr.SetYTitle("Q^2 [GeV^2]")
@@ -89,7 +161,7 @@ print("bins for h_A_relerr=%d,%d"%(h_A_relerr.GetXaxis().GetNbins(),
 #! Fix z-scale for h_A_relerr
 h_A_relerr.GetZaxis().SetRangeUser(0,1)
 #! 2. h_fracH
-# h_fracH=ROOT.TH2F("h_fracH","h_fracH(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
+# h_fracH=ROOT.TH2F("h_fracH","h_fracH(Q2,W)",nwbins,wmin,wmax,nq2bins,q2min,q2max)
 # h_fracH.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
 # h_fracH.SetXTitle("W [GeV]")
 # h_fracH.SetYTitle("Q^2 [GeV^2]")
@@ -110,13 +182,6 @@ for q2w in q2wl:
 			h[seq,'N'].SetBinContent(bin,N)
 			h[seq,'mu'].SetBinContent(bin,mu)
 			h[seq,'sg'].SetBinContent(bin,sg)
-			#! Following has to be done due to PyROOT:TH2F(varbin):Divide() bug
-			# if seq=='T':
-			# 	nbins_T=nbins
-			# 	print('seq=%s,q2=%f,w=%f,nbins=%d,nbins_T%d'%(seq,q2,w,nbins,nbins_T))
-			# if seq=='H':
-			# 	h_fracH.SetBinContent(bin,nbins/nbins_T)
-			# 	print('seq=%s,q2=%f,w=%f,nbins=%d,nbins_T%d'%(seq,q2,w,nbins,nbins_T))
 			if seq=='A':
 				h_A_relerr.SetBinContent(bin,sg/mu)
 			
@@ -126,12 +191,17 @@ c_pars=ROOT.TCanvas("cpars","cpars",2000,1500)
 c_pars.Divide(4,3)
 pad=c_pars.cd(1)
 #pad.SetLogz()
-h['T','nbins'].Draw("colz")
+ht=divide(h['T','nbins'],h_nbins_vs_Q2W)
+ht.Draw("colz")
+#h['T','nbins'].Divide(h_nbins_vs_Q2W)
+#h['T','nbins'].Draw("colz")
 c_pars.cd(2)
-h['H','nbins'].Divide(h['T','nbins'])
-h['H','nbins'].GetZaxis().SetRangeUser(0,1)
-h['H','nbins'].SetTitle('nbinsH/nbinsT(Q2,W)')
-h['H','nbins'].Draw("colz")
+# h['H','nbins'].Divide(h['T','nbins'])
+# h['H','nbins'].GetZaxis().SetRangeUser(0,1)
+# h['H','nbins'].SetTitle('nbinsH/nbinsT(Q2,W)')
+#h['H','nbins'].Draw("colz")
+ht2=divide(h['H','nbins'],h['T','nbins'])
+ht2.Draw("colz")
 #h_fracH.Draw("colz")
 c_pars.cd(3)
 h['T','N'].Draw("colz")
@@ -152,110 +222,3 @@ h['A','sg'].Draw("colz")
 #h_A_relerr.Draw("colz")
 c_pars.SaveAs("%s/pars.png"%outdir)
 
-# c_pars.Divide(2,3)
-# pad=c_pars.cd(1)
-# #pad.SetLogz()
-# h['T','nbins'].Draw("colz")
-# c_pars.cd(2)
-# h['H','nbins'].Divide(h['T','nbins'])
-# h['H','nbins'].GetZaxis().SetRangeUser(0,1)
-# h['H','nbins'].SetTitle('nbinsH/nbinsT(Q2,W)')
-# h['H','nbins'].Draw("colz")
-# #h_fracH.Draw("colz")
-# c_pars.cd(3)
-# h['T','mu'].Draw("colz")
-# c_pars.cd(4)
-# h['R','mu'].Draw("colz")
-# c_pars.cd(5)
-# h['A','mu'].Draw("colz")
-# c_pars.cd(6)
-# h_A_relerr.Draw("colz")
-# # h_A_relerr=h['A','mu'].Clone()
-# # h_A_relerr.Divide(h['A','sg'])
-# # h_A_relerr.SetName('h_A_relerr')
-# # h_A_relerr.SetTitle('mu/sg_A(Q2,W)')
-# c_pars.SaveAs("%s/pars.png"%outdir)
-
-# c_nevts=ROOT.TCanvas("cnevts","cnevts",1000,1000)
-# c_nevts.Divide(2,1)
-# c_nevts.cd(1)
-# h['T','N'].Draw("colz")
-# c_nevts.cd(2)
-# h['R','N'].Draw("colz")
-# c_nevts.SaveAs("%s/nevts.png"%outdir)
-
-# print("here")
-# c_nbins=ROOT.TCanvas("cnbins","cnbins",1000,500)
-# c_nbins.Divide(3,1)
-# c_nbins.cd(1)
-# h['T','nbins'].Draw("colz")
-# print("here2")
-# c_nbins.cd(2)
-# h['R','nbins'].Draw("colz")
-# print("here3")
-# c_nbins.cd(3)
-
-# hH=h['H','nbins'].Clone("hnew")
-# print("here4")
-# hH.Divide(h['T','nbins'])
-# hH.SetName("fracH")
-# hH.SetTitle("nbinsH/nbinsT(Q2,W)")
-# print("here5")
-# hH.Draw("colz")
-# print("here6")
-
-# # h['H','nbins'].Divide(h['T','nbins'])
-# # h['H','nbins'].Draw("colz")
-
-# c_nbins.SaveAs("%s/nbins.png"%outdir)
-# print("here7")
-
-# print("here\n")
-# c_nevts_per_bin=ROOT.TCanvas("cnevts_per_bin","cnevts_per_bin",1000,500)
-# c_nevts_per_bin.Divide(2,1)
-
-# pad=c_nevts_per_bin.cd(1)
-# hT=h['T',par].Clone()
-# hT.Divide(h['T','nbins'])
-# hT.SetName("T")
-# hT.SetTitle("<nevts/bin>T")
-# hT.Draw("colz")
-
-# pad=c_nevts_per_bin.cd(2)
-# hR=h['R',par].Clone()
-# hR.Divide(h['R','nbins'])
-# hR.SetName("R")
-# hR.SetTitle("<nevts/bin>R")
-# hR.Draw("colz")
-
-# c_nevts_per_bin.cd(3)
-# h['H',par].Divide(h['T',par])
-# h['H',par].Draw("colz")
-
-# c_nevts_per_bin.SaveAs("%s/test.png"%outdir)
-# print("here9\n")
-
-	
-#! I was trying to using matplotlib's 3d plotting but abandoned it for TH2F
-
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-# n = 100
-# # for c, m, zl, zh in [('r', 'o', -50, -25), ('b', '^', -30, -5)]:
-# #     xs = randrange(n, 23, 32)
-# #     ys = randrange(n, 0, 100)
-# #     zs = randrange(n, zl, zh)
-# #     ax.scatter(xs, ys, zs, c=c, marker=m)
-# c=cm.rainbow(np.linspace(0, 1, len(siml)))
-# l,l_proxy=[],[]
-# for isim,sim in enumerate(siml):
-# 	l.append(ax.scatter(q2[sim],w[sim],nbins[sim],c=c[isim],marker='o',label=sim))
-# 	l_proxy.append(matplotlib.lines.Line2D([0],[0], linestyle="none",c=c[isim],marker='o'))
-
-# ax.legend(l_proxy,siml,prop={'size':9})
-
-# ax.set_xlabel('Q2')
-# ax.set_ylabel('W')
-# ax.set_zlabel('nbins')
-
-# plt.show()
