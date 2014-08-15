@@ -73,11 +73,11 @@ for seq in ['T','R','A','H']:
 		# 	h[seq,par].GetZaxis().SetRangeUser(0,15)
 		#! Fix z-scale for h['A','mu']
 		if seq=='A' and par=='mu':
-			h[seq,par].GetZaxis().SetRangeUser(0,0.5)
+			h[seq,par].GetZaxis().SetRangeUser(0,1)#0.5)
 #! Some histograms that I could have obtain using TH2F::Divide(), but due to to bug
 #! noted, have to create these and fill them manually
 #! 1. h_A_relerr
-h_A_relerr=ROOT.TH2F("h_relerr_A","mu_A/sg_A(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
+h_A_relerr=ROOT.TH2F("h_relerr_A","sg_A/mu_A(Q2,W)",wbins,wmin,wmax,q2bins,q2min,q2max)
 h_A_relerr.GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
 h_A_relerr.SetXTitle("W [GeV]")
 h_A_relerr.SetYTitle("Q^2 [GeV^2]")
@@ -129,7 +129,7 @@ for q2w in q2wl:
 			# 	h_fracH.SetBinContent(bin,nbins/nbins_T)
 			# 	print('seq=%s,q2=%f,w=%f,nbins=%d,nbins_T%d'%(seq,q2,w,nbins,nbins_T))
 			if seq=='A':
-				h_A_relerr.SetBinContent(bin,mu/sg)
+				h_A_relerr.SetBinContent(bin,sg/mu)
 			
 	
 ROOT.gStyle.SetOptStat(0)
@@ -159,6 +159,7 @@ h['R','sg'].Draw("colz")
 c_pars.cd(9)
 h['A','mu'].Draw("colz")
 c_pars.cd(10)
+#h['A','sg'].Draw("colz")
 h_A_relerr.Draw("colz")
 c_pars.SaveAs("%s/pars.png"%outdir)
 
