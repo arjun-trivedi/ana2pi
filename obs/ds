@@ -74,6 +74,9 @@ for seq in ['T','R','A','H']:
 		#! Fix z-scale for h['A','mu']
 		if seq=='A' and par=='mu':
 			h[seq,par].GetZaxis().SetRangeUser(0,1)#0.5)
+		#! Fix z-scale for h['A','sg']
+		if seq=='A' and par=='sg':
+			h[seq,par].GetZaxis().SetRangeUser(0,2.5)
 #! Some histograms that I could have obtain using TH2F::Divide(), but due to to bug
 #! noted, have to create these and fill them manually
 #! 1. h_A_relerr
@@ -92,20 +95,6 @@ h_A_relerr.GetZaxis().SetRangeUser(0,1)
 # h_fracH.SetYTitle("Q^2 [GeV^2]")
 # print("bins for h_fracH=%d,%d"%(h_fracH.GetXaxis().GetNbins(),
 # 	h_fracH.GetYaxis().GetNbins()))
-
-	# h[seq,par]=ROOT.TH2F("h_nevts%s"%seq,"nevts%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
-	# h[seq,par].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
-	# h[seq,par].SetXTitle("W [GeV]")
-	# h[seq,par].SetYTitle("Q^2 [GeV^2]")
-	# print("bins for h(%s,nevts=%d,%d)"%(seq,h[seq,par].GetXaxis().GetNbins(),
-	# 	h[seq,par].GetYaxis().GetNbins()))
-
-	# h[seq,'nbins']=ROOT.TH2F("h_nbins%s"%seq,"nbins%s(Q2,W)"%seq,wbins,wmin,wmax,q2bins,q2min,q2max)
-	# h[seq,'nbins'].GetYaxis().Set(len(q2_varbins)-1,q2_varbins)
-	# h[seq,'nbins'].SetXTitle("W [GeV]")
-	# h[seq,'nbins'].SetYTitle("Q^2 [GeV^2]")
-	# print("bins for h(%s,nbins=%d,%d)"%(seq,h[seq,'nbins'].GetXaxis().GetNbins(),
-	# 	h[seq,'nbins'].GetYaxis().GetNbins()))
 
 for q2w in q2wl: 
 	dy=DispYields(q2w,sim)
@@ -135,19 +124,19 @@ for q2w in q2wl:
 ROOT.gStyle.SetOptStat(0)
 c_pars=ROOT.TCanvas("cpars","cpars",2000,1500)
 c_pars.Divide(4,3)
-c_pars.cd(1)
-h['T','N'].Draw("colz")
-c_pars.cd(2)
-h['R','N'].Draw("colz")
-pad=c_pars.cd(3)
+pad=c_pars.cd(1)
 #pad.SetLogz()
 h['T','nbins'].Draw("colz")
-c_pars.cd(4)
+c_pars.cd(2)
 h['H','nbins'].Divide(h['T','nbins'])
 h['H','nbins'].GetZaxis().SetRangeUser(0,1)
 h['H','nbins'].SetTitle('nbinsH/nbinsT(Q2,W)')
 h['H','nbins'].Draw("colz")
 #h_fracH.Draw("colz")
+c_pars.cd(3)
+h['T','N'].Draw("colz")
+c_pars.cd(4)
+h['R','N'].Draw("colz")
 c_pars.cd(5)
 h['T','mu'].Draw("colz")
 c_pars.cd(6)
