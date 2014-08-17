@@ -81,7 +81,7 @@ def divide(h1,h2):
 
 	Returns h
 	"""
-	h=ROOT.TH2F("h","h",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
+	h=ROOT.TH2F("h_div","h_div",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
 	h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
@@ -99,6 +99,29 @@ def divide(h1,h2):
 			#print num,den,res
 	return h
 
+def subtract(h1,h2):
+	"""
+	Creates a new histogram, h and fills it bins as per:
+	h=h1-h2
+
+	Returns h
+	"""
+	h=ROOT.TH2F("h_diff","h_diff",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
+	h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
+	h.SetXTitle("W [GeV]")
+	h.SetYTitle("Q^2 [GeV^2]")
+	num_wbins=h.GetXaxis().GetNbins()
+	num_q2bins=h.GetYaxis().GetNbins()
+	for iwbin in range(num_wbins):
+		for iq2bin in range(num_q2bins):
+			bin=h.GetBin(iwbin+1,iq2bin+1)
+			arg1=h1.GetBinContent(bin)
+			arg2=h2.GetBinContent(bin)
+			res=arg1-arg2
+			h.SetBinContent(bin,res)
+			#print num,den,res
+	return h
+
 
 #! User input sim, else use siml
 if len(sys.argv)<2:
@@ -112,12 +135,12 @@ outdir=os.path.join(os.environ['OBS_DIR'],sim,'simstats')
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 
-q2wl=['q2w%i'%i for i in range(1,50)]
-#! Remove "bad" bins (cases where there is no data in yields_exp.root)
-q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
-q2wl=[x for x in q2wl if x not in q2wl_bad]
+# q2wl=['q2w%i'%i for i in range(1,50)]
+# #! Remove "bad" bins (cases where there is no data in yields_exp.root)
+# q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
+# q2wl=[x for x in q2wl if x not in q2wl_bad]
 #! q2wl for debugging
-#q2wl=['q2w1','q2w2']
+q2wl=['q2w1','q2w2']
 
 #! Create histograms to display simstats(Q2,W)
 h={}
@@ -130,7 +153,7 @@ for seq in ['T','R','A','H']:
 		print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
 			h[seq,par].GetYaxis().GetNbins()))
 		if seq=='A' and par=='mu':
-			h[seq,par].GetZaxis().SetRangeUser(0,1)#0.5)
+			h[seq,par].GetZaxis().SetRangeUser(0,0.5)
 		#! Fix z-scale for h['A','sg']
 		if seq=='A' and par=='sg':
 			h[seq,par].GetZaxis().SetRangeUser(0,2.5)
@@ -156,19 +179,48 @@ for q2w in q2wl:
 ROOT.gStyle.SetOptStat(0)
 c_pars=ROOT.TCanvas("cpars","cpars",1000,1000)
 c_pars.Divide(2,2)
-pad=c_pars.cd(1)
-h_fracT=divide(h['T','nbins'],h_nbins_vs_Q2W)
-h_fracT.SetTitle("nbins_T(Q2,W)/nbins(Q2,W))")
-h_fracT.Draw("colz")
+c_pars.cd(1)
+h_rtio_nbinsT_nbins=divide(h['T','nbins'],h_nbins_vs_Q2W)
+#h_rtio_nbinsT_nbins.SetTitle("nbins_T(Q2,W)/nbins(Q2,W))")
+h_rtio_nbinsT_nbins.SetTitle("Thrown(T) filled fraction of max. possible PS-bins(Q^{2},W)")
+#h_rtio_nbinsT_nbins.GetZaxis().SetRangeUser(0,1)
+h_rtio_nbinsT_nbins.Draw("colz")
 c_pars.cd(2)
-h_fracH=divide(h['H','nbins'],h['T','nbins'])
-h_fracH.SetTitle("nbins_H(Q2,W)/nbins_T(Q2,W))")
-h_fracH.Draw("colz")
+h_rtio_nbinsH_nbinsT=divide(h['H','nbins'],h['T','nbins'])
+h_rtio_nbinsH_nbinsT.GetZaxis().SetRangeUser(0,1)
+#h_rtio_nbinsH_nbinsT.SetTitle("nbins_H(Q2,W)/nbins_T(Q2,W))")
+h_rtio_nbinsH_nbinsT.SetTitle("Fraction of T PS-bins that are Holes(H)(Q^{2},W)")
+h_rtio_nbinsH_nbinsT.Draw("colz")
 c_pars.cd(3)
+h['A','mu'].SetTitle("#LTA#GT(Q^{2},W)")
 h['A','mu'].Draw("colz")
 c_pars.cd(4)
-h['A','sg'].Draw("colz")
+h_rtio_sgA_muA=divide(h['A','sg'],h['A','mu'])
+h_rtio_sgA_muA.GetZaxis().SetRangeUser(0,2)
+h_rtio_sgA_muA.SetTitle("#frac{RMS_{A}}{#LTA#GT}(Q^{2},W)")
+h_rtio_sgA_muA.Draw("colz")
 c_pars.SaveAs("%s/pars.png"%outdir)
+
+c_pars2=ROOT.TCanvas("cpars2","cpars2",1000,1000)
+c_pars2.Divide(2,2)
+c_pars2.cd(1)
+h['T','mu'].SetTitle("#LTT#GT(Q^{2},W)")
+h['T','mu'].Draw("colz")
+c_pars2.cd(2)
+h_rtio_sgT_muT=divide(h['T','sg'],h['T','mu'])
+h_rtio_sgT_muT.GetZaxis().SetRangeUser(0,2)
+h_rtio_sgT_muT.SetTitle("#frac{RMS_{T}}{#LTT#GT}(Q^{2},W)")
+h_rtio_sgT_muT.Draw("colz")
+c_pars2.cd(3)
+h['R','mu'].SetTitle("#LTR#GT(Q^{2},W)")
+h['R','mu'].Draw("colz")
+c_pars2.cd(4)
+h_rtio_sgR_muR=divide(h['R','sg'],h['R','mu'])
+h_rtio_sgR_muR.GetZaxis().SetRangeUser(0,2)
+h_rtio_sgR_muR.SetTitle("#frac{RMS_{R}}{#LTR#GT}(Q^{2},W)")
+h_rtio_sgR_muR.Draw("colz")
+c_pars2.SaveAs("%s/pars2.png"%outdir)
+
 
 #! Save all the histograms to file
 f=ROOT.TFile("%s/simstats.root"%outdir,"RECREATE")
@@ -176,6 +228,9 @@ for seq in ['T','R','A','H']:
 	for par in ['nbins','N','mu','sg']:
 		h[seq,par].Write()
 h_nbins_vs_Q2W.Write()
-h_fracT.Write()
-h_fracH.Write()
+h_rtio_nbinsT_nbins.Write()
+h_rtio_nbinsH_nbinsT.Write()
+h_rtio_sgA_muA.Write()
+h_rtio_sgT_muT.Write()
+h_rtio_sgR_muR.Write()
 f.Close()
