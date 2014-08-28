@@ -130,15 +130,10 @@ const Float_t kQ2_AnaBins[kQ2_NAnaBins+1]={
 const Int_t kQ2_min=kQ2_CrsBin[0].xmin;
 const Int_t kQ2_max=kQ2_CrsBin[kQ2_NCrsBins-1].xmax;
 
-//~ W binning
+//! W binning
 const Int_t kW_min=kW_CrsBin[0].xmin;
 const Int_t kW_max=kW_CrsBin[kW_NCrsBins-1].xmax;
 const Float_t kW_binw=0.025;
 const Int_t kW_NAnaBins=(kW_max-kW_min)/kW_binw;
-
-
-
-//! W binning
-Int_t kW_Nbins=80; //25 MeV/bin
 
 #endif // Q2BNG_H
