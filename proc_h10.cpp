@@ -111,6 +111,7 @@ int main(int argc,  char* const argv[])
 	h10looper->Loop(nentries);
 
 	fout->Write();
+	fout->Close();
 	
 	return 0;
 }
