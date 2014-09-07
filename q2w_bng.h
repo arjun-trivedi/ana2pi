@@ -5,135 +5,48 @@
 
 
 /* 
-This file defines the Coarse and Analysis binning for Q2W and should
-be referenced by all the other code in the analysis that need to know
-about the binning.
-See ana2pi notes (tomboy) for details.
+[09-07-14]
+This file defines binning for Q2,W used for making h8s:
+	+ Coarse W bins for which h8[W] are made.
+	+ Q2 binning for h8[W]
+	+ W binning for h8[W]
 */
 
-//! 1. Set up coarse Q2W binning
-const Int_t kQ2_NCrsBins=7;
-const Int_t kW_NCrsBins=7;
-const Int_t kQ2W_NCrsBins=49;
+//! 1. Set up coarse W binning
+const Int_t kNCrsWBins=7;
 
-//! Use for coarse Q2,W,Q2W bin ranges
+//! Use for coarse W bin ranges: [xmin,xmax)
 struct BinRange{
   Float_t xmin;
   Float_t xmax;
 };
 
-struct Q2WBinRange{
-  Float_t q2min;
-  Float_t q2max;
-  Float_t wmin;
-  Float_t wmax;
+const BinRange kWCrsBin[kNCrsWBins]={
+	{1.300,1.425},
+	{1.425,1.575},
+	{1.575,1.725},
+	{1.725,1.850},
+	{1.850,2.000},
+	{2.000,2.125},
+	{2.125,2.275},
+	{2.275,2.425},
+	{2.425,2,550},
+	{2.550,2.700},
+	{2.700,2.825},
+	{2.825,2.950},
+	{2.950,3.000}
 };
 
-const BinRange kQ2_CrsBin[kQ2_NCrsBins]={
-	{1.2,1.6},
-	{1.6,2.0},
-	{2.0,2.4},
-	{2.4,3.0},
-	{3.0,3.5},
-	{3.5,4.2},
-	{4.2,5.0}
-};
+//! 2. Set up Q2 binning (see nb_h8_Q2-bng)
+const Int_t kNQ2Bins=8; //! 0.5 GeV^2/bin
+const Float_t kQ2min=1.25
+const Float_t kQ2max=5.25
 
-//! Ensure that kW_CrsBin[kW_NCrsBins-1].xmax - kW_CrsBin[0].xmin is 
-//! a multiple of 0.025 GeV, since these values are later used to 
-//! to determine the number of analysis-bins i.e. for h8 binning
-const BinRange kW_CrsBin[kW_NCrsBins]={
-	{1.3,1.7},
-	{1.7,2.0},
-	{2.0,2.2},
-	{2.2,2.4},
-	{2.4,2.6},
-	{2.6,2.8},
-	{2.8,3.0} 
-};
-
-const Q2WBinRange kQ2W_CrsBin[kQ2W_NCrsBins]={
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[0].xmin,kQ2_CrsBin[0].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
-
-
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[1].xmin,kQ2_CrsBin[1].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
-
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[2].xmin,kQ2_CrsBin[2].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
-
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[3].xmin,kQ2_CrsBin[3].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
-
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[4].xmin,kQ2_CrsBin[4].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
-
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[5].xmin,kQ2_CrsBin[5].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax},
-
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[0].xmin,kW_CrsBin[0].xmax},
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[1].xmin,kW_CrsBin[1].xmax},
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[2].xmin,kW_CrsBin[2].xmax},
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[3].xmin,kW_CrsBin[3].xmax},
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[4].xmin,kW_CrsBin[4].xmax},
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[5].xmin,kW_CrsBin[5].xmax},
-{kQ2_CrsBin[6].xmin,kQ2_CrsBin[6].xmax,kW_CrsBin[6].xmin,kW_CrsBin[6].xmax}
-};
-
-//! 2. Set up Ana Q2W binning
-//! The following is used by DataAna::makeYields for h8 bng
-
-//! Q2 variable binning
-const Int_t kQ2_NAnaBins=kQ2_NCrsBins;
-//const Float_t kQ2_AnaBins[kQ2_NAnaBins]={1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0};
-const Float_t kQ2_AnaBins[kQ2_NAnaBins+1]={
-	kQ2_CrsBin[0].xmin,
-	kQ2_CrsBin[1].xmin,
-	kQ2_CrsBin[2].xmin,
-	kQ2_CrsBin[3].xmin,
-	kQ2_CrsBin[4].xmin,
-	kQ2_CrsBin[5].xmin,
-	kQ2_CrsBin[6].xmin,
-	kQ2_CrsBin[6].xmax
-};
-const Int_t kQ2_min=kQ2_CrsBin[0].xmin;
-const Int_t kQ2_max=kQ2_CrsBin[kQ2_NCrsBins-1].xmax;
 
 //! W binning
-const Int_t kW_min=kW_CrsBin[0].xmin;
-const Int_t kW_max=kW_CrsBin[kW_NCrsBins-1].xmax;
-const Float_t kW_binw=0.025;
-const Int_t kW_NAnaBins=(kW_max-kW_min)/kW_binw;
+//! + All that is needed is the binw, the limits are as per Coarse W bins
+//! + nbins=(CrsW.max-CrsW.min)/binw
+//!   + Note that CrsW.max,CrsW.min are multiples of 0.025!
+const Int_t kWbinw=0.025 //! 25 MeV/bin
 
 #endif // Q2BNG_H
