@@ -5,13 +5,15 @@
 #include <THnSparse.h>
 #include <TMath.h>
 #include "particle_constants.h"
-#include "q2w_bng.h"
+//#include "q2w_bng.h"
+#include "h8_bng.h"
 
 #include <iostream>
 using namespace std;
 
 using namespace TMath;
 using namespace AnalysisConstants;
+using namespace ParticleConstants;
 
 DataAna::DataAna()
 {
@@ -206,98 +208,90 @@ TObjArray* DataAna::makeHistsMM()
 	return ret;
 }
 
-TObjArray* DataAna::makeYields()
+TObjArray** DataAna::makeYields()
 {
-	Int_t numHists=3; 
-	TObjArray *ret=new TObjArray(numHists);
+	TObjArray** ret=new TObjArray* [NBINS_WCRS];
 	Int_t hdim=8;
 	
-	// bngQ2.bins=10; //0.5 GeV^2/bin
-	// bngQ2.xmin=0.0;
-	// bngQ2.xmax=5.0;
+	bngQ2.bins=NBINS_Q2; 
+	bngQ2.xmin=XMIN_Q2;
+	bngQ2.xmax=XMAX_Q2;
 
-	//! Note, the following is just a place holder
-	//! to be used when creating h8. One the h8 is
-	//! created, the binning in Q2 will be replaced
-	//! by the define variable binning
-	bngQ2.bins=10; 
-	bngQ2.xmin=kQ2_min;
-	bngQ2.xmax=kQ2_max;
+	bngTheta.bins=NBINS_THETA;
+	bngTheta.xmin=XMIN_THETA;
+	bngTheta.xmax=XMAX_THETA;
+	
+	bngPhi.bins=NBINS_PHI;
+	bngPhi.xmin=XMIN_PHI;
+	bngPhi.xmax=XMAX_PHI;
+	
+	bngAlpha.bins=NBINS_ALPHA; 
+	bngAlpha.xmin=XMIN_ALPHA;
+	bngAlpha.xmax=XMAX_ALPHA;
 
-	// bngW.bins=80; //25 MeV/bin
-	// bngW.xmin=1.0;
-	// bngW.xmax=3.0;
+	for(int i=0;i<NBINS_WCRS;i++){
+		TObjArray* h8=new TObjArray(NVARSETS);
+	
+		bngW.xmin=WCRSBIN[i].xmin;
+		bngW.xmax=WCRSBIN[i].xmax;
+		bngW.bins=(bngW.xmax-bngW.xmin)/BINW_W;
+	
+		bngMppip.bins=NBINS_M;
+		bngMppip.xmin=MASS_P+MASS_PIP;
+		bngMppip.xmax=bngW.xmax-MASS_PIM;
+	
+		bngMppim.bins=NBINS_M;
+		bngMppim.xmin=MASS_P+MASS_PIM;
+		bngMppim.xmax=bngW.xmax-MASS_PIM;
+	
+		bngMpippim.bins=NBINS_M;
+		bngMpippim.xmin=MASS_PIP+MASS_PIM;
+		bngMpippim.xmax=bngW.xmax-MASS_P;
+	
+		/* Varset 1*/
+		//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_pim,     phi_pim,     alpha[p'pip][ppim]}
+		Int_t bins1[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+		Double_t xmin1[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
+		Double_t xmax1[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
+		THnSparse* hN1 = new THnSparseF("yield_varset1", 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
+		hdim, bins1, xmin1, xmax1);
+		hN1->Sumw2();
+		//! Make variable Q2-binning
+		//hN1->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
+		gDirectory->Append(hN1);
+		h8->Add(hN1);
 
-	bngW.bins=kW_NAnaBins; //25 MeV/bin
-	bngW.xmin=kW_min;
-	bngW.xmax=kW_max;
+		/* Varset 2*/
+		//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
+		Int_t bins2[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+		Double_t xmin2[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
+		Double_t xmax2[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
+		THnSparse* hN2 = new THnSparseF("yield_varset2", 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][p^{'}p]}", 
+		hdim, bins2, xmin2, xmax2);
+		hN2->Sumw2();
+		//! Make variable Q2-binning
+		//hN2->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
+		gDirectory->Append(hN2);
+		h8->Add(hN2);
 	
-	bngMppip.bins=80; //~22 MeV/bin
-	bngMppip.xmin=0.938 + 0.140;
-	bngMppip.xmax=bngW.xmax - 0.140;
-	
-	bngMppim.bins=80; //~22 MeV/bin;
-	bngMppim.xmin=0.938 + 0.140;
-	bngMppim.xmax=bngW.xmax - 0.140;
-	
-	bngMpippim.bins=80; //~22 MeV/bin;
-	bngMpippim.xmin=0.140 + 0.140;
-	bngMpippim.xmax=bngW.xmax - 0.938;
-	
-	bngTheta.bins=10; //10;
-	bngTheta.xmin=0;
-	bngTheta.xmax=180;
-	
-	bngPhi.bins=10; //10;
-	bngPhi.xmin=0;
-	bngPhi.xmax=360;
-	
-	bngAlpha.bins=10; //10
-	bngAlpha.xmin=0;
-	bngAlpha.xmax=360;
-	
-	/* Varset 1*/
-	//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_pim,     phi_pim,     alpha[p'pip][ppim]}
-	Int_t bins1[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
-	Double_t xmin1[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
-	Double_t xmax1[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-	THnSparse* hN1 = new THnSparseF("yield_varset1", 
-	"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
-	hdim, bins1, xmin1, xmax1);
-	hN1->Sumw2();
-	//! Make variable Q2-binning
-	hN1->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
-	gDirectory->Append(hN1);
-	ret->Add(hN1);
+		/* Varset 3*/
+		//                    {  h,  Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
+		Int_t bins3[]    =    {  3,  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+		Double_t xmin3[] =    { -1,  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
+		Double_t xmax3[] =    {  2,  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
+		THnSparse* hN3 = new THnSparseF("yield_varset3", 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
+		hdim, bins3, xmin3, xmax3);
+		hN3->Sumw2();
+		//! Make variable Q2-binning
+		//hN3->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
+		gDirectory->Append(hN3);
+		h8->Add(hN3);
 
-	/* Varset 2*/
-	//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
-	Int_t bins2[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
-	Double_t xmin2[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
-	Double_t xmax2[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-	THnSparse* hN2 = new THnSparseF("yield_varset2", 
-	"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][p^{'}p]}", 
-	hdim, bins2, xmin2, xmax2);
-	hN2->Sumw2();
-	//! Make variable Q2-binning
-	hN2->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
-	gDirectory->Append(hN2);
-	ret->Add(hN2);
-	
-	/* Varset 3*/
-	//                    {  h,  Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
-	Int_t bins3[]    =    {  3,  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
-	Double_t xmin3[] =    { -1,  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
-	Double_t xmax3[] =    {  2,  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-	THnSparse* hN3 = new THnSparseF("yield_varset3", 
-	"h, Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
-	hdim, bins3, xmin3, xmax3);
-	hN3->Sumw2();
-	//! Make variable Q2-binning
-	hN3->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
-	gDirectory->Append(hN3);
-	ret->Add(hN3);
-	
+		ret[i]=h8;
+	}	
 	return ret;
 }
 

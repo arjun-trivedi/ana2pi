@@ -52,7 +52,7 @@ public:
 	
 	TObjArray* makeHistsEkin();
 	TObjArray* makeHistsMM();
-	TObjArray* makeYields();
+	TObjArray** makeYields();
 	
 	void writeHists(TObjArray** hists, TDirectory *dirout);
 	

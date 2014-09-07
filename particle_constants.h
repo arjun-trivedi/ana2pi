@@ -65,6 +65,7 @@ namespace ParticleConstants {
 
 namespace AnalysisConstants{
 	static const Int_t NTOPS    = 4;
+	static const Int_t NVARSETS=3;
 	static const Int_t NEVTSELS = 5; //NTOPS(2pi evt)+EVTINC(ep->X)
 	enum {TOP1, TOP2, TOP3, TOP4, EVTINC}; //NOTE: EVTINC not in logical progression
 																		   //
