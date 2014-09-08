@@ -5,10 +5,10 @@ nentries=${2:-1000000000}
 M=1000000
 idtfr=$((nentries / M ))M
 if [[ $dtyp == "exp" ]]; then
-  outdir=$OBS_DATADIR/mem_test/exp/new-h8-bng
+  outdir=$HOME/ongoing/mem_test/exp/new-h8-bng
   h10typ="e1f:exp:2pi"
 elif [[ $dtyp == "sim" ]]; then
-  outdir=$OBS_DATADIR/mem_test/sim/new-h8-bng
+  outdir=$HOME/ongoing/mem_test/sim/new-h8-bng
   h10typ="e1f:sim:2pi"
 else
   echo "Invalid dtyp:$dtyp"

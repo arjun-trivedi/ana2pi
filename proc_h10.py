@@ -54,9 +54,9 @@ def main(argv):
 
 	#! Prepare h10lst,output,f_q2w_el
 	if dtyp=='exp':
-		#at-h8 obs_datadir=os.environ['OBS_DATADIR_EXP']
 		h10lst=os.path.join(os.environ['OBS_DATADIR_EXP'],"h10.lst")
-		outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','exp','new-h8-bng')
+		outdir='$HOME/ongoing/mem_test/exp/new-h8-bng'
+		#outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','exp','new-h8-bng')
 		# if output=='d2pi':
 		# 	#at-h8 outdir=os.path.join(obs_datadir,q2w)
 		# 	outdir=obs_datadir
@@ -69,7 +69,8 @@ def main(argv):
 		# 	f_q2w_el=os.path.join(obs_datadir,"q2welist.root")
 	if dtyp=='sim': 
 		h10lst=os.path.join(os.environ['OBS_DATADIR_SIM'],'sim1',"h10.lst")
-		outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim','new-h8-bng')
+		outdir='$HOME/ongoing/mem_test/sim/new-h8-bng'
+		#outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim','new-h8-bng')
 		# #at-h8 obs_datadir=os.environ['OBS_DATADIR_SIM']
 		# obs_datadir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim')
 		# if output=='d2pi':
