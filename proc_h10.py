@@ -54,9 +54,11 @@ def main(argv):
 
 	#! Prepare h10lst,output,f_q2w_el
 	if dtyp=='exp':
-		obs_datadir=os.environ['OBS_DATADIR_EXP']
+		#at-h8 obs_datadir=os.environ['OBS_DATADIR_EXP']
+		obs_datadir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','exp')
 		if output=='d2pi':
-			outdir=os.path.join(obs_datadir,q2w)
+			#at-h8 outdir=os.path.join(obs_datadir,q2w)
+			outdir=obs_datadir
 		elif output=='q2welist':
 			outdir=os.path.join(obs_datadir)
 		else:
@@ -65,15 +67,16 @@ def main(argv):
 		if use_q2w_elist:
 			f_q2w_el=os.path.join(obs_datadir,"q2welist.root")
 	if dtyp=='sim': 
-		obs_datadir=os.environ['OBS_DATADIR_SIM']
+		#at-h8 obs_datadir=os.environ['OBS_DATADIR_SIM']
+		obs_datadir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim')
 		if output=='d2pi':
 			#at-h8 outdir=os.path.join(obs_datadir,sim_num,q2w)
-			outdir=os.path.join(obs_datadir,sim_num,'mem_test')
+			outdir=obs_datadir
 		elif output=='q2welist':
 			outdir=os.path.join(obs_datadir,sim_num)
 		else:
 			sys.exit("output=%s not recognized"%output)
-		h10lst=os.path.join(obs_datadir,sim_num,'mem_test',"h10.lst")
+		h10lst=os.path.join(obs_datadir,"h10.lst")
 		if use_q2w_elist:
 			f_q2w_el=os.path.join(obs_datadir,sim_num,"q2welist.root")
 
