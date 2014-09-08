@@ -67,4 +67,15 @@ const Int_t NBINS_ALPHA=10;
 const Float_t XMIN_ALPHA=0;
 const Float_t XMAX_ALPHA=360;
 
+Int_t GetCrsWBinIdx(Float_t w){
+	Int_t idx=9999;
+	for(int i=0;i<NBINS_WCRS;i++){
+		if(w>=WCRSBIN[i].xmin && w<WCRSBIN[i].xmax){
+			idx=i;
+			break;
+		}
+	}
+	return idx;
+}
+
 #endif // Q2BNG_H

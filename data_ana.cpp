@@ -582,6 +582,8 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 
 void DataAna::fillYields(TObjArray **hists, Bool_t useMc /* = kFALSE */)
 {
+	int crswidx=GetCrsWBinIdx(2.950);
+	Info("DataAna::fillYields()","crswidx for %f = %d",2.950,crswidx);
 	/*Data2pi *tp = &d2pi;
 	if (useMc) tp = &d2pi_mc;
 	//cout<<"alphas2="<<tp->alpha_1<<":"<<tp->alpha_2<<":"<<tp->alpha_3<<endl;

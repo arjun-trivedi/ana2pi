@@ -369,8 +369,9 @@ void ProcD2pi::McKin() {
 	_lvMM[TOP2] = (_lvW-(_lvP+_lvPip));
     _lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
 	_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
-	dAna->d2pi_mc.Q2 = -1*(_lvQ.Mag2());
-	dAna->d2pi_mc.W = _lvW.Mag();
+	//at-h8
+	/*dAna->d2pi_mc.Q2 = -1*(_lvQ.Mag2());
+	dAna->d2pi_mc.W = _lvW.Mag();*/
 	
 	UpdateEkin(kTRUE);
 	UpdateD2pi_MM(kTRUE);
