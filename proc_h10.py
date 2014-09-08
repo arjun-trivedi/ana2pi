@@ -49,32 +49,39 @@ def main(argv):
 
 	expt,dtyp,rctn=h10type.split(":")
 	print "expt,dtyp,rctn=",expt,dtyp,rctn
-	if dtyp=='sim' and sim_num=='':
-		sys.exit("sim_num num not entered for simulation")
+	# if dtyp=='sim' and sim_num=='':
+	# 	sys.exit("sim_num num not entered for simulation")
 
 	#! Prepare h10lst,output,f_q2w_el
 	if dtyp=='exp':
-		obs_datadir=os.environ['OBS_DATADIR_EXP']
-		if output=='d2pi':
-			outdir=os.path.join(obs_datadir,q2w)
-		elif output=='q2welist':
-			outdir=os.path.join(obs_datadir)
-		else:
-			sys.exit("output=%s not recognized"%output)
-		h10lst=os.path.join(obs_datadir,"h10.lst")
-		if use_q2w_elist:
-			f_q2w_el=os.path.join(obs_datadir,"q2welist.root")
+		#at-h8 obs_datadir=os.environ['OBS_DATADIR_EXP']
+		h10lst=os.path.join(os.environ['OBS_DATADIR_EXP'],"h10.lst")
+		outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','exp','new-h8-bng')
+		# if output=='d2pi':
+		# 	#at-h8 outdir=os.path.join(obs_datadir,q2w)
+		# 	outdir=obs_datadir
+		# elif output=='q2welist':
+		# 	outdir=os.path.join(obs_datadir)
+		# else:
+		# 	sys.exit("output=%s not recognized"%output)
+		# h10lst=os.path.join(obs_datadir,"h10.lst")
+		# if use_q2w_elist:
+		# 	f_q2w_el=os.path.join(obs_datadir,"q2welist.root")
 	if dtyp=='sim': 
-		obs_datadir=os.environ['OBS_DATADIR_SIM']
-		if output=='d2pi':
-			outdir=os.path.join(obs_datadir,sim_num,q2w)
-		elif output=='q2welist':
-			outdir=os.path.join(obs_datadir,sim_num)
-		else:
-			sys.exit("output=%s not recognized"%output)
-		h10lst=os.path.join(obs_datadir,sim_num,"h10.lst")
-		if use_q2w_elist:
-			f_q2w_el=os.path.join(obs_datadir,sim_num,"q2welist.root")
+		h10lst=os.path.join(os.environ['OBS_DATADIR_SIM'],'sim1',"h10.lst")
+		outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim','new-h8-bng')
+		# #at-h8 obs_datadir=os.environ['OBS_DATADIR_SIM']
+		# obs_datadir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim')
+		# if output=='d2pi':
+		# 	#at-h8 outdir=os.path.join(obs_datadir,sim_num,q2w)
+		# 	outdir=obs_datadir
+		# elif output=='q2welist':
+		# 	outdir=os.path.join(obs_datadir,sim_num)
+		# else:
+		# 	sys.exit("output=%s not recognized"%output)
+		# h10lst=os.path.join(obs_datadir,"h10.lst")
+		# if use_q2w_elist:
+		# 	f_q2w_el=os.path.join(obs_datadir,sim_num,"q2welist.root")
 
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
@@ -99,8 +106,8 @@ def main(argv):
 			sys.exit("output=%s not recognized"%output)
 	if dtyp=='sim':
 		if output=='d2pi':
-			procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim_dcptr
-			#procorder="d2piT:eid:efid:qskim:pid:d2piR"
+			#procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim_dcptr
+			procorder="d2piT:eid:efid:qskim:pid:d2piR"
 		elif output=='q2welist':
 			procorder='q2welist'
 		else:
