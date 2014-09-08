@@ -5,6 +5,10 @@ nentries=${1:-1000000000}
 #for i in `seq 1 49`;
 #do
  #echo "*** Making exp/q2w$i/d2pi.root *** "
- proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --n=$nentries
+ logdir=$OBS_DATADIR/mem_test/exp/old-h8-bng
+ rm $logdir/makelog
+ rm $logdir/memlog
+ proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --n=$nentries >& $logdir/makelog&
+ track_mem >& $logdir/memlog &
  #proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --q2w=q2w$i --use_q2w_elist=True --n=$nentries
 #done
