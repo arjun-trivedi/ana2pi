@@ -3,10 +3,11 @@ from proc_yields import ProcYields
 from disp_yields import DispYields
 import sys
 
-q2w=sys.argv[1]
-dtyp=sys.argv[2]
-sim=sys.argv[3]
+#q2w=sys.argv[1]
+dtyp=sys.argv[1]
+#sim=sys.argv[3]
 
 #print q2w,dtyp,sim
-py=ProcYields(q2w,dtyp,sim)
+#py=ProcYields(q2w,dtyp,sim)
+py=ProcYields(dtyp)
 py.proc()
