@@ -67,12 +67,13 @@ def main(argv):
 	if dtyp=='sim': 
 		obs_datadir=os.environ['OBS_DATADIR_SIM']
 		if output=='d2pi':
-			outdir=os.path.join(obs_datadir,sim_num,q2w)
+			#at-h8 outdir=os.path.join(obs_datadir,sim_num,q2w)
+			outdir=os.path.join(obs_datadir,sim_num,mem_test)
 		elif output=='q2welist':
 			outdir=os.path.join(obs_datadir,sim_num)
 		else:
 			sys.exit("output=%s not recognized"%output)
-		h10lst=os.path.join(obs_datadir,sim_num,"h10.lst")
+		h10lst=os.path.join(obs_datadir,sim_num,mem_test,"h10.lst")
 		if use_q2w_elist:
 			f_q2w_el=os.path.join(obs_datadir,sim_num,"q2welist.root")
 
