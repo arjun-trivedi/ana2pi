@@ -253,42 +253,42 @@ TObjArray** DataAna::makeYields()
 		Int_t bins1[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 		Double_t xmin1[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax1[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		THnSparse* hN1 = new THnSparseF("yield_varset1", 
+		THnSparse* h8_1 = new THnSparseF(TString::Format("h8_%d_%d",i+1,1), 
 		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
 		hdim, bins1, xmin1, xmax1);
-		hN1->Sumw2();
+		h8_1->Sumw2();
 		//! Make variable Q2-binning
-		//hN1->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
-		gDirectory->Append(hN1);
-		h8->Add(hN1);
+		//h8_1->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
+		gDirectory->Append(h8_1);
+		h8->Add(h8_1);
 
 		/* Varset 2*/
 		//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
 		Int_t bins2[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 		Double_t xmin2[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax2[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		THnSparse* hN2 = new THnSparseF("yield_varset2", 
+		THnSparse* h8_2 = new THnSparseF(TString::Format("h8_%d_%d",i+1,2), 
 		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][p^{'}p]}", 
 		hdim, bins2, xmin2, xmax2);
-		hN2->Sumw2();
+		h8_2->Sumw2();
 		//! Make variable Q2-binning
-		//hN2->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
-		gDirectory->Append(hN2);
-		h8->Add(hN2);
+		//h8_2->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
+		gDirectory->Append(h8_2);
+		h8->Add(h8_2);
 	
 		/* Varset 3*/
 		//                    {  h,  Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
 		Int_t bins3[]    =    {  3,  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 		Double_t xmin3[] =    { -1,  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax3[] =    {  2,  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		THnSparse* hN3 = new THnSparseF("yield_varset3", 
+		THnSparse* h8_3 = new THnSparseF(TString::Format("h8_%d_%d",i+1,3), 
 		"h, Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
 		hdim, bins3, xmin3, xmax3);
-		hN3->Sumw2();
+		h8_3->Sumw2();
 		//! Make variable Q2-binning
-		//hN3->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
-		gDirectory->Append(hN3);
-		h8->Add(hN3);
+		//h8_3->GetAxis(1)->Set(kQ2_NAnaBins,kQ2_AnaBins);
+		gDirectory->Append(h8_3);
+		h8->Add(h8_3);
 
 		ret[i]=h8;
 	}	
