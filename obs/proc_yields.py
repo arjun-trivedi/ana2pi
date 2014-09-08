@@ -90,8 +90,8 @@ class ProcYields:
 				raise
 
 			#! Test Q2WBNG, WBNG
-			print "Q2 bins=",self.Q2BNG['BINS']
-			print "W bins=",self.WBNG['BINS']
+			# print "Q2 bins=",self.Q2BNG['BINS']
+			# print "W bins=",self.WBNG['BINS']
 			# for i in range(self.Q2BNG['NBINS']):
 			# 	print "Q2 bin:",i+1
 			# 	print self.Q2BNG['BINS_LE'][i]
@@ -103,57 +103,58 @@ class ProcYields:
 			# 	print self.WBNG['BINS_UE'][i]
 			# 	print self.WBNG['BINW']
 
-		# #! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
-		# for i in range(self.Q2BNG['NBINS']):
-		# 	for j in range(self.WBNG['NBINS']):
-		# 		#if j>4: break
-		# 		q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
-		# 		q2wbindir=self.FOUT.mkdir(q2wbin)
-		# 		q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
-		# 		self.wmax=self.WBNG['BINS_UE'][j]
-		# 		#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
-		# 		# self.hq2w.clear()
-		# 		# self.h5.clear()
-		# 		# self.h1.clear()
-		# 		for vst in self.VSTS:
-		# 			vst_name='VST%d'%vst
-		# 			vstdir=q2wbindir.mkdir(vst_name)           
-		# 			print "*** Processing %s,%s ***"%(q2wbin,vst_name)
-		# 			#! First, for h8-ST/SR/ER, set appropriate ranges for HEL,Q2&W
-		# 			print "*** h8 range setting for HEL,Q2 & W dimensions ... ***"
-		# 			if self.EXP:seq_h8=['R']
-		# 			if self.SIM:seq_h8=['T','R']
-		# 			for seq in seq_h8:
-		# 				#!-- HEL: include all helicities
-		# 				h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
-		# 				#!-- Q2
-		# 				q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i]+self.Q2BNG['BINW']/2)
-		# 				q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_UE'][i]-self.Q2BNG['BINW']/2)
-		# 				h8[vst_name,seq].GetAxis(H8_DIM['Q2']).SetRange(q2bin_le,q2bin_ue)
-		# 				#!-- W
-		# 				wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_LE'][j]+self.WBNG['BINW']/2)
-		# 				wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_UE'][j]-self.WBNG['BINW']/2)
-		# 				h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
-		# 				print "For h8(%s,%s),finished setting range for Q2-,W-bin = %s ***"%(vst_name,seq,q2wbintitle)
-		# 				#! Project out hq2w & save (to FOUT & OS)
-		# 				hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
-		# 				hq2w.SetName('h_q2Vw')
-		# 				hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
-		# 				# outdir=os.path.join(self.OUTDIR,q2wbin,vst_name,seq)
-		# 				# if not os.path.exists(outdir):
-		# 				# 	os.makedirs(outdir)
-		# 				#! cd into FOUT.q2wbindir.vstdir.seqdir
-		# 				vstdir.mkdir(seq).cd()
-		# 				hq2w.Write()
-		# 				# cq2w=ROOT.TCanvas(hq2w.GetName(),hq2w.GetTitle())
-		# 				# hq2w.Draw("colz")
-		# 				# cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
-		# 			print "*** Done h8 range setting"
-		# 			#! 1. h8->h5 
-		# 			h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
-		# 			#! 2. h5->h1
-		# 			self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
-		# self.FOUT.Close()
+			#! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
+			for i in range(self.Q2BNG['NBINS']):
+				for j in range(self.WBNG['NBINS']):
+					#if j>4: break
+					q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
+					q2wbindir=self.FOUT.mkdir(q2wbin)
+					q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
+					self.wmax=self.WBNG['BINS_UE'][j]
+					#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
+					# self.hq2w.clear()
+					# self.h5.clear()
+					# self.h1.clear()
+					print "*** Processing %s ***"%q2wbin
+					for vst in self.VSTS:
+						vst_name='VST%d'%vst
+						vstdir=q2wbindir.mkdir(vst_name)           
+						print "*** Processing %s ***"%(vst_name)
+						#! First, for h8-ST/SR/ER, set appropriate ranges for HEL,Q2&W
+						print "*** h8 range setting for HEL,Q2 & W dimensions ... ***"
+						if self.EXP:seq_h8=['R']
+						if self.SIM:seq_h8=['T','R']
+						for seq in seq_h8:
+							#!-- HEL: include all helicities
+							h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
+							#!-- Q2
+							q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i]+self.Q2BNG['BINW']/2)
+							q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_UE'][i]-self.Q2BNG['BINW']/2)
+							h8[vst_name,seq].GetAxis(H8_DIM['Q2']).SetRange(q2bin_le,q2bin_ue)
+							#!-- W
+							wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_LE'][j]+self.WBNG['BINW']/2)
+							wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_UE'][j]-self.WBNG['BINW']/2)
+							h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
+							print "For h8(%s),finished setting range for Q2-,W-bin = %s ***"%(seq,q2wbintitle)
+							#! Project out hq2w & save (to FOUT & OS)
+							hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
+							hq2w.SetName('h_q2Vw')
+							hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
+							# outdir=os.path.join(self.OUTDIR,q2wbin,vst_name,seq)
+							# if not os.path.exists(outdir):
+							# 	os.makedirs(outdir)
+							#! cd into FOUT.q2wbindir.vstdir.seqdir
+							vstdir.mkdir(seq).cd()
+							hq2w.Write()
+							# cq2w=ROOT.TCanvas(hq2w.GetName(),hq2w.GetTitle())
+							# hq2w.Draw("colz")
+							# cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
+						print "*** Done h8 range setting"
+						#! 1. h8->h5 
+						h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
+						#! 2. h5->h1
+						self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
+		self.FOUT.Close()
 
 	def get_h8(self,iw):
 		"""
