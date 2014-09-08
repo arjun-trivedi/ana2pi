@@ -1,0 +1,25 @@
+#!/bin/bash
+dtyp=$1
+nentries=${2:-1000000000}
+
+if [[ $dtyp == "exp" ]]; then
+  logdir=$OBS_DATADIR/mem_test/exp/old-h8-bng
+  rm $logdir/makelog
+  rm $logdir/memlog
+  proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --n=$nentries >& $logdir/makelog&
+  track_mem >& $logdir/memlog &
+elif [[ $dtyp == "sim" ]]; then
+  logdir=$OBS_DATADIR/mem_test/sim/old-h8-bng
+  rm $logdir/makelog
+  rm $logdir/memlog
+  proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --sim_num=sim1 --nentries=$nentries >& $logdir/makelog&
+  pid_proc_h10=$!
+  track_mem >& $logdir/memlog &
+else
+  echo "Invalid dtyp:$dtyp"
+  exit
+fi
+ 
+wait $pid_proc_h10
+echo "pid_proc_h10 is done. Killing track_mem"
+killall track_mem
