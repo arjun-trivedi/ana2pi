@@ -50,7 +50,10 @@ ana2pi Branches
 				2. Miscellaneous improvements/new features
 					i. ProcEFid: Added hevtsum histogram 
 					ii. ProcEid & ProcMomCor: Changed filepath of cut-par files relative to $WORKSPACE so that they could run seamlessly on ifarm too
-				3. New files added to process and display yields from d2pi: proc_yields.py and disp_yields.py				
+				3. New files added to process and display yields from d2pi: proc_yields.py and disp_yields.py	
+
+					+ extract_obs_mem-test [09-07-14]: Created to take data on memory consumption, especially to compare with new-h8-bng
+
 				
 
 				
