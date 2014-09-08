@@ -170,7 +170,7 @@ void ProcD2pi::handle() {
 	
 	if (_procT && !_procR){
 		McKin();
-		dAna->fillYields(_h8T, kTRUE);
+		dAna->fillYields(_h8T, dAna->d2pi_mc.W, kTRUE);
 		dAna->fillHistsMM(_hists_MM_T, kTRUE);
 		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 		
@@ -295,7 +295,7 @@ void ProcD2pi::handle() {
 				}
 
 				UpdateD2pi(); //MM part of d2pi already updated
-				dAna->fillYields(_h8R[dAna->d2pi.top-1]);
+				dAna->fillYields(_h8R[dAna->d2pi.top-1],dAna->d2pi.W);
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
 				if (_make_tree){
@@ -304,7 +304,7 @@ void ProcD2pi::handle() {
 				if (_procT){
 					ResetLvs();
 					McKin();
-					dAna->fillYields(_h8T, kTRUE);
+					dAna->fillYields(_h8T, dAna->d2pi_mc.W, kTRUE);
 					dAna->fillHistsMM(_hists_MM_T, kTRUE);
 					dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 					if(_make_tree){

@@ -580,26 +580,36 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	
 }
 
-void DataAna::fillYields(TObjArray **hists, Bool_t useMc /* = kFALSE */)
+void DataAna::fillYields(TObjArray **hists, Float_t w, Bool_t useMc /* = kFALSE */)
 {
-	int crswidx=GetCrsWBinIdx(2.950);
-	Info("DataAna::fillYields()","crswidx for %f = %d",2.950,crswidx);
-	/*Data2pi *tp = &d2pi;
+	//! Get index of Crw-W bin
+	/*int crswidx=GetCrsWBinIdx(2.950);
+	Info("DataAna::fillYields()","crswidx for %f = %d",2.950,crswidx);*/
+	int iw=GetCrsWBinIdx(w);
+	/*Info("DataAna::fillYields()","crswidx for %f = %d",w,iw);*/
+	if (iw==9999) return;
+
+	//! Get h8[w]
+	TObjArray* h8=hists[iw];
+
+	Data2pi *tp = &d2pi;
 	if (useMc) tp = &d2pi_mc;
+
 	//cout<<"alphas2="<<tp->alpha_1<<":"<<tp->alpha_2<<":"<<tp->alpha_3<<endl;
-	THnSparse* hN1 = (THnSparse*)hists->At(0);
+	THnSparse* h8_1 = (THnSparse*)h8->At(0);
 	//Double_t coord1[] = { tp->h, tp->Q2, tp->W, tp->varset1.M1, tp->varset1.M2, tp->varset1.theta, tp->varset1.phi, tp->varset1.alpha };
 	Double_t coord1[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_pippim,tp->theta_cms_pim,tp->phi_cms_pim,tp->alpha_1 };
-	hN1->Fill(coord1);
+	h8_1->Fill(coord1);
 	
-	THnSparse* hN2 = (THnSparse*)hists->At(1);
+	THnSparse* h8_2 = (THnSparse*)h8->At(1);
 	//Double_t coord2[] = { tp->h, tp->Q2, tp->W, tp->varset2.M1, tp->varset2.M2, tp->varset2.theta, tp->varset2.phi, tp->varset2.alpha  };
 	Double_t coord2[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_pippim,tp->theta_cms_p,tp->phi_cms_p,tp->alpha_2};
-	hN2->Fill(coord2);
+	h8_2->Fill(coord2);
 	
-	THnSparse* hN3 = (THnSparse*)hists->At(2);
+	THnSparse* h8_3 = (THnSparse*)h8->At(2);
 	//Double_t coord3[] = { tp->h, tp->Q2, tp->W, tp->varset3.M1, tp->varset3.M2, tp->varset3.theta, tp->varset3.phi, tp->varset3.alpha  };
 	Double_t coord3[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_ppim,tp->theta_cms_pip,tp->phi_cms_pip,tp->alpha_3};
-	hN3->Fill(coord3);*/
-		
+	h8_3->Fill(coord3);
+
+	return;
 }
