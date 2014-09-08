@@ -1,4 +1,4 @@
-#include "q2w_bng.h"
+//at-h8 #include "q2w_bng.h"
 #include "data_h10.h"
 #include "data_ana.h"
 #include "h10looper.h"
@@ -8,8 +8,8 @@
 #include "proc_efid.h"
 #include "proc_pid.h"
 #include "proc_skim_q.h"
-#include "proc_skim_q2w.h"
-#include "proc_elist_q2w.h"
+//at-h8 #include "proc_skim_q2w.h"
+//at-h8 #include "proc_elist_q2w.h"
 #include "proc_mom_cor.h"
 #include "proc_d2pi.h"
 #include "proc_copy_h10.h"
@@ -213,9 +213,9 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
-         else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
-         else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
-         else if (str.EqualTo("q2welist"))   proc = new ProcEListQ2W(mkdir("q2welist"),dH10,dAna);
+         //at-h8 else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
+         //at-h8 else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
+         //at-h8 else if (str.EqualTo("q2welist"))   proc = new ProcEListQ2W(mkdir("q2welist"),dH10,dAna);
          else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
@@ -240,7 +240,8 @@ EpProcessor* SetupProcs(){
    return proc_chain;
 }
 
-EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr){
+//at-h8
+/*EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr){
 	Float_t q2min,q2max,wmin,wmax=0.0;
 	TString str_q2w_binnum=proc_q2wskim_dcptr.Remove(0,7);//removing "q2wskim" from "q2wskimXX"
 	Int_t binnum=str_q2w_binnum.Atoi();
@@ -250,7 +251,7 @@ EpProcessor* SetupProcSkimQ2W(TString proc_q2wskim_dcptr){
     wmax=kQ2W_CrsBin[binnum-1].wmax;
     EpProcessor* proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,q2min,q2max,wmin,wmax);
     return proc;
-}
+}*/
 
 
 

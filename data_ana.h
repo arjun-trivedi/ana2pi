@@ -66,7 +66,7 @@ public:
 	
 	void fillHistsEkin(TObjArray* hists, Bool_t useMc = kFALSE);
 	void fillHistsMM(TObjArray *hists, Bool_t useMc = kFALSE);
-	void fillYields(TObjArray *hists, Bool_t useMc = kFALSE);
+	void fillYields(TObjArray** hists, Bool_t useMc = kFALSE);
 };
 
 #endif // DATAANA_H

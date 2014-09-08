@@ -19,7 +19,7 @@ public:
 			 bool procT, bool procR, bool make_tree=kFALSE);
 	~ProcD2pi();
 	void handle();
-	void write();
+	//at-h8 void write();
 protected:
 	void McKin();
 	
@@ -40,10 +40,10 @@ protected:
     bool _procT,_procR;
     bool _make_tree;
     TObjArray* _hists_ana_MM;    
-    TObjArray* _yields_R[NTOPS];
+    TObjArray** _h8R[NTOPS];
 	TObjArray* _hists_MM_R[NTOPS];
 	TObjArray* _hists_ekin_R[NTOPS];
-	TObjArray* _yields_T;
+	TObjArray** _h8T;
 	TObjArray* _hists_MM_T;
 	TObjArray* _hists_ekin_T;
 	TLorentzVector _lvE0_ST;
@@ -108,7 +108,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		else subdir=dirout;
 
 		subdir->cd();
-		_yields_T    =dAna->makeYields();
+		_h8T    =dAna->makeYields();
 		_hists_MM_T  =dAna->makeHistsMM();
 		_hists_ekin_T=dAna->makeHistsEkin();
 				
@@ -127,7 +127,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		for (int iTop = 0; iTop < NTOPS; ++iTop)
 		{
 			subdir->mkdir(TString::Format("top%d",iTop+1))->cd();
-			_yields_R[iTop]    =dAna->makeYields();
+			_h8R[iTop]    =dAna->makeYields();
 			_hists_MM_R[iTop]  =dAna->makeHistsMM();
 			_hists_ekin_R[iTop]=dAna->makeHistsEkin();
 		}
@@ -145,11 +145,11 @@ ProcD2pi::~ProcD2pi() {
 	delete _hists_ana_MM;
 	for (int iTop = 0; iTop < NTOPS; ++iTop)
     {
-    	delete _yields_R[iTop];
+    	delete _h8R[iTop];
     	delete _hists_MM_R[iTop];
     	delete _hists_ekin_R[iTop];
     }
-    delete _yields_T;
+    delete _h8T;
 	delete _hists_MM_T;
 	delete _hists_ekin_T;
 	delete _rand; //atrivedi[06-13-14]: for _rand
@@ -170,7 +170,7 @@ void ProcD2pi::handle() {
 	
 	if (_procT && !_procR){
 		McKin();
-		dAna->fillYields(_yields_T, kTRUE);
+		dAna->fillYields(_h8T, kTRUE);
 		dAna->fillHistsMM(_hists_MM_T, kTRUE);
 		dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 		
@@ -295,7 +295,7 @@ void ProcD2pi::handle() {
 				}
 
 				UpdateD2pi(); //MM part of d2pi already updated
-				dAna->fillYields(_yields_R[dAna->d2pi.top-1]);
+				dAna->fillYields(_h8R[dAna->d2pi.top-1]);
 				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
 				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
 				if (_make_tree){
@@ -304,7 +304,7 @@ void ProcD2pi::handle() {
 				if (_procT){
 					ResetLvs();
 					McKin();
-					dAna->fillYields(_yields_T, kTRUE);
+					dAna->fillYields(_h8T, kTRUE);
 					dAna->fillHistsMM(_hists_MM_T, kTRUE);
 					dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
 					if(_make_tree){
@@ -762,7 +762,8 @@ Float_t ProcD2pi::invTan(Float_t y, Float_t x){
 }
 
 
-void ProcD2pi::write(){
+//at-h8
+/*void ProcD2pi::write(){
 	Info("ProcD2pi::write()", "");
 	
 	if (_hists_ana_MM != NULL) {
@@ -772,7 +773,7 @@ void ProcD2pi::write(){
 		for (int iTop = 0; iTop < NTOPS; ++iTop)
 		{
 			dirout->cd(TString::Format("top%d",iTop+1));
-			_yields_R[iTop]->Write();
+			_h8R[iTop]->Write();
 			_hists_MM_R[iTop]->Write();
 			_hists_ekin_R[iTop]->Write();
 		}
@@ -780,10 +781,10 @@ void ProcD2pi::write(){
 	
 	if(_procT){
 		dirout->cd("mc");
-		_yields_T->Write();
+		_h8T->Write();
 		_hists_MM_T->Write();
 		_hists_ekin_T->Write();
 	}
-}
+}*/
 
 #endif // PROCD2PI_H

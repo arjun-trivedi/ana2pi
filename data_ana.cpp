@@ -580,9 +580,9 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	
 }
 
-void DataAna::fillYields(TObjArray *hists, Bool_t useMc /* = kFALSE */)
+void DataAna::fillYields(TObjArray **hists, Bool_t useMc /* = kFALSE */)
 {
-	Data2pi *tp = &d2pi;
+	/*Data2pi *tp = &d2pi;
 	if (useMc) tp = &d2pi_mc;
 	//cout<<"alphas2="<<tp->alpha_1<<":"<<tp->alpha_2<<":"<<tp->alpha_3<<endl;
 	THnSparse* hN1 = (THnSparse*)hists->At(0);
@@ -598,6 +598,6 @@ void DataAna::fillYields(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	THnSparse* hN3 = (THnSparse*)hists->At(2);
 	//Double_t coord3[] = { tp->h, tp->Q2, tp->W, tp->varset3.M1, tp->varset3.M2, tp->varset3.theta, tp->varset3.phi, tp->varset3.alpha  };
 	Double_t coord3[] = { tp->h,tp->Q2,tp->W,tp->M_ppip,tp->M_ppim,tp->theta_cms_pip,tp->phi_cms_pip,tp->alpha_3};
-	hN3->Fill(coord3);
+	hN3->Fill(coord3);*/
 		
 }
