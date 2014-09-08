@@ -2,24 +2,28 @@
 dtyp=$1
 nentries=${2:-1000000000}
 
+M=1000000
+idtfr=$((nentries / M ))M
 if [[ $dtyp == "exp" ]]; then
-  logdir=$OBS_DATADIR/mem_test/exp/old-h8-bng
-  rm $logdir/makelog
-  rm $logdir/memlog
-  proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --n=$nentries >& $logdir/makelog&
-  track_mem >& $logdir/memlog &
+  outdir=$OBS_DATADIR/mem_test/exp/old-h8-bng
+  h10typ="e1f:exp:2pi"
 elif [[ $dtyp == "sim" ]]; then
-  logdir=$OBS_DATADIR/mem_test/sim/old-h8-bng
-  rm $logdir/makelog
-  rm $logdir/memlog
-  proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --sim_num=sim1 --nentries=$nentries >& $logdir/makelog&
-  pid_proc_h10=$!
-  track_mem >& $logdir/memlog &
+  outdir=$OBS_DATADIR/mem_test/sim/old-h8-bng
+  h10typ="e1f:sim:2pi"
 else
   echo "Invalid dtyp:$dtyp"
   exit
 fi
- 
+
+maked2pilog=$outdir/maked2pilog_$idtfr
+memlog=$outdir/memlog_$idtfr
+rm $maked2pilog
+rm $memlog
+proc_h10.py --h10type=$h10typ --output=d2pi --n=$nentries >& $maked2pilog&
+pid_proc_h10=$!
+track_mem >& $memlog &
+echo "Running make_d2pi for $dtyp..." 
 wait $pid_proc_h10
 echo "pid_proc_h10 is done. Killing track_mem"
+cp $outdir/d2pi.root $outdir/d2pi_$idtfr.root
 killall track_mem

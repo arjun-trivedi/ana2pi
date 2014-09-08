@@ -49,8 +49,8 @@ def main(argv):
 
 	expt,dtyp,rctn=h10type.split(":")
 	print "expt,dtyp,rctn=",expt,dtyp,rctn
-	if dtyp=='sim' and sim_num=='':
-		sys.exit("sim_num num not entered for simulation")
+	# if dtyp=='sim' and sim_num=='':
+	# 	sys.exit("sim_num num not entered for simulation")
 
 	#! Prepare h10lst,output,f_q2w_el
 	if dtyp=='exp':

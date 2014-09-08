@@ -11,6 +11,11 @@ logdir=$OBS_DATADIR/mem_test/sim/old-h8-bng
 rm $logdir/makelog
 rm $logdir/memlog
 proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --sim_num=sim1 --nentries=$nentries >& $logdir/makelog&
+pid_proc_h10=$!
 track_mem >& $logdir/memlog &
+
+wait $pid_proc_h10
+echo "pid_proc_h10 is done. Killing track_mem"
+killall track_mem
 #echo ">>> ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num"
 #ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num
