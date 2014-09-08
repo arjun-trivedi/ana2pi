@@ -74,6 +74,7 @@ class ProcYields:
 	def proc(self):
 		#! Loop over Crw-W bins
 		for iw in range(q2w_bng.NBINS_WCRS):
+			print "*** Processing Crs-W bin %s ***"%(iw+1)
 			#! Get h8
 			h8=self.get_h8(iw)
 			#! Debug h8
@@ -90,8 +91,8 @@ class ProcYields:
 				raise
 
 			#! Test Q2WBNG, WBNG
-			# print "Q2 bins=",self.Q2BNG['BINS']
-			# print "W bins=",self.WBNG['BINS']
+			print "Q2 bins=",self.Q2BNG['BINS']
+			print "W bins=",self.WBNG['BINS']
 			# for i in range(self.Q2BNG['NBINS']):
 			# 	print "Q2 bin:",i+1
 			# 	print self.Q2BNG['BINS_LE'][i]
@@ -107,15 +108,15 @@ class ProcYields:
 			for i in range(self.Q2BNG['NBINS']):
 				for j in range(self.WBNG['NBINS']):
 					#if j>4: break
-					q2wbin="%0.1f-%0.1f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
+					q2wbin="%0.2f-%0.2f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 					q2wbindir=self.FOUT.mkdir(q2wbin)
-					q2wbintitle="[%0.1f,%0.1f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
+					q2wbintitle="[%0.2f,%0.2f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 					self.wmax=self.WBNG['BINS_UE'][j]
 					#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
 					# self.hq2w.clear()
 					# self.h5.clear()
 					# self.h1.clear()
-					print "*** Processing %s ***"%q2wbin
+					print "*** Processing Q2,W %s ***"%q2wbin
 					for vst in self.VSTS:
 						vst_name='VST%d'%vst
 						vstdir=q2wbindir.mkdir(vst_name)           
