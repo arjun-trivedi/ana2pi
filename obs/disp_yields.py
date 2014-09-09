@@ -14,14 +14,17 @@ from ROOT import THnTool
 thntool=THnTool()
 
 class DispYields:
-	def __init__(self,q2w,sim_num='siml'):
+	def __init__(self,sim_num='siml'):
 		self.SIM_NUM=sim_num
-		self.Q2W=q2w
-		self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_exp.root'))
-		self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_sim.root'))
-		self.ANADIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
-		if not os.path.exists(self.ANADIR):
-			sys.exit("%s does not exist!"%self.ANADIR)
+		#self.Q2W=q2w
+		self.FEXP=root_open('$HOME/ongoing/mem_test/exp/new-h8-bng/yield_exp.root')
+		self.FSIM=root_open('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
+		self.OUTDIR='$HOME/ongoing/mem_test/obs'
+		# self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_exp.root'))
+		# self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_sim.root'))
+		# self.OUTDIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
+		if not os.path.exists(self.OUTDIR):
+			sys.exit("%s does not exist!"%self.OUTDIR)
 
 	def plot_obs_1D(self,q2wbin,h_dpp,h_rho,h_dzr):
 		c=ROOT.TCanvas()
@@ -225,7 +228,7 @@ class DispYields:
 		h_dzr['SIM','T'][2].DrawNormalized("sames",1000)
 		pad.Update()
 		
-		c.SaveAs("%s/c1D_%s.png"%(self.ANADIR,q2wbin))
+		c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 
 	def disp_1D(self):
 		"""

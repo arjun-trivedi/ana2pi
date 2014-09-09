@@ -30,12 +30,19 @@ division operation (This seems to not be an issue when using CINT).
 	+ To solve this program created divide(h1,h2) method
 """
 
-#! + The following binning should match up with q2w_bng.h/.py
+# #! + The following binning should match up with q2w_bng.h/.py
+# #! + It is slightly modified here for "aesthetic" purposes
+# WBINW=0.025
+# NWBINS,WMIN,WMAX=80,1.0,3.0 #25 MeV/bin
+# NQ2BINS,Q2MIN,Q2MAX=7,1.2,5.0 # place-holder bng, for it will be modified by variable bng
+# Q2_VARBINS=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
+
+#! + The following binning should match up with h8_bng.h/q2w_bng.py
 #! + It is slightly modified here for "aesthetic" purposes
 WBINW=0.025
-NWBINS,WMIN,WMAX=80,1.0,3.0 #25 MeV/bin
-NQ2BINS,Q2MIN,Q2MAX=7,1.2,5.0 # place-holder bng, for it will be modified by variable bng
-Q2_VARBINS=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
+NWBINS,WMIN,WMAX=80,1.3,3.0 #25 MeV/bin
+NQ2BINS,Q2MIN,Q2MAX=8,1.25,5.25 # place-holder bng, for it will be modified by variable bng
+#Q2_VARBINS=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
 
 def make_h_nbins_vs_Q2W():
 	"""
@@ -57,20 +64,26 @@ def make_h_nbins_vs_Q2W():
 
 	#! Create histogram
 	h=ROOT.TH2F("h_nbins","nbins(Q2,W)",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-	h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
+	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
 
 	#! Fill h
-	for q2 in Q2_VARBINS:
-		for id,d in enumerate(nbins_vs_w):
-			w=nbins_vs_w[id][0]
-			nbins=nbins_vs_w[id][1]
-			#print q2,w,nbins
-			binx=h.GetXaxis().FindBin(w+(0.025/2));
-			biny=h.GetYaxis().FindBin(q2);
-			bin=h.GetBin(binx,biny)
+	# for q2 in Q2_VARBINS:
+	# 	for id,d in enumerate(nbins_vs_w):
+	# 		w=nbins_vs_w[id][0]
+	# 		nbins=nbins_vs_w[id][1]
+	# 		#print q2,w,nbins
+	# 		binx=h.GetXaxis().FindBin(w+(0.025/2));
+	# 		biny=h.GetYaxis().FindBin(q2);
+	# 		bin=h.GetBin(binx,biny)
+	# 		h.SetBinContent(bin,nbins)
+	nbins=14*14*10*10*10
+	print "nbins=",nbins
+	for ixbin in range(h.GetXaxis().GetNbins()):
+		for iybin in range(h.GetXaxis().GetNbins()):
+			bin=h.GetBin(ixbin+1,iybin+1)
 			h.SetBinContent(bin,nbins)
 	return h
 
@@ -130,8 +143,9 @@ else:
 	sim=sys.argv[1]
 print "Displaying simstats for %s"%sim
 
-datadir=os.environ['OBS_DATADIR_SIM']
-outdir=os.path.join(os.environ['OBS_DIR'],sim,'simstats')
+# datadir=os.environ['OBS_DATADIR_SIM']
+# outdir=os.path.join(os.environ['OBS_DIR'],sim,'simstats')
+outdir=os.path.join('$HOME/ongoing/mem_test/simstats')
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 
@@ -147,7 +161,7 @@ h={}
 for seq in ['T','R','A','H']:
 	for par in ['nbins','N','mu','sg']:
 		h[seq,par]=ROOT.TH2F("h_%s_%s"%(par,seq),"%s_%s(Q2,W)"%(par,seq),NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-		h[seq,par].GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
+		#h[seq,par].GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 		h[seq,par].SetXTitle("W [GeV]")
 		h[seq,par].SetYTitle("Q^2 [GeV^2]")
 		print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
@@ -161,19 +175,18 @@ for seq in ['T','R','A','H']:
 h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 
 #! Fill histograms
-for q2w in q2wl: 
-	dy=DispYields(q2w,sim)
-	ss=dy.get_sim_stats()
-	for seq in ['T','R','A','H']:
-		for d in ss[seq]:
-			q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
-			binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
-			biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
-			bin=h[seq,'nbins'].GetBin(binx,biny)
-			h[seq,'nbins'].SetBinContent(bin,nbins)
-			h[seq,'N'].SetBinContent(bin,N)
-			h[seq,'mu'].SetBinContent(bin,mu)
-			h[seq,'sg'].SetBinContent(bin,sg)			
+dy=DispYields()
+ss=dy.get_sim_stats()
+for seq in ['T','R','A','H']:
+	for d in ss[seq]:
+		q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
+		binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
+		biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
+		bin=h[seq,'nbins'].GetBin(binx,biny)
+		h[seq,'nbins'].SetBinContent(bin,nbins)
+		h[seq,'N'].SetBinContent(bin,N)
+		h[seq,'mu'].SetBinContent(bin,mu)
+		h[seq,'sg'].SetBinContent(bin,sg)			
 			
 #! Display "directly interesting" histograms to monitor simstats
 ROOT.gStyle.SetOptStat(0)

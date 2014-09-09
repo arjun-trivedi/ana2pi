@@ -55,7 +55,8 @@ class ProcYields:
 				#! This path should already exist when making yield_sim
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
 				#os.makedirs(self.OUTDIR)
-			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
+			self.FIN_SIMYIELD=ROOT.TFile('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
+			#self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.OUTDIR,"yield_exp.root"),"RECREATE")
 			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUT.GetName())
 		if self.SIM:
