@@ -82,7 +82,7 @@ class ProcYields:
 			p.start()
 			p.join() # this blocks until the process terminates
 			res=queue.get()
-			print res
+			print "Result from proc(%d)=%d"%(iw+1,res)
 		self.FOUT.Close()
 
 	
@@ -170,6 +170,7 @@ class ProcYields:
 					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
 		if que!='None':
 			que.put(0)
+		print "*** Done processing Crs-W bin %s ***"%(iw+1)
 		return 0
 
 
