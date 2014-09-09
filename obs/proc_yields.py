@@ -80,7 +80,7 @@ class ProcYields:
 		# queue=Queue()
 		# #for iw in range(q2w_bng.NBINS_WCRS):
 		# for iw in range(1):
-		# 	p=Process(target=self.proc, args=(iw,queue))
+		# 	p=Process(target=self.proc, args=(iw,self.FOUT,queue))
 		# 	p.start()
 		# 	p.join() # this blocks until the process terminates
 		# 	res=queue.get()
@@ -90,23 +90,23 @@ class ProcYields:
 
 		# #queue=Queue()
 		# #for iw in range(q2w_bng.NBINS_WCRS):
-		# for iw in range(1):
-		# 	p=Process(target=self.proc, args=(iw,None))
+		# for iw in range(2):
+		# 	p=Process(target=self.proc, args=(iw,self.FOUT,None))
 		# 	p.start()
-		# 	p.join() # this blocks until the process terminates
+		# 	#p.join() # this blocks until the process terminates
 		# 	# res=queue.get()
 		# 	# print "Result from proc(%d)=%d"%(iw+1,res)
-		# # self.FOUT.Write()
+		# self.FOUT.Write()
 		# # self.FOUT.Close()
 
-		for iw in range(1):
-			self.proc(iw)
-		self.FOUT.Write()
+		for iw in range(2):
+			self.proc(iw,self.FOUT)
+		#self.FOUT.Write()
 		self.FOUT.Close()
 
 		print "execute():Done"
 	
-	def proc(self,iw,que=None):
+	def proc(self,iw,f,que=None):
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
 		#! Get h8
 		h8=self.get_h8(iw)
@@ -126,23 +126,13 @@ class ProcYields:
 		#! Test Q2WBNG, WBNG
 		print "Q2 bins=",self.Q2BNG['BINS']
 		print "W bins=",self.WBNG['BINS']
-		# for i in range(self.Q2BNG['NBINS']):
-		# 	print "Q2 bin:",i+1
-		# 	print self.Q2BNG['BINS_LE'][i]
-		# 	print self.Q2BNG['BINS_UE'][i]
-		# 	print self.Q2BNG['BINW']
-		# for i in range(self.WBNG['NBINS']):
-		# 	print "W bin:",i+1
-		# 	print self.WBNG['BINS_LE'][i]
-		# 	print self.WBNG['BINS_UE'][i]
-		# 	print self.WBNG['BINW']
-
+		
 		#! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
 		for i in range(self.Q2BNG['NBINS']):
 			for j in range(self.WBNG['NBINS']):
 				#if j>4: break
 				q2wbin="%0.2f-%0.2f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
-				q2wbindir=self.FOUT.mkdir(q2wbin)
+				q2wbindir=f.mkdir(q2wbin)
 				q2wbintitle="[%0.2f,%0.2f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				self.wmax=self.WBNG['BINS_UE'][j]
 				#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
@@ -190,7 +180,7 @@ class ProcYields:
 					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
 		if que!=None:
 			que.put(0)
-		#self.FOUT.Write()
+		f.Write()
 		print "*** Done processing Crs-W bin %s ***"%(iw+1)
 		return 0
 
