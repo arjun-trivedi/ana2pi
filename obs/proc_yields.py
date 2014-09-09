@@ -286,13 +286,16 @@ class ProcYields:
 		if (vst_name=="VST2" and var=='M2'):
 			h.GetXaxis().SetRangeUser(0.2780,self.wmax-0.938)
 	
-	def calcNorm(self,h5D_EA,h5D_SA):
+	def calcNorm(self,h5D_EC,h5D_SC):
 		norm,nExpEvts,nSimEvts=0,0,0
 		expBinCoord=np.zeros(5,'i')
-		nExpBins = h5D_EA.GetNbins()
+		nExpBins = h5D_EC.GetNbins()
 		for iExpBin in range(nExpBins):
-			nExpEvts+=h5D_EA.GetBinContent(iExpBin,expBinCoord)
-			iSimBin=h5D_SA.GetBin(expBinCoord);
-			nSimEvts+=h5D_SA.GetBinContent(iSimBin)
-		norm=nExpEvts/nSimEvts;
+			nExpEvts+=h5D_EC.GetBinContent(iExpBin,expBinCoord)
+			iSimBin=h5D_SC.GetBin(expBinCoord);
+			nSimEvts+=h5D_SC.GetBinContent(iSimBin)
+		if (nSimEvts!=0):
+			norm=nExpEvts/nSimEvts;
+		else:
+			print "norm for Holes=0 because nSC=0!"
 		return norm
