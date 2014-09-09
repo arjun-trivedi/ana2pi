@@ -88,26 +88,47 @@ class ProcYields:
 		# # self.FOUT.Write()
 		# self.FOUT.Close()
 
+		# #queue=Queue()
+		# #for iw in range(q2w_bng.NBINS_WCRS):
+		# for iw in range(2):
+		# 	p=Process(target=self.proc, args=(iw,self.FOUT,None))
+		# 	p.start()
+		# 	#p.join() # this blocks until the process terminates
+		# 	# res=queue.get()
+		# 	# print "Result from proc(%d)=%d"%(iw+1,res)
+		# # self.FOUT.Write()
+		# self.FOUT.Close()
+
 		#queue=Queue()
 		#for iw in range(q2w_bng.NBINS_WCRS):
 		for iw in range(2):
-			p=Process(target=self.proc, args=(iw,self.FOUT,None))
+			p=Process(target=self.proc, args=(iw,None))
 			p.start()
-			#p.join() # this blocks until the process terminates
+			p.join() # this blocks until the process terminates
 			# res=queue.get()
 			# print "Result from proc(%d)=%d"%(iw+1,res)
 		# self.FOUT.Write()
-		self.FOUT.Close()
+		# self.FOUT.Close()
 
-		for iw in range(2):
-			self.proc(iw,self.FOUT)
-		#self.FOUT.Write()
-		self.FOUT.Close()
+		# for iw in range(2):
+		# 	self.proc(iw,self.FOUT)
+		# #self.FOUT.Write()
+		# self.FOUT.Close()
+
+		# for iw in range(2):
+		# 	self.proc(iw)
+		# #self.FOUT.Write()
+		# #self.FOUT.Close()
 
 		print "execute():Done"
 	
-	def proc(self,iw,f,que=None):
+	def proc(self,iw,que=None):
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
+		#f=ROOT.TFile(self.FOUT.GetName(),"UPDATE");
+		if iw==0:
+			f=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim_test.root"),"RECREATE")
+		else:
+			f=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim_test.root"),"UPDATE")
 		#! Get h8
 		h8=self.get_h8(iw)
 		#! Debug h8
@@ -181,6 +202,7 @@ class ProcYields:
 		if que!=None:
 			que.put(0)
 		f.Write()
+		f.Close()
 		print "*** Done processing Crs-W bin %s ***"%(iw+1)
 		return 0
 
