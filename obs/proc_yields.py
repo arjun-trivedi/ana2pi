@@ -88,16 +88,16 @@ class ProcYields:
 		# # self.FOUT.Write()
 		# self.FOUT.Close()
 
-		# #queue=Queue()
-		# #for iw in range(q2w_bng.NBINS_WCRS):
-		# for iw in range(2):
-		# 	p=Process(target=self.proc, args=(iw,self.FOUT,None))
-		# 	p.start()
-		# 	#p.join() # this blocks until the process terminates
-		# 	# res=queue.get()
-		# 	# print "Result from proc(%d)=%d"%(iw+1,res)
+		#queue=Queue()
+		#for iw in range(q2w_bng.NBINS_WCRS):
+		for iw in range(2):
+			p=Process(target=self.proc, args=(iw,self.FOUT,None))
+			p.start()
+			#p.join() # this blocks until the process terminates
+			# res=queue.get()
+			# print "Result from proc(%d)=%d"%(iw+1,res)
 		# self.FOUT.Write()
-		# # self.FOUT.Close()
+		self.FOUT.Close()
 
 		for iw in range(2):
 			self.proc(iw,self.FOUT)
