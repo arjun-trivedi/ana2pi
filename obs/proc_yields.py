@@ -125,10 +125,14 @@ class ProcYields:
 	def proc(self,iw,que=None):
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
 		#f=ROOT.TFile(self.FOUT.GetName(),"UPDATE");
+		if self.SIM:
+			fname='yield_exp.root'
+		if self.SIM:
+			fname='yield_sim.root'
 		if iw==0:
-			f=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim_test.root"),"RECREATE")
+			f=ROOT.TFile(os.path.join(self.OUTDIR,fname),"RECREATE")
 		else:
-			f=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim_test.root"),"UPDATE")
+			f=ROOT.TFile(os.path.join(self.OUTDIR,fname),"UPDATE")
 		#! Get h8
 		h8=self.get_h8(iw)
 		#! Debug h8
