@@ -19,12 +19,14 @@ class DispYields:
 		#self.Q2W=q2w
 		self.FEXP=root_open('$HOME/ongoing/mem_test/exp/new-h8-bng/yield_exp.root')
 		self.FSIM=root_open('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
-		self.OUTDIR='$HOME/ongoing/mem_test/obs'
+		self.OUTDIR='/home/trivedia/ongoing/mem_test/obs'
 		# self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_exp.root'))
 		# self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_sim.root'))
 		# self.OUTDIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
 		if not os.path.exists(self.OUTDIR):
 			sys.exit("%s does not exist!"%self.OUTDIR)
+
+		self.VSTS=[1,2,3]
 
 	def plot_obs_1D(self,q2wbin,h_dpp,h_rho,h_dzr):
 		c=ROOT.TCanvas()
@@ -239,7 +241,42 @@ class DispYields:
 		print q2ws
 
 		#! Now get relevant histograms, plot and save them
+		q2wbadl={} #! Makes a list of bad bins
 		for q2w in q2ws:
+			print "Processing",q2w
+
+			#! First make sure this bin is "good"
+			badbin=False
+			reason=''
+			for vst in self.VSTS:
+				ht_R=self.FEXP.Get("%s/VST%d/R/h_M1"%(q2w,vst))
+				ht_C=self.FEXP.Get("%s/VST%d/C/h_M1"%(q2w,vst))
+				if ht_R.Integral()==0:
+					reason+="ER=0 for VST%d;"%vst
+					# q2wbadl[q2w]="ER=0; VST%d"%vst
+					# print "\"Bad\" bin: %s"%q2wbadl[q2w]
+					badbin=True
+				elif ht_C.Integral()==0:
+					reason+="SA=0 in ER bins for VST%d;"%vst
+					# q2wbadl[q2w]="No SA in ER bins; VST%d"%vst
+					# print "\"Bad\" bin: %s"%q2wbadl[q2w]
+					badbin=True
+			if badbin:
+				q2wbadl[q2w]=reason
+				print "\"Bad\" bin: %s"%q2wbadl[q2w]
+				continue
+
+			# htest_R=self.FEXP.Get("%s/VST1/R/h_M1"%(q2w))
+			# htest_C=self.FEXP.Get("%s/VST1/C/h_M1"%(q2w))
+			# if htest_R.Integral()==0:
+			# 	q2wbadl[q2w]="ER=0"
+			# 	print "\"Bad\" bin: ER=0"
+			# 	continue
+			# elif htest_C.Integral()==0:
+			# 	q2wbadl[q2w]="No SA in ER bins"
+			# 	print "\"Bad\" bin: No SA in ER bins"
+			# 	continue
+
 			h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
 			for dtyp in ['EXP','SIM']:
 				for seq in ['T','C','H','F']:
@@ -277,6 +314,9 @@ class DispYields:
 							if dtyp=='SIM' and seq=='T':
 								 h.SetMarkerStyle(mst)
 			self.plot_obs_1D(q2w,h_dpp,h_rho,h_dzr)
+		print "Following are the \"bad\" q2w bins:"
+		for k in q2wbadl:
+			print k,q2wbadl[k]
 
 	def get_integ_yield(self):
 		"""

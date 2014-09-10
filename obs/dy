@@ -2,16 +2,19 @@
 from proc_yields import ProcYields
 from disp_yields import DispYields
 
-q2wl=['q2w%i'%i for i in range(1,50)]
-#! Remove "bad" bins (cases where there is no data in yields_exp.root)
-q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
-q2wl=[x for x in q2wl if x not in q2wl_bad]
+#q2wl=['q2w%i'%i for i in range(1,50)]
+##! Remove "bad" bins (cases where there is no data in yields_exp.root)
+#q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
+#q2wl=[x for x in q2wl if x not in q2wl_bad]
+#
+##q2wl=['q2w%i'%i for i in range(49,50)]
+##for q2w in ['q2w8','q2w9','q2w10','q2w11']:#,'q2w3','q2w4']:
+#
+#for q2w in q2wl:
+#        print "*** Preparing to display yields for %s ***"%q2w
+#	dy=DispYields(q2w,'sim1sim2sim3')
+#	dy.disp_1D()
+#        print "*** Done display yields for %s ***"%q2w
 
-#q2wl=['q2w%i'%i for i in range(49,50)]
-#for q2w in ['q2w8','q2w9','q2w10','q2w11']:#,'q2w3','q2w4']:
-
-for q2w in q2wl:
-        print "*** Preparing to display yields for %s ***"%q2w
-	dy=DispYields(q2w,'sim1sim2sim3')
-	dy.disp_1D()
-        print "*** Done display yields for %s ***"%q2w
+dy=DispYields()
+dy.disp_1D()
