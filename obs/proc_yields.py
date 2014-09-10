@@ -125,7 +125,7 @@ class ProcYields:
 	def proc(self,iw,que=None):
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
 		#f=ROOT.TFile(self.FOUT.GetName(),"UPDATE");
-		if self.SIM:
+		if self.EXP:
 			fname='yield_exp.root'
 		if self.SIM:
 			fname='yield_sim.root'
