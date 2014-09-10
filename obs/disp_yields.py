@@ -359,13 +359,14 @@ class DispYields:
 		"""
 		#! First get all q2wbin directories from file
 		q2ws=self.get_q2ws()
-		print "Processing sim_stats for %s:"%self.Q2W
+		#print "Processing sim_stats for %s:"%self.Q2W
 		print q2ws
 
 		ss={'T':[],'R':[],'A':[],'H':[]}
 		f=ROOT.TFile(self.FSIM.GetName())
 		for seq in ['T','R','A','H']:
 			for q2w in q2ws:
+				print "Processing sim_stats for %s"%q2w
 				#! Determine q2,w
 				q2bin=q2w.split('_')[0]
 				wbin=q2w.split('_')[1]

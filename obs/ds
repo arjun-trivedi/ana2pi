@@ -40,7 +40,7 @@ division operation (This seems to not be an issue when using CINT).
 #! + The following binning should match up with h8_bng.h/q2w_bng.py
 #! + It is slightly modified here for "aesthetic" purposes
 WBINW=0.025
-NWBINS,WMIN,WMAX=80,1.3,3.0 #25 MeV/bin
+NWBINS,WMIN,WMAX=68,1.3,3.0 #25 MeV/bin
 NQ2BINS,Q2MIN,Q2MAX=8,1.25,5.25 # place-holder bng, for it will be modified by variable bng
 #Q2_VARBINS=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
 
@@ -48,18 +48,18 @@ def make_h_nbins_vs_Q2W():
 	"""
 	This function returns a histrogram with theoretically calculate number of PS-bins vs. Q2,W (for VST1)
 	"""
-	Mpi=0.139
-	Mp=0.938
-	Mppip_th=1.1
-	Mpippim_th=0.2780
+	# Mpi=0.139
+	# Mp=0.938
+	# Mppip_th=1.1
+	# Mpippim_th=0.2780
 
-	w=[WMIN+(i*WBINW) for i in np.arange(NWBINS)]
-	nbins_Mppip=[((x-Mpi)-Mppip_th)/0.025 for x in w]
-	nbins_Mpippim=[((x-Mp)-Mpippim_th)/0.025 for x in w]
-	nbins=[M1*M2*10*10*10 for M1,M2 in zip(nbins_Mppip,nbins_Mpippim)]
+	# w=[WMIN+(i*WBINW) for i in np.arange(NWBINS)]
+	# nbins_Mppip=[((x-Mpi)-Mppip_th)/0.025 for x in w]
+	# nbins_Mpippim=[((x-Mp)-Mpippim_th)/0.025 for x in w]
+	# nbins=[M1*M2*10*10*10 for M1,M2 in zip(nbins_Mppip,nbins_Mpippim)]
 	
-	#! Create nbins_vs_w
-	nbins_vs_w=zip(w,nbins)
+	# #! Create nbins_vs_w
+	# nbins_vs_w=zip(w,nbins)
 	#print nbins_vs_w
 
 	#! Create histogram
@@ -67,7 +67,7 @@ def make_h_nbins_vs_Q2W():
 	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
-	print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
+	#print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
 
 	#! Fill h
 	# for q2 in Q2_VARBINS:
@@ -80,7 +80,7 @@ def make_h_nbins_vs_Q2W():
 	# 		bin=h.GetBin(binx,biny)
 	# 		h.SetBinContent(bin,nbins)
 	nbins=14*14*10*10*10
-	print "nbins=",nbins
+	#print "nbins=",nbins
 	for ixbin in range(h.GetXaxis().GetNbins()):
 		for iybin in range(h.GetXaxis().GetNbins()):
 			bin=h.GetBin(ixbin+1,iybin+1)
@@ -95,7 +95,7 @@ def divide(h1,h2):
 	Returns h
 	"""
 	h=ROOT.TH2F("h_div","h_div",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-	h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
+	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	num_wbins=h.GetXaxis().GetNbins()
@@ -120,7 +120,7 @@ def subtract(h1,h2):
 	Returns h
 	"""
 	h=ROOT.TH2F("h_diff","h_diff",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-	h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
+	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	num_wbins=h.GetXaxis().GetNbins()
@@ -145,7 +145,7 @@ print "Displaying simstats for %s"%sim
 
 # datadir=os.environ['OBS_DATADIR_SIM']
 # outdir=os.path.join(os.environ['OBS_DIR'],sim,'simstats')
-outdir=os.path.join('$HOME/ongoing/mem_test/simstats')
+outdir=os.path.join('/home/trivedia/ongoing/mem_test/simstats')
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 
@@ -164,8 +164,8 @@ for seq in ['T','R','A','H']:
 		#h[seq,par].GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 		h[seq,par].SetXTitle("W [GeV]")
 		h[seq,par].SetYTitle("Q^2 [GeV^2]")
-		print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
-			h[seq,par].GetYaxis().GetNbins()))
+		#print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
+		#	h[seq,par].GetYaxis().GetNbins()))
 		if seq=='A' and par=='mu':
 			h[seq,par].GetZaxis().SetRangeUser(0,0.2)
 		#! Fix z-scale for h['A','sg']
@@ -182,6 +182,7 @@ for seq in ['T','R','A','H']:
 		q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
 		binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
 		biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
+		print "w,q2,binw,binq2=",w,q2,binx,biny
 		bin=h[seq,'nbins'].GetBin(binx,biny)
 		h[seq,'nbins'].SetBinContent(bin,nbins)
 		h[seq,'N'].SetBinContent(bin,N)
@@ -219,7 +220,7 @@ c_pars.SaveAs("%s/pars.png"%outdir)
 c_pars2=ROOT.TCanvas("cpars2","cpars2",1000,1000)
 c_pars2.Divide(2,2)
 c_pars2.cd(1)
-h['T','mu'].SetTitle("#LTT#GT(Q^{2},W)")
+h['T','mu'].SetTitle("#LTT/bin#GT(Q^{2},W)")
 h['T','mu'].Draw("colz")
 c_pars2.cd(2)
 h_rtio_sgT_muT=divide(h['T','sg'],h['T','mu'])
@@ -227,7 +228,7 @@ h_rtio_sgT_muT.GetZaxis().SetRangeUser(0,2)
 h_rtio_sgT_muT.SetTitle("#frac{RMS_{T}}{#LTT#GT}(Q^{2},W)")
 h_rtio_sgT_muT.Draw("colz")
 c_pars2.cd(3)
-h['R','mu'].SetTitle("#LTR#GT(Q^{2},W)")
+h['R','mu'].SetTitle("#LTR/bin#GT(Q^{2},W)")
 h['R','mu'].Draw("colz")
 c_pars2.cd(4)
 h_rtio_sgR_muR=divide(h['R','sg'],h['R','mu'])
