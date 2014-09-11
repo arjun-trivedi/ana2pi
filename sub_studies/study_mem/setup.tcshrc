@@ -1,0 +1,4 @@
+setenv ANA2PI_STUDY_MEM "${ANA2PI}/sub_studies/study_mem"
+alias ana2pi_study_mem 'cd ${ANA2PI_STUDY_MEM}'
+
+setenv STUDY_MEM ${ANA2PI_STUDY_MEM}

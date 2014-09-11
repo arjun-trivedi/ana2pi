@@ -1,0 +1,71 @@
+Info in <proc_h10::main()>: 
+
+Info in <proc_h10>: Not going to use q2w_elist
+
+Info in <proc_h10::SetupProcs()>: procorder = d2piT:eid:efid:qskim:pid:d2piR
+
+Collection name='TObjArray', class='TObjArray', size=16
+ TObjString = d2piT
+ TObjString = eid
+ TObjString = efid
+ TObjString = qskim
+ TObjString = pid
+ TObjString = d2piR
+Info in <EpProcessor::EpProcessor()>: d2piT isFirstProc!
+
+Info in <ProcEid::ProcEid()>: dH10.expt==e1f && eidParFileFound=true. Will use goodE()
+Warning in <TFile::Init>: no StreamerInfo found in /data/trivedia/e1f/2pi/sim/sim1/recon//2435.root therefore preventing schema evolution when reading this file.
+Error in <TChain::LoadTree>: Cannot find tree with name h10 in file file:///data/trivedia/e1f/2pi/sim/sim1/recon//2435.root
+Info in <H10Looper::Loop>: Number of entries in Chain =  199565734
+Info in <H10Looper::Loop>: Number of entries to processess =  199565734
+Info in <H10Looper::Loop>: Processing entry# 0
+Info in <H10Looper::Loop>:  0.00% entries processed
+Info in <H10Looper::Loop>: Total memory used = 11MB
+Info in <H10Looper::Loop>: Processing entry# 100000
+Info in <H10Looper::Loop>:  0.05% entries processed
+Info in <H10Looper::Loop>: Total memory used = 86MB
+Info in <H10Looper::Loop>: Processing entry# 200000
+Info in <H10Looper::Loop>:  0.10% entries processed
+Info in <H10Looper::Loop>: Total memory used = 147MB
+Info in <H10Looper::Loop>: Processing entry# 300000
+Info in <H10Looper::Loop>:  0.15% entries processed
+Info in <H10Looper::Loop>: Total memory used = 175MB
+Info in <H10Looper::Loop>: Processing entry# 400000
+Info in <H10Looper::Loop>:  0.20% entries processed
+Info in <H10Looper::Loop>: Total memory used = 202MB
+Info in <H10Looper::Loop>: Processing entry# 500000
+Info in <H10Looper::Loop>:  0.25% entries processed
+Info in <H10Looper::Loop>: Total memory used = 192MB
+Info in <H10Looper::Loop>: Processing entry# 600000
+Info in <H10Looper::Loop>:  0.30% entries processed
+Info in <H10Looper::Loop>: Total memory used = 193MB
+Info in <H10Looper::Loop>: Processing entry# 700000
+Info in <H10Looper::Loop>:  0.35% entries processed
+Info in <H10Looper::Loop>: Total memory used = 186MB
+Info in <H10Looper::Loop>: Processing entry# 800000
+Info in <H10Looper::Loop>:  0.40% entries processed
+Info in <H10Looper::Loop>: Total memory used = 197MB
+Info in <H10Looper::Loop>: Processing entry# 900000
+Info in <H10Looper::Loop>:  0.45% entries processed
+Info in <H10Looper::Loop>: Total memory used = 199MB
+Info in <H10Looper::Loop>: Processing entry# 1000000
+Info in <H10Looper::Loop>:  0.50% entries processed
+Info in <H10Looper::Loop>: Total memory used = 190MB
+Info in <H10Looper::Loop>: Processing entry# 1100000
+Info in <H10Looper::Loop>:  0.55% entries processed
+Info in <H10Looper::Loop>: Total memory used = 204MB
+Info in <H10Looper::Loop>: Processing entry# 1200000
+Info in <H10Looper::Loop>:  0.60% entries processed
+Info in <H10Looper::Loop>: Total memory used = 212MB
+Info in <H10Looper::Loop>: Processing entry# 1300000
+Info in <H10Looper::Loop>:  0.65% entries processed
+Info in <H10Looper::Loop>: Total memory used = 209MB
+Info in <H10Looper::Loop>: Processing entry# 1400000
+Info in <H10Looper::Loop>:  0.70% entries processed
+Info in <H10Looper::Loop>: Total memory used = 191MB
+Info in <H10Looper::Loop>: Processing entry# 1500000
+Info in <H10Looper::Loop>:  0.75% entries processed
+Info in <H10Looper::Loop>: Total memory used = 203MB
+Info in <H10Looper::Loop>: Processing entry# 1600000
+Info in <H10Looper::Loop>:  0.80% entries processed
+Info in <H10Looper::Loop>: Total memory used = 196MB
