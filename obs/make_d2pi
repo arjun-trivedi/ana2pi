@@ -1,29 +1,74 @@
 #!/bin/bash
-dtyp=$1
-nentries=${2:-1000000000}
 
-M=1000000
-idtfr=$((nentries / M ))M
+##-- This script is a "convenience" script for the user to convenientry  'make_d2pi'
+##-- without having to remember the details of proc_h10.py
+dtyp=$1
+simnum=$2
+nentries=${3:-1000000000}
+trackmem=${4:-false}
+
+#-- Make sure all input arguments are sound
+if [[ -z "$dtyp" ]];then
+  echo "Please enter dtyp!"
+  exit
+fi
+if [[ $dtyp == "sim" &&  -z "$simnum" ]]; then
+  if [ -z "$simnum" ]; then
+    echo "Please enter simnum!"
+  fi
+fi
+
+##-- Prepare to call proc_h10.py 
 if [[ $dtyp == "exp" ]]; then
-  outdir=$HOME/ongoing/mem_test/exp/new-h8-bng
   h10typ="e1f:exp:2pi"
 elif [[ $dtyp == "sim" ]]; then
-  outdir=$HOME/ongoing/mem_test/sim/new-h8-bng
   h10typ="e1f:sim:2pi"
 else
   echo "Invalid dtyp:$dtyp"
   exit
 fi
 
-maked2pilog=$outdir/maked2pilog_$idtfr
-memlog=$outdir/memlog_$idtfr
-rm $maked2pilog
-rm $memlog
-proc_h10.py --h10type=$h10typ --output=d2pi --n=$nentries >& $maked2pilog&
-pid_proc_h10=$!
-track_mem >& $memlog &
-echo "Running make_d2pi for $dtyp..." 
-wait $pid_proc_h10
-echo "pid_proc_h10 is done. Killing track_mem"
-cp $outdir/d2pi.root $outdir/d2pi_$idtfr.root
-killall track_mem
+##-- Call proc_h10.py
+if [[ $trackmem == true ]]; then
+  M=1000000
+  idtfr=$((nentries / M ))M
+  memlog=/tmp/memlog_$idtfr
+  proc_h10.py --h10type=$h10typ --output=d2pi --simnum=$simnum --n=$nentries
+  pid_proc_h10=$!
+  track_mem >& $memlog &
+  #echo "Running make_d2pi for $dtyp..." 
+  wait $pid_proc_h10
+  echo "pid_proc_h10 is done. Killing track_mem"
+  killall track_mem
+else
+  proc_h10.py --h10type=$h10typ --output=d2pi --simnum=$simnum --n=$nentries
+fi
+
+  
+
+##-- The following was used for mem_test
+#M=1000000
+#idtfr=$((nentries / M ))M
+#if [[ $dtyp == "exp" ]]; then
+#  outdir=$HOME/ongoing/mem_test/exp/new-h8-bng
+#  h10typ="e1f:exp:2pi"
+#elif [[ $dtyp == "sim" ]]; then
+#  outdir=$HOME/ongoing/mem_test/sim/new-h8-bng
+#  h10typ="e1f:sim:2pi"
+#else
+#  echo "Invalid dtyp:$dtyp"
+#  exit
+#fi
+#
+#maked2pilog=$outdir/maked2pilog_$idtfr
+#memlog=$outdir/memlog_$idtfr
+#rm $maked2pilog
+#rm $memlog
+#proc_h10.py --h10type=$h10typ --output=d2pi --n=$nentries >& $maked2pilog&
+#pid_proc_h10=$!
+#track_mem >& $memlog &
+#echo "Running make_d2pi for $dtyp..." 
+#wait $pid_proc_h10
+#echo "pid_proc_h10 is done. Killing track_mem"
+#cp $outdir/d2pi.root $outdir/d2pi_$idtfr.root
+#killall track_mem

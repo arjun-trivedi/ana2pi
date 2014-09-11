@@ -9,7 +9,7 @@ setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_OBS_DIR}"
 
 ##-- dir where h10.lst and d2pi are kept
 if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
-  setenv D2PIDIR "/data/trivedia/e1f/2pi"
+  setenv D2PIDIR "/data/trivedia/e1f/2pi/d2pi"
   setenv D2PIDIR_EXP "${D2PIDIR}/exp"
   setenv D2PIDIR_SIM "${D2PIDIR}/sim"
 else if ($HOST =~ "*farm*") then
