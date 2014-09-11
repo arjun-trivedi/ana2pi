@@ -9,14 +9,28 @@ setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_OBS_DIR}"
 
 ##-- dir where h10.lst and d2pi are kept
 if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
-  setenv OBS_DATADIR "/data/trivedia/e1f/2pi"
-  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
-  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
+  setenv D2PIDIR "/data/trivedia/e1f/2pi"
+  setenv D2PIDIR_EXP "${D2PIDIR}/exp"
+  setenv D2PIDIR_SIM "${D2PIDIR}/sim"
 else if ($HOST =~ "*farm*") then
-  setenv OBS_DATADIR "${EG3HOME}/data/e1f/2pi"
-  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
-  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
-  setenv OBS_DATADIR_SIM_VOL "${VOLHOME}/data/e1f/2pi/sim"
+  setenv H10DIR "${VOLHOME}/data/e1f/2pi/sim"
+  setenv D2PIDIR "${EG3HOME}/data/e1f/2pi"
+  setenv D2PIDIR_EXP "${OBS_DATADIR}/exp"
+  setenv D2PIDIR_SIM "${OBS_DATADIR}/sim"
 endif
 ##-- dir where where yields and their displays are kept
-setenv OBS_DIR "${OBS_DATADIR}/obs"
+setenv OBSDIR "${D2PIDIR}/obs"
+
+##-- dir where h10.lst and d2pi are kept
+#if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
+#  setenv OBS_DATADIR "/data/trivedia/e1f/2pi"
+#  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
+#  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
+#else if ($HOST =~ "*farm*") then
+#  setenv OBS_DATADIR "${EG3HOME}/data/e1f/2pi"
+#  setenv OBS_DATADIR_EXP "${OBS_DATADIR}/exp"
+#  setenv OBS_DATADIR_SIM "${OBS_DATADIR}/sim"
+#  setenv OBS_DATADIR_SIM_VOL "${VOLHOME}/data/e1f/2pi/sim"
+#endif
+##-- dir where where yields and their displays are kept
+#setenv OBS_DIR "${OBS_DATADIR}/obs"
