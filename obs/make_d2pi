@@ -32,9 +32,9 @@ fi
 if [[ $trackmem == true ]]; then
   M=1000000
   idtfr=$((nentries / M ))M
-  memlog=/tmp/memlog_$idtfr
-  proch10log=/tmp/proch10log_$idtf
-  proc_h10.py --h10type=$h10typ --output=d2pi --simnum=$simnum --n=$nentries >& proch10log &
+  memlog=${ANA2PI_STUDY_MEM}/memlog_$idtfr
+  proch10log=${ANA2PI_STUDY_MEM}/proch10log_$idtfr
+  proc_h10.py --h10type=$h10typ --output=d2pi --simnum=$simnum --n=$nentries >& $proch10log &
   pid_proc_h10=$!
   track_mem >& $memlog &
   echo "Running make_d2pi for $dtyp with trackmem..." 
