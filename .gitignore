@@ -3,7 +3,7 @@
 ###########
 *.root
 *bk*
-*log
+*log*
 *test*
 *scratch*
 *datadir*
