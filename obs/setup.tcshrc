@@ -15,8 +15,8 @@ if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
 else if ($HOST =~ "*farm*") then
   setenv H10DIR "${VOLHOME}/data/e1f/2pi/sim"
   setenv D2PIDIR "${EG3HOME}/data/e1f/2pi"
-  setenv D2PIDIR_EXP "${OBS_DATADIR}/exp"
-  setenv D2PIDIR_SIM "${OBS_DATADIR}/sim"
+  setenv D2PIDIR_EXP "${D2PIDIR}/exp"
+  setenv D2PIDIR_SIM "${D2PIDIR}/sim"
 endif
 ##-- dir where where yields and their displays are kept
 setenv OBSDIR "${D2PIDIR}/obs"
