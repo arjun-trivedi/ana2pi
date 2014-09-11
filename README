@@ -53,7 +53,8 @@ ana2pi Branches
 				3. New files added to process and display yields from d2pi: proc_yields.py and disp_yields.py				
 				
 					+ extract_obs-test_new_h8bng [08-28-14]: Test "new h8 binning"
-						1. Code changes all across the process: h10->d2pi.root->yield.root->display
-						2. 
+						1. Code changes all across the process: h10->d2pi.root->yield.root->"displays"
+						2. ./obs/setup.tcshrc: Environment variables modified
+						3. ./sub_studies/study_mem added
 
 				

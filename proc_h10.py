@@ -76,68 +76,6 @@ def main(argv):
 		os.makedirs(outdir)
 	fout=os.path.join(outdir,"%s.root"%output)
 
-	# if dtyp=='exp':
-	# 	h10lst=os.path.join(os.environ['OBS_DATADIR_EXP'],"h10.lst")
-	# 	outdir='$HOME/ongoing/mem_test/exp/new-h8-bng'
-	# 	#outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','exp','new-h8-bng')
-	# 	# if output=='d2pi':
-	# 	# 	#at-h8 outdir=os.path.join(obs_datadir,q2w)
-	# 	# 	outdir=obs_datadir
-	# 	# elif output=='q2welist':
-	# 	# 	outdir=os.path.join(obs_datadir)
-	# 	# else:
-	# 	# 	sys.exit("output=%s not recognized"%output)
-	# 	# h10lst=os.path.join(obs_datadir,"h10.lst")
-	# 	# if use_q2w_elist:
-	# 	# 	f_q2w_el=os.path.join(obs_datadir,"q2welist.root")
-	# if dtyp=='sim': 
-	# 	h10lst=os.path.join(os.environ['OBS_DATADIR_SIM'],'sim1',"h10.lst")
-	# 	outdir='$HOME/ongoing/mem_test/sim/new-h8-bng'
-	# 	#outdir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim','new-h8-bng')
-	# 	# #at-h8 obs_datadir=os.environ['OBS_DATADIR_SIM']
-	# 	# obs_datadir=os.path.join(os.environ['OBS_DATADIR'],'mem_test','sim')
-	# 	# if output=='d2pi':
-	# 	# 	#at-h8 outdir=os.path.join(obs_datadir,simnum,q2w)
-	# 	# 	outdir=obs_datadir
-	# 	# elif output=='q2welist':
-	# 	# 	outdir=os.path.join(obs_datadir,simnum)
-	# 	# else:
-	# 	# 	sys.exit("output=%s not recognized"%output)
-	# 	# h10lst=os.path.join(obs_datadir,"h10.lst")
-	# 	# if use_q2w_elist:
-	# 	# 	f_q2w_el=os.path.join(obs_datadir,simnum,"q2welist.root")
-
-	# if not os.path.exists(outdir):
-	# 	os.makedirs(outdir)
-	# fout=os.path.join(outdir,"%s.root"%output)
-
-	#! Determine procorder
-
-	# #! First determine proc_q2wskim
-	# if q2w=='':
-	# 	proc_q2wskim_dcptr=''
-	# else:
-	# 	num=q2w.split('q2w')[1]
-	# 	proc_q2wskim_dcptr='q2wskim%s'%num	
-
-	# if dtyp=='exp':
-	# 	if output=='d2pi':
-	# 		#procorder="eid:%s:efid:qskim:mom:pid:d2piR"%proc_q2wskim_dcptr
-	# 		procorder="eid:efid:qskim:mom:pid:d2piR"
-	# 	elif output=='q2welist':
-	# 		procorder='eid:q2welist'
-	# 	else:
-	# 		sys.exit("output=%s not recognized"%output)
-	# if dtyp=='sim':
-	# 	if output=='d2pi':
-	# 		#procorder="%s:d2piT:eid:efid:qskim:pid:d2piR"%proc_q2wskim_dcptr
-	# 		procorder="d2piT:eid:efid:qskim:pid:d2piR"
-	# 	elif output=='q2welist':
-	# 		procorder='q2welist'
-	# 	else:
-	# 		sys.exit("output=%s not recognized"%output)
-
-
 	#! Finall call proc_h10
 	cmd=["proc_h10","-i",h10lst,"-t",h10type,"-p",procorder,"-o",fout,"-n",nentries]#,"-l",str(use_q2w_elist),"-m",f_q2w_el,"-q",q2w]
 	print ">>>",cmd
