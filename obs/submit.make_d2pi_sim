@@ -20,7 +20,7 @@ elif [[ $HOST == *farm* ]]; then
  echo "TRACK: analysis" >> ${JSUBFILE}
  echo "DISK_SPACE: 5000 MB" >> ${JSUBFILE}
  echo "MEMORY: 9500 MB" >> ${JSUBFILE}
- echo "TIME: 1600" >> ${JSUBFILE}
+ echo "TIME: 360" >> ${JSUBFILE}
  echo " "                 >> ${JSUBFILE}
  echo "COMMAND: make_d2pi_sim $simnum"  >> ${JSUBFILE}
  echo " "                 >> ${JSUBFILE}
