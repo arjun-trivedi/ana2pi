@@ -62,20 +62,26 @@ def main(argv):
 		if output=='d2pi':
 			outdir=os.path.join(os.environ['D2PIDIR_EXP'])
 			procorder="eid:efid:qskim:mom:pid:d2piR"
+		elif output=='d2pi_memtest':
+			outdir=os.path.join(os.environ['D2PIDIR_EXP'],'memtest')
+			procorder="eid:efid:qskim:mom:pid:d2piR"
 		else:
 			sys.exit("output=%s not recognized"%output)
 	elif dtyp=='sim':
 		if output=='d2pi':
 			outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)
-			#procorder="d2piT:eid:efid:qskim:pid:d2piR"
+			procorder="d2piT:eid:efid:qskim:pid:d2piR"
+		elif output=='d2pi_memtest':
+			outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum,'memtest')
 			#procorder="d2piT"
 			procorder="eid:efid:qskim:pid:d2piR"
 		else:
 			sys.exit("output=%s not recognized"%output)
 	#! Prepare fout,h10lst
-	h10lst=os.path.join(outdir,"h10.lst")
 	if not os.path.exists(outdir):
-		os.makedirs(outdir)
+		sys.exit("%s does not exist! Please create it and put appropriate h10.lst in it"%output)
+		#os.makedirs(outdir)
+	h10lst=os.path.join(outdir,"h10.lst")
 	fout=os.path.join(outdir,"%s.root"%output)
 
 	#! Finall call proc_h10
