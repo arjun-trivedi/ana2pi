@@ -68,7 +68,8 @@ def main(argv):
 		if output=='d2pi':
 			outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)
 			#procorder="d2piT:eid:efid:qskim:pid:d2piR"
-			procorder="d2piT"
+			#procorder="d2piT"
+			procorder="eid:efid:qskim:pid:d2piR"
 		else:
 			sys.exit("output=%s not recognized"%output)
 	#! Prepare fout,h10lst
