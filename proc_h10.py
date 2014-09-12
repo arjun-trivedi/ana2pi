@@ -77,10 +77,10 @@ def main(argv):
 			procorder="eid:efid:qskim:pid:d2piR"
 		else:
 			sys.exit("output=%s not recognized"%output)
+
 	#! Prepare fout,h10lst
 	if not os.path.exists(outdir):
 		sys.exit("%s does not exist! Please create it and put appropriate h10.lst in it"%output)
-		#os.makedirs(outdir)
 	h10lst=os.path.join(outdir,"h10.lst")
 	fout=os.path.join(outdir,"%s.root"%output)
 
