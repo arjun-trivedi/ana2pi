@@ -14,9 +14,11 @@ if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
   setenv D2PIDIR_SIM "${D2PIDIR}/sim"
 else if ($HOST =~ "*farm*") then
   setenv H10DIR "${VOLHOME}/data/e1f/2pi/sim"
+
   setenv D2PIDIR "${EG3HOME}/data/e1f/2pi/d2pi"
   setenv D2PIDIR_EXP "${D2PIDIR}/exp"
   setenv D2PIDIR_SIM "${D2PIDIR}/sim"
+  setenv D2PIDIR_SIM_MEMTEST "${D2PIDIR}/sim/memtest"
 endif
 ##-- dir where where yields and their displays are kept
 setenv OBSDIR "${D2PIDIR}/obs"
