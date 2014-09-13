@@ -19,10 +19,10 @@ import numpy as np
 
 
 """
-This script displays simstats for user entered sim (siml by default):
+This script displays simstats for user entered simnum (siml by default):
 	+ nevts-T,R,H(Q2,W)
 	+ nbins-T,R,H(Q2,W)
-The display is saved in $OBS_DIR/sim
+The display is saved in $OBSDIR/simnum
 
 Issues while running this script:
 + [08-14-15]: Variable binning in TH2F is causing core dumps when trying to draw histograms post
@@ -136,25 +136,19 @@ def subtract(h1,h2):
 	return h
 
 
-#! User input sim, else use siml
+#! User input simnum, else use siml
 if len(sys.argv)<2:
-	sim='siml'
+	simnum='siml'
 else:
-	sim=sys.argv[1]
-print "Displaying simstats for %s"%sim
+	simnum=sys.argv[1]
+print "Displaying simstats for %s"%simnum
 
-# datadir=os.environ['OBS_DATADIR_SIM']
-# outdir=os.path.join(os.environ['OBS_DIR'],sim,'simstats')
-outdir=os.path.join('/home/trivedia/ongoing/mem_test/simstats')
+outdir=os.path.join(os.environ['OBSDIR'],simnum,'simstats')
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
-
-q2wl=['q2w%i'%i for i in range(1,50)]
-#! Remove "bad" bins (cases where there is no data in yields_exp.root)
-q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
-q2wl=[x for x in q2wl if x not in q2wl_bad]
-# #! q2wl for debugging
-# q2wl=['q2w1','q2w2']
+# outdir=os.path.join('/home/trivedia/ongoing/mem_test/simstats')
+# if not os.path.exists(outdir):
+# 	os.makedirs(outdir)
 
 #! Create histograms to display simstats(Q2,W)
 h={}
@@ -175,7 +169,7 @@ for seq in ['T','R','A','H']:
 h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 
 #! Fill histograms
-dy=DispYields()
+dy=DispYields(simnum)
 ss=dy.get_sim_stats()
 for seq in ['T','R','A','H']:
 	for d in ss[seq]:
