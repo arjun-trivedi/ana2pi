@@ -35,38 +35,38 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 class ProcYields:
-	def __init__(self,dtyp,sim_num='siml',tops=[1,2,3,4],vsts=[1,2,3]):
+	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3]):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
 		if not(self.EXP or self.SIM):
 			sys.exit("dtyp is neither EXP or SIM! Exiting")
 		print "dtyp=%s"%dtyp
-		self.SIM_NUM=sim_num
+		self.SIMNUM=simnum
 
 		self.TOPS=tops 
 		self.VSTS=vsts 
 
 		if self.EXP:
-			self.DATADIR='$HOME/ongoing/mem_test/exp/new-h8-bng'
-			#!self.DATADIR=os.environ['OBS_DATADIR_EXP']
+			#self.DATADIR='$HOME/ongoing/mem_test/exp/new-h8-bng'
+			self.DATADIR=os.environ['D2PIDIR_EXP']
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			self.OUTDIR=self.DATADIR
-			#!self.OUTDIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
+			#self.OUTDIR=self.DATADIR
+			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
-				#! This path should already exist when making yield_sim
+				#! This path should already exist when making yield_exp
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
 				#os.makedirs(self.OUTDIR)
-			self.FIN_SIMYIELD=ROOT.TFile('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
-			#self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
+			#self.FIN_SIMYIELD=ROOT.TFile('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
+			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.OUTDIR,"yield_exp.root"),"RECREATE")
 			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUT.GetName())
 		if self.SIM:
-			self.DATADIR='$HOME/ongoing/mem_test/sim/new-h8-bng'
-			#self.DATADIR=os.path.join(os.environ['OBS_DATADIR_SIM'],self.SIM_NUM,self.Q2W)
+			#self.DATADIR='$HOME/ongoing/mem_test/sim/new-h8-bng'
+			self.DATADIR=os.path.join(os.environ['D2PIDIR_SIM'],self.SIMNUM)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			self.OUTDIR=self.DATADIR
-			#!self.OUTDIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
+			#self.OUTDIR=self.DATADIR
+			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR)
 			self.FOUT=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"),"RECREATE")
