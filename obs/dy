@@ -22,7 +22,7 @@ if len(sys.argv)<2:
 	simnum='siml'
 else:
 	simnum=sys.argv[1]
-print "Displaying simstats for %s"%simnum
+print "Displaying yields for %s"%simnum
 
 dy=DispYields(simnum)
 dy.disp_1D()
