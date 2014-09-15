@@ -31,8 +31,8 @@ for simnum in "${simlist[@]}"; do
    echo "OS: centos62"         >> ${JSUBFILE}
    echo "TRACK: analysis" >> ${JSUBFILE}
    echo "DISK_SPACE: 5000 MB" >> ${JSUBFILE}
-   echo "MEMORY: 9500 MB" >> ${JSUBFILE}
-   echo "TIME: 360" >> ${JSUBFILE}
+   echo "MEMORY: 9500 MB" >> ${JSUBFILE} 
+   echo "TIME: 1440" >> ${JSUBFILE}
    echo " "                 >> ${JSUBFILE}
    echo "COMMAND: make_d2pi_sim $simnum"  >> ${JSUBFILE}
    echo " "                 >> ${JSUBFILE}
