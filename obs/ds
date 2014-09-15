@@ -230,7 +230,7 @@ h['T','N'].Draw("colz")
 c_pars3.cd(2)
 h['R','N'].SetTitle("N-SR(Q^{2},W)")
 h['R','N'].Draw("colz")
-c_pars2.SaveAs("%s/pars3.png"%outdir)
+c_pars3.SaveAs("%s/pars3.png"%outdir)
 
 
 
