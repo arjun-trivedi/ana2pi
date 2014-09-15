@@ -19,23 +19,14 @@ import numpy as np
 
 
 """
-This script displays simstats for user entered simnum (siml by default):
-	+ nevts-T,R,H(Q2,W)
-	+ nbins-T,R,H(Q2,W)
-The display is saved in $OBSDIR/simnum
++ This script displays simstats for user entered simnum (siml by default):
++ The display is saved in $OBSDIR/simnum/simstats
 
 Issues while running this script:
 + [08-14-15]: Variable binning in TH2F is causing core dumps when trying to draw histograms post
 division operation (This seems to not be an issue when using CINT).
 	+ To solve this program created divide(h1,h2) method
 """
-
-# #! + The following binning should match up with q2w_bng.h/.py
-# #! + It is slightly modified here for "aesthetic" purposes
-# WBINW=0.025
-# NWBINS,WMIN,WMAX=80,1.0,3.0 #25 MeV/bin
-# NQ2BINS,Q2MIN,Q2MAX=7,1.2,5.0 # place-holder bng, for it will be modified by variable bng
-# Q2_VARBINS=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
 
 #! + The following binning should match up with h8_bng.h/q2w_bng.py
 #! + It is slightly modified here for "aesthetic" purposes
@@ -230,6 +221,17 @@ h_rtio_sgR_muR.GetZaxis().SetRangeUser(0,2)
 h_rtio_sgR_muR.SetTitle("#frac{RMS_{R/bin}}{#LTR/bin#GT}(Q^{2},W)")
 h_rtio_sgR_muR.Draw("colz")
 c_pars2.SaveAs("%s/pars2.png"%outdir)
+
+c_pars3=ROOT.TCanvas("cpars3","cpars3",1000,1000)
+c_pars3.Divide(2,1)
+c_pars3.cd(1)
+h['T','N'].SetTitle("N-ST(Q^{2},W)")
+h['T','N'].Draw("colz")
+c_pars3.cd(2)
+h['R','N'].SetTitle("N-SR(Q^{2},W)")
+h['R','N'].Draw("colz")
+c_pars2.SaveAs("%s/pars3.png"%outdir)
+
 
 
 #! Save all the histograms to file
