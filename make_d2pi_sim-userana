@@ -1,3 +1,0 @@
-#!/bin/bash
-nentries=${1:-1000000000}
-ana -i h10.lst -t e1f:sim:2pi_userana -p d2piT:eid:efid:qskim:pid:d2piR -n $nentries

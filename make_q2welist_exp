@@ -1,4 +1,0 @@
-#!/bin/bash
-nentries=${1:-1000000000}
-#proc_h10 -i h10.lst -t e1f:exp:2pi -p eid:q2welist -o q2w_elist.root -n $nentries
-proc_h10.py --h10type=e1f:exp:2pi --output=q2welist --n=$nentries

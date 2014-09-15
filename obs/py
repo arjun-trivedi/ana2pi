@@ -5,10 +5,10 @@ import sys
 
 #q2w=sys.argv[1]
 dtyp=sys.argv[1]
-#sim=sys.argv[3]
+simnum=sys.argv[2]
 
 #print q2w,dtyp,sim
 #py=ProcYields(q2w,dtyp,sim)
-py=ProcYields(dtyp)
+py=ProcYields(dtyp,simnum)
 #py.proc()
 py.execute()

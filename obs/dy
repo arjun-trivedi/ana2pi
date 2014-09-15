@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from proc_yields import ProcYields
 from disp_yields import DispYields
+import sys
 
 #q2wl=['q2w%i'%i for i in range(1,50)]
 ##! Remove "bad" bins (cases where there is no data in yields_exp.root)
@@ -16,5 +17,12 @@ from disp_yields import DispYields
 #	dy.disp_1D()
 #        print "*** Done display yields for %s ***"%q2w
 
-dy=DispYields()
+#! User input simnum, else use siml
+if len(sys.argv)<2:
+	simnum='siml'
+else:
+	simnum=sys.argv[1]
+print "Displaying yields for %s"%simnum
+
+dy=DispYields(simnum)
 dy.disp_1D()

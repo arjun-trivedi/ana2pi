@@ -1,41 +1,50 @@
 #!/usr/bin/python
-import os,subprocess,glob
+import os,subprocess,glob,sys
 """
-On executing this script, the following happens, in $OBS_DATADIR_SIM:
+>>> ay sim1 sim2 ... simN
+On executing this script, the following happens, in $D2PIDIR_SIM:
 1. A list of each individual simulation (simX) is obtained
-2. List of all the q2ws in each simulations is obtained
-3. An output directory to store result of cumulative simulation (cum_sim=simXsimYsimZ)
+    + If user does specify simXs, then by default all of the simXs in $D2PIDIR_SIM are used
+2. An output directory to store result of cumulative simulation (cum_sim=simXsimYsimZ)
    created.
-4. Finally the d2pi from each individual simulation is added and put into cum_sim
+3. Finally the d2pi from each individual simulation is added and put into cum_sim
 """
-datadir=os.environ['OBS_DATADIR_SIM']
 
-#! Get list of all sims
-siml=glob.glob(os.path.join(datadir,'sim[0-9]'))
-siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
-siml=[os.path.basename(i) for i in siml]
-siml.sort()
+datadir=os.environ['D2PIDIR_SIM']
+
+#! 1. Get list of all sims
+if len(sys.argv)>=2:
+    siml=[]
+    for i in range(len(sys.argv)):
+        if i==0: continue
+        siml.append(sys.argv[i])
+else:
+    siml=glob.glob(os.path.join(datadir,'sim[0-9]'))
+    siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
+    siml=[os.path.basename(i) for i in siml]
+    siml.sort()
 print "List of indovidual simulations=",siml
 
-#! Prepare outdir
-cum_sim="".join(siml)
+#! 2. Prepare outdir
+siml_pretty=[int(i.strip("sim")) for i in siml]
+siml_pretty=map(int,siml_pretty)
+print siml_pretty
+siml_pretty=sorted(siml_pretty)
+siml_pretty=["sim%02d"%i for i in siml_pretty]
+print siml_pretty
+cum_sim="".join(siml_pretty)
 print "Cumulative simulation result will be stored in:", cum_sim
+outdir=os.path.join(datadir,cum_sim)
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
 
-#! Get list of all q2ws in each sim
-q2wl=glob.glob(os.path.join(datadir,siml[0],'q2w*'))
-q2wl=[os.path.basename(i) for i in q2wl]
-print "q2w list=",q2wl
-
-
-#! Finally, do 'hadd targetfile sourcefile1 sourcefile2 ... sourcefileN'
-for q2w in q2wl:
-    if not os.path.exists(os.path.join(datadir,cum_sim,q2w)):
-        os.makedirs(os.path.join(datadir,cum_sim,q2w))
-    tf=os.path.join(datadir,cum_sim,q2w,'d2pi.root')
-    sf=[]
-    for sim in siml:
-        sf.append(os.path.join(datadir,sim,q2w,'d2pi.root'))
-    cmd=["hadd",tf]
-    cmd+=sf
-    print ">>>%s\n"%cmd
-    subprocess.call(cmd)
+#! 3. Finally, do 'hadd targetfile sourcefile1 sourcefile2 ... sourcefileN'
+tf=os.path.join(outdir,'d2pi.root')
+sfl=[]
+for sim in siml:
+    sfl.append(os.path.join(datadir,sim,'d2pi.root'))
+sfl=sorted(sfl)
+cmd=["hadd",tf]
+cmd+=sfl
+print ">>>%s\n"%cmd
+subprocess.call(cmd)

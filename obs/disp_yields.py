@@ -14,15 +14,15 @@ from ROOT import THnTool
 thntool=THnTool()
 
 class DispYields:
-	def __init__(self,sim_num='siml'):
-		self.SIM_NUM=sim_num
+	def __init__(self,simnum='siml'):
+		self.SIM_NUM=simnum
 		#self.Q2W=q2w
-		self.FEXP=root_open('$HOME/ongoing/mem_test/exp/new-h8-bng/yield_exp.root')
-		self.FSIM=root_open('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
-		self.OUTDIR='/home/trivedia/ongoing/mem_test/obs'
-		# self.FEXP=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_exp.root'))
-		# self.FSIM=root_open(os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W,'yield_sim.root'))
-		# self.OUTDIR=os.path.join(os.environ['OBS_DIR'],self.SIM_NUM,self.Q2W)
+		# self.FEXP=root_open('$HOME/ongoing/mem_test/exp/new-h8-bng/yield_exp.root')
+		# self.FSIM=root_open('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
+		# self.OUTDIR='/home/trivedia/ongoing/mem_test/obs'
+		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp.root'))
+		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_sim.root'))
+		self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIM_NUM)
 		if not os.path.exists(self.OUTDIR):
 			sys.exit("%s does not exist!"%self.OUTDIR)
 

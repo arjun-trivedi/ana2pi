@@ -63,7 +63,7 @@ def main(argv):
 			outdir=os.path.join(os.environ['D2PIDIR_EXP'])
 			procorder="eid:efid:qskim:mom:pid:d2piR"
 		elif output=='d2pi_memtest':
-			outdir=os.path.join(os.environ['D2PIDIR_EXP'],'memtest')
+			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
 			procorder="eid:efid:qskim:mom:pid:d2piR"
 		else:
 			sys.exit("output=%s not recognized"%output)
@@ -74,7 +74,7 @@ def main(argv):
                         #procorder="eid:efid:qskim:pid:d2piR" 
 			#procorder="d2piT:eid:efid:qskim:pid:d2piR"
 		elif output=='d2pi_memtest':
-			outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum,'memtest')
+			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
 			#procorder="d2piT"
 			procorder="eid:efid:qskim:pid:d2piR"
 		else:
