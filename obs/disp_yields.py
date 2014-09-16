@@ -6,6 +6,9 @@ from collections import OrderedDict
 import os,sys
 
 import numpy as np
+import matplotlib.pyplot as plt
+
+import atlib as atlib
 
 ROOT.gROOT.ProcessLine(".L THnTool.C+")
 from ROOT import THnTool
@@ -307,13 +310,67 @@ class DispYields:
 		for k in q2wbadl:
 			print k,q2wbadl[k]
 
-	def disp_integ_yield(self):
+	def disp_integ_yield(self,seq='F'):
 		"""
-		Walk the ROOT file and extract 1D observable histograms. 
+		Walk the ROOT file and plot y(w;q2). 
 		"""
-		#! First get all q2wbin directories from file
-		q2ws=self.get_q2ws()
-		print q2ws
+		outdir=os.path.join(self.OUTDIR,"integ_yield")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+
+		#! 1. First get all q2wbin directories from file
+		q2wbinl=self.get_q2ws()
+		print q2wbinl
+
+		#! 2. Identify q2bins and then q2bins_le & q2bins_ue
+		#!    from q2wbinl
+		q2bins=[]
+		for q2wbin in q2wbinl:
+			print q2wbin
+			q2bins.append(float(q2wbin.split('_')[0].split('-')[0]))
+			q2bins.append(float(q2wbin.split('_')[0].split('-')[1]))
+		q2bins=set(q2bins) #! Keep only unique entries
+		q2bins=list(q2bins) #! convert set back to list
+		q2bins=sorted(q2bins) #! Order entries
+		print q2bins
+		q2bins_le=q2bins[:-1]
+		q2bins_ue=q2bins[1:]
+		print q2bins_le
+		print q2bins_ue		
+
+		#! Now put together y[q2bin]=(w,yield)
+		y=[{} for i in range(len(q2bins_le))]
+		for q2wbin in q2wbinl:
+			#! Get iq2bin
+			q2bin_le=float(q2wbin.split('_')[0].split('-')[0])
+			iq2bin=q2bins_le.index(q2bin_le)
+			#! Get w, yield
+			w=float(q2wbin.split('_')[1].split('-')[0])
+			h5=self.FEXP.Get("%s/VST1/%s/h5"%(q2wbin,seq))
+			y[iq2bin][w]=thntool.GetIntegral(h5)
+		#! Make sure y[q2bin]=(w,yield) are sorted by w
+		oy=[{} for i in range(len(q2bins_le))]
+		for iq2bin in range(len(y)):
+			oy[iq2bin]=OrderedDict(sorted(y[iq2bin].items()))
+			print iq2bin
+			print y[iq2bin]
+			print oy[iq2bin] 
+
+		#! Now plot
+		fig=plt.figure()
+		ax=plt.subplot(111)
+		clrs=['red','green','cyan','blue','black','yellow','brown','orange']
+		for iq2bin in range(len(oy)):
+			lbl='[%.2f-%.2f]'%(q2bins_le[iq2bin],q2bins_ue[iq2bin])
+			clr=clrs[iq2bin]
+			ax.scatter(oy[iq2bin].keys(),oy[iq2bin].values(),label=lbl,c=clr)
+		ax.set_ylim(0,600000)
+		ax.legend()
+		fig.savefig('%s/integ_yield.png'%(outdir))	
+		#fig.savefig('test.png')		
+
+
+
 
 	def get_integ_yield(self):
 		"""
@@ -447,9 +504,12 @@ class DispYields:
 		q2wbin/vst/seq/hists
 		"""
 		q2ws=[]
+		i=0 #! for debugging over limited q2ws
 		for path,dirs,files in self.FEXP.walk():
 			if path=="":continue #! Avoid root path
 			path_arr=path.split("/")
 			if len(path_arr)==1:
 				q2ws.append(path)
+				i+=1
+			#if i>50: break
 		return q2ws
