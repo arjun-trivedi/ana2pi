@@ -239,9 +239,19 @@ class DispYields:
 		"""
 		Walk the ROOT file and extract 1D observable histograms. 
 		"""
+		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
 		q2wbinl=self.get_q2wbinl()
 		print q2wbinl
+
+		#! 2. Get q2bng and wbng from file
+		q2bng=self.get_q2bng()
+		wbng=self.get_wbng()
+		print "1D Observables will be extracted in the following Q2-bin,W-bin 2D space:"
+		print "Q2 bins:"
+		print q2bng['BINS']
+		print "W bins:"
+		print wbng['BINS']
 
 		#! 2. Now get relevant histograms
 		hVST1,hVST2,hVST3={},{},{}
@@ -265,7 +275,9 @@ class DispYields:
 				print "\"Bad\" bin: %s"%q2wbinl_bad[q2wbin]
 				continue
 			#! Now that bin is good, get hists
-			h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
+			q2bin_le=self.get_q2bin_le(q2wbin)
+			wbin_le=self.get_wbin_le(q2wbin)
+			#h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
 			for dtyp in dtypl:
 				for seq in seql:
 					if dtyp=='EXP' and seq=='T': continue
@@ -273,38 +285,43 @@ class DispYields:
 
 					if dtyp=='EXP':
 						f=self.FEXP
-						if seq=='C':
-							col=ROOT.gROOT.ProcessLine("kCyan")
-						if seq=='F':
-							col=ROOT.gROOT.ProcessLine("kBlue")
-						if seq=='H':
-							col=ROOT.gROOT.ProcessLine("kBlack")
+						# if seq=='C':
+						# 	col=ROOT.gROOT.ProcessLine("kCyan")
+						# if seq=='F':
+						# 	col=ROOT.gROOT.ProcessLine("kBlue")
+						# if seq=='H':
+						# 	col=ROOT.gROOT.ProcessLine("kBlack")
 					if dtyp=='SIM':
 						f=self.FSIM
-						if seq=='F':
-							col=ROOT.gROOT.ProcessLine("kRed")
-						if seq=='T':
-							col=ROOT.gROOT.ProcessLine("kGreen")
-							mst=ROOT.gROOT.ProcessLine("kPlus")
+						# if seq=='F':
+						# 	col=ROOT.gROOT.ProcessLine("kRed")
+						# if seq=='T':
+						# 	col=ROOT.gROOT.ProcessLine("kGreen")
+						# 	mst=ROOT.gROOT.ProcessLine("kPlus")
 
-					h_dpp[dtyp,seq]=[f.Get("%s/VST1/%s/h_M1"%(q2wbin,seq)),f.Get("%s/VST1/%s/h_THETA"%(q2wbin,seq)),
+					hVST1[q2bin_le,wbin_le,dtyp,seq]=[f.Get("%s/VST1/%s/h_M1"%(q2wbin,seq)),f.Get("%s/VST1/%s/h_THETA"%(q2wbin,seq)),
 								 	f.Get("%s/VST1/%s/h_ALPHA"%(q2wbin,seq))]
-					h_rho[dtyp,seq]=[f.Get("%s/VST2/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST2/%s/h_THETA"%(q2wbin,seq)),
+					hVST2[q2bin_le,wbin_le,dtyp,seq]=[f.Get("%s/VST2/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST2/%s/h_THETA"%(q2wbin,seq)),
 								 	f.Get("%s/VST2/%s/h_ALPHA"%(q2wbin,seq))]
-					h_dzr[dtyp,seq]=[f.Get("%s/VST3/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST3/%s/h_THETA"%(q2wbin,seq)),
+					hVST3[q2bin_le,wbin_le,dtyp,seq]=[f.Get("%s/VST3/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST3/%s/h_THETA"%(q2wbin,seq)),
 								 	f.Get("%s/VST3/%s/h_ALPHA"%(q2wbin,seq))]
-					for hists in [h_dpp[dtyp,seq],h_rho[dtyp,seq],h_dzr[dtyp,seq]]:
-						#print hists
-						for h in hists:
-							#print h
-							h.SetLineColor(col)
-							h.SetMarkerColor(col)
-							if dtyp=='SIM' and seq=='T':
-								 h.SetMarkerStyle(mst)
-			self.plot_obs_1D(q2wbin,h_dpp,h_rho,h_dzr)
-		print "Following are the \"bad\" q2w bins:"
+					# for hists in [h_dpp[dtyp,seq],h_rho[dtyp,seq],h_dzr[dtyp,seq]]:
+					# 	#print hists
+					# 	for h in hists:
+					# 		#print h
+					# 		h.SetLineColor(col)
+					# 		h.SetMarkerColor(col)
+					# 		if dtyp=='SIM' and seq=='T':
+					# 			 h.SetMarkerStyle(mst)
+			#self.plot_obs_1D(q2wbin,h_dpp,h_rho,h_dzr)
+		print hVST1.keys()
+		fout=open("test.txt","w")
+		fout.write("Following are the \"bad\" q2w bins:\n")
 		for k in q2wbinl_bad:
-			print k,q2wbinl_bad[k]
+			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
+		fout.close()
+		print "Done DispYields::disp_1D()"
+		return
 
 	def disp_integ_yield(self,seq='F'):
 		"""
@@ -494,7 +511,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			#if i>50: break
+			if i>50: break
 		return q2ws
 
 	def get_q2bng(self):
@@ -537,3 +554,8 @@ class DispYields:
 		xbng={'MIN':xmin,'MAX':xmax,'BINW':xbinw,'NBINS':nxbins,
 		   'BINS_LE':xbins_le,'BINS_UE':xbins_ue,'BINS':xbins}
 		return xbng
+
+	def get_q2bin_le(self,q2wbin):
+		return float(q2wbin.split('_')[0].split('-')[0])
+	def get_wbin_le(self,q2wbin):
+		return float(q2wbin.split('_')[1].split('-')[0])
