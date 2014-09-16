@@ -247,7 +247,10 @@ class DispYields:
 			c.Divide(3,3)
 
 			ivars=[0,1,2]
-			for q2bin in q2bins:
+			for iq2bin,q2bin in enumerate(q2bins):
+				drawopt="same"
+				if iq2bin==0: drawopt=""
+
 				#! Plot hVST1 (dpp)
 				pads=[1,4,7]
 				m=zip(pads,ivars)
@@ -255,7 +258,7 @@ class DispYields:
 					pad=c.cd(i[0])
 					ivar=i[1]
 					print 'plotting for',q2bin,wbin,'EXP','F'
-					hVST1[q2bin,wbin,'EXP','F'][ivar].Draw()
+					hVST1[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 
 				#! Plot hVST2 (rho)
 				pads=[2,5,8]
@@ -263,7 +266,7 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					hVST2[q2bin,wbin,'EXP','F'][ivar].Draw()
+					hVST2[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 
 				#! Plot hVST1 (dpp)
 				pads=[3,6,9]
@@ -271,7 +274,7 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					hVST3[q2bin,wbin,'EXP','F'][ivar].Draw()
+					hVST3[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 			c.SaveAs("tmp/c%s.png"%(wbin))
 		#c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 		c.SaveAs(".png"%(self.OUTDIR,q2wbin))
