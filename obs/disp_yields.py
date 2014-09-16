@@ -319,49 +319,59 @@ class DispYields:
 			os.makedirs(outdir)
 
 		#! 1. First get all q2wbin directories from file
+		# q2wbinl=self.get_q2ws()
+		# print q2wbinl
+
+		#! 1. First of all get q2bng information
+		q2bng=self.get_q2bng()
+		#print q2bng['BINW']
+		print "Yield(w) will be plotted for the following Q2 bins:"
+		print q2bng['BINS']
+
+		#! 2. Get all q2wbins
 		q2wbinl=self.get_q2ws()
-		print q2wbinl
+		#print q2wbinl
 
-		#! 2. Identify q2bins and then q2bins_le & q2bins_ue
-		#!    from q2wbinl
-		q2bins=[]
-		for q2wbin in q2wbinl:
-			print q2wbin
-			q2bins.append(float(q2wbin.split('_')[0].split('-')[0]))
-			q2bins.append(float(q2wbin.split('_')[0].split('-')[1]))
-		q2bins=set(q2bins) #! Keep only unique entries
-		q2bins=list(q2bins) #! convert set back to list
-		q2bins=sorted(q2bins) #! Order entries
-		print q2bins
-		q2bins_le=q2bins[:-1]
-		q2bins_ue=q2bins[1:]
-		print q2bins_le
-		print q2bins_ue		
+		# #! 2. Identify q2bins and then q2bins_le & q2bins_ue
+		# #!    from q2wbinl
+		# q2bins=[]
+		# for q2wbin in q2wbinl:
+		# 	print q2wbin
+		# 	q2bins.append(float(q2wbin.split('_')[0].split('-')[0]))
+		# 	q2bins.append(float(q2wbin.split('_')[0].split('-')[1]))
+		# q2bins=set(q2bins) #! Keep only unique entries
+		# q2bins=list(q2bins) #! convert set back to list
+		# q2bins=sorted(q2bins) #! Order entries
+		# print q2bins
+		# q2bins_le=q2bins[:-1]
+		# q2bins_ue=q2bins[1:]
+		# print q2bins_le
+		# print q2bins_ue		
 
-		#! Now put together y[q2bin]=(w,yield)
-		y=[{} for i in range(len(q2bins_le))]
+		#! 3. Now put together y[q2bin]=(w,yield)
+		y=[{} for i in range(q2bng['NBINS'])]
 		for q2wbin in q2wbinl:
 			#! Get iq2bin
 			q2bin_le=float(q2wbin.split('_')[0].split('-')[0])
-			iq2bin=q2bins_le.index(q2bin_le)
+			iq2bin=q2bng['BINS_LE'].index(q2bin_le)
 			#! Get w, yield
 			w=float(q2wbin.split('_')[1].split('-')[0])
 			h5=self.FEXP.Get("%s/VST1/%s/h5"%(q2wbin,seq))
 			y[iq2bin][w]=thntool.GetIntegral(h5)
 		#! Make sure y[q2bin]=(w,yield) are sorted by w
-		oy=[{} for i in range(len(q2bins_le))]
+		oy=[{} for i in range(len(y))]
 		for iq2bin in range(len(y)):
 			oy[iq2bin]=OrderedDict(sorted(y[iq2bin].items()))
 			print iq2bin
 			print y[iq2bin]
 			print oy[iq2bin] 
 
-		#! Now plot
+		#! 4. Now plot
 		fig=plt.figure()
 		ax=plt.subplot(111)
 		clrs=['red','green','cyan','blue','black','yellow','brown','orange']
 		for iq2bin in range(len(oy)):
-			lbl='[%.2f-%.2f]'%(q2bins_le[iq2bin],q2bins_ue[iq2bin])
+			lbl='[%.2f-%.2f]'%(q2bng['BINS_LE'][iq2bin],q2bng['BINS_UE'][iq2bin])
 			clr=clrs[iq2bin]
 			ax.scatter(oy[iq2bin].keys(),oy[iq2bin].values(),label=lbl,c=clr)
 		ax.set_ylim(0,600000)
@@ -511,5 +521,36 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			#if i>50: break
+			if i>50: break
 		return q2ws
+
+	def get_q2bng(self):
+		"""
+		Gets Q2 binning information from yield_exp.root
+		"""
+
+		#! First get all q2w-bins
+		q2wbinl=self.get_q2ws()
+		
+		#! 2. From q2wbinl, identify q2bins and 
+		#!    then q2bins_le & q2bins_ue
+		q2bins=[]
+		for q2wbin in q2wbinl:
+			#print q2wbin
+			q2bins.append(float(q2wbin.split('_')[0].split('-')[0]))
+			q2bins.append(float(q2wbin.split('_')[0].split('-')[1]))
+		q2bins=set(q2bins) #! Keep only unique entries
+		q2bins=list(q2bins) #! convert set back to list
+		q2bins=sorted(q2bins) #! Order entries
+		#print q2bins
+		q2bins_le=q2bins[:-1]
+		q2bins_ue=q2bins[1:]
+		#print q2bins_le
+		#print q2bins_ue
+		q2min=min(q2bins)
+		q2max=max(q2bins)
+		q2binw=q2bins[1]-q2bins[0]
+		nq2bins=len(q2bins_le)
+		q2bng={'MIN':q2min,'MAX':q2max,'BINW':q2binw,'NBINS':nq2bins,
+		   'BINS_LE':q2bins_le,'BINS_UE':q2bins_ue,'BINS':q2bins}
+		return q2bng
