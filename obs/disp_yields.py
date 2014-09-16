@@ -235,43 +235,39 @@ class DispYields:
 		
 		c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 
-	def disp_1D(self):
+	def disp_1D(self,dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
 		Walk the ROOT file and extract 1D observable histograms. 
 		"""
-		#! First get all q2wbin directories from file
-		q2ws=self.get_q2ws()
-		print q2ws
+		#! 1. First get all q2wbin directories from file
+		q2wbinl=self.get_q2wbinl()
+		print q2wbinl
 
-		#! Now get relevant histograms, plot and save them
-		q2wbadl={} #! Makes a list of bad bins
-		for q2w in q2ws:
-			print "Processing",q2w
-
+		#! 2. Now get relevant histograms
+		hVST1,hVST2,hVST3={},{},{}
+		q2wbinl_bad={} 
+		for q2wbin in q2wbinl:
+			print "Processing",q2wbin
 			#! First make sure this bin is "good"
 			badbin=False
 			reason=''
 			for vst in self.VSTS:
-				ht_R=self.FEXP.Get("%s/VST%d/R/h_M1"%(q2w,vst))
-				ht_C=self.FEXP.Get("%s/VST%d/C/h_M1"%(q2w,vst))
+				ht_R=self.FEXP.Get("%s/VST%d/R/h_M1"%(q2wbin,vst))
+				ht_C=self.FEXP.Get("%s/VST%d/C/h_M1"%(q2wbin,vst))
 				if ht_R.Integral()==0:
 					reason+="ER=0 for VST%d;"%vst
-					# q2wbadl[q2w]="ER=0; VST%d"%vst
-					# print "\"Bad\" bin: %s"%q2wbadl[q2w]
 					badbin=True
 				elif ht_C.Integral()==0:
 					reason+="SA=0 in ER bins for VST%d;"%vst
-					# q2wbadl[q2w]="No SA in ER bins; VST%d"%vst
-					# print "\"Bad\" bin: %s"%q2wbadl[q2w]
 					badbin=True
 			if badbin:
-				q2wbadl[q2w]=reason
-				print "\"Bad\" bin: %s"%q2wbadl[q2w]
+				q2wbinl_bad[q2wbin]=reason
+				print "\"Bad\" bin: %s"%q2wbinl_bad[q2wbin]
 				continue
 			#! Now that bin is good, get hists
 			h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
-			for dtyp in ['EXP','SIM']:
-				for seq in ['T','C','H','F']:
+			for dtyp in dtypl:
+				for seq in seql:
 					if dtyp=='EXP' and seq=='T': continue
 					if dtyp=='SIM' and (seq=='H' or seq=='C'): continue
 
@@ -291,12 +287,12 @@ class DispYields:
 							col=ROOT.gROOT.ProcessLine("kGreen")
 							mst=ROOT.gROOT.ProcessLine("kPlus")
 
-					h_dpp[dtyp,seq]=[f.Get("%s/VST1/%s/h_M1"%(q2w,seq)),f.Get("%s/VST1/%s/h_THETA"%(q2w,seq)),
-								 	f.Get("%s/VST1/%s/h_ALPHA"%(q2w,seq))]
-					h_rho[dtyp,seq]=[f.Get("%s/VST2/%s/h_M2"%(q2w,seq)),f.Get("%s/VST2/%s/h_THETA"%(q2w,seq)),
-								 	f.Get("%s/VST2/%s/h_ALPHA"%(q2w,seq))]
-					h_dzr[dtyp,seq]=[f.Get("%s/VST3/%s/h_M2"%(q2w,seq)),f.Get("%s/VST3/%s/h_THETA"%(q2w,seq)),
-								 	f.Get("%s/VST3/%s/h_ALPHA"%(q2w,seq))]
+					h_dpp[dtyp,seq]=[f.Get("%s/VST1/%s/h_M1"%(q2wbin,seq)),f.Get("%s/VST1/%s/h_THETA"%(q2wbin,seq)),
+								 	f.Get("%s/VST1/%s/h_ALPHA"%(q2wbin,seq))]
+					h_rho[dtyp,seq]=[f.Get("%s/VST2/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST2/%s/h_THETA"%(q2wbin,seq)),
+								 	f.Get("%s/VST2/%s/h_ALPHA"%(q2wbin,seq))]
+					h_dzr[dtyp,seq]=[f.Get("%s/VST3/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST3/%s/h_THETA"%(q2wbin,seq)),
+								 	f.Get("%s/VST3/%s/h_ALPHA"%(q2wbin,seq))]
 					for hists in [h_dpp[dtyp,seq],h_rho[dtyp,seq],h_dzr[dtyp,seq]]:
 						#print hists
 						for h in hists:
@@ -305,10 +301,10 @@ class DispYields:
 							h.SetMarkerColor(col)
 							if dtyp=='SIM' and seq=='T':
 								 h.SetMarkerStyle(mst)
-			self.plot_obs_1D(q2w,h_dpp,h_rho,h_dzr)
+			self.plot_obs_1D(q2wbin,h_dpp,h_rho,h_dzr)
 		print "Following are the \"bad\" q2w bins:"
-		for k in q2wbadl:
-			print k,q2wbadl[k]
+		for k in q2wbinl_bad:
+			print k,q2wbinl_bad[k]
 
 	def disp_integ_yield(self,seq='F'):
 		"""
@@ -318,10 +314,6 @@ class DispYields:
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
-		#! 1. First get all q2wbin directories from file
-		# q2wbinl=self.get_q2ws()
-		# print q2wbinl
-
 		#! 1. First of all get q2bng information
 		q2bng=self.get_q2bng()
 		#print q2bng['BINW']
@@ -329,24 +321,8 @@ class DispYields:
 		print q2bng['BINS']
 
 		#! 2. Get all q2wbins
-		q2wbinl=self.get_q2ws()
+		q2wbinl=self.get_q2wbinl()
 		#print q2wbinl
-
-		# #! 2. Identify q2bins and then q2bins_le & q2bins_ue
-		# #!    from q2wbinl
-		# q2bins=[]
-		# for q2wbin in q2wbinl:
-		# 	print q2wbin
-		# 	q2bins.append(float(q2wbin.split('_')[0].split('-')[0]))
-		# 	q2bins.append(float(q2wbin.split('_')[0].split('-')[1]))
-		# q2bins=set(q2bins) #! Keep only unique entries
-		# q2bins=list(q2bins) #! convert set back to list
-		# q2bins=sorted(q2bins) #! Order entries
-		# print q2bins
-		# q2bins_le=q2bins[:-1]
-		# q2bins_ue=q2bins[1:]
-		# print q2bins_le
-		# print q2bins_ue		
 
 		#! 3. Now put together y[q2bin]=(w,yield)
 		y=[{} for i in range(q2bng['NBINS'])]
@@ -362,9 +338,9 @@ class DispYields:
 		oy=[{} for i in range(len(y))]
 		for iq2bin in range(len(y)):
 			oy[iq2bin]=OrderedDict(sorted(y[iq2bin].items()))
-			print iq2bin
-			print y[iq2bin]
-			print oy[iq2bin] 
+			# print iq2bin
+			# print y[iq2bin]
+			# print oy[iq2bin] 
 
 		#! 4. Now plot
 		fig=plt.figure()
@@ -379,33 +355,30 @@ class DispYields:
 		fig.savefig('%s/integ_yield.png'%(outdir))	
 		#fig.savefig('test.png')		
 
+	# def get_integ_yield(self):
+	# 	"""
+	# 	Walk the ROOT file and obtain y(seq,w) 
+	# 	"""
+	# 	#! First get all q2wbin directories from file
+	# 	q2ws=self.get_q2wbinl()
+	# 	print q2ws
 
-
-
-	def get_integ_yield(self):
-		"""
-		Walk the ROOT file and obtain y(seq,w) 
-		"""
-		#! First get all q2wbin directories from file
-		q2ws=self.get_q2ws()
-		print q2ws
-
-		#! Obtain y(seq,w) for experiment
-		#! Example of techincal implementation:
-		#! y = { 'C':{w1:y_C,...,wn:y_C},
-		#!       'H':{w1:y_H,...,wn:y_H},
-		#!       'F':{w1:y_F,...,wn:y_F},
-		#!	   }
-		y={}
-		f=ROOT.TFile(self.FEXP.GetName())
-		for seq in ['C','H','F']:
-			tmp={}
-			for q2w in q2ws:
-				w=float(q2w.split('_')[1].split('-')[0])
-				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
-				tmp[w]=thntool.GetIntegral(h5)
-			y[seq]=tmp
-		return y	
+	# 	#! Obtain y(seq,w) for experiment
+	# 	#! Example of techincal implementation:
+	# 	#! y = { 'C':{w1:y_C,...,wn:y_C},
+	# 	#!       'H':{w1:y_H,...,wn:y_H},
+	# 	#!       'F':{w1:y_F,...,wn:y_F},
+	# 	#!	   }
+	# 	y={}
+	# 	f=ROOT.TFile(self.FEXP.GetName())
+	# 	for seq in ['C','H','F']:
+	# 		tmp={}
+	# 		for q2w in q2ws:
+	# 			w=float(q2w.split('_')[1].split('-')[0])
+	# 			h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+	# 			tmp[w]=thntool.GetIntegral(h5)
+	# 		y[seq]=tmp
+	# 	return y	
 
 	def get_sim_stats(self):
 		"""
@@ -422,7 +395,7 @@ class DispYields:
 			+ sg=(RMS({n_i}) (RMS of number of events per bin)
 		"""
 		#! First get all q2wbin directories from file
-		q2ws=self.get_q2ws()
+		q2ws=self.get_q2wbinl()
 		#print "Processing sim_stats for %s:"%self.Q2W
 		print q2ws
 
@@ -473,7 +446,7 @@ class DispYields:
 				+ Note, average computed over only R-PS bins
 		"""
 		#! First get all q2wbin directories from file
-		q2ws=self.get_q2ws()
+		q2ws=self.get_q2wbinl()
 		print "Processing sim_stats for %s:"%self.Q2W
 		print q2ws
 
@@ -507,7 +480,7 @@ class DispYields:
 		return ss
 
 
-	def get_q2ws(self):
+	def get_q2wbinl(self):
 		"""
 		The ROOT file is arranged in a Tree Structure. The
 		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
@@ -521,36 +494,46 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>50: break
+			#if i>50: break
 		return q2ws
 
 	def get_q2bng(self):
+		return self.get_xbng(x='Q2')
+	def get_wbng(self):
+		return self.get_xbng(x='W')
+
+	def get_xbng(self,x):
 		"""
-		Gets Q2 binning information from yield_exp.root
+		Gets x=(Q2 or W) binning information from yield_exp.root
 		"""
 
 		#! First get all q2w-bins
-		q2wbinl=self.get_q2ws()
+		q2wbinl=self.get_q2wbinl()
 		
-		#! 2. From q2wbinl, identify q2bins and 
-		#!    then q2bins_le & q2bins_ue
-		q2bins=[]
+		#! 2. From q2wbinl, identify xbng 
+		xbins=[]
 		for q2wbin in q2wbinl:
 			#print q2wbin
-			q2bins.append(float(q2wbin.split('_')[0].split('-')[0]))
-			q2bins.append(float(q2wbin.split('_')[0].split('-')[1]))
-		q2bins=set(q2bins) #! Keep only unique entries
-		q2bins=list(q2bins) #! convert set back to list
-		q2bins=sorted(q2bins) #! Order entries
-		#print q2bins
-		q2bins_le=q2bins[:-1]
-		q2bins_ue=q2bins[1:]
-		#print q2bins_le
-		#print q2bins_ue
-		q2min=min(q2bins)
-		q2max=max(q2bins)
-		q2binw=q2bins[1]-q2bins[0]
-		nq2bins=len(q2bins_le)
-		q2bng={'MIN':q2min,'MAX':q2max,'BINW':q2binw,'NBINS':nq2bins,
-		   'BINS_LE':q2bins_le,'BINS_UE':q2bins_ue,'BINS':q2bins}
-		return q2bng
+			if(x=='Q2'):
+				xbins.append(float(q2wbin.split('_')[0].split('-')[0]))
+				xbins.append(float(q2wbin.split('_')[0].split('-')[1]))
+			elif(x=='W'):
+				xbins.append(float(q2wbin.split('_')[1].split('-')[0]))
+				xbins.append(float(q2wbin.split('_')[1].split('-')[1]))
+			else:
+				sys.exit("DispYields::get_xbng() x=%s not recognized"%x)
+		xbins=set(xbins) #! Keep only unique entries
+		xbins=list(xbins) #! convert 'set' back to 'list'
+		xbins=sorted(xbins) #! Order entries
+		#print xbins
+		xbins_le=xbins[:-1]
+		xbins_ue=xbins[1:]
+		#print xbins_le
+		#print xbins_ue
+		xmin=min(xbins)
+		xmax=max(xbins)
+		xbinw=xbins[1]-xbins[0]
+		nxbins=len(xbins_le)
+		xbng={'MIN':xmin,'MAX':xmax,'BINW':xbinw,'NBINS':nxbins,
+		   'BINS_LE':xbins_le,'BINS_UE':xbins_ue,'BINS':xbins}
+		return xbng
