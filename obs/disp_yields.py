@@ -265,18 +265,7 @@ class DispYields:
 				q2wbadl[q2w]=reason
 				print "\"Bad\" bin: %s"%q2wbadl[q2w]
 				continue
-
-			# htest_R=self.FEXP.Get("%s/VST1/R/h_M1"%(q2w))
-			# htest_C=self.FEXP.Get("%s/VST1/C/h_M1"%(q2w))
-			# if htest_R.Integral()==0:
-			# 	q2wbadl[q2w]="ER=0"
-			# 	print "\"Bad\" bin: ER=0"
-			# 	continue
-			# elif htest_C.Integral()==0:
-			# 	q2wbadl[q2w]="No SA in ER bins"
-			# 	print "\"Bad\" bin: No SA in ER bins"
-			# 	continue
-
+			#! Now that bin is good, get hists
 			h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
 			for dtyp in ['EXP','SIM']:
 				for seq in ['T','C','H','F']:
@@ -317,6 +306,14 @@ class DispYields:
 		print "Following are the \"bad\" q2w bins:"
 		for k in q2wbadl:
 			print k,q2wbadl[k]
+
+	def disp_integ_yield(self):
+		"""
+		Walk the ROOT file and extract 1D observable histograms. 
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2ws()
+		print q2ws
 
 	def get_integ_yield(self):
 		"""
