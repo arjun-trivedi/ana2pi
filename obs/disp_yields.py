@@ -235,6 +235,47 @@ class DispYields:
 		
 		c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 
+	def plot_obs_1D_test(self,hVST1,hVST2,hVST3):
+		#! Get all q2- and w-bins
+		q2bins,wbins=[],[]
+		for k in hVST1.keys():
+			q2bins.append(k[0])
+			wbins.append(k[1])
+		#! Plot and save 1D-obs for every W bin 
+		for wbin in wbins:
+			c=ROOT.TCanvas()
+			c.Divide(3,3)
+
+			ivars=[0,1,2]
+			for q2bin in q2bins:
+				#! Plot hVST1 (dpp)
+				pads=[1,4,7]
+				m=zip(pads,ivars)
+				for i in m:
+					pad=c.cd(i[0])
+					ivar=i[1]
+					print 'plotting for',q2bin,wbin,'EXP','F'
+					hVST1[q2bin,wbin,'EXP','F'][ivar].Draw()
+
+				#! Plot hVST2 (rho)
+				pads=[2,5,8]
+				m=zip(pads,ivars)
+				for i in m:
+					pad=c.cd(i[0])
+					ivar=i[1]
+					hVST2[q2bin,wbin,'EXP','F'][ivar].Draw()
+
+				#! Plot hVST1 (dpp)
+				pads=[3,6,9]
+				m=zip(pads,ivars)
+				for i in m:
+					pad=c.cd(i[0])
+					ivar=i[1]
+					hVST3[q2bin,wbin,'EXP','F'][ivar].Draw()
+			c.SaveAs("tmp/c%s.png"%(wbin))
+		#c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
+		c.SaveAs(".png"%(self.OUTDIR,q2wbin))
+
 	def disp_1D(self,dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
 		Walk the ROOT file and extract 1D observable histograms. 
@@ -320,6 +361,7 @@ class DispYields:
 		for k in q2wbinl_bad:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
+		self.plot_obs_1D_test(hVST1,hVST2,hVST3)
 		print "Done DispYields::disp_1D()"
 		return
 
@@ -511,7 +553,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>50: break
+			#if i>20: break
 		return q2ws
 
 	def get_q2bng(self):
