@@ -237,17 +237,33 @@ class DispYields:
 
 	def plot_obs_1D_test(self,hVST1,hVST2,hVST3):
 		#! Get all q2- and w-bins
-		q2bins,wbins=[],[]
+		q2bins_le,wbins_le=[],[]
 		for k in hVST1.keys():
-			q2bins.append(k[0])
-			wbins.append(k[1])
+			q2bins_le.append(k[0])
+			wbins_le.append(k[1])
+		# for xbins in [q2bins_le,wbins_le]:
+		# 	xbins=set(xbins) #! Keep only unique entries
+		# 	xbins=list(xbins) #! convert 'set' back to 'list'
+		# 	xbins=sorted(xbins) #! Order entries
+		q2bins_le=set(q2bins_le) #! Keep only unique entries
+		q2bins_le=list(q2bins_le) #! convert 'set' back to 'list'
+		q2bins_le=sorted(q2bins_le)
+		wbins_le=set(wbins_le) #! Keep only unique entries
+		wbins_le=list(wbins_le) #! convert 'set' back to 'list'
+		wbins_le=sorted(wbins_le)
+		print "going to plot 1D obs for:"
+		print "Q2:"
+		print q2bins_le
+		print "W:"
+		print wbins_le
+
 		#! Plot and save 1D-obs for every W bin 
-		for wbin in wbins:
+		for wbin in wbins_le:
 			c=ROOT.TCanvas()
 			c.Divide(3,3)
-
 			ivars=[0,1,2]
-			for iq2bin,q2bin in enumerate(q2bins):
+			for iq2bin,q2bin in enumerate(q2bins_le):
+				print "Plotting h1D for w=%0.3f,q2=%0.2f"%(wbin,q2bin)
 				drawopt="same"
 				if iq2bin==0: drawopt=""
 
@@ -257,7 +273,7 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					print 'plotting for',q2bin,wbin,'EXP','F'
+					#print 'plotting for',q2bin,wbin,'EXP','F'
 					hVST1[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 
 				#! Plot hVST2 (rho)
@@ -276,8 +292,9 @@ class DispYields:
 					ivar=i[1]
 					hVST3[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 			c.SaveAs("tmp/c%s.png"%(wbin))
+			c.Close()
 		#c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
-		c.SaveAs(".png"%(self.OUTDIR,q2wbin))
+		#c.SaveAs(".png"%(self.OUTDIR,q2wbin))
 
 	def disp_1D(self,dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
@@ -358,6 +375,7 @@ class DispYields:
 					# 		if dtyp=='SIM' and seq=='T':
 					# 			 h.SetMarkerStyle(mst)
 			#self.plot_obs_1D(q2wbin,h_dpp,h_rho,h_dzr)
+		print "keys in hVST1:"
 		print hVST1.keys()
 		fout=open("test.txt","w")
 		fout.write("Following are the \"bad\" q2w bins:\n")
@@ -556,7 +574,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			#if i>20: break
+			if i>10: break
 		return q2ws
 
 	def get_q2bng(self):
