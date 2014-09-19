@@ -236,15 +236,17 @@ class DispYields:
 		c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 
 	def plot_obs_1D_test(self,hVST1,hVST2,hVST3):
-		#! Get all q2- and w-bins
+
+		outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+
+		#! Get all q2- and w-bins from the keys of hVSTX
 		q2bins_le,wbins_le=[],[]
 		for k in hVST1.keys():
 			q2bins_le.append(k[0])
 			wbins_le.append(k[1])
-		# for xbins in [q2bins_le,wbins_le]:
-		# 	xbins=set(xbins) #! Keep only unique entries
-		# 	xbins=list(xbins) #! convert 'set' back to 'list'
-		# 	xbins=sorted(xbins) #! Order entries
+		#! Keep only unique entries
 		q2bins_le=set(q2bins_le) #! Keep only unique entries
 		q2bins_le=list(q2bins_le) #! convert 'set' back to 'list'
 		q2bins_le=sorted(q2bins_le)
@@ -257,13 +259,19 @@ class DispYields:
 		print "W:"
 		print wbins_le
 
-		#! Plot and save 1D-obs for every W bin 
+		#! Plot and save 1D-obs for every W bin  (over all Q2-bins)
+		colors=["kRed","kOrange+7","kOrange+1","kYellow","kYellow+2","kGreen+3","kGreen","kCyan","kBlue+3","kBlue"]
+		coll=[]
+		for iq2bin in range(len(q2bins_le)):
+			coll.append(ROOT.gROOT.ProcessLine(colors[iq2bin]))
+
 		for wbin in wbins_le:
 			c=ROOT.TCanvas()
 			c.Divide(3,3)
 			ivars=[0,1,2]
 			for iq2bin,q2bin in enumerate(q2bins_le):
 				print "Plotting h1D for w=%0.3f,q2=%0.2f"%(wbin,q2bin)
+				#! Plotting style, aesthetics etc
 				drawopt="same"
 				if iq2bin==0: drawopt=""
 
@@ -274,7 +282,14 @@ class DispYields:
 					pad=c.cd(i[0])
 					ivar=i[1]
 					#print 'plotting for',q2bin,wbin,'EXP','F'
-					hVST1[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
+					if hVST1.has_key((q2bin,wbin,'EXP','F')):
+						if iq2bin==0:
+							hVST1[q2bin,wbin,'EXP','F'][ivar].SetMinimum(0)
+						hVST1[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll[iq2bin])
+						hVST1[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll[iq2bin])
+						hVST1[q2bin,wbin,'EXP','F'][ivar].Sumw2()
+						hVST1[q2bin,wbin,'EXP','F'][ivar].Scale(10)
+						hVST1[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 
 				#! Plot hVST2 (rho)
 				pads=[2,5,8]
@@ -282,7 +297,14 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					hVST2[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
+					if hVST2.has_key((q2bin,wbin,'EXP','F')):
+						if iq2bin==0:
+							hVST2[q2bin,wbin,'EXP','F'][ivar].SetMinimum(0)
+						hVST2[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll[iq2bin])
+						hVST2[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll[iq2bin])
+						hVST2[q2bin,wbin,'EXP','F'][ivar].Sumw2()
+						hVST2[q2bin,wbin,'EXP','F'][ivar].Scale(10)
+						hVST2[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
 
 				#! Plot hVST1 (dpp)
 				pads=[3,6,9]
@@ -290,19 +312,38 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					hVST3[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
-			c.SaveAs("tmp/c%s.png"%(wbin))
+					if hVST3.has_key((q2bin,wbin,'EXP','F')):
+						if iq2bin==0:
+							hVST3[q2bin,wbin,'EXP','F'][ivar].SetMinimum(0)
+						hVST3[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll[iq2bin])
+						hVST3[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll[iq2bin])
+						hVST3[q2bin,wbin,'EXP','F'][ivar].Sumw2()
+						hVST3[q2bin,wbin,'EXP','F'][ivar].Scale(10)
+						hVST3[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
+			c.SaveAs("%s/c%s.png"%(outdir,wbin))
 			c.Close()
+		return
 		#c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 		#c.SaveAs(".png"%(self.OUTDIR,q2wbin))
 
 	def disp_1D(self,dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
-		Walk the ROOT file and extract 1D observable histograms. 
+		Walk the ROOT file and extract:
+			+ hVST1(q2bin,wbin,dtyp,seq)=[VST1.M1, VST1.THETA, VST1.ALPHA]
+			+ hVST2(q2bin,wbin,dtyp,seq)=[VST2.M2, VST2.THETA, VST2.ALPHA]
+			+ hVST3(q2bin,wbin,dtyp,seq)=[VST3.M2, VST3.THETA, VST3.ALPHA]
+		where (as per DataAna::makeYields())
+			+ VST1=delta_pp,pim
+			+ VST2=rho,p
+			+ VST3=delta_0,pip
 		"""
+		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs-1D")
+		if not os.path.exists(self.OUTDIR_OBS_1D):
+			os.makedirs(self.OUTDIR_OBS_1D)
+
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinl()
+		q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from file
@@ -318,7 +359,7 @@ class DispYields:
 		hVST1,hVST2,hVST3={},{},{}
 		q2wbinl_bad={} 
 		for q2wbin in q2wbinl:
-			print "Processing",q2wbin
+			print "Getting hVST1,hVST2,hVST3 for",q2wbin
 			#! First make sure this bin is "good"
 			badbin=False
 			reason=''
@@ -375,15 +416,18 @@ class DispYields:
 					# 		if dtyp=='SIM' and seq=='T':
 					# 			 h.SetMarkerStyle(mst)
 			#self.plot_obs_1D(q2wbin,h_dpp,h_rho,h_dzr)
-		print "keys in hVST1:"
-		print hVST1.keys()
-		fout=open("test.txt","w")
+		#print "keys in hVST1:"
+		#print hVST1.keys()
+		#! Write out the list of "bad" q2w bins and the reason why it is bad
+		fout=open("%s/bad-q2wbins.txt"%self.OUTDIR_OBS_1D,"w")
 		fout.write("Following are the \"bad\" q2w bins:\n")
 		for k in q2wbinl_bad:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
+		print "Finished getting hVST1,hVST2,hVST3. Now going to display yields"
 		self.plot_obs_1D_test(hVST1,hVST2,hVST3)
 		print "Done DispYields::disp_1D()"
+		print "If the progam is not terminating, then Python is probably doing \"garbage collectio\"(?); Wait a while!"
 		return
 
 	def disp_integ_yield(self,seq='F'):
@@ -401,7 +445,7 @@ class DispYields:
 		print q2bng['BINS']
 
 		#! 2. Get all q2wbins
-		q2wbinl=self.get_q2wbinl()
+		q2wbinl=self.get_q2wbinlist()
 		#print q2wbinl
 
 		#! 3. Now put together y[q2bin]=(w,yield)
@@ -440,7 +484,7 @@ class DispYields:
 	# 	Walk the ROOT file and obtain y(seq,w) 
 	# 	"""
 	# 	#! First get all q2wbin directories from file
-	# 	q2ws=self.get_q2wbinl()
+	# 	q2ws=self.get_q2wbinlist()
 	# 	print q2ws
 
 	# 	#! Obtain y(seq,w) for experiment
@@ -475,7 +519,7 @@ class DispYields:
 			+ sg=(RMS({n_i}) (RMS of number of events per bin)
 		"""
 		#! First get all q2wbin directories from file
-		q2ws=self.get_q2wbinl()
+		q2ws=self.get_q2wbinlist()
 		#print "Processing sim_stats for %s:"%self.Q2W
 		print q2ws
 
@@ -526,7 +570,7 @@ class DispYields:
 				+ Note, average computed over only R-PS bins
 		"""
 		#! First get all q2wbin directories from file
-		q2ws=self.get_q2wbinl()
+		q2ws=self.get_q2wbinlist()
 		print "Processing sim_stats for %s:"%self.Q2W
 		print q2ws
 
@@ -560,21 +604,21 @@ class DispYields:
 		return ss
 
 
-	def get_q2wbinl(self):
+	def get_q2wbinlist(self):
 		"""
 		The ROOT file is arranged in a Tree Structure. The
 		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
 		q2wbin/vst/seq/hists
 		"""
 		q2ws=[]
-		i=0 #! for debugging over limited q2ws
+		i=0 #! for getting limted q2wbins
 		for path,dirs,files in self.FEXP.walk():
 			if path=="":continue #! Avoid root path
 			path_arr=path.split("/")
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>10: break
+			#if i>50: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
@@ -588,7 +632,7 @@ class DispYields:
 		"""
 
 		#! First get all q2w-bins
-		q2wbinl=self.get_q2wbinl()
+		q2wbinl=self.get_q2wbinlist()
 		
 		#! 2. From q2wbinl, identify xbng 
 		xbins=[]
