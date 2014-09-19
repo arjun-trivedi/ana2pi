@@ -31,215 +31,11 @@ class DispYields:
 
 		self.VSTS=[1,2,3]
 
-	# def plot_obs_1D(self,q2wbin,h_dpp,h_rho,h_dzr):
-	# 	c=ROOT.TCanvas()
-	# 	c.Divide(3,3)
-
-	# 	pad=c.cd(1)
-	# 	# h_dpp['EXP','F'][0].Draw()
-	# 	# h_dpp['EXP','H'][0].Draw("sames")
-	# 	hexp=h_dpp['EXP','F'][0].DrawNormalized("",1000)
-	# 	hsim=h_dpp['SIM','F'][0].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_dpp['EXP','F'][0])
-	# 	h_dpp['EXP','C'][0].Multiply(hF)
-	# 	h_dpp['EXP','C'][0].Draw("sames")
-	# 	h_dpp['EXP','H'][0].Multiply(hF)
-	# 	h_dpp['EXP','H'][0].Draw("sames")
-	# 	#h_dpp['EXP','H'][0].DrawNormalized("sames",1000)
-	# 	h_dpp['SIM','T'][0].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(2)
-	# 	# h_rho['EXP','F'][0].Draw()
-	# 	# h_rho['EXP','H'][0].Draw("sames")
-	# 	hexp=h_rho['EXP','F'][0].DrawNormalized("",1000)
-	# 	hsim=h_rho['SIM','F'][0].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_rho['EXP','F'][0])
-	# 	h_rho['EXP','C'][0].Multiply(hF)
-	# 	h_rho['EXP','C'][0].Draw("sames")
-	# 	h_rho['EXP','H'][0].Multiply(hF)
-	# 	h_rho['EXP','H'][0].Draw("sames")
-	# 	#h_rho['EXP','H'][0].DrawNormalized("sames",1000)
-	# 	h_rho['SIM','T'][0].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(3)
-	# 	# h_dzr['EXP','F'][0].Draw()
-	# 	# h_dzr['EXP','H'][0].Draw("sames")
-	# 	hexp=h_dzr['EXP','F'][0].DrawNormalized("",1000)
-	# 	hsim=h_dzr['SIM','F'][0].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_dzr['EXP','F'][0])
-	# 	h_dzr['EXP','C'][0].Multiply(hF)
-	# 	h_dzr['EXP','C'][0].Draw("sames")
-	# 	h_dzr['EXP','H'][0].Multiply(hF)
-	# 	h_dzr['EXP','H'][0].Draw("sames")
-	# 	#h_dzr['EXP','H'][0].DrawNormalized("sames",1000)
-	# 	h_dzr['SIM','T'][0].DrawNormalized("sames",1000)
-	# 	# pad.Update()
-
-	# 	pad=c.cd(4)
-	# 	# h_dpp['EXP','F'][1].Draw()
-	# 	# h_dpp['EXP','H'][1].Draw("sames")
-	# 	hexp=h_dpp['EXP','F'][1].DrawNormalized("",1000)
-	# 	hsim=h_dpp['SIM','F'][1].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_dpp['EXP','F'][1])
-	# 	h_dpp['EXP','C'][1].Multiply(hF)
-	# 	h_dpp['EXP','C'][1].Draw("sames")
-	# 	h_dpp['EXP','H'][1].Multiply(hF)
-	# 	h_dpp['EXP','H'][1].Draw("sames")
-	# 	#h_dpp['EXP','H'][1].DrawNormalized("sames",1000)
-	# 	h_dpp['SIM','T'][1].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(5)
-	# 	# h_rho['EXP','F'][1].Draw()
-	# 	# h_rho['EXP','H'][1].Draw("sames")
-	# 	hexp=h_rho['EXP','F'][1].DrawNormalized("",1000)
-	# 	hsim=h_rho['SIM','F'][1].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_rho['EXP','F'][1])
-	# 	h_rho['EXP','C'][1].Multiply(hF)
-	# 	h_rho['EXP','C'][1].Draw("sames")
-	# 	h_rho['EXP','H'][1].Multiply(hF)
-	# 	h_rho['EXP','H'][1].Draw("sames")
-	# 	#h_rho['EXP','H'][1].DrawNormalized("sames",1000)
-	# 	h_rho['SIM','T'][1].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(6)
-	# 	# h_dzr['EXP','F'][1].Draw()
-	# 	# h_dzr['EXP','H'][1].Draw("sames")
-	# 	hexp=h_dzr['EXP','F'][1].DrawNormalized("",1000)
-	# 	hsim=h_dzr['SIM','F'][1].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_dzr['EXP','F'][1])
-	# 	h_dzr['EXP','C'][1].Multiply(hF)
-	# 	h_dzr['EXP','C'][1].Draw("sames")
-	# 	h_dzr['EXP','H'][1].Multiply(hF)
-	# 	h_dzr['EXP','H'][1].Draw("sames")
-	# 	#h_dzr['EXP','H'][1].DrawNormalized("sames",1000)
-	# 	h_dzr['SIM','T'][1].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(7)
-	# 	# h_dpp['EXP','F'][2].Draw()
-	# 	# h_dpp['EXP','H'][2].Draw("sames")
-	# 	hexp=h_dpp['EXP','F'][2].DrawNormalized("",1000)
-	# 	hsim=h_dpp['SIM','F'][2].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_dpp['EXP','F'][2])
-	# 	h_dpp['EXP','C'][2].Multiply(hF)
-	# 	h_dpp['EXP','C'][2].Draw("sames")
-	# 	h_dpp['EXP','H'][2].Multiply(hF)
-	# 	h_dpp['EXP','H'][2].Draw("sames")
-	# 	#h_dpp['EXP','H'][2].DrawNormalized("sames",1000)
-	# 	h_dpp['SIM','T'][2].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(8)
-	# 	# h_rho['EXP','F'][2].Draw()
-	# 	# h_rho['EXP','H'][2].Draw("sames")
-	# 	hexp=h_rho['EXP','F'][2].DrawNormalized("",1000)
-	# 	hsim=h_rho['SIM','F'][2].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_rho['EXP','F'][2])
-	# 	h_rho['EXP','C'][2].Multiply(hF)
-	# 	h_rho['EXP','C'][2].Draw("sames")
-	# 	h_rho['EXP','H'][2].Multiply(hF)
-	# 	h_rho['EXP','H'][2].Draw("sames")
-	# 	#h_rho['EXP','H'][2].DrawNormalized("sames",1000)
-	# 	h_rho['SIM','T'][2].DrawNormalized("sames",1000)
-	# 	pad.Update()
-
-	# 	pad=c.cd(9)
-	# 	# h_dzr['EXP','F'][2].Draw()
-	# 	# h_dzr['EXP','H'][2].Draw("sames")
-	# 	hexp=h_dzr['EXP','F'][2].DrawNormalized("",1000)
-	# 	hsim=h_dzr['SIM','F'][2].DrawNormalized("sames",1000)
-	# 	hexp.SetMinimum(0.)
-	# 	hsim.SetMinimum(0.)
-	# 	maximum=hexp.GetMaximum()
-	# 	if hsim.GetMaximum()>hexp.GetMaximum():
-	# 		maximum=hsim.GetMaximum()
-	# 	hexp.SetMaximum(maximum+10)
-	# 	hsim.SetMaximum(maximum+10)
-	# 	hF=hexp.Clone()
-	# 	hF.Divide(h_dzr['EXP','F'][2])
-	# 	h_dzr['EXP','C'][2].Multiply(hF)
-	# 	h_dzr['EXP','C'][2].Draw("sames")
-	# 	h_dzr['EXP','H'][2].Multiply(hF)
-	# 	h_dzr['EXP','H'][2].Draw("sames")
-	# 	#h_dzr['EXP','H'][2].DrawNormalized("sames",1000)
-	# 	h_dzr['SIM','T'][2].DrawNormalized("sames",1000)
-	# 	pad.Update()
-		
-	# 	c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
-
 	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F'):
 		"""
-		+ Plot Q2 evolution of 1D-Observables in each W-bin
-		+ The user can specify:
-			+ view,dtyp,seq
+		+ Plot 1D-Obs as per "view", where:
+			+ view="full_ana" (dtyp,seq not required to be specified)
+			+ view="q2_evltn" (dtyp and seq need to specific)
 		"""
 
 		if view=="q2_evltn":
@@ -287,6 +83,9 @@ class DispYields:
 			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
 			
 		ivars=[0,1,2]
+		#! 3x3 TCanvas-pads as per VSTs
+		#! VST1=1,2,3; VST2=2,5,6; VST3=3,6,9
+		padsl=[[1,4,7],[2,5,8],[3,6,9]]
 		for wbin in wbins_le:
 			if view=="q2_evltn":
 				c=ROOT.TCanvas()
@@ -296,44 +95,41 @@ class DispYields:
 					c=ROOT.TCanvas()
 					c.Divide(3,3)
 				print "Plotting h1D for w=%0.3f,q2=%0.2f"%(wbin,q2bin)
-				
-				#! Plotting style, aesthetics etc
-				drawopt="same"
-				if iq2bin==0: drawopt=""
-
-				#! Plot hVST1 (dpp)
-				pads=[1,4,7]
-				m=zip(pads,ivars)
-				for i in m:
-					pad=c.cd(i[0])
-					ivar=i[1]
-					if hVST1.has_key((q2bin,wbin,dtyp,seq)):
-						if view=="q2_evltn":
-							if iq2bin==0:
-								hVST1[q2bin,wbin,dtyp,seq][ivar].Sumw2()
-								hVST1[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
-								hVST1[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
-							hVST1[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
-							hVST1[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
-							hVST1[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
-						elif view=="full_ana":
-								#pad=c.cd(1)
-								# h_dpp['EXP','F'][0].Draw()
-								# h_dpp['EXP','H'][0].Draw("sames")
-								hVST1[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
-								hVST1[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
-								hVST1[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
-								hVST1[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
-								hVST1[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
-								hVST1[q2bin,wbin,'EXP','C'][ivar].SetLineColor(coll['EXP','C'])
-								hVST1[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll['EXP','F'])
-								hVST1[q2bin,wbin,'EXP','H'][ivar].SetLineColor(coll['EXP','H'])
-								hVST1[q2bin,wbin,'SIM','F'][ivar].SetLineColor(coll['SIM','F'])
-								hVST1[q2bin,wbin,'SIM','T'][ivar].SetLineColor(coll['SIM','T'])
-								hVST1[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
-
-								hexp=hVST1[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
-								hsim=hVST1[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
+				for ivst,vst in enumerate(self.VSTS):
+					if vst==1:   h=hVST1
+					elif vst==2: h=hVST2
+					elif vst==3: h=hVST3
+					if h.has_key((q2bin,wbin,dtyp,seq)):
+						pads=padsl[ivst]
+						map_var_pad=zip(pads,ivars)
+						for i in map_vars_pads:
+							pad=c.cd(i[0])
+							ivar=i[1]
+							if view=="q2_evltn":
+								drawopt="same"
+								if iq2bin==0:
+									drawopt=""
+									h[q2bin,wbin,dtyp,seq][ivar].Sumw2()
+									h[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
+									h[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
+								h[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
+								h[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
+								h[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
+							elif view=="full_ana":
+								h[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
+								h[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
+								h[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
+								h[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
+								h[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
+								h[q2bin,wbin,'EXP','C'][ivar].SetLineColor(coll['EXP','C'])
+								h[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll['EXP','F'])
+								h[q2bin,wbin,'EXP','H'][ivar].SetLineColor(coll['EXP','H'])
+								h[q2bin,wbin,'SIM','F'][ivar].SetLineColor(coll['SIM','F'])
+								h[q2bin,wbin,'SIM','T'][ivar].SetLineColor(coll['SIM','T'])
+								h[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
+								
+								hexp=h[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
+								hsim=h[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
 								hexp.SetMinimum(0.)
 								hsim.SetMinimum(0.)
 								maximum=hexp.GetMaximum()
@@ -342,117 +138,13 @@ class DispYields:
 								hexp.SetMaximum(maximum+10)
 								hsim.SetMaximum(maximum+10)
 								hF=hexp.Clone()
-								hF.Divide(hVST1[q2bin,wbin,'EXP','F'][ivar])
-								hVST1[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
-								hVST1[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
-								hVST1[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
-								hVST1[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
-								#hVST1['EXP','H'][ivar].DrawNormalized("sames",1000)
-								hVST1[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
+								hF.Divide(h[q2bin,wbin,'EXP','F'][ivar])
+								h[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
+								h[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
+								h[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
+								h[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
+								h[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
 								pad.Update()
-					#pad.Update()
-
-				#! Plot hVST2 (rho)
-				pads=[2,5,8]
-				m=zip(pads,ivars)
-				for i in m:
-					pad=c.cd(i[0])
-					ivar=i[1]
-					if hVST2.has_key((q2bin,wbin,dtyp,seq)):
-						if view=="q2_evltn":
-							if iq2bin==0:
-								hVST2[q2bin,wbin,dtyp,seq][ivar].Sumw2()
-								hVST2[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
-								hVST2[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
-							hVST2[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
-							hVST2[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
-							hVST2[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
-						elif view=="full_ana":
-								#pad=c.cd(1)
-								# h_dpp['EXP','F'][0].Draw()
-								# h_dpp['EXP','H'][0].Draw("sames")
-								hVST2[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
-								hVST2[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
-								hVST2[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
-								hVST2[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
-								hVST2[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
-								hVST2[q2bin,wbin,'EXP','C'][ivar].SetLineColor(coll['EXP','C'])
-								hVST2[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll['EXP','F'])
-								hVST2[q2bin,wbin,'EXP','H'][ivar].SetLineColor(coll['EXP','H'])
-								hVST2[q2bin,wbin,'SIM','F'][ivar].SetLineColor(coll['SIM','F'])
-								hVST2[q2bin,wbin,'SIM','T'][ivar].SetLineColor(coll['SIM','T'])
-								hVST2[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
-
-								hexp=hVST2[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
-								hsim=hVST2[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
-								hexp.SetMinimum(0.)
-								hsim.SetMinimum(0.)
-								maximum=hexp.GetMaximum()
-								if hsim.GetMaximum()>hexp.GetMaximum():
-									maximum=hsim.GetMaximum()
-								hexp.SetMaximum(maximum+10)
-								hsim.SetMaximum(maximum+10)
-								hF=hexp.Clone()
-								hF.Divide(hVST2[q2bin,wbin,'EXP','F'][ivar])
-								hVST2[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
-								hVST2[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
-								hVST2[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
-								hVST2[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
-								#hVST2['EXP','H'][ivar].DrawNormalized("sames",1000)
-								hVST2[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
-								pad.Update()
-					#pad.Update()
-
-				#! Plot hVST3 (dzr)
-				pads=[3,6,9]
-				m=zip(pads,ivars)
-				for i in m:
-					pad=c.cd(i[0])
-					ivar=i[1]
-					if hVST3.has_key((q2bin,wbin,dtyp,seq)):
-						if view=="q2_evltn":
-							if iq2bin==0:
-								hVST3[q2bin,wbin,dtyp,seq][ivar].Sumw2()
-								hVST3[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
-								hVST3[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
-							hVST3[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
-							hVST3[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
-							hVST3[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
-						elif view=="full_ana":
-								#pad=c.cd(1)
-								# h_dpp['EXP','F'][0].Draw()
-								# h_dpp['EXP','H'][0].Draw("sames")
-								hVST3[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
-								hVST3[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
-								hVST3[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
-								hVST3[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
-								hVST3[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
-								hVST3[q2bin,wbin,'EXP','C'][ivar].SetLineColor(coll['EXP','C'])
-								hVST3[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll['EXP','F'])
-								hVST3[q2bin,wbin,'EXP','H'][ivar].SetLineColor(coll['EXP','H'])
-								hVST3[q2bin,wbin,'SIM','F'][ivar].SetLineColor(coll['SIM','F'])
-								hVST3[q2bin,wbin,'SIM','T'][ivar].SetLineColor(coll['SIM','T'])
-								hVST3[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
-
-								hexp=hVST3[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
-								hsim=hVST3[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
-								hexp.SetMinimum(0.)
-								hsim.SetMinimum(0.)
-								maximum=hexp.GetMaximum()
-								if hsim.GetMaximum()>hexp.GetMaximum():
-									maximum=hsim.GetMaximum()
-								hexp.SetMaximum(maximum+10)
-								hsim.SetMaximum(maximum+10)
-								hF=hexp.Clone()
-								hF.Divide(hVST3[q2bin,wbin,'EXP','F'][ivar])
-								hVST3[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
-								hVST3[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
-								hVST3[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
-								hVST3[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
-								#hVST3['EXP','H'][ivar].DrawNormalized("sames",1000)
-								hVST3[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
-								pad.Update()
-					#pad.Update()
 				if view=="full_ana":
 					c.SaveAs("%s/c%s_%s.png"%(outdir,wbin,q2bin))
 					c.Close()
@@ -460,9 +152,7 @@ class DispYields:
 				c.SaveAs("%s/c%s.png"%(outdir,wbin))
 				c.Close()
 		return
-		#c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
-		#c.SaveAs(".png"%(self.OUTDIR,q2wbin))
-
+		
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
 		Walk the ROOT file and extract:
@@ -524,35 +214,15 @@ class DispYields:
 
 					if dtyp=='EXP':
 						f=self.FEXP
-						# if seq=='C':
-						# 	col=ROOT.gROOT.ProcessLine("kCyan")
-						# if seq=='F':
-						# 	col=ROOT.gROOT.ProcessLine("kBlue")
-						# if seq=='H':
-						# 	col=ROOT.gROOT.ProcessLine("kBlack")
 					if dtyp=='SIM':
 						f=self.FSIM
-						# if seq=='F':
-						# 	col=ROOT.gROOT.ProcessLine("kRed")
-						# if seq=='T':
-						# 	col=ROOT.gROOT.ProcessLine("kGreen")
-						# 	mst=ROOT.gROOT.ProcessLine("kPlus")
-
+					
 					hVST1[q2bin_le,wbin_le,dtyp,seq]=[f.Get("%s/VST1/%s/h_M1"%(q2wbin,seq)),f.Get("%s/VST1/%s/h_THETA"%(q2wbin,seq)),
 								 	f.Get("%s/VST1/%s/h_ALPHA"%(q2wbin,seq))]
 					hVST2[q2bin_le,wbin_le,dtyp,seq]=[f.Get("%s/VST2/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST2/%s/h_THETA"%(q2wbin,seq)),
 								 	f.Get("%s/VST2/%s/h_ALPHA"%(q2wbin,seq))]
 					hVST3[q2bin_le,wbin_le,dtyp,seq]=[f.Get("%s/VST3/%s/h_M2"%(q2wbin,seq)),f.Get("%s/VST3/%s/h_THETA"%(q2wbin,seq)),
 								 	f.Get("%s/VST3/%s/h_ALPHA"%(q2wbin,seq))]
-					# for hists in [h_dpp[dtyp,seq],h_rho[dtyp,seq],h_dzr[dtyp,seq]]:
-					# 	#print hists
-					# 	for h in hists:
-					# 		#print h
-					# 		h.SetLineColor(col)
-					# 		h.SetMarkerColor(col)
-					# 		if dtyp=='SIM' and seq=='T':
-					# 			 h.SetMarkerStyle(mst)
-			#self.plot_obs_1D(q2wbin,h_dpp,h_rho,h_dzr)
 		#print "keys in hVST1:"
 		#print hVST1.keys()
 		#! Write out the list of "bad" q2w bins and the reason why it is bad
