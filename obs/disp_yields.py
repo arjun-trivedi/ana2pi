@@ -235,9 +235,14 @@ class DispYields:
 		
 		c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 
-	def plot_obs_1D_test(self,hVST1,hVST2,hVST3):
+	def plot_obs_1D_q2_evltn(self,hVST1,hVST2,hVST3,dtyp='EXP',seq='F'):
+		"""
+		+ Plot Q2 evolution of 1D-Observables in each W-bin
+		+ The user can specify the 'dtyp' and 'seq'
+		"""
 
-		outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution")
+		print "Going to display 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
+		outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s"%(dtyp,seq))
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
@@ -260,7 +265,7 @@ class DispYields:
 		print wbins_le
 
 		#! Plot and save 1D-obs for every W bin  (over all Q2-bins)
-		colors=["kRed","kOrange+7","kOrange+1","kYellow","kYellow+2","kGreen+3","kGreen","kCyan","kBlue+3","kBlue"]
+		colors=["kRed","kOrange","kYellow","kGreen+3","kGreen","kCyan","kBlue","kMagenta"]
 		coll=[]
 		for iq2bin in range(len(q2bins_le)):
 			coll.append(ROOT.gROOT.ProcessLine(colors[iq2bin]))
@@ -281,15 +286,15 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					#print 'plotting for',q2bin,wbin,'EXP','F'
-					if hVST1.has_key((q2bin,wbin,'EXP','F')):
+					#print 'plotting for',q2bin,wbin,dtyp,seq
+					if hVST1.has_key((q2bin,wbin,dtyp,seq)):
 						if iq2bin==0:
-							hVST1[q2bin,wbin,'EXP','F'][ivar].SetMinimum(0)
-						hVST1[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll[iq2bin])
-						hVST1[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll[iq2bin])
-						hVST1[q2bin,wbin,'EXP','F'][ivar].Sumw2()
-						hVST1[q2bin,wbin,'EXP','F'][ivar].Scale(10)
-						hVST1[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
+							hVST1[q2bin,wbin,dtyp,seq][ivar].Sumw2()
+							hVST1[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
+							hVST1[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
+						hVST1[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
+						hVST1[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
+						hVST1[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
 
 				#! Plot hVST2 (rho)
 				pads=[2,5,8]
@@ -297,36 +302,36 @@ class DispYields:
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					if hVST2.has_key((q2bin,wbin,'EXP','F')):
+					if hVST2.has_key((q2bin,wbin,dtyp,seq)):
 						if iq2bin==0:
-							hVST2[q2bin,wbin,'EXP','F'][ivar].SetMinimum(0)
-						hVST2[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll[iq2bin])
-						hVST2[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll[iq2bin])
-						hVST2[q2bin,wbin,'EXP','F'][ivar].Sumw2()
-						hVST2[q2bin,wbin,'EXP','F'][ivar].Scale(10)
-						hVST2[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
+							hVST2[q2bin,wbin,dtyp,seq][ivar].Sumw2()
+							hVST2[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
+							hVST2[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
+						hVST2[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
+						hVST2[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
+						hVST2[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
 
-				#! Plot hVST1 (dpp)
+				#! Plot hVST3 (dzr)
 				pads=[3,6,9]
 				m=zip(pads,ivars)
 				for i in m:
 					pad=c.cd(i[0])
 					ivar=i[1]
-					if hVST3.has_key((q2bin,wbin,'EXP','F')):
+					if hVST3.has_key((q2bin,wbin,dtyp,seq)):
 						if iq2bin==0:
-							hVST3[q2bin,wbin,'EXP','F'][ivar].SetMinimum(0)
-						hVST3[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll[iq2bin])
-						hVST3[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll[iq2bin])
-						hVST3[q2bin,wbin,'EXP','F'][ivar].Sumw2()
-						hVST3[q2bin,wbin,'EXP','F'][ivar].Scale(10)
-						hVST3[q2bin,wbin,'EXP','F'][ivar].Draw(drawopt)
+							hVST3[q2bin,wbin,dtyp,seq][ivar].SetMinimum(0)
+							hVST3[q2bin,wbin,dtyp,seq][ivar].Sumw2()
+							hVST3[q2bin,wbin,dtyp,seq][ivar].Scale(0.50)
+						hVST3[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
+						hVST3[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
+						hVST3[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
 			c.SaveAs("%s/c%s.png"%(outdir,wbin))
 			c.Close()
 		return
 		#c.SaveAs("%s/c1D_%s.png"%(self.OUTDIR,q2wbin))
 		#c.SaveAs(".png"%(self.OUTDIR,q2wbin))
 
-	def disp_1D(self,dtypl=['EXP','SIM'],seql=['T','C','H','F']):
+	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
 		Walk the ROOT file and extract:
 			+ hVST1(q2bin,wbin,dtyp,seq)=[VST1.M1, VST1.THETA, VST1.ALPHA]
@@ -425,7 +430,10 @@ class DispYields:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
 		print "Finished getting hVST1,hVST2,hVST3. Now going to display yields"
-		self.plot_obs_1D_test(hVST1,hVST2,hVST3)
+		if view=="q2_evltn":
+			self.plot_obs_1D_q2_evltn(hVST1,hVST2,hVST3,'EXP','F')
+			self.plot_obs_1D_q2_evltn(hVST1,hVST2,hVST3,'EXP','C')
+			self.plot_obs_1D_q2_evltn(hVST1,hVST2,hVST3,'SIM','F')
 		print "Done DispYields::disp_1D()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collectio\"(?); Wait a while!"
 		return
