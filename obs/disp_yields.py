@@ -408,7 +408,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>50: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			#if i>50: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
