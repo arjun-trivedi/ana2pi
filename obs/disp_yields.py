@@ -238,7 +238,8 @@ class DispYields:
 	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F'):
 		"""
 		+ Plot Q2 evolution of 1D-Observables in each W-bin
-		+ The user can specify the 'dtyp' and 'seq'
+		+ The user can specify:
+			+ view,dtyp,seq
 		"""
 
 		if view=="q2_evltn":
@@ -246,6 +247,13 @@ class DispYields:
 			outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s"%(dtyp,seq))
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
+		elif view=="full_ana":
+			print "Going to display 1D-Obs: full_ana"
+			outdir=os.path.join(self.OUTDIR_OBS_1D,"full_ana")
+			if not os.path.exists(outdir):
+				os.makedirs(outdir)
+		else:
+			sys.exit("view=%s not recognized. Exiting."%view)
 
 		#! Get all q2- and w-bins from the keys of hVSTX
 		q2bins_le,wbins_le=[],[]
@@ -265,19 +273,28 @@ class DispYields:
 		print "W:"
 		print wbins_le
 
-		#! Plot and save 1D-obs 
+		#! Set up some plotting related styles and aesthetics 
 		if view=="q2_evltn":
 			colors=["kRed","kOrange","kYellow","kGreen+3","kGreen","kCyan","kBlue","kMagenta"]
 			coll=[]
 			for iq2bin in range(len(q2bins_le)):
 				coll.append(ROOT.gROOT.ProcessLine(colors[iq2bin]))
-
+		elif view=="full_ana":
+			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),
+			      ('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),
+			      ('EXP','H'):ROOT.gROOT.ProcessLine("kBlack"),
+			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed"),
+			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
+			
+		ivars=[0,1,2]
 		for wbin in wbins_le:
 			if view=="q2_evltn":
 				c=ROOT.TCanvas()
 				c.Divide(3,3)
-				ivars=[0,1,2]
 			for iq2bin,q2bin in enumerate(q2bins_le):
+				if view=="full_ana":
+					c=ROOT.TCanvas()
+					c.Divide(3,3)
 				print "Plotting h1D for w=%0.3f,q2=%0.2f"%(wbin,q2bin)
 				
 				#! Plotting style, aesthetics etc
@@ -299,6 +316,35 @@ class DispYields:
 							hVST1[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
 							hVST1[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
 							hVST1[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
+						elif view=="full_ana":
+								#pad=c.cd(1)
+								# h_dpp['EXP','F'][0].Draw()
+								# h_dpp['EXP','H'][0].Draw("sames")
+								hVST1[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
+								hVST1[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
+								hVST1[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
+								hVST1[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
+								hVST1[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
+								hVST1[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
+
+								hexp=hVST1[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
+								hsim=hVST1[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
+								hexp.SetMinimum(0.)
+								hsim.SetMinimum(0.)
+								maximum=hexp.GetMaximum()
+								if hsim.GetMaximum()>hexp.GetMaximum():
+									maximum=hsim.GetMaximum()
+								hexp.SetMaximum(maximum+10)
+								hsim.SetMaximum(maximum+10)
+								hF=hexp.Clone()
+								hF.Divide(hVST1[q2bin,wbin,'EXP','F'][ivar])
+								hVST1[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
+								hVST1[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
+								hVST1[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
+								hVST1[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
+								#hVST1['EXP','H'][ivar].DrawNormalized("sames",1000)
+								hVST1[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
+								pad.Update()
 					#pad.Update()
 
 				#! Plot hVST2 (rho)
@@ -316,6 +362,35 @@ class DispYields:
 							hVST2[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
 							hVST2[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
 							hVST2[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
+						elif view=="full_ana":
+								#pad=c.cd(1)
+								# h_dpp['EXP','F'][0].Draw()
+								# h_dpp['EXP','H'][0].Draw("sames")
+								hVST2[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
+								hVST2[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
+								hVST2[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
+								hVST2[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
+								hVST2[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
+								hVST2[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
+
+								hexp=hVST2[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
+								hsim=hVST2[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
+								hexp.SetMinimum(0.)
+								hsim.SetMinimum(0.)
+								maximum=hexp.GetMaximum()
+								if hsim.GetMaximum()>hexp.GetMaximum():
+									maximum=hsim.GetMaximum()
+								hexp.SetMaximum(maximum+10)
+								hsim.SetMaximum(maximum+10)
+								hF=hexp.Clone()
+								hF.Divide(hVST2[q2bin,wbin,'EXP','F'][ivar])
+								hVST2[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
+								hVST2[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
+								hVST2[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
+								hVST2[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
+								#hVST2['EXP','H'][ivar].DrawNormalized("sames",1000)
+								hVST2[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
+								pad.Update()
 					#pad.Update()
 
 				#! Plot hVST3 (dzr)
@@ -333,7 +408,39 @@ class DispYields:
 							hVST3[q2bin,wbin,dtyp,seq][ivar].SetMarkerColor(coll[iq2bin])
 							hVST3[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
 							hVST3[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
+						elif view=="full_ana":
+								#pad=c.cd(1)
+								# h_dpp['EXP','F'][0].Draw()
+								# h_dpp['EXP','H'][0].Draw("sames")
+								hVST3[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
+								hVST3[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
+								hVST3[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
+								hVST3[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
+								hVST3[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
+								hVST3[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
+
+								hexp=hVST3[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
+								hsim=hVST3[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
+								hexp.SetMinimum(0.)
+								hsim.SetMinimum(0.)
+								maximum=hexp.GetMaximum()
+								if hsim.GetMaximum()>hexp.GetMaximum():
+									maximum=hsim.GetMaximum()
+								hexp.SetMaximum(maximum+10)
+								hsim.SetMaximum(maximum+10)
+								hF=hexp.Clone()
+								hF.Divide(hVST3[q2bin,wbin,'EXP','F'][ivar])
+								hVST3[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
+								hVST3[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
+								hVST3[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
+								hVST3[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
+								#hVST3['EXP','H'][ivar].DrawNormalized("sames",1000)
+								hVST3[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
+								pad.Update()
 					#pad.Update()
+				if view=="full_ana":
+					c.SaveAs("%s/c%s_%s.png"%(outdir,wbin,q2bin))
+					c.Close()
 			if view=="q2_evltn":
 				c.SaveAs("%s/c%s.png"%(outdir,wbin))
 				c.Close()
@@ -444,6 +551,10 @@ class DispYields:
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
+		elif view=="full_ana":
+			self.plot_obs_1D(hVST1,hVST2,hVST3,view="full_ana")
+		else:
+			sys.exit("view=%s not recognized. Exiting."%view)
 		print "Done DispYields::disp_1D()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collectio\"(?); Wait a while!"
 		return

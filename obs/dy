@@ -25,4 +25,5 @@ else:
 print "Displaying yields for %s"%simnum
 
 dy=DispYields(simnum)
-dy.disp_1D()
+#dy.disp_1D(view="q2_evltn")
+dy.disp_1D(view="full_ana")
