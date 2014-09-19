@@ -293,31 +293,6 @@ class DispYields:
 		fig.savefig('%s/integ_yield.png'%(outdir))	
 		#fig.savefig('test.png')		
 
-	# def get_integ_yield(self):
-	# 	"""
-	# 	Walk the ROOT file and obtain y(seq,w) 
-	# 	"""
-	# 	#! First get all q2wbin directories from file
-	# 	q2ws=self.get_q2wbinlist()
-	# 	print q2ws
-
-	# 	#! Obtain y(seq,w) for experiment
-	# 	#! Example of techincal implementation:
-	# 	#! y = { 'C':{w1:y_C,...,wn:y_C},
-	# 	#!       'H':{w1:y_H,...,wn:y_H},
-	# 	#!       'F':{w1:y_F,...,wn:y_F},
-	# 	#!	   }
-	# 	y={}
-	# 	f=ROOT.TFile(self.FEXP.GetName())
-	# 	for seq in ['C','H','F']:
-	# 		tmp={}
-	# 		for q2w in q2ws:
-	# 			w=float(q2w.split('_')[1].split('-')[0])
-	# 			h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
-	# 			tmp[w]=thntool.GetIntegral(h5)
-	# 		y[seq]=tmp
-	# 	return y	
-
 	def get_sim_stats(self):
 		"""
 		Walk the ROOT file and obtain simstats(ss) for a h5 in a Q2-W bin:
