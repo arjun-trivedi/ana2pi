@@ -6,14 +6,26 @@ import sys
 #! ---------------------
 #  dy [view] [simnum]
 #!----------------------
- 
+
+#! User input view, else ask!
+if len(sys.argv)<2:
+	view=raw_input("Please enter view(q2_evltn or full_ana or all)!\n")
+else:
+	view=sys.argv[1] 
 #! User input simnum, else use siml
 if len(sys.argv)<3:
 	simnum='siml'
 else:
 	simnum=sys.argv[2]
 
-print "Displaying 1D-Obs: %s,%s"%(sys.argv[1],simnum)
-
-dy=DispYields(simnum)
-dy.disp_1D(view=sys.argv[1])
+print "Displaying 1D-Obs: %s,%s"%(view,simnum)
+if view=="all":
+  dy=DispYields(simnum)
+  print "Displaying 1D-Obs: %s,%s"%("q2_evltn",simnum)
+  dy.disp_1D("q2_evltn")
+  print "Displaying 1D-Obs: %s,%s"%("full_ana",simnum)
+  dy.disp_1D("full_ana")
+else:
+  print "Displaying 1D-Obs: %s,%s"%(view,simnum)
+  dy=DispYields(simnum)
+  dy.disp_1D(view)
