@@ -83,9 +83,9 @@ class DispYields:
 			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
 			
 		ivars=[0,1,2]
-		#! 3x3 TCanvas-pads as per VSTs
-		#! VST1=1,2,3; VST2=2,5,6; VST3=3,6,9
-		padsl=[[1,4,7],[2,5,8],[3,6,9]]
+		#! 3x3 TCanvas-pads as per VSTs: VST1=1,2,3; VST2=2,5,6; VST3=3,6,9
+		pads=[[1,4,7],[2,5,8],[3,6,9]]
+		map_padnums_vars=[zip(pads[0],ivars),zip(pads[1],ivars),zip(pads[2],ivars)]
 		for wbin in wbins_le:
 			if view=="q2_evltn":
 				c=ROOT.TCanvas()
@@ -100,11 +100,12 @@ class DispYields:
 					elif vst==2: h=hVST2
 					elif vst==3: h=hVST3
 					if h.has_key((q2bin,wbin,dtyp,seq)):
-						pads=padsl[ivst]
-						map_var_pad=zip(pads,ivars)
-						for i in map_vars_pads:
-							pad=c.cd(i[0])
-							ivar=i[1]
+						# pads=padsl[ivst]
+						# map_var_pad=zip(pads,ivars)
+						for m in map_padnums_vars[ivst]:
+							padnum=m[0]
+							ivar=m[1]
+							pad=c.cd(padnum)
 							if view=="q2_evltn":
 								drawopt="same"
 								if iq2bin==0:
