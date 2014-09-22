@@ -3,12 +3,15 @@ from proc_yields import ProcYields
 from disp_yields import DispYields
 import sys
 
-#q2w=sys.argv[1]
+"""
+py [dtyp] [simnum=siml]
+"""
 dtyp=sys.argv[1]
-simnum=sys.argv[2]
 
-#print q2w,dtyp,sim
-#py=ProcYields(q2w,dtyp,sim)
+if len(sys.argv)>2:#i.e. simnum entered by user
+	simnum=sys.argv[2]
+else:
+	simnum='siml'
+
 py=ProcYields(dtyp,simnum)
-#py.proc()
 py.execute()
