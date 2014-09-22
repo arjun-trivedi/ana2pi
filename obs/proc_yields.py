@@ -35,6 +35,20 @@ H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 class ProcYields:
+	"""
+	+ Accomplishes
+		+ d2pi.root => yield_exp/sim.root
+		+ d2pi.root => yield_exp_hel.root 
+
+	+ The direct interface for the user is the 'execute()' method that calls 'proc()' for each h8[W]. The 'execute()'
+	method uses Python's multiprocessing module to accomplish the task of processing each h8[W] in 
+	a separate thread, thereby not having to load all h8[W] at once and exhausting the system's memory (atrivedi-
+	laptop; 12GB RAM)
+
+	+ For each q2w-bin and Varset therein, 'proc()' calls 'proc_h5()' and in the case for processing
+	h8s irrespective of the beam helicity, calls 'proc_h1()' too.
+
+	"""
 	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3]):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
@@ -48,24 +62,18 @@ class ProcYields:
 		self.VSTS=vsts 
 
 		if self.EXP:
-			#self.DATADIR='$HOME/ongoing/mem_test/exp/new-h8-bng'
 			self.DATADIR=os.environ['D2PIDIR_EXP']
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			#self.OUTDIR=self.DATADIR
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				#! This path should already exist when making yield_exp
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
-				#os.makedirs(self.OUTDIR)
-			#self.FIN_SIMYIELD=ROOT.TFile('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
 			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
 			self.FOUT=ROOT.TFile(os.path.join(self.OUTDIR,"yield_exp.root"),"RECREATE")
 			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUT.GetName())
 		if self.SIM:
-			#self.DATADIR='$HOME/ongoing/mem_test/sim/new-h8-bng'
 			self.DATADIR=os.path.join(os.environ['D2PIDIR_SIM'],self.SIMNUM)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
-			#self.OUTDIR=self.DATADIR
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR)
@@ -123,8 +131,24 @@ class ProcYields:
 		print "execute():Done"
 	
 	def proc(self,iw,que=None):
+		"""
+		1. Get h8(VST,SEQ) per Crs-W from FIN
+		2. Open FOUT in "appropriate" mode
+		3. Setup Q2W binning as per Crs-W bin
+		4. In each Q2W-bin and for each VST therein:
+			4.i   Set appropriate Q2 & W projection range for h8(VST,SEQ)
+			4.ii. proc_h5() & if self.USEHEL=true, proc_h1() 
+				
+		"""
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
-		#f=ROOT.TFile(self.FOUT.GetName(),"UPDATE");
+
+		#! 1. Get h8s from FIN (d2pi.root)
+		h8=self.get_h8(iw)
+		#! Debug h8
+		for k in h8:
+			print k,h8[k].GetEntries()
+
+		#! 2. Prepare FOUT (yield_exp/sim.root)
 		if self.EXP:
 			fname='yield_exp.root'
 		if self.SIM:
@@ -133,12 +157,8 @@ class ProcYields:
 			f=ROOT.TFile(os.path.join(self.OUTDIR,fname),"RECREATE")
 		else:
 			f=ROOT.TFile(os.path.join(self.OUTDIR,fname),"UPDATE")
-		#! Get h8
-		h8=self.get_h8(iw)
-		#! Debug h8
-		for k in h8:
-			print k,h8[k].GetEntries()
-		#! Set up Q2,W bng
+		
+		#! 3. Set up Q2,W bng
 		self.Q2BNG,self.WBNG=None,None
 		try:
 			self.Q2BNG,self.WBNG=atlib.init_q2wbng2(q2w_bng.Q2W_BNG[iw])
@@ -152,7 +172,7 @@ class ProcYields:
 		print "Q2 bins=",self.Q2BNG['BINS']
 		print "W bins=",self.WBNG['BINS']
 		
-		#! Loop over [Q2BNG,WBNG],VSTS,SEQ, and project: h8->h5->h1
+		#! 4. Loop over Q2W-bins and VSTs there in
 		for i in range(self.Q2BNG['NBINS']):
 			for j in range(self.WBNG['NBINS']):
 				#if j>4: break
@@ -160,22 +180,16 @@ class ProcYields:
 				q2wbindir=f.mkdir(q2wbin)
 				q2wbintitle="[%0.2f,%0.2f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				self.wmax=self.WBNG['BINS_UE'][j]
-				#hq2w,h5,h1=OrderedDict(),OrderedDict(),OrderedDict()
-				# self.hq2w.clear()
-				# self.h5.clear()
-				# self.h1.clear()
 				print "*** Processing Q2,W %s ***"%q2wbin
 				for vst in self.VSTS:
 					vst_name='VST%d'%vst
 					vstdir=q2wbindir.mkdir(vst_name)           
 					print "*** Processing %s ***"%(vst_name)
-					#! First, for h8-ST/SR/ER, set appropriate ranges for HEL,Q2&W
+					#! 4.i. Set appropriate Q2 & W projection range for h8(VST,SEQ=ST/SR/ER) 
 					print "*** h8 range setting for HEL,Q2 & W dimensions ... ***"
 					if self.EXP:seq_h8=['R']
 					if self.SIM:seq_h8=['T','R']
 					for seq in seq_h8:
-						#!-- HEL: include all helicities
-						h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
 						#!-- Q2
 						q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i]+self.Q2BNG['BINW']/2)
 						q2bin_ue=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_UE'][i]-self.Q2BNG['BINW']/2)
@@ -189,19 +203,13 @@ class ProcYields:
 						hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
 						hq2w.SetName('h_q2Vw')
 						hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
-						# outdir=os.path.join(self.OUTDIR,q2wbin,vst_name,seq)
-						# if not os.path.exists(outdir):
-						# 	os.makedirs(outdir)
-						#! cd into FOUT.q2wbindir.vstdir.seqdir
 						vstdir.mkdir(seq).cd()
 						hq2w.Write()
-						# cq2w=ROOT.TCanvas(hq2w.GetName(),hq2w.GetTitle())
-						# hq2w.Draw("colz")
-						# cq2w.SaveAs("%s/%s.png"%(outdir,cq2w.GetName()))
 					print "*** Done h8 range setting"
-					#! 1. h8->h5 
+					#! 4.ii. proc_h5() & if self.USEHEL=true, proc_h1() 
+					#! h8->h5 
 					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
-					#! 2. h5->h1
+					#! h5->h1
 					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
 		if que!=None:
 			que.put(0)
@@ -213,7 +221,7 @@ class ProcYields:
 
 	def get_h8(self,iw):
 		"""
-		get h8[iw]
+		get h8(VST,SEQ) for each Crs-W
 		"""
 		h8=OrderedDict()
 		#! Fetch h8-ST/SR/ER directly from file (Add all tops)
@@ -237,100 +245,96 @@ class ProcYields:
 		return h8
 
 	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
-		#global h5
 		h5=OrderedDict()
 		print "*** Processing h8->h5 ***"
+
 		#! Project out h5-T/R
-		if self.EXP:seq_h5=['R']
-		if self.SIM:seq_h5=['T','R']
+		if self.EXP:
+			seq_h5=['R']
+		if self.SIM:
+			seq_h5=['T','R']
 		for seq in seq_h5:
-			h5[vst_name,seq]=h8[vst_name,seq].Projection(5,H5_PROJDIM,"E")
-			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,seq]);
-			h5[vst_name,seq].SetName('h5')
-			h5[vst_name,seq].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,seq))
+			#! First set HEL: include all helicities
+			h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
+			
+			h5[seq]=h8[vst_name,seq].Projection(5,H5_PROJDIM,"E")
+			thntool.SetUnderOverFLowBinsToZero(h5[seq]);
+			h5[seq].SetName('h5')
+			h5[seq].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,seq))
 			if vstdir.GetDirectory(seq)==None:
 				vstdir.mkdir(seq).cd()
 			else:
 				vstdir.cd(seq)
-			h5[vst_name,seq].Write()
+			h5[seq].Write()
+
 		#! Calculate Acceptance
 		if self.SIM:
-			h5[vst_name,'A']=h5[vst_name,'R'].Clone()
-			h5[vst_name,'A'].Divide(h5[vst_name,'T'])
-			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'A']);
-			h5[vst_name,'A'].SetName('h5')
-			h5[vst_name,'A'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'A'))
+			h5['A']=h5['R'].Clone()
+			h5['A'].Divide(h5['T'])
+			thntool.SetUnderOverFLowBinsToZero(h5['A']);
+			h5['A'].SetName('h5')
+			h5['A'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'A'))
 			# vstdir.mkdir('A').cd()
-			# h5[vst_name,'A'].Write()
+			# h5['A'].Write()
 		if self.EXP:
-			h5[vst_name,'A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5'%(q2wbin,vst_name))
+			h5['A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5'%(q2wbin,vst_name))
 		vstdir.mkdir('A').cd()
-		h5[vst_name,'A'].Write()
+		h5['A'].Write()
 		#! Calculate Corrected yields
-		h5[vst_name,'C']=h5[vst_name,'R'].Clone()
-		h5[vst_name,'C'].Divide(h5[vst_name,'A'])
-		thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'C']);
-		h5[vst_name,'C'].SetName('h5')
-		h5[vst_name,'C'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'C'))
+		h5['C']=h5['R'].Clone()
+		h5['C'].Divide(h5['A'])
+		thntool.SetUnderOverFLowBinsToZero(h5['C']);
+		h5['C'].SetName('h5')
+		h5['C'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'C'))
 		vstdir.mkdir('C').cd()
-		h5[vst_name,'C'].Write()
+		h5['C'].Write()
 		#! Calculate H
 		if self.SIM:
-			h5[vst_name,'H']=h5[vst_name,'T'].Clone()
-			h5[vst_name,'H'].Add(h5[vst_name,'C'],-1)
-			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H'])
-			h5[vst_name,'H'].SetName('h5')
-			h5[vst_name,'H'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'H'))
+			h5['H']=h5['T'].Clone()
+			h5['H'].Add(h5['C'],-1)
+			thntool.SetUnderOverFLowBinsToZero(h5['H'])
+			h5['H'].SetName('h5')
+			h5['H'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'H'))
 			# vstdir.mkdir('H').cd()
-			# h5[vst_name,'H'].Write()
+			# h5['H'].Write()
 		if self.EXP:
 			#!first copy sim-HOLE into exp-HOLE
-			h5[vst_name,'H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5'%(q2wbin,vst_name))
+			h5['H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5'%(q2wbin,vst_name))
 			#!now get SC for obtaining normalization factor
 			h5_SIM_C=self.FIN_SIMYIELD.Get('%s/%s/C/h5'%(q2wbin,vst_name))
 			#!calculate normalization factor
-			norm=self.calcNorm(h5[vst_name,'C'],h5_SIM_C);
+			norm=self.calcNorm(h5['C'],h5_SIM_C);
 			#!normalize exp-HOLE
-			h5[vst_name,'H'].Scale(norm);
-			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H']);
+			h5['H'].Scale(norm);
+			thntool.SetUnderOverFLowBinsToZero(h5['H']);
 		vstdir.mkdir('H').cd()
-		h5[vst_name,'H'].Write()
+		h5['H'].Write()
 		#! Calculate F
-		h5[vst_name,'F']=h5[vst_name,'C'].Clone()
-		h5[vst_name,'F'].Add(h5[vst_name,'H'],1)
-		h5[vst_name,'F'].SetName('h5')
-		h5[vst_name,'F'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'F'))
+		h5['F']=h5['C'].Clone()
+		h5['F'].Add(h5['H'],1)
+		h5['F'].SetName('h5')
+		h5['F'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'F'))
 		vstdir.mkdir('F').cd()
-		h5[vst_name,'F'].Write()
+		h5['F'].Write()
 		print "*** Done processing h8->h5 ***"
 		return h5
 
 	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
-		#h1=OrderedDict()
 		print "*** Processing h5->h1 ... ***"
 		if self.EXP:
 			seq_h1=['R','C','A','H','F']
 		if self.SIM:
 			seq_h1=['T','R','C','A','H','F']
 		for seq in seq_h1:
-			#! Create outdir in OS (I am currently saving 1D hist plots to view with gqview)
-			# outdir=os.path.join(self.OUTDIR,q2wbin,vst_name,seq)
-			# if not os.path.exists(outdir):
-			# 	os.makedirs(outdir)
-			#! cd into FOUT.q2wbindir.vstdir.seqdir(note seqdir already create in proc_h5)
 			vstdir.cd(seq)
 			#! Project out h1s
 			for var in VARS:
-				h1=h5[vst_name,seq].Projection(H5_DIM[var],"E")
+				h1=h5[seq].Projection(H5_DIM[var],"E")
 				if var=='M1' or var=='M2':
 					self.setM1M2axisrange(h1,vst_name,var)
 				h1.SetName('h_%s'%var)
 				h1.SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
 				h1.Write()
-				# c1=ROOT.TCanvas(h1.GetName(),h1.GetTitle())
-				# h1.Draw()
-				# c1.SaveAs("%s/%s.png"%(outdir,c1.GetName()))
-				# c1.Close()
 		print "*** Done processing h5->h1 ***"
 
 	def setM1M2axisrange(self,h,vst_name,var):
