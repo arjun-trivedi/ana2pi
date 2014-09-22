@@ -45,8 +45,8 @@ class ProcYields:
 	a separate thread, thereby not having to load all h8(VST,SEQ) from every Crw-W bin at once and exhausting the system's memory (atrivedi-
 	laptop; 12GB RAM)
 
-	+ For each q2w-bin and Varset therein, 'proc()' calls 'proc_h5()' and in the case for processing
-	h8s irrespective of the beam helicity, calls 'proc_h1()' too.
+	+ For each q2w-bin: h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ)
+		+ Please see details of proc(),proc_h5() and proc_h1() for details
 
 	"""
 	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3]):
@@ -208,12 +208,12 @@ class ProcYields:
 				print "*** Done h8 Q2,W range setting"
 
 				#! 4.ii. h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ) 
-				print "*** Processing h8(VST,SEQ) => h5(VST,SEQ) ==> h1(VST,SEQ) ... ***"
+				print "*** Processing h8(VST,SEQ) => h5(VST,SEQ) ==> (if self.USEHEL=false) h1(VST,SEQ) ... ***"
 				#! h8->h5 
 				h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
 				#! h5->h1
 				self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
-				print "*** Done processing h8(VST,SEQ) => h5(VST,SEQ) ==> h1(VST,SEQ) ... ***"
+				print "*** Done processing h8(VST,SEQ) => h5(VST,SEQ) ==> (if self.USEHEL=false) h1(VST,SEQ) ... ***"
 
 		if que!=None:
 			que.put(0)
