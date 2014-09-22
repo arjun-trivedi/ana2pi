@@ -40,9 +40,9 @@ class ProcYields:
 		+ d2pi.root => yield_exp/sim.root
 		+ d2pi.root => yield_exp_hel.root 
 
-	+ The direct interface for the user is the 'execute()' method that calls 'proc()' for each h8[W]. The 'execute()'
-	method uses Python's multiprocessing module to accomplish the task of processing each h8[W] in 
-	a separate thread, thereby not having to load all h8[W] at once and exhausting the system's memory (atrivedi-
+	+ The direct interface for the user is the 'execute()' method that calls 'proc()' for h8(VST,SEQ) in each Crs-W bin. 
+		+ The 'execute()' method uses Python's multiprocessing module to accomplish the task of processing each h8(VST,SEQ) in 
+	a separate thread, thereby not having to load all h8(VST,SEQ) from every Crw-W bin at once and exhausting the system's memory (atrivedi-
 	laptop; 12GB RAM)
 
 	+ For each q2w-bin and Varset therein, 'proc()' calls 'proc_h5()' and in the case for processing
@@ -132,12 +132,12 @@ class ProcYields:
 	
 	def proc(self,iw,que=None):
 		"""
-		1. Get h8(VST,SEQ) per Crs-W from FIN
-		2. Open FOUT in "appropriate" mode
+		1. Get h8(VST,SEQ) per Crs-W from FIN (=d2pi.root)
+		2. Open FOUT (=yield_exp/sim.root) in "appropriate" mode (if 1st Crs-W bin, then "RECREATE", else "UPDATE")
 		3. Setup Q2W binning as per Crs-W bin
-		4. In each Q2W-bin and for each VST therein:
+		4. Loop over Q2W-bins
 			4.i   Set appropriate Q2 & W projection range for h8(VST,SEQ)
-			4.ii. proc_h5() & if self.USEHEL=true, proc_h1() 
+			4.ii. h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ) 
 				
 		"""
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
@@ -172,7 +172,7 @@ class ProcYields:
 		print "Q2 bins=",self.Q2BNG['BINS']
 		print "W bins=",self.WBNG['BINS']
 		
-		#! 4. Loop over Q2W-bins and VSTs there in
+		#! 4. Loop over Q2W-bins
 		for i in range(self.Q2BNG['NBINS']):
 			for j in range(self.WBNG['NBINS']):
 				#if j>4: break
@@ -180,13 +180,13 @@ class ProcYields:
 				q2wbindir=f.mkdir(q2wbin)
 				q2wbintitle="[%0.2f,%0.2f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				self.wmax=self.WBNG['BINS_UE'][j]
-				print "*** Processing Q2,W %s ***"%q2wbin
+				print "*** Processing Q2,W %s ***"%q2wbintitle
+
+				#! 4.i   Set appropriate Q2 & W projection range for h8(VST,SEQ);SEQ=ST/SR/ER
+				print "*** h8(VST,SEQ) range setting for Q2 & W dimensions ... ***"
 				for vst in self.VSTS:
 					vst_name='VST%d'%vst
 					vstdir=q2wbindir.mkdir(vst_name)           
-					print "*** Processing %s ***"%(vst_name)
-					#! 4.i. Set appropriate Q2 & W projection range for h8(VST,SEQ=ST/SR/ER) 
-					print "*** h8 range setting for HEL,Q2 & W dimensions ... ***"
 					if self.EXP:seq_h8=['R']
 					if self.SIM:seq_h8=['T','R']
 					for seq in seq_h8:
@@ -198,19 +198,23 @@ class ProcYields:
 						wbin_le=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_LE'][j]+self.WBNG['BINW']/2)
 						wbin_ue=h8[vst_name,seq].GetAxis(H8_DIM['W']).FindBin(self.WBNG['BINS_UE'][j]-self.WBNG['BINW']/2)
 						h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
-						print "For h8(%s),finished setting range for Q2-,W-bin = %s ***"%(seq,q2wbintitle)
-						#! Project out hq2w & save (to FOUT & OS)
+						print "h8(%s,%s):finished setting range for Q2-,W-bin = %s ***"%(vst_name,seq,q2wbintitle)
+						#! Project out hq2w & save in FOUT 
 						hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
 						hq2w.SetName('h_q2Vw')
 						hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
 						vstdir.mkdir(seq).cd()
 						hq2w.Write()
-					print "*** Done h8 range setting"
-					#! 4.ii. proc_h5() & if self.USEHEL=true, proc_h1() 
-					#! h8->h5 
-					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
-					#! h5->h1
-					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir)
+				print "*** Done h8 Q2,W range setting"
+
+				#! 4.ii. h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ) 
+				print "*** Processing h8(VST,SEQ) => h5(VST,SEQ) ==> h1(VST,SEQ) ... ***"
+				#! h8->h5 
+				h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
+				#! h5->h1
+				self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
+				print "*** Done processing h8(VST,SEQ) => h5(VST,SEQ) ==> h1(VST,SEQ) ... ***"
+
 		if que!=None:
 			que.put(0)
 		f.Write()
@@ -244,98 +248,118 @@ class ProcYields:
 					print "Done gettng and adding to top1",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)
 		return h8
 
-	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
+	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle):#,vst_name,vstdir):
+		"""
+		This method is called by proc(Crs-W) after the appropriate Q2,W projection
+		range has been set for h8(VST,SEQ) 
+		"""
 		h5=OrderedDict()
-		print "*** Processing h8->h5 ***"
+		print "*** Processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
 
-		#! Project out h5-T/R
+		#! seq to directly project from h8
 		if self.EXP:
-			seq_h5=['R']
+				seq_h5=['R']
 		if self.SIM:
 			seq_h5=['T','R']
-		for seq in seq_h5:
-			#! First set HEL: include all helicities
-			h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
-			
-			h5[seq]=h8[vst_name,seq].Projection(5,H5_PROJDIM,"E")
-			thntool.SetUnderOverFLowBinsToZero(h5[seq]);
-			h5[seq].SetName('h5')
-			h5[seq].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,seq))
-			if vstdir.GetDirectory(seq)==None:
-				vstdir.mkdir(seq).cd()
-			else:
-				vstdir.cd(seq)
-			h5[seq].Write()
 
-		#! Calculate Acceptance
-		if self.SIM:
-			h5['A']=h5['R'].Clone()
-			h5['A'].Divide(h5['T'])
-			thntool.SetUnderOverFLowBinsToZero(h5['A']);
-			h5['A'].SetName('h5')
-			h5['A'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'A'))
-			# vstdir.mkdir('A').cd()
-			# h5['A'].Write()
-		if self.EXP:
-			h5['A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5'%(q2wbin,vst_name))
-		vstdir.mkdir('A').cd()
-		h5['A'].Write()
-		#! Calculate Corrected yields
-		h5['C']=h5['R'].Clone()
-		h5['C'].Divide(h5['A'])
-		thntool.SetUnderOverFLowBinsToZero(h5['C']);
-		h5['C'].SetName('h5')
-		h5['C'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'C'))
-		vstdir.mkdir('C').cd()
-		h5['C'].Write()
-		#! Calculate H
-		if self.SIM:
-			h5['H']=h5['T'].Clone()
-			h5['H'].Add(h5['C'],-1)
-			thntool.SetUnderOverFLowBinsToZero(h5['H'])
-			h5['H'].SetName('h5')
-			h5['H'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'H'))
-			# vstdir.mkdir('H').cd()
-			# h5['H'].Write()
-		if self.EXP:
-			#!first copy sim-HOLE into exp-HOLE
-			h5['H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5'%(q2wbin,vst_name))
-			#!now get SC for obtaining normalization factor
-			h5_SIM_C=self.FIN_SIMYIELD.Get('%s/%s/C/h5'%(q2wbin,vst_name))
-			#!calculate normalization factor
-			norm=self.calcNorm(h5['C'],h5_SIM_C);
-			#!normalize exp-HOLE
-			h5['H'].Scale(norm);
-			thntool.SetUnderOverFLowBinsToZero(h5['H']);
-		vstdir.mkdir('H').cd()
-		h5['H'].Write()
-		#! Calculate F
-		h5['F']=h5['C'].Clone()
-		h5['F'].Add(h5['H'],1)
-		h5['F'].SetName('h5')
-		h5['F'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'F'))
-		vstdir.mkdir('F').cd()
-		h5['F'].Write()
-		print "*** Done processing h8->h5 ***"
+		for vst in self.VSTS:
+			vst_name='VST%d'%vst
+			vstdir=q2wbindir.GetDirectory(vst_name)
+
+			#! 1. Project out h5-T/R
+			for seq in seq_h5:
+				#! First set HEL: include all helicities
+				h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
+
+				h5[vst_name,seq]=h8[vst_name,seq].Projection(5,H5_PROJDIM,"E")
+				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,seq]);
+				h5[vst_name,seq].SetName('h5')
+				h5[vst_name,seq].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,seq))
+				if vstdir.GetDirectory(seq)==None:
+					vstdir.mkdir(seq).cd()
+				else:
+					vstdir.cd(seq)
+				h5[vst_name,seq].Write()
+
+			#! 2. Calculate h5-A
+			if self.SIM:
+				h5[vst_name,'A']=h5[vst_name,'R'].Clone()
+				h5[vst_name,'A'].Divide(h5[vst_name,'T'])
+				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'A']);
+				h5[vst_name,'A'].SetName('h5')
+				h5[vst_name,'A'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'A'))
+				# vstdir.mkdir('A').cd()
+				# h5[vst_name,'A'].Write()
+			if self.EXP:
+				h5[vst_name,'A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5'%(q2wbin,vst_name))
+			vstdir.mkdir('A').cd()
+			h5[vst_name,'A'].Write()
+
+			#! 3. Calculate h5-C
+			h5[vst_name,'C']=h5[vst_name,'R'].Clone()
+			h5[vst_name,'C'].Divide(h5[vst_name,'A'])
+			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'C']);
+			h5[vst_name,'C'].SetName('h5')
+			h5[vst_name,'C'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'C'))
+			vstdir.mkdir('C').cd()
+			h5[vst_name,'C'].Write()
+
+			#! 4. Calculate h5-H
+			if self.SIM:
+				h5[vst_name,'H']=h5[vst_name,'T'].Clone()
+				h5[vst_name,'H'].Add(h5[vst_name,'C'],-1)
+				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H'])
+				h5[vst_name,'H'].SetName('h5')
+				h5[vst_name,'H'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'H'))
+				# vstdir.mkdir('H').cd()
+				# h5[vst_name,'H'].Write()
+			if self.EXP:
+				#!first copy sim-HOLE into exp-HOLE
+				h5[vst_name,'H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5'%(q2wbin,vst_name))
+				#!now get SC for obtaining normalization factor
+				h5_SIM_C=self.FIN_SIMYIELD.Get('%s/%s/C/h5'%(q2wbin,vst_name))
+				#!calculate normalization factor
+				norm=self.calcNorm(h5[vst_name,'C'],h5_SIM_C);
+				#!normalize exp-HOLE
+				h5[vst_name,'H'].Scale(norm);
+				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H']);
+			vstdir.mkdir('H').cd()
+			h5[vst_name,'H'].Write()
+
+			#! Calculate h5-F
+			h5[vst_name,'F']=h5[vst_name,'C'].Clone()
+			h5[vst_name,'F'].Add(h5[vst_name,'H'],1)
+			h5[vst_name,'F'].SetName('h5')
+			h5[vst_name,'F'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'F'))
+			vstdir.mkdir('F').cd()
+			h5[vst_name,'F'].Write()
+		print "*** done processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
 		return h5
 
-	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle,vst_name,vstdir):
-		print "*** Processing h5->h1 ... ***"
+	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle):#,vst_name,vstdir):
+		print "*** Processing h5(VST,SEQ)->h1(VST,SEQ) for %s ***"%q2wbintitle
+
+		#! Define SEQ for which h5s are directly projected to h1
 		if self.EXP:
 			seq_h1=['R','C','A','H','F']
 		if self.SIM:
 			seq_h1=['T','R','C','A','H','F']
-		for seq in seq_h1:
-			vstdir.cd(seq)
-			#! Project out h1s
-			for var in VARS:
-				h1=h5[seq].Projection(H5_DIM[var],"E")
-				if var=='M1' or var=='M2':
-					self.setM1M2axisrange(h1,vst_name,var)
-				h1.SetName('h_%s'%var)
-				h1.SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
-				h1.Write()
-		print "*** Done processing h5->h1 ***"
+
+		for vst in self.VSTS:
+			vst_name='VST%d'%vst
+			vstdir=q2wbindir.GetDirectory(vst_name)
+			for seq in seq_h1:
+				vstdir.cd(seq)
+				#! Project out h1s
+				for var in VARS:
+					h1=h5[vst_name,seq].Projection(H5_DIM[var],"E")
+					if var=='M1' or var=='M2':
+						self.setM1M2axisrange(h1,vst_name,var)
+					h1.SetName('h_%s'%var)
+					h1.SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
+					h1.Write()
+		print "*** Processing h5(VST,SEQ)->h1(VST,SEQ) for %s ***"%q2wbintitle
+		return
 
 	def setM1M2axisrange(self,h,vst_name,var):
 		if (vst_name=="VST1" and var=='M1') or (vst_name=="VST3" and var=='M2'):
