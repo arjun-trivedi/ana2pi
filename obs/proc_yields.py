@@ -250,8 +250,9 @@ class ProcYields:
 
 	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle):#,vst_name,vstdir):
 		"""
-		This method is called by proc(Crs-W) after the appropriate Q2,W projection
-		range has been set for h8(VST,SEQ) 
+		+ This method is called by proc() after setting the appropriate Q2,W range on h8(VST,SEQ) for a q2w-bin. 
+		+ In this method, the following is accomplished
+			+ h8(VST,SEQ) => h5(VST,SEQ)
 		"""
 		h5=OrderedDict()
 		print "*** Processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
@@ -337,6 +338,14 @@ class ProcYields:
 		return h5
 
 	def proc_h1(self,h5,q2wbin,q2wbindir,q2wbintitle):#,vst_name,vstdir):
+		"""
+		+ This method is called by proc() after setting the appropriate Q2,W range on h8(VST,SEQ) for a q2w-bin and calling
+		  proc_h5(). 
+		+ In this method, the following is accomplished
+			+ h5(VST,SEQ) => h1(VST,SEQ)
+			+ Note that that an OrderedDict for h1 is not created, for the objects are directly saved and there 
+			  is no need to keep track of them by keys
+		"""
 		print "*** Processing h5(VST,SEQ)->h1(VST,SEQ) for %s ***"%q2wbintitle
 
 		#! Define SEQ for which h5s are directly projected to h1
