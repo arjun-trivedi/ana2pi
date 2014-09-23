@@ -81,20 +81,20 @@ class ProcYields:
 			self.DATADIR=os.environ['D2PIDIR_EXP']
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
-			if not os.path.exists(self.OUTDIR):
-				#! This path should already exist when making yield_exp
+			if not os.path.exists(self.OUTDIR): #! This path should already exist when making yield_exp
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
 			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
-			self.FOUT=ROOT.TFile(os.path.join(self.OUTDIR,"yield_exp.root"),"RECREATE")
-			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUT.GetName())
+			if self.USEHEL: self.FOUTNAME="yield_exp_hel.root"
+			else:           self.FOUTNAME="yield_exp.root" 
+			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUTNAME)
 		if self.SIM:
 			self.DATADIR=os.path.join(os.environ['D2PIDIR_SIM'],self.SIMNUM)
 			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR)
-			self.FOUT=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"),"RECREATE")
-			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FOUT.GetName())
+			self.FOUTNAME="yield_sim.root"
+			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FOUTNAME)
 
 		self.wmax=None #Used for setM1M2axisrange()
 
@@ -150,7 +150,7 @@ class ProcYields:
 	def proc(self,iw,que=None):
 		"""
 		1. Get h8(VST,SEQ) per Crs-W from FIN (=d2pi.root)
-		2. Open FOUT (=yield_exp/sim.root) in "appropriate" mode (if 1st Crs-W bin, then "RECREATE", else "UPDATE")
+		2. Open fout (self.FOUTNAME) in "appropriate" mode (if 1st Crs-W bin, then "RECREATE", else "UPDATE")
 		3. Setup Q2W binning as per Crs-W bin
 		4. Loop over Q2W-bins
 			4.i   Set appropriate Q2 & W projection range for h8(VST,SEQ)
@@ -165,15 +165,11 @@ class ProcYields:
 		for k in h8:
 			print k,h8[k].GetEntries()
 
-		#! 2. Prepare FOUT (yield_exp/sim.root)
-		if self.EXP:
-			fname='yield_exp.root'
-		if self.SIM:
-			fname='yield_sim.root'
+		#! 2. Prepare fout
 		if iw==0:
-			f=ROOT.TFile(os.path.join(self.OUTDIR,fname),"RECREATE")
+			fout=ROOT.TFile(os.path.join(self.OUTDIR,self.FOUTNAME),"RECREATE")
 		else:
-			f=ROOT.TFile(os.path.join(self.OUTDIR,fname),"UPDATE")
+			fout=ROOT.TFile(os.path.join(self.OUTDIR,self.FOUTNAME),"UPDATE")
 		
 		#! 3. Set up Q2,W bng
 		self.Q2BNG,self.WBNG=None,None
@@ -197,7 +193,7 @@ class ProcYields:
 				if self.DBG:
 					if j>1: break
 				q2wbin="%0.2f-%0.2f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
-				q2wbindir=f.mkdir(q2wbin)
+				q2wbindir=fout.mkdir(q2wbin)
 				q2wbintitle="[%0.2f,%0.2f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				self.wmax=self.WBNG['BINS_UE'][j]
 				print "*** Processing Q2,W %s ***"%q2wbintitle
@@ -231,19 +227,21 @@ class ProcYields:
 
 				#! 4.ii. h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ) 
 				if self.USEHEL:
-					print "not implemented yet!"
+					print "*** Processing h8(VST,SEQ) => h5_UNPOL(VST,SEQ),h5_POS(VST,SEQ),h5_NEG(VST,SEQ)  ... ***"
+					self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,hel=UNPOL)
+					self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,hel=POS)
+					self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,hel=NEG)
+					print "*** Done processing h8(VST,SEQ) => h5_UNPOL(VST,SEQ),h5_POS(VST,SEQ),h5_NEG(VST,SEQ)  ... ***"
 				else:
-					print "*** Processing h8(VST,SEQ) => h5(VST,SEQ) ==> h1(VST,SEQ) ... ***"
-					#! h8->h5 
-					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
-					#! h5->h1
+					print "*** Processing h8(VST,SEQ) => h5_UNPOL(VST,SEQ) ==> h1(VST,SEQ) ... ***"
+					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle,hel=UNPOL)#,vst_name,vstdir)
 					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
 					print "*** Done processing h8(VST,SEQ) => h5(VST,SEQ) ==> (if self.USEHEL=false) h1(VST,SEQ) ... ***"
 
 		if que!=None:
 			que.put(0)
-		f.Write()
-		f.Close()
+		fout.Write()
+		fout.Close()
 		print "*** Done processing Crs-W bin %s ***"%(iw+1)
 		return 0
 
@@ -273,11 +271,13 @@ class ProcYields:
 					print "Done gettng and adding to top1",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)
 		return h8
 
-	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle,hel=UNPOL):#,vst_name,vstdir):
+	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle,hel):#,vst_name,vstdir):
 		"""
 		+ This method is called by proc(), per Q2W-bin, after setting the appropriate Q2,W range on h8(VST,SEQ). 
 		+ In this method, the following is accomplished
 			+ h8(VST,SEQ) => h5(VST,SEQ)
+
+		+ @hel=UNPOL,POS,NEG,ZERO
 		"""
 		h5=OrderedDict()
 		print "*** Processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
@@ -307,7 +307,8 @@ class ProcYields:
 				h5[vst_name,seq].Write()
 
 			#! 2. Calculate h5-A
-			vstdir.mkdir('A').cd()
+			if vstdir.GetDirectory('A')==None:vstdir.mkdir('A').cd()
+			else:vstdir.cd('A')
 			if self.SIM:
 				h5[vst_name,'A']=h5[vst_name,'R'].Clone()
 				h5[vst_name,'A'].Divide(h5[vst_name,'T'])
@@ -319,7 +320,8 @@ class ProcYields:
 			h5[vst_name,'A'].Write()
 
 			#! 3. Calculate h5-C
-			vstdir.mkdir('C').cd()
+			if vstdir.GetDirectory('C')==None:vstdir.mkdir('C').cd()
+			else:vstdir.cd('C')
 			h5[vst_name,'C']=h5[vst_name,'R'].Clone()
 			h5[vst_name,'C'].Divide(h5[vst_name,'A'])
 			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'C']);
@@ -328,7 +330,8 @@ class ProcYields:
 			h5[vst_name,'C'].Write()
 
 			#! 4. Calculate h5-H
-			vstdir.mkdir('H').cd()
+			if vstdir.GetDirectory('H')==None:vstdir.mkdir('H').cd()
+			else:vstdir.cd('H')
 			if self.SIM:
 				h5[vst_name,'H']=h5[vst_name,'T'].Clone()
 				h5[vst_name,'H'].Add(h5[vst_name,'C'],-1)
@@ -348,7 +351,8 @@ class ProcYields:
 			h5[vst_name,'H'].Write()
 
 			#! Calculate h5-F
-			vstdir.mkdir('F').cd()
+			if vstdir.GetDirectory('F')==None:vstdir.mkdir('F').cd()
+			else:vstdir.cd('F')
 			h5[vst_name,'F']=h5[vst_name,'C'].Clone()
 			h5[vst_name,'F'].Add(h5[vst_name,'H'],1)
 			h5[vst_name,'F'].SetName('h5_%s'%HEL_NAME[hel])
