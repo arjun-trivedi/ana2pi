@@ -249,7 +249,7 @@ class DispYields:
 		"""
 		Walk the ROOT file and plot y(w;q2). 
 		"""
-		outdir=os.path.join(self.OUTDIR,"integ_yield")
+		outdir=os.path.join(self.OUTDIR,"Obs_IntgYld")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
