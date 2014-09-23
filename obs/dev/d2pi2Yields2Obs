@@ -1,7 +1,7 @@
 #- Make yield_sim.root,yield_exp.root,yield_exp_hel.root
-$ANA2PI_OBS/dev/py
+$ANA2PI_OBS_DIR/dev/py
 #- Display Obs_1D
-dy
+dy all #for all "views"
 #- Dispaly Obs_IntgYld
 dy_integ
 #- Dispaly simstats
