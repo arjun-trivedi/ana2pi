@@ -34,32 +34,48 @@ H5_PROJDIM=array('i',[H8_DIM['M1'],H8_DIM['M2'],H8_DIM['THETA'],H8_DIM['PHI'],
 H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
+#! Enumerate measured Helicity values as per their corresponding bin number in h8's Helicity dimension (see DataAna::MakrYields())
+#! + Only NEG,ZERO & POS are valid measured Helicity values
+#! + UNPOL does not correspond to a measured Helicity value, but helps in writing code
+UNPOL,NEG,ZERO,POS=-9999,1,2,3
+HEL_NAME={UNPOL:'UNPOL',NEG:'NEG',ZERO:'ZERO',POS:'POS'}
+
 class ProcYields:
 	"""
 	+ Accomplishes
-		+ d2pi.root => yield_exp/sim.root
-		+ d2pi.root => yield_exp_hel.root 
+		+ if self.USEHEL=false: d2pi.root => yield_exp/sim.root
+		+ if self.USEHEL=true:  d2pi.root => yield_exp_hel.root 
 
 	+ The direct interface for the user is the 'execute()' method that calls 'proc()' for h8(VST,SEQ) in each Crs-W bin. 
 		+ The 'execute()' method uses Python's multiprocessing module to accomplish the task of processing each h8(VST,SEQ) in 
 	a separate thread, thereby not having to load all h8(VST,SEQ) from every Crw-W bin at once and exhausting the system's memory (atrivedi-
 	laptop; 12GB RAM)
 
-	+ For each q2w-bin: h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ)
-		+ Please see details of proc(),proc_h5() and proc_h1() for details
-
+	+ For each q2w-bin (Please see details of proc(),proc_h5() and proc_h1() for details):
+		+ if self.USEHEL=false: h8(VST,SEQ) => h5(VST,SEQ) => h1(VST,SEQ)
+		+ if self.USEHEL=true:  h8(VST,SEQ) => h5(VST,SEQ) 
+	
 	"""
-	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3]):
+	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
 		if not(self.EXP or self.SIM):
 			sys.exit("dtyp is neither EXP or SIM! Exiting")
 		print "dtyp=%s"%dtyp
+
 		self.SIMNUM=simnum
 
 		self.TOPS=tops 
 		self.VSTS=vsts 
+
+		self.USEHEL=False
+		if self.EXP==True:
+			self.USEHEL=usehel
+		print "USEHEL=",self.USEHEL
+
+		self.DBG=dbg
+		print "DBG=",self.DBG
 
 		if self.EXP:
 			self.DATADIR=os.environ['D2PIDIR_EXP']
@@ -87,7 +103,8 @@ class ProcYields:
 
 		queue=Queue()
 		for iw in range(q2w_bng.NBINS_WCRS):
-		#for iw in range(2):
+			if self.DBG:
+				if iw>1: break
 			p=Process(target=self.proc, args=(iw,queue))
 			p.start()
 			p.join() # this blocks until the process terminates
@@ -174,8 +191,11 @@ class ProcYields:
 		
 		#! 4. Loop over Q2W-bins
 		for i in range(self.Q2BNG['NBINS']):
+			if self.DBG:
+				if i>1: break
 			for j in range(self.WBNG['NBINS']):
-				#if j>4: break
+				if self.DBG:
+					if j>1: break
 				q2wbin="%0.2f-%0.2f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
 				q2wbindir=f.mkdir(q2wbin)
 				q2wbintitle="[%0.2f,%0.2f)_[%0.3f,%0.3f)"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
@@ -186,7 +206,8 @@ class ProcYields:
 				print "*** h8(VST,SEQ) range setting for Q2 & W dimensions ... ***"
 				for vst in self.VSTS:
 					vst_name='VST%d'%vst
-					vstdir=q2wbindir.mkdir(vst_name)           
+					vstdir=q2wbindir.mkdir(vst_name)
+									
 					if self.EXP:seq_h8=['R']
 					if self.SIM:seq_h8=['T','R']
 					for seq in seq_h8:
@@ -200,20 +221,24 @@ class ProcYields:
 						h8[vst_name,seq].GetAxis(H8_DIM['W']).SetRange(wbin_le,wbin_ue)
 						print "h8(%s,%s):finished setting range for Q2-,W-bin = %s ***"%(vst_name,seq,q2wbintitle)
 						#! Project out hq2w & save in FOUT 
+						if vstdir.GetDirectory(seq)==None:vstdir.mkdir(seq).cd()
+						else:vstdir.cd(seq)
 						hq2w=h8[vst_name,seq].Projection(H8_DIM['Q2'],H8_DIM['W'],"E")
 						hq2w.SetName('h_q2Vw')
 						hq2w.SetTitle("%s_%s_%s_q2w"%(q2wbintitle,vst_name,seq))
-						vstdir.mkdir(seq).cd()
-						hq2w.Write()
+						#hq2w.Write() #! Am using Write() only for THnSparse Objects; for regular TH1s, Write() seems to save all cycles of an object(name;cycle)
 				print "*** Done h8 Q2,W range setting"
 
 				#! 4.ii. h8(VST,SEQ) => h5(VST,SEQ) => (if self.USEHEL=false) h1(VST,SEQ) 
-				print "*** Processing h8(VST,SEQ) => h5(VST,SEQ) ==> (if self.USEHEL=false) h1(VST,SEQ) ... ***"
-				#! h8->h5 
-				h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
-				#! h5->h1
-				self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
-				print "*** Done processing h8(VST,SEQ) => h5(VST,SEQ) ==> (if self.USEHEL=false) h1(VST,SEQ) ... ***"
+				if self.USEHEL:
+					print "not implemented yet!"
+				else:
+					print "*** Processing h8(VST,SEQ) => h5(VST,SEQ) ==> h1(VST,SEQ) ... ***"
+					#! h8->h5 
+					h5=self.proc_h5(h8,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
+					#! h5->h1
+					self.proc_h1(h5,q2wbin,q2wbindir,q2wbintitle)#,vst_name,vstdir)
+					print "*** Done processing h8(VST,SEQ) => h5(VST,SEQ) ==> (if self.USEHEL=false) h1(VST,SEQ) ... ***"
 
 		if que!=None:
 			que.put(0)
@@ -248,9 +273,9 @@ class ProcYields:
 					print "Done gettng and adding to top1",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)
 		return h8
 
-	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle):#,vst_name,vstdir):
+	def proc_h5(self,h8,q2wbin,q2wbindir,q2wbintitle,hel=UNPOL):#,vst_name,vstdir):
 		"""
-		+ This method is called by proc() after setting the appropriate Q2,W range on h8(VST,SEQ) for a q2w-bin. 
+		+ This method is called by proc(), per Q2W-bin, after setting the appropriate Q2,W range on h8(VST,SEQ). 
 		+ In this method, the following is accomplished
 			+ h8(VST,SEQ) => h5(VST,SEQ)
 		"""
@@ -258,10 +283,8 @@ class ProcYields:
 		print "*** Processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
 
 		#! seq to directly project from h8
-		if self.EXP:
-				seq_h5=['R']
-		if self.SIM:
-			seq_h5=['T','R']
+		if self.EXP:seq_h5=['R']
+		if self.SIM:seq_h5=['T','R']
 
 		for vst in self.VSTS:
 			vst_name='VST%d'%vst
@@ -269,70 +292,67 @@ class ProcYields:
 
 			#! 1. Project out h5-T/R
 			for seq in seq_h5:
-				#! First set HEL: include all helicities
-				h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
+				#! First set HEL
+				if hel==UNPOL:
+					h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange()
+				elif hel==POS or hel==NEG:
+					h8[vst_name,seq].GetAxis(H8_DIM['HEL']).SetRange(hel,hel)
 
+				if vstdir.GetDirectory(seq)==None:vstdir.mkdir(seq).cd()
+				else:vstdir.cd(seq)
 				h5[vst_name,seq]=h8[vst_name,seq].Projection(5,H5_PROJDIM,"E")
 				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,seq]);
-				h5[vst_name,seq].SetName('h5')
-				h5[vst_name,seq].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,seq))
-				if vstdir.GetDirectory(seq)==None:
-					vstdir.mkdir(seq).cd()
-				else:
-					vstdir.cd(seq)
+				h5[vst_name,seq].SetName('h5_%s'%HEL_NAME[hel])
+				h5[vst_name,seq].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,seq,HEL_NAME[hel]))
 				h5[vst_name,seq].Write()
 
 			#! 2. Calculate h5-A
+			vstdir.mkdir('A').cd()
 			if self.SIM:
 				h5[vst_name,'A']=h5[vst_name,'R'].Clone()
 				h5[vst_name,'A'].Divide(h5[vst_name,'T'])
 				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'A']);
-				h5[vst_name,'A'].SetName('h5')
-				h5[vst_name,'A'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'A'))
-				# vstdir.mkdir('A').cd()
-				# h5[vst_name,'A'].Write()
+				h5[vst_name,'A'].SetName('h5_%s'%HEL_NAME[hel])
+				h5[vst_name,'A'].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,'A',HEL_NAME[hel]))
 			if self.EXP:
-				h5[vst_name,'A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5'%(q2wbin,vst_name))
-			vstdir.mkdir('A').cd()
+				h5[vst_name,'A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5_UNPOL'%(q2wbin,vst_name))
 			h5[vst_name,'A'].Write()
 
 			#! 3. Calculate h5-C
+			vstdir.mkdir('C').cd()
 			h5[vst_name,'C']=h5[vst_name,'R'].Clone()
 			h5[vst_name,'C'].Divide(h5[vst_name,'A'])
 			thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'C']);
-			h5[vst_name,'C'].SetName('h5')
-			h5[vst_name,'C'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'C'))
-			vstdir.mkdir('C').cd()
+			h5[vst_name,'C'].SetName('h5_%s'%HEL_NAME[hel])
+			h5[vst_name,'C'].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,'C',HEL_NAME[hel]))
 			h5[vst_name,'C'].Write()
 
 			#! 4. Calculate h5-H
+			vstdir.mkdir('H').cd()
 			if self.SIM:
 				h5[vst_name,'H']=h5[vst_name,'T'].Clone()
 				h5[vst_name,'H'].Add(h5[vst_name,'C'],-1)
 				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H'])
-				h5[vst_name,'H'].SetName('h5')
-				h5[vst_name,'H'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'H'))
-				# vstdir.mkdir('H').cd()
-				# h5[vst_name,'H'].Write()
+				h5[vst_name,'H'].SetName('h5_%s'%HEL_NAME[hel])
+				h5[vst_name,'H'].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,'H',HEL_NAME[hel]))
 			if self.EXP:
 				#!first copy sim-HOLE into exp-HOLE
-				h5[vst_name,'H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5'%(q2wbin,vst_name))
+				h5[vst_name,'H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5_UNPOL'%(q2wbin,vst_name))
 				#!now get SC for obtaining normalization factor
-				h5_SIM_C=self.FIN_SIMYIELD.Get('%s/%s/C/h5'%(q2wbin,vst_name))
+				h5_SIM_C=self.FIN_SIMYIELD.Get('%s/%s/C/h5_UNPOL'%(q2wbin,vst_name))
 				#!calculate normalization factor
 				norm=self.calcNorm(h5[vst_name,'C'],h5_SIM_C);
 				#!normalize exp-HOLE
 				h5[vst_name,'H'].Scale(norm);
 				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H']);
-			vstdir.mkdir('H').cd()
 			h5[vst_name,'H'].Write()
 
 			#! Calculate h5-F
+			vstdir.mkdir('F').cd()
 			h5[vst_name,'F']=h5[vst_name,'C'].Clone()
 			h5[vst_name,'F'].Add(h5[vst_name,'H'],1)
-			h5[vst_name,'F'].SetName('h5')
-			h5[vst_name,'F'].SetTitle('%s_%s_%s'%(q2wbintitle,vst_name,'F'))
-			vstdir.mkdir('F').cd()
+			h5[vst_name,'F'].SetName('h5_%s'%HEL_NAME[hel])
+			h5[vst_name,'F'].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,'F',HEL_NAME[hel]))
 			h5[vst_name,'F'].Write()
 		print "*** done processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
 		return h5
@@ -366,7 +386,7 @@ class ProcYields:
 						self.setM1M2axisrange(h1,vst_name,var)
 					h1.SetName('h_%s'%var)
 					h1.SetTitle("%s_%s_%s_%s"%(q2wbintitle,vst_name,seq,var))
-					h1.Write()
+					#h1.Write() #! Am using Write() only for THnSparse Objects; for regular TH1s, Write() seems to save all cycles of an object(name;cycle)
 		print "*** Processing h5(VST,SEQ)->h1(VST,SEQ) for %s ***"%q2wbintitle
 		return
 

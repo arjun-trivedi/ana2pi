@@ -4,7 +4,7 @@ from disp_yields import DispYields
 import sys
 
 """
-py [dtyp] [simnum=siml]
+py [dtyp] [simnum=siml] [dbg=False]
 """
 dtyp=sys.argv[1]
 
@@ -13,5 +13,10 @@ if len(sys.argv)>2:#i.e. simnum entered by user
 else:
 	simnum='siml'
 
-py=ProcYields(dtyp,simnum)
+if len(sys.argv)>3:#i.e. dbg entered by user
+        dbg=sys.argv[3]
+else:
+        dbg=False
+
+py=ProcYields(dtyp,simnum=simnum,dbg=dbg)
 py.execute()

@@ -271,8 +271,8 @@ class DispYields:
 			iq2bin=q2bng['BINS_LE'].index(q2bin_le)
 			#! Get w, yield
 			w=float(q2wbin.split('_')[1].split('-')[0])
-			h5=self.FEXP.Get("%s/VST1/%s/h5"%(q2wbin,seq))
-			y[iq2bin][w]=thntool.GetIntegral(h5)
+			h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
+			y[iq2bin][w]=thntool.GetIntegral(h5_UNPOL)
 		#! Make sure y[q2bin]=(w,yield) are sorted by w
 		oy=[{} for i in range(len(y))]
 		for iq2bin in range(len(y)):
@@ -296,15 +296,15 @@ class DispYields:
 
 	def get_sim_stats(self):
 		"""
-		Walk the ROOT file and obtain simstats(ss) for a h5 in a Q2-W bin:
+		Walk the ROOT file and obtain simstats(ss) for a h5_UNPOL in a Q2-W bin:
 		ss={'T':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
 		    'R':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
 		    'A':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
 		    'H':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
 
 		where:
-			+ nbins=number of filled bins in a h5
-			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5)
+			+ nbins=number of filled bins in a h5_UNPOL
+			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5_UNPOL)
 			+ mu=average({n_i} (average of number of events per bin)
 			+ sg=(RMS({n_i}) (RMS of number of events per bin)
 		"""
@@ -326,11 +326,11 @@ class DispYields:
 				w=float(wbin.split('-')[0])
 				#print q2,w
 				#! Determine nbins,N,mu,sg for this q2,w
-				h5=f.Get("%s/VST1/%s/h5"%(q2w,seq))
-				nbins=thntool.GetNbinsNotEq0(h5)
-				N=thntool.GetIntegral(h5)
+				h5_UNPOL=f.Get("%s/VST1/%s/h5_UNPOL"%(q2w,seq))
+				nbins=thntool.GetNbinsNotEq0(h5_UNPOL)
+				N=thntool.GetIntegral(h5_UNPOL)
 				binc_stats=np.zeros(2,'f')
-				thntool.GetBinContentDistStats(h5,binc_stats)
+				thntool.GetBinContentDistStats(h5_UNPOL,binc_stats)
 				mu=binc_stats[0]
 				sg=binc_stats[1]
 				ss[seq].append([q2,w,nbins,N,mu,sg])
@@ -345,15 +345,15 @@ class DispYields:
 		are obtained only for R-PS bins. I am currently not using this since
 		this process takes impractically long.
 
-		Walk the ROOT file and obtain simstats(ss) for a h5 in a Q2-W bin:
+		Walk the ROOT file and obtain simstats(ss) for a h5_UNPOL in a Q2-W bin:
 		ss={'T':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
 		    'R':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
 		    'A':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
 		    'H':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
 
 		where:
-			+ nbins=number of filled bins in a h5
-			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5)
+			+ nbins=number of filled bins in a h5_UNPOL
+			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5_UNPOL)
 			+ mu=average({n_i}) (average of number of events per bin)
 				+ Note, average computed over only R-PS bins
 			+ sg=(RMS({n_i}) (RMS of number of events per bin)
@@ -375,18 +375,18 @@ class DispYields:
 			q2=float(q2bin.split('-')[0])
 			w=float(wbin.split('-')[0])
 			#print q2,w
-			#! First get all h5s
-			h5={}
+			#! First get all h5_UNPOLs
+			h5_UNPOL={}
 			for seq in ['T','R','A','H']:
-				h5[seq]=f.Get("%s/VST1/%s/h5"%(q2w,seq))
+				h5_UNPOL[seq]=f.Get("%s/VST1/%s/h5_UNPOL"%(q2w,seq))
 			#! Now get simstats	
 			for seq in ['T','R','A','H']:
 				#! Determine nbins,N,mu,sg for this q2,w
-				nbins=thntool.GetNbinsNotEq0(h5[seq])
-				N=thntool.GetIntegral(h5[seq])
+				nbins=thntool.GetNbinsNotEq0(h5_UNPOL[seq])
+				N=thntool.GetIntegral(h5_UNPOL[seq])
 				binc_stats=np.zeros(2,'f')
 				print "here"
-				thntool.GetBinContentDistStatsCommonBins(h5[seq],h5['R'],binc_stats)
+				thntool.GetBinContentDistStatsCommonBins(h5_UNPOL[seq],h5_UNPOL['R'],binc_stats)
 				print "here1"
 				mu=binc_stats[0]
 				sg=binc_stats[1]
