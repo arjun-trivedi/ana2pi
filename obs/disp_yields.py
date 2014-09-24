@@ -165,7 +165,7 @@ class DispYields:
 			+ VST2=rho,p
 			+ VST3=delta_0,pip
 		"""
-		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs-1D")
+		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs_1D")
 		if not os.path.exists(self.OUTDIR_OBS_1D):
 			os.makedirs(self.OUTDIR_OBS_1D)
 
