@@ -13,7 +13,7 @@ import math
 
 import atlib as atlib
 
-from proc_yields import H5_DIM#! for H5_DIM 
+from proc_yields import H5_DIM,VARS #! for H5_DIM 
 
 ROOT.gROOT.ProcessLine(".L THnTool.C+")
 from ROOT import THnTool
@@ -167,9 +167,9 @@ class DispYields:
 		#! Define some objects needed by this method
 		R2l=['T+L','LT','TT','LTp']
 
-		outdir=os.path.join(self.OUTDIR_OBS_R2)
-		if not os.path.exists(outdir):
-			os.makedirs(outdir)
+		# outdir=os.path.join(self.OUTDIR_OBS_R2)
+		# if not os.path.exists(outdir):
+		# 	os.makedirs(outdir)
 
 		#! Get all q2- and w-bins from the keys of hVSTX
 		q2bins_le,wbins_le=[],[]
@@ -202,21 +202,37 @@ class DispYields:
 									h5_POSm=thntool.MultiplyBy(h5_POS,'sphi',1)
 									h5_NEGm=thntool.MultiplyBy(h5_NEG,'sphi',-1)
 
-									hR2_POS=h5_POSm.Projection(H5_DIM['THETA'],"E")
-									hR2_POS.Scale(1/math.pi)
-									hR2_POS.Scale(1/50000)
-									hR2_NEG=h5_NEGm.Projection(H5_DIM['THETA'],"E")
-									hR2_NEG.Scale(1/math.pi)
-									hR2_NEG.Scale(1/50000)
-									hR2_AVG=hR2_POS.Clone("avg")
-									hR2_AVG.Add(hR2_NEG,1)
-									hR2_AVG.Scale(0.5)
+									for var in VARS:
+										if var=='PHI': continue
+										if vst==1 and var=='M2': continue
+										if vst==2 and var=='M1': continue
+										if vst==3 and var=='M1': continue
 
-									ROOT.gStyle.SetOptStat("nemruo")
-									c=ROOT.TCanvas()
-									hR2_AVG.Draw()
-									c.SaveAs("%s/cR2_%.3f_%0.2f_VST%d_THETA.png"%(outdir,wbin,q2bin,vst))
-									c.Close()
+										hR2_POS=h5_POSm.Projection(H5_DIM[var],"E")
+										hR2_POS.SetName("D_%d_%s_%s_POS"%(vst,var,seq))
+										hR2_POS.SetTitle("R2_{LT^{\'}}_VST%d_%s_%s_POS:[%.2f-%.3f]"%(vst,var,seq,q2bin,wbin))
+										hR2_POS.Scale(1/math.pi)
+										hR2_POS.Scale(1/50000)
+										hR2_NEG=h5_NEGm.Projection(H5_DIM[var],"E")
+										hR2_NEG.SetName("D_%d_%s_%s_NEG"%(vst,var,seq))
+										hR2_NEG.SetTitle("R2_{LT^{\'}}_VST%d_%s_%s_NEG:[%.2f-%.3f]"%(vst,var,seq,q2bin,wbin))
+										hR2_NEG.Scale(1/math.pi)
+										hR2_NEG.Scale(1/50000)
+										hR2_AVG=hR2_POS.Clone("avg")
+										hR2_AVG.SetName("D_%d_%s_%s_AVG"%(vst,var,seq))
+										hR2_AVG.SetTitle("R2_{LT^{\'}}_VST%d_%s_%s_AVG:[%.2f-%.3f]"%(vst,var,seq,q2bin,wbin))
+										hR2_AVG.Add(hR2_NEG,1)
+										hR2_AVG.Scale(0.5)
+
+										#ROOT.gStyle.SetOptStat("nemruo")
+
+										outdir=os.path.join(self.OUTDIR_OBS_R2,"D_VST%d_%s_%s"%(vst,var,seq))
+										if not os.path.exists(outdir):
+											os.makedirs(outdir)
+										c=ROOT.TCanvas()
+										hR2_AVG.Draw()
+										c.SaveAs("%s/cD_%.3f_%0.2f_VST%d_%s.png"%(outdir,wbin,q2bin,vst,var))
+										c.Close()
 							else: #! Currently, not implemented if alpha neq LTp
 								continue
 
