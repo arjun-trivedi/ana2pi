@@ -24,6 +24,7 @@ class DispYields:
 		# self.FSIM=root_open('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
 		# self.OUTDIR='/home/trivedia/ongoing/mem_test/obs'
 		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp.root'))
+		self.FEXP_HEL=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp_hel.root'))
 		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_sim.root'))
 		self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIM_NUM)
 		if not os.path.exists(self.OUTDIR):
@@ -242,7 +243,73 @@ class DispYields:
 		else:
 			sys.exit("view=%s not recognized. Exiting."%view)
 		print "Done DispYields::disp_1D()"
-		print "If the progam is not terminating, then Python is probably doing \"garbage collectio\"(?); Wait a while!"
+		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
+		return
+
+	def disp_R2(self,dtypl=['EXP'],seql=['C']):
+		"""
+		Walk the ROOT file and extract:
+			+ h5(q2bin,wbin,dtyp,vst,seq,hel)
+		"""
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2")
+		if not os.path.exists(self.OUTDIR_OBS_R2):
+			os.makedirs(self.OUTDIR_OBS_R2)
+
+		print "In DispYields::disp_R2()"
+		#! 1. First get all q2wbin directories from file
+		q2wbinl=self.get_q2wbinlist()
+		print q2wbinl
+
+		#! 2. Now get relevant histograms
+		h5={}
+		q2wbinl_bad={} 
+		for q2wbin in q2wbinl:
+			print "Getting h5 for",q2wbin
+			#! First make sure this bin is "good"
+			badbin=False
+			reason=''
+			for vst in self.VSTS:
+				h5_UNPOL=self.FEXP_HEL.Get("%s/VST%d/R/h5_UNPOL"%(q2wbin,vst))
+				if thntool.GetIntegral(h5_UNPOL)==0:
+					reason+="ER=0 for VST%d;"%vst
+					badbin=True
+			if badbin:
+				q2wbinl_bad[q2wbin]=reason
+				print "\"Bad\" bin: %s"%q2wbinl_bad[q2wbin]
+				continue
+			#! Now that bin is "good", get h5
+			q2bin_le=self.get_q2bin_le(q2wbin)
+			wbin_le=self.get_wbin_le(q2wbin)
+			#h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
+			for dtyp in dtypl:
+				if   dtyp=='EXP':f=self.FEXP_HEL
+				elif dtyp=='SIM':f=self.FSIM
+				for vst in self.VSTS:
+					for seq in seql:
+						h5[q2bin_le,wbin_le,dtyp,vst,seq,'UNPOL']=f.Get("%s/VST%d/%s/h5_UNPOL"%(q2wbin,vst,seq))
+						h5[q2bin_le,wbin_le,dtyp,vst,seq,'POS']=f.Get("%s/VST%d/%s/h5_POS"%(q2wbin,vst,seq))
+						h5[q2bin_le,wbin_le,dtyp,vst,seq,'NEG']=f.Get("%s/VST%d/%s/h5_NEG"%(q2wbin,vst,seq))
+
+		print "keys in h5:"
+		print h5.keys()
+
+		#! Write out the list of "bad" q2w bins and the reason why it is bad
+		fout=open("%s/bad-q2wbins.txt"%self.OUTDIR_OBS_R2,"w")
+		fout.write("Following are the \"bad\" q2w bins:\n")
+		for k in q2wbinl_bad:
+			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
+		fout.close()
+		# print "Finished getting hVST1,hVST2,hVST3. Now going to display yields"
+		# if view=="q2_evltn":
+		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
+		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
+		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
+		# elif view=="full_ana":
+		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="full_ana")
+		# else:
+		# 	sys.exit("view=%s not recognized. Exiting."%view)
+		print "Done DispYields::disp_R2()"
+		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
 	def disp_integ_yield(self,seq='F'):
