@@ -1,3 +1,4 @@
+from __future__ import division
 import ROOT
 from rootpy.io import root_open, DoesNotExist
 
@@ -8,7 +9,11 @@ import os,sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+import math
+
 import atlib as atlib
+
+from proc_yields import H5_DIM#! for H5_DIM 
 
 ROOT.gROOT.ProcessLine(".L THnTool.C+")
 from ROOT import THnTool
@@ -154,6 +159,70 @@ class DispYields:
 				c.SaveAs("%s/c%s.png"%(outdir,wbin))
 				c.Close()
 		return
+
+	def plot_obs_R2(self,h5l,dtyp='EXP',seq='C'):
+		"""
+		+ Plot Obs_R2
+		"""
+		#! Define some objects needed by this method
+		R2l=['T+L','LT','TT','LTp']
+
+		outdir=os.path.join(self.OUTDIR_OBS_R2)
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+
+		#! Get all q2- and w-bins from the keys of hVSTX
+		q2bins_le,wbins_le=[],[]
+		for k in h5l.keys():
+			q2bins_le.append(k[0])
+			wbins_le.append(k[1])
+		#! Keep only unique entries
+		q2bins_le=set(q2bins_le) #! Keep only unique entries
+		q2bins_le=list(q2bins_le) #! convert 'set' back to 'list'
+		q2bins_le=sorted(q2bins_le)
+		wbins_le=set(wbins_le) #! Keep only unique entries
+		wbins_le=list(wbins_le) #! convert 'set' back to 'list'
+		wbins_le=sorted(wbins_le)
+		print "going to plot R2 obs for:"
+		print "Q2:"
+		print q2bins_le
+		print "W:"
+		print wbins_le
+
+		for wbin in wbins_le:
+			for q2bin in q2bins_le:
+				for vst in self.VSTS:
+					for seq in ['C']:
+						for alpha in R2l:
+							if alpha=='LTp':
+								if h5l.has_key((q2bin,wbin,dtyp,vst,seq,'POS')) and h5l.has_key((q2bin,wbin,dtyp,vst,seq,'NEG')):
+									h5_POS=h5l[q2bin,wbin,dtyp,vst,seq,'POS']
+									h5_NEG=h5l[q2bin,wbin,dtyp,vst,seq,'NEG']
+
+									h5_POSm=thntool.MultiplyBy(h5_POS,'sphi',1)
+									h5_NEGm=thntool.MultiplyBy(h5_NEG,'sphi',-1)
+
+									hR2_POS=h5_POSm.Projection(H5_DIM['THETA'],"E")
+									hR2_POS.Scale(1/math.pi)
+									hR2_POS.Scale(1/50000)
+									hR2_NEG=h5_NEGm.Projection(H5_DIM['THETA'],"E")
+									hR2_NEG.Scale(1/math.pi)
+									hR2_NEG.Scale(1/50000)
+									hR2_AVG=hR2_POS.Clone("avg")
+									hR2_AVG.Add(hR2_NEG,1)
+									hR2_AVG.Scale(0.5)
+
+									ROOT.gStyle.SetOptStat("nemruo")
+									c=ROOT.TCanvas()
+									hR2_AVG.Draw()
+									c.SaveAs("%s/cR2_%.3f_%0.2f_VST%d_THETA.png"%(outdir,wbin,q2bin,vst))
+									c.Close()
+							else: #! Currently, not implemented if alpha neq LTp
+								continue
+
+
+
+
 		
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','C','H','F']):
 		"""
@@ -299,15 +368,8 @@ class DispYields:
 		for k in q2wbinl_bad:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
-		# print "Finished getting hVST1,hVST2,hVST3. Now going to display yields"
-		# if view=="q2_evltn":
-		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
-		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
-		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
-		# elif view=="full_ana":
-		# 	self.plot_obs_1D(hVST1,hVST2,hVST3,view="full_ana")
-		# else:
-		# 	sys.exit("view=%s not recognized. Exiting."%view)
+		print "Finished getting h5s. Now going to display R2s"
+		self.plot_obs_R2(h5)
 		print "Done DispYields::disp_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
@@ -475,7 +537,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			#if i>50: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			if i>5: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
