@@ -189,12 +189,13 @@ class DispYields:
 		print "W:"
 		print wbins_le
 
+		#! Extract hR2(EC,vst,var) in every q2w-bin
 		for wbin in wbins_le:
 			for q2bin in q2bins_le:
 				for vst in self.VSTS:
 					for seq in ['C']:
-						for alpha in R2l:
-							if alpha=='LTp':
+						for EC in R2l:
+							if EC=='LTp':
 								if h5l.has_key((q2bin,wbin,dtyp,vst,seq,'POS')) and h5l.has_key((q2bin,wbin,dtyp,vst,seq,'NEG')):
 									h5_POS=h5l[q2bin,wbin,dtyp,vst,seq,'POS']
 									h5_NEG=h5l[q2bin,wbin,dtyp,vst,seq,'NEG']
@@ -233,7 +234,7 @@ class DispYields:
 										hR2_AVG.Draw()
 										c.SaveAs("%s/cD_%.3f_%0.2f_VST%d_%s.png"%(outdir,wbin,q2bin,vst,var))
 										c.Close()
-							else: #! Currently, not implemented if alpha neq LTp
+							else: #! Currently, not implemented if EC neq LTp
 								continue
 
 
@@ -553,7 +554,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>5: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			#if i>5: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
