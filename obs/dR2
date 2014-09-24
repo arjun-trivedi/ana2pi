@@ -1,0 +1,17 @@
+#!/usr/bin/python
+from proc_yields import ProcYields
+from disp_yields import DispYields
+import sys
+
+#! ---------------------
+#  dR2 [simnum]
+#!----------------------
+
+if len(sys.argv)>2: #i.e. User input simnum, else use siml
+	simnum=sys.argv[2]
+else:
+	simnum='siml'
+
+print "Displaying Obs-R2: %s"%(simnum)
+dy=DispYields(simnum)
+dy.disp_R2()
