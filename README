@@ -52,7 +52,7 @@ ana2pi Branches
 					ii. ProcEid & ProcMomCor: Changed filepath of cut-par files relative to $WORKSPACE so that they could run seamlessly on ifarm too
 				3. New files added to process and display yields from d2pi: proc_yields.py and disp_yields.py				
 				
-					+ extract_obs-new_h8bng [08-28-14]: Test "new h8 binning"
+					+ extract_obs-new_h8bng [08-28-14]:"new h8 binning"
 						1. Code changes all across the process: h10->d2pi.root->yield.root->"displays"
 						2. ./obs/setup.tcshrc: Environment variables modified
 						3. Added ./sub_studies/study_mem
