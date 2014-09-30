@@ -34,6 +34,7 @@ protected:
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
+	Float_t getAlpha(TVector3 v_Gf,TVector3 v_Gp,TVector3 v_Bf,TVector3 v_Bp);
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
     TRandom* _rand; //atrivedi[06-13-14]: for _rand
@@ -642,9 +643,36 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->phi_cms_pip=getPhi(_lvPipCMS);
 	tp->phi_cms_pim=getPhi(_lvPimCMS);
 
-	tp->alpha_1=_rand->Uniform(0,1)*360;//180;
+	//! alpha angle
+	//! Following vectors are used in the calculation of alpha angle; see doc. for getAlpha()
+	TVector3 G_f(0,0,0);
+	TVector3 G_p(0,0,0);
+	TVector3 B_f(0,0,0);
+	TVector3 B_p(0,0,0);
+
+
+	G_f=uz*-1; //! Gamma vector used in calculation of alpha always "follows" -uz
+
+	//! alpha[p',pip][p,pim]
+	G_p=_lvPimCMS.Vect().Unit();
+	B_f=_lvPipCMS.Vect().Unit();
+	B_p=G_p;
+	tp->alpha_1=getAlpha(G_f,G_p,B_f,B_p);
+	//! alpha[pip,pim][p,p']
+	/*G_p=_lvPCMS.Vect().Unit();
+	B_f=_lvPipCMS.Vect().Unit();
+	B_p=G_p;
+	tp->alpha_2=getAlpha(G_f,G_p,B_f,B_p);
+	//! alpha[p',pim][p,pip]
+	G_p=_lvPipCMS.Vect().Unit();
+	B_f=_lvPCMS.Vect().Unit();
+	B_p=G_p;
+	tp->alpha_3=getAlpha(G_f,G_p,B_f,B_p);*/
+
+
+	/*tp->alpha_1=_rand->Uniform(0,1)*360;//180;
 	tp->alpha_2=_rand->Uniform(0,1)*360;//180;
-	tp->alpha_3=_rand->Uniform(0,1)*360;//180;
+	tp->alpha_3=_rand->Uniform(0,1)*360;//180;*/
 	//cout<<"alphas="<<tp->alpha_1<<":"<<tp->alpha_2<<":"<<tp->alpha_3<<endl;
 
 	/*tp->varset1.M1 = Mppip;
@@ -749,6 +777,60 @@ Float_t ProcD2pi::getPhi(TLorentzVector lv) {
 	Float_t retVal = 0;
 	retVal = RadToDeg()*invTan(lv.Py(), lv.Px());
 	return retVal;
+}
+
+//	+Computes the alpha angle between the two hadron planes as described by Iulia in :
+//  https://clasweb.jlab.org/wiki/index.php/2%CF%80_kinematics
+//
+//	+ The input arguments are:
+//		+ v_Gf: unit vector that Gamma "follows"
+//		+ v_Gp: unit vector that Gamma is perpendicular to
+//		+ v_Bf: unit vector that Beta "follows"
+//		+ v_Bp: unit vector that Beta is perpendicular to
+// 
+//	+ The computations proceeds as:
+//		1. v_G=aG*v_Gf + bG*v_Gp (look up code/website/hand-written notes to see how aG,bG are computed)
+//		2. v_B=aB*v_Bf + bB*v_Bp (look up code/website/hand-written notes to see how aB,bB are computed)
+//		3. v_D=v_G Cross v_B
+//		4. 
+//			If v_D is colinear with v_Gp:
+//				alpha=acos(v_G Dot v_B)
+//			Else If v_D is anti-colinear with v_Gp:
+//				alpha=2*pi - acos(v_G Dot v_B)
+//			Else:
+//				Error! v_D should either be colinear or anticolinear only!
+//		5. return alpha
+Float_t ProcD2pi::getAlpha(TVector3 v_Gf,TVector3 v_Gp,TVector3 v_Bf,TVector3 v_Bp){
+	//! step 1.
+	Float_t aG=TMath::Sqrt( 1/( 1-TMath::Power(v_Gf.Dot(v_Gp),2) ) );
+	Float_t bG=-v_Gf.Dot(v_Gp)*aG;
+	TVector3 v_G=aG*v_Gf + bG*v_Gp;
+	Info("ProcD2pi::getAlpha()","Magnitude of G=%f",TMath::Sqrt(v_G.Dot(v_G)));
+	Info("ProcD2pi::getAlpha()","Angle of G with v_Gp=%f",ACos(v_G.Dot(v_Gp))*RadToDeg());
+
+	//! step 2.
+	Float_t aB=TMath::Sqrt( 1/( 1-TMath::Power(v_Bf.Dot(v_Bp),2) ) );
+	Float_t bB=-v_Bf.Dot(v_Bp)*aB;
+	TVector3 v_B=aB*v_Bf + bB*v_Bp;
+	Info("ProcD2pi::getAlpha()","Magnitude of B=%f",TMath::Sqrt(v_B.Dot(v_B)));
+	Info("ProcD2pi::getAlpha()","Angle of B with v_Bp=%f",ACos(v_B.Dot(v_Gp))*RadToDeg());
+
+	//! step 3.
+	TVector3 v_D=v_G.Cross(v_B);
+
+	//! step 4.
+	Float_t alpha=9999;
+	Float_t v_D_angle_v_Gp=ACos(v_D.Unit().Dot(v_Gp))*RadToDeg();
+	if (v_D_angle_v_Gp==0){
+		alpha=ACos(v_G.Dot(v_B));
+	}else if (v_D_angle_v_Gp==180){
+		alpha=2*Pi()*ACos(v_G.Dot(v_B));
+	}else{
+		Info("ProcD2pi::getAlpha()","v_D is niether colinear nor anticolinear(angle=%f) with v_Gp! Setting alpha=9999",v_D_angle_v_Gp);
+	}
+
+	//! step 5.
+	return alpha*RadToDeg();
 }
 
 Float_t ProcD2pi::invTan(Float_t y, Float_t x){
