@@ -1,0 +1,42 @@
+#!/bin/bash
+##-----------------------------------------------##
+# Usage submit.h10_2_d2piR-sim sim1 sim2 ... simX
+##-----------------------------------------------##
+
+##-- Get list of simnum from user
+simlist=("$@")
+echo "Going to submit h10_2_d2piR-sim for the following"
+for simnum in "${simlist[@]}"; do
+   echo "$simnum"
+done
+
+##-- Now submit jobs for each simnum
+for simnum in "${simlist[@]}"; do
+  echo "Going to submit jobs for $simnum"
+  if [[ $HOST == "gothe14" ]]; then
+   h10_2_d2piR-sim $simnum
+  elif [[ $HOST == *farm* ]]; then
+   SUBDIR=${BSUBDIR}/e1f/2pi/sim/h10_2_d2piR-sim-$simnum
+   OUTDIR=${D2PIDIR_SIM}/$simnum
+   mkdir -p ${SUBDIR}
+   mkdir -p ${OUTDIR}
+   JSUBFILE=${SUBDIR}/job.sub
+   if [ -f "${JSUBFILE}" ]; then
+    echo "job.sub exists. Deleting it before creating new one."
+    rm ${JSUBFILE}
+   fi
+   echo "JOBNAME: e1f_h10_2_d2piR-sim-$simnum"     >> ${JSUBFILE}
+   echo "PROJECT: E1F"      >> ${JSUBFILE}
+   echo "SINGLE_JOB: true"  >> ${JSUBFILE}
+   echo "OS: centos62"         >> ${JSUBFILE}
+   echo "TRACK: analysis" >> ${JSUBFILE}
+   echo "DISK_SPACE: 5000 MB" >> ${JSUBFILE}
+   echo "MEMORY: 9500 MB" >> ${JSUBFILE} 
+   echo "TIME: 1440" >> ${JSUBFILE}
+   echo " "                 >> ${JSUBFILE}
+   echo "COMMAND: h10_2_d2piR-sim $simnum"  >> ${JSUBFILE}
+   echo " "                 >> ${JSUBFILE}
+   jsub ${JSUBFILE}
+  fi
+  echo "Submitted jobs for $simnum"
+done
