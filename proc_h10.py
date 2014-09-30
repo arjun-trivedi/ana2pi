@@ -64,22 +64,30 @@ def main(argv):
 
 	#! Prepare outdir,procorder
 	if dtyp=='exp':
-		if output=='d2pi':
-			if debug=='true': outdir=os.path.join(os.environ['D2PIDIR_EXP'],'debug')
-			else:     outdir=os.path.join(os.environ['D2PIDIR_EXP'])	
+		if output=='d2piR':
+			if debug=='true': 
+				outdir=os.path.join(os.environ['D2PIDIR_EXP'],'debug')
+			else:
+				outdir=os.path.join(os.environ['D2PIDIR_EXP'])	
 			procorder="eid:efid:qskim:mom:pid:d2piR"
-		elif output=='d2pi_memtest':
+		elif output=='memtest':
 			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
 			procorder="eid:efid:qskim:mom:pid:d2piR"
 		else:
 			sys.exit("output=%s not recognized"%output)
 	elif dtyp=='sim':
-		if output=='d2pi':
-			outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)
-                        procorder="d2piT" 
-                        #procorder="eid:efid:qskim:pid:d2piR" 
-			#procorder="d2piT:eid:efid:qskim:pid:d2piR"
-		elif output=='d2pi_memtest':
+		if output.find('d2pi')>=0:
+			if debug=='true':
+				outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum,'debug')
+			else: 
+				outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)           
+			if output.find("T")>=0:
+				procorder="d2piT" 
+			elif output.find("R")>=0:
+				procorder="eid:efid:qskim:pid:d2piR" 
+			else:
+				sys.exit("output=%s is invalid. output can only be d2piR or d2piT!"%output)
+		elif output=='memtest':
 			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
 			#procorder="d2piT"
 			procorder="eid:efid:qskim:pid:d2piR"

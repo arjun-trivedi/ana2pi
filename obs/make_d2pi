@@ -3,10 +3,11 @@
 ##-- This script is a "convenience" script for the user to convenientry  'make_d2pi'
 ##-- without having to remember the details of proc_h10.py
 dtyp=$1
-simnum=$2
-nentries=${3:-1000000000}
-debug=${4:-false}
-trackmem=${5:-false}
+output=$2
+simnum=$3
+nentries=${4:-1000000000}
+debug=${5:-false}
+trackmem=${6:-false}
 
 #-- Make sure all input arguments are sound
 if [[ -z "$dtyp" ]];then
@@ -35,7 +36,7 @@ if [[ $trackmem == true ]]; then
   idtfr=$((nentries / M ))M
   memlog=${ANA2PI_STUDY_MEM}/memlog_$idtfr
   proch10log=${ANA2PI_STUDY_MEM}/proch10log_$idtfr
-  proc_h10.py --h10type=$h10typ --output=d2pi_memtest --simnum=$simnum --nentries=$nentries --debug=$debug>& $proch10log &
+  proc_h10.py --h10type=$h10typ --output=memtest --simnum=$simnum --nentries=$nentries --debug=$debug>& $proch10log &
   pid_proc_h10=$!
   track_mem >& $memlog &
   echo "Running make_d2pi for $dtyp with trackmem..." 
