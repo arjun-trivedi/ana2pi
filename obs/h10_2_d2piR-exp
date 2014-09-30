@@ -1,0 +1,4 @@
+#!/bin/bash
+debug=${1:-false}
+nentries=${2:-1000000000}
+proc_h10.py --h10type="e1f:exp:2pi" --output=d2piR --debug=$debug --nentries=$nentries

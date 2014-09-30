@@ -1,0 +1,5 @@
+#!/bin/bash
+simnum=$1
+debug=${2:-false}
+nentries=${3:-1000000000}
+proc_h10.py --h10type="e1f:sim:2pi" --output=d2piR --simnum=$simnum --debug=$debug --nentries=$nentries
