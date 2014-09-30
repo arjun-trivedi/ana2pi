@@ -2,16 +2,8 @@
 
 ##-- This is a Convenience script
 nentries=${1:-1000000000}
-trackmem=${2:-false}
+debug=${2:-false}
+trackmem=${3:-false}
 
 #-- Note simnum is just a place-holder and not really used
-make_d2pi exp simnum $nentries $trackmem
-
-#ana -i h10.lst -t e1f:exp:2pi -p eid:efid:qskim:mom:pid:d2piR -n $nentries
-#proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --q2w=q2w1  --n=$nentries
-#for i in `seq 1 49`;
-#do
- #echo "*** Making exp/q2w$i/d2pi.root *** "
- #proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --n=$nentries
- #proc_h10.py --h10type=e1f:exp:2pi --output=d2pi --q2w=q2w$i --use_q2w_elist=True --n=$nentries
-#done
+make_d2pi exp simnum $nentries $debug $trackmem

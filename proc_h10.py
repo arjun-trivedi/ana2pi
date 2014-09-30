@@ -16,24 +16,26 @@ The input arguments are:
 	+ h10type:<expt>:<dtyp>:<rctn>
 	+ simnum
 	+ output: This governs the output from 'proc_h10' and therefore sets up 'procorder','outdir' & 'fout'
+	+ debug: This creates output in 'outdir/debug'
 	+ nentries
 """
 def main(argv):
 	h10type=''
 	simnum=''
 	output=''
+	debug='false'
 	fout=''
 	nentries='1000000000'
 	try:
-		opts, args = getopt.getopt(argv,"h",["h10type=","simnum=","output=","nentries="])
+		opts, args = getopt.getopt(argv,"h",["h10type=","simnum=","output=","nentries=","debug="])
 	except getopt.GetoptError:
 		print('Arguments not entered correctly. Correct syntax is:')
-		print('proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries')
+		print('proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries --debug=[false]')
 		sys.exit('Exiting.')
 		#sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --q2w=<q2wX> --use_q2w_elist=<True/False> --output=<output> --nentries'
+			print 'proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries --debug=[false]'
 			sys.exit()
 		elif opt in ("--h10type"):
 			h10type=arg
@@ -43,6 +45,8 @@ def main(argv):
 			output=arg
 		elif opt in ("--nentries"):
 			nentries=arg
+		elif opt in ("--debug"):
+			debug=arg
 	
 	#! Make sure the input is sound
 	if h10type=='' or output=='':
@@ -56,11 +60,13 @@ def main(argv):
 	if dtyp=='sim': print 'simnum=%s'%simnum
 	print 'output=%s'%output
 	print 'nentries=%s'%nentries
+	print 'debug=%s'%debug
 
 	#! Prepare outdir,procorder
 	if dtyp=='exp':
 		if output=='d2pi':
-			outdir=os.path.join(os.environ['D2PIDIR_EXP'])
+			if debug=='true': outdir=os.path.join(os.environ['D2PIDIR_EXP'],'debug')
+			else:     outdir=os.path.join(os.environ['D2PIDIR_EXP'])	
 			procorder="eid:efid:qskim:mom:pid:d2piR"
 		elif output=='d2pi_memtest':
 			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
@@ -82,7 +88,7 @@ def main(argv):
 
 	#! Prepare fout,h10lst
 	if not os.path.exists(outdir):
-		sys.exit("%s does not exist! Please create it and put appropriate h10.lst in it"%output)
+		sys.exit("%s does not exist! Please create it and put appropriate h10.lst in it"%outdir)
 	h10lst=os.path.join(outdir,"h10.lst")
 	fout=os.path.join(outdir,"%s.root"%output)
 

@@ -5,7 +5,8 @@
 dtyp=$1
 simnum=$2
 nentries=${3:-1000000000}
-trackmem=${4:-false}
+debug=${4:-false}
+trackmem=${5:-false}
 
 #-- Make sure all input arguments are sound
 if [[ -z "$dtyp" ]];then
@@ -34,7 +35,7 @@ if [[ $trackmem == true ]]; then
   idtfr=$((nentries / M ))M
   memlog=${ANA2PI_STUDY_MEM}/memlog_$idtfr
   proch10log=${ANA2PI_STUDY_MEM}/proch10log_$idtfr
-  proc_h10.py --h10type=$h10typ --output=d2pi_memtest --simnum=$simnum --n=$nentries >& $proch10log &
+  proc_h10.py --h10type=$h10typ --output=d2pi_memtest --simnum=$simnum --nentries=$nentries --debug=$debug>& $proch10log &
   pid_proc_h10=$!
   track_mem >& $memlog &
   echo "Running make_d2pi for $dtyp with trackmem..." 
@@ -42,7 +43,7 @@ if [[ $trackmem == true ]]; then
   echo "pid_proc_h10 is done. Killing track_mem"
   killall track_mem
 else
-  proc_h10.py --h10type=$h10typ --output=d2pi --simnum=$simnum --n=$nentries
+  proc_h10.py --h10type=$h10typ --output=d2pi --simnum=$simnum --nentries=$nentries --debug=$debug
 fi
 
   

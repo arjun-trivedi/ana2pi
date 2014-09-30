@@ -8,6 +8,7 @@
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
 #include <TRandom.h> //atrivedi[06-13-14]: for _rand: tmp to generate random values for alpha
+#include <math.h>
 
 using namespace TMath;
 using namespace ParticleConstants;
@@ -34,7 +35,7 @@ protected:
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
-	Float_t getAlpha(TVector3 v_Gf,TVector3 v_Gp,TVector3 v_Bf,TVector3 v_Bp);
+	Float_t getAlpha(TVector3 uv_Gf,TVector3 uv_Gp,TVector3 uv_Bf,TVector3 uv_Bp);
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
     TRandom* _rand; //atrivedi[06-13-14]: for _rand
@@ -783,50 +784,53 @@ Float_t ProcD2pi::getPhi(TLorentzVector lv) {
 //  https://clasweb.jlab.org/wiki/index.php/2%CF%80_kinematics
 //
 //	+ The input arguments are:
-//		+ v_Gf: unit vector that Gamma "follows"
-//		+ v_Gp: unit vector that Gamma is perpendicular to
-//		+ v_Bf: unit vector that Beta "follows"
-//		+ v_Bp: unit vector that Beta is perpendicular to
+//		+ uv_Gf: unit vector that Gamma "follows"
+//		+ uv_Gp: unit vector that Gamma is perpendicular to
+//		+ uv_Bf: unit vector that Beta "follows"
+//		+ uv_Bp: unit vector that Beta is perpendicular to
 // 
 //	+ The computations proceeds as:
-//		1. v_G=aG*v_Gf + bG*v_Gp (look up code/website/hand-written notes to see how aG,bG are computed)
-//		2. v_B=aB*v_Bf + bB*v_Bp (look up code/website/hand-written notes to see how aB,bB are computed)
+//		1. v_G=aG*uv_Gf + bG*uv_Gp (look up code/website/hand-written notes to see how aG,bG are computed)
+//		2. v_B=aB*uv_Bf + bB*uv_Bp (look up code/website/hand-written notes to see how aB,bB are computed)
 //		3. v_D=v_G Cross v_B
 //		4. 
-//			If v_D is colinear with v_Gp:
+//			If v_D is colinear with uv_Gp:
 //				alpha=acos(v_G Dot v_B)
-//			Else If v_D is anti-colinear with v_Gp:
+//			Else If v_D is anti-colinear with uv_Gp:
 //				alpha=2*pi - acos(v_G Dot v_B)
 //			Else:
 //				Error! v_D should either be colinear or anticolinear only!
 //		5. return alpha
-Float_t ProcD2pi::getAlpha(TVector3 v_Gf,TVector3 v_Gp,TVector3 v_Bf,TVector3 v_Bp){
+Float_t ProcD2pi::getAlpha(TVector3 uv_Gf,TVector3 uv_Gp,TVector3 uv_Bf,TVector3 uv_Bp){
 	//! step 1.
-	Float_t aG=TMath::Sqrt( 1/( 1-TMath::Power(v_Gf.Dot(v_Gp),2) ) );
-	Float_t bG=-v_Gf.Dot(v_Gp)*aG;
-	TVector3 v_G=aG*v_Gf + bG*v_Gp;
+	Float_t aG=TMath::Sqrt( 1/( 1-TMath::Power(uv_Gf.Dot(uv_Gp),2) ) );
+	Float_t bG=-uv_Gf.Dot(uv_Gp)*aG;
+	TVector3 v_G=aG*uv_Gf + bG*uv_Gp;
 	Info("ProcD2pi::getAlpha()","Magnitude of G=%f",TMath::Sqrt(v_G.Dot(v_G)));
-	Info("ProcD2pi::getAlpha()","Angle of G with v_Gp=%f",ACos(v_G.Dot(v_Gp))*RadToDeg());
+	Info("ProcD2pi::getAlpha()","Angle of G with uv_Gp=%f",ACos(v_G.Dot(uv_Gp))*RadToDeg());
 
 	//! step 2.
-	Float_t aB=TMath::Sqrt( 1/( 1-TMath::Power(v_Bf.Dot(v_Bp),2) ) );
-	Float_t bB=-v_Bf.Dot(v_Bp)*aB;
-	TVector3 v_B=aB*v_Bf + bB*v_Bp;
+	Float_t aB=TMath::Sqrt( 1/( 1-TMath::Power(uv_Bf.Dot(uv_Bp),2) ) );
+	Float_t bB=-uv_Bf.Dot(uv_Bp)*aB;
+	TVector3 v_B=aB*uv_Bf + bB*uv_Bp;
 	Info("ProcD2pi::getAlpha()","Magnitude of B=%f",TMath::Sqrt(v_B.Dot(v_B)));
-	Info("ProcD2pi::getAlpha()","Angle of B with v_Bp=%f",ACos(v_B.Dot(v_Gp))*RadToDeg());
+	Info("ProcD2pi::getAlpha()","Angle of B with uv_Bp=%f",ACos(v_B.Dot(uv_Gp))*RadToDeg());
 
 	//! step 3.
 	TVector3 v_D=v_G.Cross(v_B);
 
 	//! step 4.
 	Float_t alpha=9999;
-	Float_t v_D_angle_v_Gp=ACos(v_D.Unit().Dot(v_Gp))*RadToDeg();
-	if (v_D_angle_v_Gp==0){
+	Float_t v_D_angle_uv_Gp=ACos(v_D.Unit().Dot(uv_Gp))*RadToDeg();
+	Info("ProcD2pi::getAlpha()","angle=%f",v_D_angle_uv_Gp);
+	(v_D_angle_uv_Gp<90?v_D_angle_uv_Gp=floor(v_D_angle_uv_Gp):v_D_angle_uv_Gp=ceil(v_D_angle_uv_Gp));
+	Info("ProcD2pi::getAlpha()","angle after floor/ceil=%d",int(v_D_angle_uv_Gp));
+	if (int(v_D_angle_uv_Gp)==0){
 		alpha=ACos(v_G.Dot(v_B));
-	}else if (v_D_angle_v_Gp==180){
+	}else if (int(v_D_angle_uv_Gp)==180){
 		alpha=2*Pi()*ACos(v_G.Dot(v_B));
 	}else{
-		Info("ProcD2pi::getAlpha()","v_D is niether colinear nor anticolinear(angle=%f) with v_Gp! Setting alpha=9999",v_D_angle_v_Gp);
+		Info("ProcD2pi::getAlpha()","v_D is niether colinear nor anticolinear(angle=%f) with uv_Gp! Setting alpha=9999",v_D_angle_uv_Gp);
 	}
 
 	//! step 5.

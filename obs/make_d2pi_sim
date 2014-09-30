@@ -3,13 +3,7 @@
 ##-- This is a Convenience script
 simnum=$1
 nentries=${2:-1000000000}
+debug=${2:-false}
 trackmem=${3:-false}
 
-make_d2pi sim $simnum $nentries $trackmem
- 
-#echo "*** Making /sim/sim$sim_num/q2w$q2w_num/d2pi.root *** "
-#echo ">>> ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num"
-#ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num
-#proc_h10.py --h10type=e1f:sim:2pi --output=d2pi --sim_num=sim$sim_num --q2w=q2w$q2w_num  --nentries=$nentries
-#echo ">>> ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num"
-#ls -lrt $OBS_DATADIR_SIM/sim$sim_num/q2w$q2w_num
+make_d2pi sim $simnum $nentries $debug $trackmem
