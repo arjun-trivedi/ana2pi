@@ -60,7 +60,6 @@ ana2pi Branches
 
 						+ extract_obs-new_h8bng_test-add-alpha-angle [09-30-14]:
 						 Created mainly to test code after adding alpha-angle to ProcD2pi. Following is a list of all changes:
-
 						 	1. ProcD2pi
 						 		+ Added getAlpha()
 						 		+ Not using getTheta() method anymore to get theta_cms; LorentVectors once boosted into CMS can directly give theta_cms and going through getTheta() method which use the boosted LorentzVector's dot product with lvQCMS is redundant
