@@ -58,7 +58,7 @@ ana2pi Branches
 						3. Added ./sub_studies/study_mem
 						4. Added obs/dev: scripts and other tools in development
 
-						+ extract_obs-new_h8bng_test-add-alpha-angle [09-30-14]:
+						+ extract_obs-new_h8bng_test-add-alpha-angle [09-30-14] ==> [10-01-14] Merged with extract_obs-new_h8bng:
 						 Created mainly to test code after adding alpha-angle to ProcD2pi. Following is a list of all changes:
 						 	1. ProcD2pi
 						 		+ Added getAlpha()
