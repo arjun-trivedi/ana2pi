@@ -14,7 +14,7 @@ if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
   setenv D2PIDIR "/data/trivedia/e1f/2pi/d2pi"
   setenv D2PIDIR_EXP "${D2PIDIR}/exp"
   setenv D2PIDIR_SIM "${D2PIDIR}/sim"
-else if ($HOST =~ "*farm*") then
+else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv H10DIR_SIM "${VOLHOME}/data/e1f/2pi/sim"
   setenv D2PIDIR "${EG3HOME}/data/e1f/2pi/d2pi"
   setenv D2PIDIR_EXP "${D2PIDIR}/exp"
