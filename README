@@ -64,8 +64,7 @@ ana2pi Branches
 						 	1. ProcD2pi
 						 		+ Added getAlpha()
 						 		+ Not using getTheta() method anymore to get theta_cms; LorentVectors once boosted into CMS can directly give theta_cms and going through getTheta() method which use the boosted LorentzVector's dot product with lvQCMS is redundant
-						 	2. Changes to h10->d2pi infrastructure in order to make d2pi_T.root and d2pi_R.root separately (to keep simulation jobs within memory resources)
-
+						 	2. Changes to h10->d2pi infrastructure in order to make d2pi_T.root and d2pi_R.root separately (to keep simulation jobs within memory resources):
 						 		+ make* scripts => h10_2_d2piR* and h10_2_d2piT* scripts
 						 			+ submit.make_d2pi_sim* => submit.h10_2_d2piR-sim & submit.h10_2_d2piT-sim 
 
