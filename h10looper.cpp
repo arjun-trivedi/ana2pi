@@ -59,7 +59,7 @@ void H10Looper::Loop(Long64_t nentries)
       }
       
       if (jentry%100000==0) {
-         Info("H10Looper::Loop", "Processing entry# %d",jentry);
+         Info("H10Looper::Loop", "Processing entry# %d(file=%s)",jentry,fChain->GetFile()->GetName());
          Info("H10Looper::Loop", "%5.2f%% entries processed",(float)jentry/nentries_to_proc*100);  
          gSystem->GetMemInfo(&meminfo);
          int mem=meminfo.fMemUsed+meminfo.fSwapUsed;
