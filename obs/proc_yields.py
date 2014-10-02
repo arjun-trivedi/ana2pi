@@ -79,22 +79,23 @@ class ProcYields:
 
 		if self.EXP:
 			self.DATADIR=os.environ['D2PIDIR_EXP']
-			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
+			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2piR.root'))
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR): #! This path should already exist when making yield_exp
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
 			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
 			if self.USEHEL: self.FOUTNAME="yield_exp_hel.root"
 			else:           self.FOUTNAME="yield_exp.root" 
-			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUTNAME)
+			print "DATADIR=%s\nOUTDIR=%s\nFIN_R=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s"%(self.DATADIR,self.OUTDIR,self.FIN_R.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUTNAME)
 		if self.SIM:
 			self.DATADIR=os.path.join(os.environ['D2PIDIR_SIM'],self.SIMNUM)
-			self.FIN=ROOT.TFile(os.path.join(self.DATADIR,'d2pi.root'))
+			self.FIN_T=ROOT.TFile(os.path.join(self.DATADIR,'d2piT.root'))
+			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2piR.root'))
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR)
 			self.FOUTNAME="yield_sim.root"
-			print "DATADIR=%s\nOUTDIR=%s\nFIN=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN.GetName(),self.FOUTNAME)
+			print "DATADIR=%s\nOUTDIR=%s\nFIN_T=%s\nFIN_R=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN_T.GetName(),self.FIN_R.GetName(),self.FOUTNAME)
 
 		self.wmax=None #Used for setM1M2axisrange()
 
@@ -149,7 +150,7 @@ class ProcYields:
 	
 	def proc(self,iw,que=None):
 		"""
-		1. Get h8(VST,SEQ) per Crs-W from FIN (=d2pi.root)
+		1. Get h8(VST,SEQ) per Crs-W from FIN_T,FIN_R (=d2piT.root,d2piR.root)
 		2. Open fout (self.FOUTNAME) in "appropriate" mode (if 1st Crs-W bin, then "RECREATE", else "UPDATE")
 		3. Setup Q2W binning as per Crs-W bin
 		4. Loop over Q2W-bins
@@ -159,7 +160,7 @@ class ProcYields:
 		"""
 		print "*** Processing Crs-W bin %s ***"%(iw+1)
 
-		#! 1. Get h8s from FIN (d2pi.root)
+		#! 1. Get h8s from FIN_T,FIN_R (d2piT.root,d2piR.root)
 		h8=self.get_h8(iw)
 		#! Debug h8
 		for k in h8:
@@ -257,17 +258,17 @@ class ProcYields:
 			#! Fetch h8-T
 			if self.SIM:
 				print "Going to get",'d2piT/h8_%d_%d'%(iw+1,vst),"..."
-				h8[vst_name,'T']=self.FIN.Get('d2piT/h8_%d_%d'%(iw+1,vst))
+				h8[vst_name,'T']=self.FIN_T.Get('d2piT/h8_%d_%d'%(iw+1,vst))
 				print "Done getting",'d2piT/h8_%d_%d'%(iw+1,vst)
 			#! Fetch h8-R (Add all tops i.e. h8 = h8(t1)+h8(t2)+h8(t3)+h8(t4))
 			for itop,top in enumerate(self.TOPS):
 				if itop==0:
 					print "Going to get",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst),"..."
-					h8[vst_name,'R']=self.FIN.Get('d2piR/top%d/h8_%d_%d'%(top,iw+1,vst))
+					h8[vst_name,'R']=self.FIN_R.Get('d2piR/top%d/h8_%d_%d'%(top,iw+1,vst))
 					print "Done getting",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)
 				else:
 					print "Going to get and add to top1",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst),"..."
-					h8[vst_name,'R'].Add(self.FIN.Get('d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)))
+					h8[vst_name,'R'].Add(self.FIN_R.Get('d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)))
 					print "Done gettng and adding to top1",'d2piR/top%d/h8_%d_%d'%(top,iw+1,vst)
 		return h8
 

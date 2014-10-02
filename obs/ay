@@ -23,7 +23,7 @@ else:
     siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
     siml=[os.path.basename(i) for i in siml]
     siml.sort()
-print "List of indovidual simulations=",siml
+print "List of individual simulations=",siml
 
 #! 2. Prepare outdir
 siml_pretty=[int(i.strip("sim")) for i in siml]
@@ -39,12 +39,14 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
 
 #! 3. Finally, do 'hadd targetfile sourcefile1 sourcefile2 ... sourcefileN'
-tf=os.path.join(outdir,'d2pi.root')
-sfl=[]
-for sim in siml:
-    sfl.append(os.path.join(datadir,sim,'d2pi.root'))
-sfl=sorted(sfl)
-cmd=["hadd",tf]
-cmd+=sfl
-print ">>>%s\n"%cmd
-subprocess.call(cmd)
+fl=['d2piT.root','d2piR.root']
+for f in fl:
+    tf=os.path.join(outdir,f)
+    sfl=[]
+    for sim in siml:
+        sfl.append(os.path.join(datadir,sim,f))
+    sfl=sorted(sfl)
+    cmd=["hadd",tf]
+    cmd+=sfl
+    print ">>>%s\n"%cmd
+    subprocess.call(cmd)
