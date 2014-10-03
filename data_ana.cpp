@@ -248,6 +248,7 @@ TObjArray** DataAna::makeYields()
 		bngMpippim.xmin=MASS_PIP+MASS_PIM;
 		bngMpippim.xmax=bngW.xmax-MASS_P;
 	
+		//! Varsets as per "three assignments(i,ii,iii)"  listed on page 4 of JM06_model_PhysRevC.80.045212.pdf
 		/* Varset 1*/
 		//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_pim,     phi_pim,     alpha[p'pip][ppim]}
 		Int_t bins1[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
