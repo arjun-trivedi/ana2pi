@@ -41,7 +41,7 @@ TString varTitle[nVARSET][nVAR] = {
                                     //atrivedi:080213
                                     /*"M_{p#pi^{+}}", "M_{#pi^{+}#pi^{-}}",
                                     "#theta_{p}", "#phi_{p}",
-                                    "#alpha_{[#pi^{+}#pi^{-}][p^{'}p]}",
+                                    "#alpha_{[#pi^{+}#pi^{-}][pp^{'}]}",
                                     "M_{p#pi^{+}}", "M_{p#pi^{-}}",
                                     "#theta_{#pi^{+}}", "#phi_{#pi^{+}}",
                                     "#alpha_{[p^{'}#pi^{-}][p#pi^{+}]}"

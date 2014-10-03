@@ -32,7 +32,7 @@ for simnum in "${simlist[@]}"; do
    echo "TRACK: analysis" >> ${JSUBFILE}
    echo "DISK_SPACE: 5000 MB" >> ${JSUBFILE}
    echo "MEMORY: 9500 MB" >> ${JSUBFILE} 
-   echo "TIME: 1440" >> ${JSUBFILE}
+   echo "TIME: 4320" >> ${JSUBFILE}
    echo " "                 >> ${JSUBFILE}
    echo "COMMAND: h10_2_d2piR-sim $simnum"  >> ${JSUBFILE}
    echo " "                 >> ${JSUBFILE}

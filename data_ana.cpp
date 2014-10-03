@@ -269,7 +269,7 @@ TObjArray** DataAna::makeYields()
 		Double_t xmin2[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax2[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
 		THnSparse* h8_2 = new THnSparseF(TString::Format("h8_%d_%d",i+1,2), 
-		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][p^{'}p]}", 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][pp^{'}]}", 
 		hdim, bins2, xmin2, xmax2);
 		h8_2->Sumw2();
 		//! Make variable Q2-binning

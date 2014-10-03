@@ -37,6 +37,22 @@ class DispYields:
 
 		self.VSTS=[1,2,3]
 
+		#! Create dictionary for variable_names(vst,var) where
+		#! + vst in VSTS=[1,2,3]
+		#! + var in VARS=['M1','M2','THETA','PHI','ALPHA']
+		#! NOTE: Should be same as DataAna::MakeYields()
+		self.VAR_NAMES={(1,VARS[0]):"M_{p#pi^{+}}",(1,VARS[1]):"M_{#pi^{+}#pi^{-}}",
+                        (1,VARS[2]):"#theta_{#pi^{-}}",(1,VARS[3]):"#phi_{#pi^{-}}",
+                        (1,VARS[4]):"#alpha_{[p_{f}#pi^{+}][p#pi^{-}]}",
+                        (2,VARS[0]):"M_{p#pi^{+}}",(2,VARS[1]):"M_{#pi^{+}#pi^{-}}",
+                        (2,VARS[2]):"#theta_{p}",(2,VARS[3]): "#phi_{p}",
+                        (2,VARS[4]):"#alpha_{[#pi^{+}#pi^{-}][pp_{f}]}",
+                        (3,VARS[0]):"M_{p#pi^{+}}",(3,VARS[1]):"M_{p#pi^{-}}",
+                        (3,VARS[2]):"#theta_{#pi^{+}}",(3,VARS[3]): "#phi_{#pi^{+}}",
+                        (3,VARS[4]):"#alpha_{[p_{f}#pi^{-}][p#pi^{+}]}"}
+
+        #self.VAR_UNIT_NAMES={VARS[0]:"[GeV]",VARS[1]:"[GeV]",VARS[2]:"[#degree]",VARS[3]:"[#degree]",VARS[4]:"[#degree]"}
+
 	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F'):
 		"""
 		+ Plot 1D-Obs as per "view", where:
@@ -87,7 +103,26 @@ class DispYields:
 			      ('EXP','H'):ROOT.gROOT.ProcessLine("kBlack"),
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed"),
 			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
-			
+		#! Label histograms
+		self.label_hist_obs1D(hVST1,hVST2,hVST3)
+		#! Stats Box
+		ROOT.gStyle.SetOptStat(0)
+
+		# ROOT.gStyle.SetLabelSize(0.5,"t")
+		# ROOT.gStyle.SetTitleSize(0.5,"t")
+		#ROOT.gStyle.SetPaperSize(20,26);
+		ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		#ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		#ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		#ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+
+		ROOT.gStyle.SetTitleW(10)# //title width 
+		ROOT.gStyle.SetTitleFontSize(20)# //title width 
+		ROOT.gStyle.SetTitleH(0.15)# //title height 
+		ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+
+
 		ivars=[0,1,2]
 		#! 3x3 TCanvas-pads as per VSTs: VST1=1,2,3; VST2=2,5,6; VST3=3,6,9
 		pads=[[1,4,7],[2,5,8],[3,6,9]]
@@ -98,11 +133,11 @@ class DispYields:
 				c.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
 				if view=="full_ana":
-					c=ROOT.TCanvas()
+					c=ROOT.TCanvas("c","c",1000,1000)
 					c.Divide(3,3)
 				print "Plotting h1D for w=%0.3f,q2=%0.2f"%(wbin,q2bin)
 				for ivst,vst in enumerate(self.VSTS):
-					if vst==1:   h=hVST1
+					if   vst==1: h=hVST1
 					elif vst==2: h=hVST2
 					elif vst==3: h=hVST3
 					if h.has_key((q2bin,wbin,dtyp,seq)):
@@ -554,7 +589,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			#if i>5: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			if i>2: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
@@ -602,3 +637,33 @@ class DispYields:
 		return float(q2wbin.split('_')[0].split('-')[0])
 	def get_wbin_le(self,q2wbin):
 		return float(q2wbin.split('_')[1].split('-')[0])
+
+	def label_hist_obs1D(self,hVST1,hVST2,hVST3):
+		for vst in self.VSTS:
+			if   vst==1: 
+				hl=hVST1
+				m='M1'
+			elif vst==2: 
+				hl=hVST2
+				m='M2'
+			elif vst==3: 
+				hl=hVST3
+				m='M2'
+
+			for k in hl.keys():
+				#! extract 'q2wbintitle' that is already a part of title set in proc_yields.py:
+				#! 	+ title=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_VAR
+				title_orig=hl[k][0].GetTitle().split("_")
+				q2wbintitle="%s_%s"%(title_orig[0],title_orig[1])
+
+				#! Now set title
+				# hl[k][0].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,m)],q2wbintitle))
+				# hl[k][1].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,'THETA')],q2wbintitle))
+				# hl[k][2].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,'ALPHA')],q2wbintitle))
+
+				hl[k][0].SetTitle("%s"%(self.VAR_NAMES[(vst,m)]))
+				hl[k][1].SetTitle("%s"%(self.VAR_NAMES[(vst,'THETA')]))
+				hl[k][2].SetTitle("%s"%(self.VAR_NAMES[(vst,'ALPHA')]))
+
+
+
