@@ -130,11 +130,32 @@ class DispYields:
 		for wbin in wbins_le:
 			if view=="q2_evltn":
 				c=ROOT.TCanvas()
-				c.Divide(3,3)
+				pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+				pad_t.SetFillColor(11)
+  				pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
+  				pad_t.Draw()
+  				pad_p.Draw()
+  				pad_t.cd()
+  				pt=ROOT.TPaveText(.05,.1,.95,.8)
+  				pt.AddText("A TPaveText can contain severals line of text.")
+  				pt.Draw()
+ 				#pad_p.cd()
+				pad_p.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
 				if view=="full_ana":
 					c=ROOT.TCanvas("c","c",1000,1000)
-					c.Divide(3,3)
+					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					pad_t.SetFillColor(11)
+  					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  					pad_t.Draw()
+  					pad_p.Draw()
+  					pad_t.cd()
+  					pt=ROOT.TPaveText(.05,.1,.95,.8)
+  					pt.AddText("A TPaveText can contain severals line of text.")
+  					pt.Draw()
+  					#pad_p.Draw()
+  					#pad_p.cd()
+					pad_p.Divide(3,3)
 				print "Plotting h1D for w=%0.3f,q2=%0.2f"%(wbin,q2bin)
 				for ivst,vst in enumerate(self.VSTS):
 					if   vst==1: h=hVST1
@@ -146,7 +167,7 @@ class DispYields:
 						for m in map_padnums_vars[ivst]:
 							padnum=m[0]
 							ivar=m[1]
-							pad=c.cd(padnum)
+							pad=pad_p.cd(padnum)
 							if view=="q2_evltn":
 								drawopt="same"
 								if iq2bin==0:
