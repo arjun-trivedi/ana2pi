@@ -104,7 +104,7 @@ class DispYields:
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed"),
 			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
 		#! Label histograms
-		self.label_hist_obs1D(hVST1,hVST2,hVST3)
+		q2wbintitle=self.label_hist_obs1D(hVST1,hVST2,hVST3)
 		#! Stats Box
 		ROOT.gStyle.SetOptStat(0)
 
@@ -120,6 +120,9 @@ class DispYields:
 		ROOT.gStyle.SetTitleFontSize(20)# //title width 
 		ROOT.gStyle.SetTitleH(0.15)# //title height 
 		ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001);
 
 
 
@@ -142,7 +145,7 @@ class DispYields:
  				#pad_p.cd()
 				pad_p.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
-				if view=="full_ana":
+				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
 					c=ROOT.TCanvas("c","c",1000,1000)
 					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 					pad_t.SetFillColor(11)
@@ -151,7 +154,7 @@ class DispYields:
   					pad_p.Draw()
   					pad_t.cd()
   					pt=ROOT.TPaveText(.05,.1,.95,.8)
-  					pt.AddText("A TPaveText can contain severals line of text.")
+  					pt.AddText("Q2_W bin=%s"%q2wbintitle[q2bin,wbin])
   					pt.Draw()
   					#pad_p.Draw()
   					#pad_p.cd()
@@ -208,8 +211,11 @@ class DispYields:
 								h[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
 								h[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
 								pad.Update()
-				if view=="full_ana":
-					c.SaveAs("%s/c%s_%s.png"%(outdir,wbin,q2bin))
+				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
+					outdir_q2bin=os.path.join(outdir,str(q2bin))
+					if not os.path.exists(outdir_q2bin):
+						os.makedirs(outdir_q2bin)
+					c.SaveAs("%s/c%s_%s.png"%(outdir_q2bin,wbin,q2bin))
 					c.Close()
 			if view=="q2_evltn":
 				c.SaveAs("%s/c%s.png"%(outdir,wbin))
@@ -610,7 +616,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>2: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			if i>10: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
@@ -660,6 +666,7 @@ class DispYields:
 		return float(q2wbin.split('_')[1].split('-')[0])
 
 	def label_hist_obs1D(self,hVST1,hVST2,hVST3):
+		q2wbintitle={}
 		for vst in self.VSTS:
 			if   vst==1: 
 				hl=hVST1
@@ -675,7 +682,8 @@ class DispYields:
 				#! extract 'q2wbintitle' that is already a part of title set in proc_yields.py:
 				#! 	+ title=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_VAR
 				title_orig=hl[k][0].GetTitle().split("_")
-				q2wbintitle="%s_%s"%(title_orig[0],title_orig[1])
+				#q2wbintitle="%s_%s"%(title_orig[0],title_orig[1])
+				q2wbintitle[k[0],k[1]]="%s_%s"%(title_orig[0],title_orig[1])
 
 				#! Now set title
 				# hl[k][0].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,m)],q2wbintitle))
@@ -685,6 +693,16 @@ class DispYields:
 				hl[k][0].SetTitle("%s"%(self.VAR_NAMES[(vst,m)]))
 				hl[k][1].SetTitle("%s"%(self.VAR_NAMES[(vst,'THETA')]))
 				hl[k][2].SetTitle("%s"%(self.VAR_NAMES[(vst,'ALPHA')]))
+		return q2wbintitle
+
+	# def set_q2wbintitle(self,hl):
+	# 	q2wbintitle={}
+	# 	for k in hl.keys():
+	# 		if k[0]==q2bin and k[1]==wbin:
+	# 			title_orig=hl[k][0].GetTitle().split("_")
+	# 			q2wbintitle[]"%s_%s"%(title_orig[0],title_orig[1])
+	# 			break
+	# 	return q2wbintitle
 
 
 
