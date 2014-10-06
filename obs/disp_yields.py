@@ -104,7 +104,9 @@ class DispYields:
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed"),
 			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
 		#! Label histograms
-		q2wbintitle=self.label_hist_obs1D(hVST1,hVST2,hVST3)
+		q2wbintitle,wbintitle=self.label_hist_obs1D(hVST1,hVST2,hVST3)
+		for k in wbintitle:
+			print k,wbintitle[k]
 		#! Stats Box
 		ROOT.gStyle.SetOptStat(0)
 
@@ -131,16 +133,16 @@ class DispYields:
 		pads=[[1,4,7],[2,5,8],[3,6,9]]
 		map_padnums_vars=[zip(pads[0],ivars),zip(pads[1],ivars),zip(pads[2],ivars)]
 		for wbin in wbins_le:
-			if view=="q2_evltn":
-				c=ROOT.TCanvas()
+			if view=="q2_evltn" and wbintitle.has_key((wbin)):
+				c=ROOT.TCanvas("c","c",1000,1000)
 				pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
-				pad_t.SetFillColor(11)
+				#pad_t.SetFillColor(11)
   				pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
   				pad_t.Draw()
   				pad_p.Draw()
   				pad_t.cd()
   				pt=ROOT.TPaveText(.05,.1,.95,.8)
-  				pt.AddText("A TPaveText can contain severals line of text.")
+  				pt.AddText("W bin=%s"%wbintitle[wbin])
   				pt.Draw()
  				#pad_p.cd()
 				pad_p.Divide(3,3)
@@ -148,7 +150,7 @@ class DispYields:
 				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
 					c=ROOT.TCanvas("c","c",1000,1000)
 					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
-					pad_t.SetFillColor(11)
+					#pad_t.SetFillColor(11)
   					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
   					pad_t.Draw()
   					pad_p.Draw()
@@ -217,7 +219,7 @@ class DispYields:
 						os.makedirs(outdir_q2bin)
 					c.SaveAs("%s/c%s_%s.png"%(outdir_q2bin,wbin,q2bin))
 					c.Close()
-			if view=="q2_evltn":
+			if view=="q2_evltn" and wbintitle.has_key((wbin)):
 				c.SaveAs("%s/c%s.png"%(outdir,wbin))
 				c.Close()
 		return
@@ -383,8 +385,8 @@ class DispYields:
 		fout.close()
 		print "Finished getting hVST1,hVST2,hVST3. Now going to display yields"
 		if view=="q2_evltn":
-			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
+			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
 		elif view=="full_ana":
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="full_ana")
@@ -616,7 +618,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			if i>10: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			#if i>10: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
@@ -667,6 +669,7 @@ class DispYields:
 
 	def label_hist_obs1D(self,hVST1,hVST2,hVST3):
 		q2wbintitle={}
+		wbintitle={}
 		for vst in self.VSTS:
 			if   vst==1: 
 				hl=hVST1
@@ -683,8 +686,12 @@ class DispYields:
 				#! 	+ title=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_VAR
 				title_orig=hl[k][0].GetTitle().split("_")
 				#q2wbintitle="%s_%s"%(title_orig[0],title_orig[1])
-				q2wbintitle[k[0],k[1]]="%s_%s"%(title_orig[0],title_orig[1])
+				if not q2wbintitle.has_key((k[0],k[1])):
+					q2wbintitle[k[0],k[1]]="%s_%s"%(title_orig[0],title_orig[1])
+				if not wbintitle.has_key(k[1]):
+					wbintitle[k[1]]="%s"%(title_orig[1])
 
+			for k in hl.keys():	
 				#! Now set title
 				# hl[k][0].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,m)],q2wbintitle))
 				# hl[k][1].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,'THETA')],q2wbintitle))
@@ -693,7 +700,7 @@ class DispYields:
 				hl[k][0].SetTitle("%s"%(self.VAR_NAMES[(vst,m)]))
 				hl[k][1].SetTitle("%s"%(self.VAR_NAMES[(vst,'THETA')]))
 				hl[k][2].SetTitle("%s"%(self.VAR_NAMES[(vst,'ALPHA')]))
-		return q2wbintitle
+		return q2wbintitle,wbintitle
 
 	# def set_q2wbintitle(self,hl):
 	# 	q2wbintitle={}
