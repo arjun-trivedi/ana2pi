@@ -20,10 +20,11 @@ else:
 
 print "Displaying 1D-Obs: %s,%s"%(view,simnum)
 if view=="all":
-  dy=DispYields(simnum)
   print "Displaying 1D-Obs: %s,%s"%("q2_evltn",simnum)
+  dy=DispYields(simnum) 
   dy.disp_1D("q2_evltn")
   print "Displaying 1D-Obs: %s,%s"%("full_ana",simnum)
+  dy=DispYields(simnum)
   dy.disp_1D("full_ana")
 else:
   print "Displaying 1D-Obs: %s,%s"%(view,simnum)

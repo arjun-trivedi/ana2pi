@@ -98,11 +98,13 @@ class DispYields:
 			for iq2bin in range(len(q2bins_le)):
 				coll.append(ROOT.gROOT.ProcessLine(colors[iq2bin]))
 		elif view=="full_ana":
-			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),
+			coll={('EXP','R'):ROOT.gROOT.ProcessLine("kYellow"),
+			      ('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),
 			      ('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),
 			      ('EXP','H'):ROOT.gROOT.ProcessLine("kBlack"),
-			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed"),
-			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen")}
+			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen"),
+			      ('SIM','R'):ROOT.gROOT.ProcessLine("kMagenta"),
+			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		#! Label histograms
 		q2wbintitle,wbintitle=self.label_hist_obs1D(hVST1,hVST2,hVST3)
 		for k in wbintitle:
@@ -138,6 +140,7 @@ class DispYields:
 				pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 				#pad_t.SetFillColor(11)
   				pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
+  				pad_p.SetFillColor(11)
   				pad_t.Draw()
   				pad_p.Draw()
   				pad_t.cd()
@@ -152,6 +155,7 @@ class DispYields:
 					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 					#pad_t.SetFillColor(11)
   					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  					pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
   					pad_t.Draw()
   					pad_p.Draw()
   					pad_t.cd()
@@ -184,34 +188,45 @@ class DispYields:
 								h[q2bin,wbin,dtyp,seq][ivar].SetLineColor(coll[iq2bin])
 								h[q2bin,wbin,dtyp,seq][ivar].Draw(drawopt)
 							elif view=="full_ana":
+								h[q2bin,wbin,'EXP','R'][ivar].SetMarkerColor(coll['EXP','R'])
 								h[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
 								h[q2bin,wbin,'EXP','F'][ivar].SetMarkerColor(coll['EXP','F'])
 								h[q2bin,wbin,'EXP','H'][ivar].SetMarkerColor(coll['EXP','H'])
-								h[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
 								h[q2bin,wbin,'SIM','T'][ivar].SetMarkerColor(coll['SIM','T'])
+								h[q2bin,wbin,'SIM','R'][ivar].SetMarkerColor(coll['SIM','R'])
+								h[q2bin,wbin,'SIM','F'][ivar].SetMarkerColor(coll['SIM','F'])
+								h[q2bin,wbin,'EXP','R'][ivar].SetLineColor(coll['EXP','R'])
 								h[q2bin,wbin,'EXP','C'][ivar].SetLineColor(coll['EXP','C'])
 								h[q2bin,wbin,'EXP','F'][ivar].SetLineColor(coll['EXP','F'])
 								h[q2bin,wbin,'EXP','H'][ivar].SetLineColor(coll['EXP','H'])
-								h[q2bin,wbin,'SIM','F'][ivar].SetLineColor(coll['SIM','F'])
 								h[q2bin,wbin,'SIM','T'][ivar].SetLineColor(coll['SIM','T'])
+								h[q2bin,wbin,'SIM','R'][ivar].SetLineColor(coll['SIM','R'])
+								h[q2bin,wbin,'SIM','F'][ivar].SetLineColor(coll['SIM','F'])
+								h[q2bin,wbin,'EXP','R'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kOpenStar"))
+								h[q2bin,wbin,'SIM','R'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kOpenStar"))
+								h[q2bin,wbin,'EXP','H'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kCircle"))
 								h[q2bin,wbin,'SIM','T'][ivar].SetMarkerStyle(ROOT.gROOT.ProcessLine("kPlus"))
 								
-								hexp=h[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
-								hsim=h[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
-								hexp.SetMinimum(0.)
-								hsim.SetMinimum(0.)
-								maximum=hexp.GetMaximum()
-								if hsim.GetMaximum()>hexp.GetMaximum():
-									maximum=hsim.GetMaximum()
-								hexp.SetMaximum(maximum+10)
-								hsim.SetMaximum(maximum+10)
-								hF=hexp.Clone()
+								#! Draw noramlized histograms (since I want to compare their distributions)
+								hEF_n=h[q2bin,wbin,'EXP','F'][ivar].DrawNormalized("",1000)
+								hSF_n=h[q2bin,wbin,'SIM','F'][ivar].DrawNormalized("sames",1000)
+								hER_n=h[q2bin,wbin,'EXP','R'][ivar].DrawNormalized("sames",1000)
+								hSR_n=h[q2bin,wbin,'SIM','R'][ivar].DrawNormalized("sames",1000)
+								hST_n=h[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
+								#! Set the minimum and maximum of y coordinate of histograms
+								maxl=[hEF_n.GetMaximum(),hSF_n.GetMaximum(),hER_n.GetMaximum(),hSR_n.GetMaximum(),hST_n.GetMaximum()]
+								maximum=max(maxl)
+								for htmp in [hEF_n,hSF_n,hER_n,hSR_n,hST_n]:
+									htmp.SetMinimum(0.)
+									htmp.SetMaximum(maximum+10)
+								#! Scale EC, EH as per hEF_n
+								hF=hEF_n.Clone("hF")
 								hF.Divide(h[q2bin,wbin,'EXP','F'][ivar])
 								h[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
 								h[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
 								h[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
 								h[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
-								h[q2bin,wbin,'SIM','T'][ivar].DrawNormalized("sames",1000)
+								#! Upate pad
 								pad.Update()
 				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
 					outdir_q2bin=os.path.join(outdir,str(q2bin))
@@ -305,7 +320,7 @@ class DispYields:
 
 
 		
-	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','C','H','F']):
+	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
 		Walk the ROOT file and extract:
 			+ hVST1(q2bin,wbin,dtyp,seq)=[VST1.M1, VST1.THETA, VST1.ALPHA]
@@ -618,7 +633,7 @@ class DispYields:
 			if len(path_arr)==1:
 				q2ws.append(path)
 				i+=1
-			#if i>10: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			if i>1: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 		return q2ws
 
 	def get_q2bng(self):
