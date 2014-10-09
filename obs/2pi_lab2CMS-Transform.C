@@ -86,14 +86,14 @@ int run(){
   printf("ep boost vector magnitude=%f\n",boost.Mag());
   printf("gleb boost's beta_z=%f\n",beta);
 
-  printf("ep lvQ_CMS=(%f,%f,%f,%f)\n",lvQ_CMS_ep.X(),lvQ_CMS_ep.Y(),lvQ_CMS_ep.Z(),lvQ_CMS_ep.T());
-  printf("gf lvQ_CMS=(%f,%f,%f,%f)\n",lvQ_CMS_gf.X(),lvQ_CMS_gf.Y(),lvQ_CMS_gf.Z(),lvQ_CMS_gf.T());
-  printf("ep lvE1_CMS=(%f,%f,%f,%f)\n",lvE1_CMS_ep.X(),lvE1_CMS_ep.Y(),lvE1_CMS_ep.Z(),lvE1_CMS_ep.T());
-  printf("gf lvE1_CMS=(%f,%f,%f,%f)\n",lvE1_CMS_gf.X(),lvE1_CMS_gf.Y(),lvE1_CMS_gf.Z(),lvE1_CMS_gf.T());
+  printf("ep lvQ_CMS_ep=(%f,%f,%f,%f)\n",lvQ_CMS_ep.X(),lvQ_CMS_ep.Y(),lvQ_CMS_ep.Z(),lvQ_CMS_ep.T());
+  printf("gf lvQ_CMS_gf=(%f,%f,%f,%f)\n",lvQ_CMS_gf.X(),lvQ_CMS_gf.Y(),lvQ_CMS_gf.Z(),lvQ_CMS_gf.T());
+  printf("ep lvE1_CMS_ep=(%f,%f,%f,%f)\n",lvE1_CMS_ep.X(),lvE1_CMS_ep.Y(),lvE1_CMS_ep.Z(),lvE1_CMS_ep.T());
+  printf("gf lvE1_CMS_gf=(%f,%f,%f,%f)\n",lvE1_CMS_gf.X(),lvE1_CMS_gf.Y(),lvE1_CMS_gf.Z(),lvE1_CMS_gf.T());
 
-  printf("dbg=%f,%f,%f\n",lvQ_CMS_ep.Mag(), lvQ_CMS_gf.Mag(), -lvQ.Mag2());
-  printf("dbg=%f,%f,%f\n",lvE1_CMS_ep.Mag(),lvE1_CMS_gf.Mag(),lvE1.Mag());
-  printf("W=%f",lvW.Mag());
+  printf("Q2_lab:Q2_CMS_ep:Q2_CMS_fg=%f,%f,%f\n",-lvQ.Mag2(),-lvQ_CMS_ep.Mag2(),-lvQ_CMS_gf.Mag2());
+  printf("lvE1_lab.Mag():lvE1_CMS_ep.Mag(),lvE1_CMS_gf.Mag()=%f,%f,%f\n",lvE1.Mag(),lvE1_CMS_ep.Mag(),lvE1_CMS_gf.Mag());
+  printf("W=%f\n",lvW.Mag());
   
   return 0;
 }
