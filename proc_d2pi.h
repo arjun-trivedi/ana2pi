@@ -671,7 +671,7 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->alpha_2=getAlpha(G_f,G_p,B_f,B_p);
 	//! alpha[p',pim][p,pip]
 	G_p=_lvPipCMS.Vect().Unit();
-	B_f=_lvPCMS.Vect().Unit();
+	B_f=_lvPimCMS.Vect().Unit();//_lvPCMS.Vect().Unit();
 	B_p=G_p;
 	tp->alpha_3=getAlpha(G_f,G_p,B_f,B_p);
 
