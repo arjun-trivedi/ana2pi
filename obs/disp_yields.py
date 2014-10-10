@@ -91,6 +91,12 @@ class DispYields:
 		print "W:"
 		print wbins_le
 
+		#! Russian-normalize theta distributions
+		print("Russian-normalizing theta distributions ...")
+		for hd in [hVST1,hVST2,hVST3]:
+			for k in hd:
+				self.russ_norm_theta_dist(hd[k][1])
+
 		#! Set up some plotting related styles and aesthetics 
 		if view=="q2_evltn":
 			colors=["kRed","kOrange","kYellow","kGreen+3","kGreen","kCyan","kBlue","kMagenta"]
@@ -177,10 +183,6 @@ class DispYields:
 							padnum=m[0]
 							ivar=m[1]
 							pad=pad_p.cd(padnum)
-							#! If var=theta, then adapt histogram to Russian version
-							if ivar==1:
-								self.adapt_hTheta_2_hRussTheta(h[q2bin,wbin,dtyp,seq][ivar])
-
 							if view=="q2_evltn":
 								drawopt="same"
 								if iq2bin==0:
@@ -720,6 +722,21 @@ class DispYields:
 				hl[k][1].SetTitle("%s"%(self.VAR_NAMES[(vst,'THETA')]))
 				hl[k][2].SetTitle("%s"%(self.VAR_NAMES[(vst,'ALPHA')]))
 		return q2wbintitle,wbintitle
+
+	def russ_norm_theta_dist(self,hTheta):
+		#! 1. Create Russian-normalization factor histogram
+		hDCosTheta=hTheta.Clone()
+		nbins=hTheta.GetNbinsX()
+		for ibin in range(nbins):
+			theta_a=hTheta.GetBinLowEdge(ibin+1)
+			theta_b=hTheta.GetBinLowEdge(ibin+1) + hTheta.GetBinWidth(ibin+1)
+			DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
+			hDCosTheta.SetBinContent(ibin+1,DCosTheta)
+			hDCosTheta.SetBinError(ibin+1,0.)
+		#! Now divide hTheta by hDCosTheta
+		#! Do Sumw2() so that errors are correctly propagated
+		hTheta.Sumw2();
+		hTheta.Divide(hDCosTheta)
 
 	# def set_q2wbintitle(self,hl):
 	# 	q2wbintitle={}
