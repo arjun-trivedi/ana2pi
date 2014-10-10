@@ -131,8 +131,8 @@ class DispYields:
 
 
 		ivars=[0,1,2]
-		#! 3x3 TCanvas-pads as per VSTs: VST1=1,2,3; VST2=2,5,6; VST3=3,6,9
-		pads=[[1,4,7],[2,5,8],[3,6,9]]
+		#! 3x3 TCanvas-pads as per VSTs: VST1=1,2,3; VST2=3,6,9; VST3=2,5,8 (To adapt to Gleb's display)
+		pads=[[1,4,7],[3,6,9],[2,5,8]]
 		map_padnums_vars=[zip(pads[0],ivars),zip(pads[1],ivars),zip(pads[2],ivars)]
 		for wbin in wbins_le:
 			if view=="q2_evltn" and wbintitle.has_key((wbin)):
@@ -177,6 +177,10 @@ class DispYields:
 							padnum=m[0]
 							ivar=m[1]
 							pad=pad_p.cd(padnum)
+							#! If var=theta, then adapt histogram to Russian version
+							if ivar==1:
+								self.adapt_hTheta_2_hRussTheta(h[q2bin,wbin,dtyp,seq][ivar])
+
 							if view=="q2_evltn":
 								drawopt="same"
 								if iq2bin==0:
