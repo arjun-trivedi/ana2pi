@@ -631,16 +631,32 @@ class DispYields:
 		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
 		q2wbin/vst/seq/hists
 		"""
-		q2ws=[]
+		q2wbinl=[]
 		i=0 #! for getting limted q2wbins
 		for path,dirs,files in self.FEXP.walk():
 			if path=="":continue #! Avoid root path
 			path_arr=path.split("/")
 			if len(path_arr)==1:
-				q2ws.append(path)
+				q2wbinl.append(path)
 				i+=1
 			#if i>1: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
-		return q2ws
+
+		#! Remove "particular" q2wbins as implemented below
+		q2max=1.75
+		wmin=1.600
+		wmax=2.200
+		q2wbins_remove=[]
+		for q2wbin in q2wbinl:
+			q2bin_le=q2wbin.split("_")[0].split("-")[0]
+			wbin_le =q2wbin.split("_")[1].split("-")[0]
+			wbin_ue =q2wbin.split("_")[1].split("-")[1]
+			if float(q2bin_le)>=q2max or float(wbin_le)>=wmax or float(wbin_ue)<=wmin:
+				q2wbins_remove.append(q2wbin)
+		for q2wbin in q2wbins_remove:
+			q2wbinl.remove(q2wbin)
+
+		return q2wbinl
+
 
 	def get_q2bng(self):
 		return self.get_xbng(x='Q2')
