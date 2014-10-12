@@ -642,18 +642,18 @@ class DispYields:
 			#if i>1: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 
 		#! Remove "particular" q2wbins as implemented below
-		q2max=1.75
-		wmin=1.600
-		wmax=2.200
-		q2wbins_remove=[]
-		for q2wbin in q2wbinl:
-			q2bin_le=q2wbin.split("_")[0].split("-")[0]
-			wbin_le =q2wbin.split("_")[1].split("-")[0]
-			wbin_ue =q2wbin.split("_")[1].split("-")[1]
-			if float(q2bin_le)>=q2max or float(wbin_le)>=wmax or float(wbin_ue)<=wmin:
-				q2wbins_remove.append(q2wbin)
-		for q2wbin in q2wbins_remove:
-			q2wbinl.remove(q2wbin)
+		# q2max=1.75
+		# wmin=1.600
+		# wmax=2.200
+		# q2wbins_remove=[]
+		# for q2wbin in q2wbinl:
+		# 	q2bin_le=q2wbin.split("_")[0].split("-")[0]
+		# 	wbin_le =q2wbin.split("_")[1].split("-")[0]
+		# 	wbin_ue =q2wbin.split("_")[1].split("-")[1]
+		# 	if float(q2bin_le)>=q2max or float(wbin_le)>=wmax or float(wbin_ue)<=wmin:
+		# 		q2wbins_remove.append(q2wbin)
+		# for q2wbin in q2wbins_remove:
+		# 	q2wbinl.remove(q2wbin)
 
 		return q2wbinl
 
