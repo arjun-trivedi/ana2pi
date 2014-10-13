@@ -526,14 +526,19 @@ class DispYields:
 		#! 4. Now plot
 		fig=plt.figure()
 		ax=plt.subplot(111)
-		clrs=['red','green','cyan','blue','black','yellow','brown','orange']
+		#clrs=['red','green','cyan','blue','black','yellow','brown','orange']
+		clrd={'1.25-1.75':'red','1.75-2.25':'brown','2.25-2.75':'magenta','2.75-3.25':'orange',
+		      '3.25-3.75':'yellow','3.75-4.25':'green','4.25-4.75':'cyan','4.75-5.25':'blue'}
+		mrkrd={'C':'o','F':'^'}
 		#for iq2bin in range(len(oy)):
 		for k in oy.keys():
 			#lbl='[%.2f-%.2f]'%(q2bng['BINS_LE'][iq2bin],q2bng['BINS_UE'][iq2bin])
-			lbl=k[1]
+			seq=k[0]
+			q2wbin=k[1]
+			lbl='%s:[%s)'%(seq,q2wbin)
 			#clr=clrs[iq2bin]
 			#ax.scatter(oy[iq2bin].keys(),oy[iq2bin].values(),label=lbl,c=clr)
-			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl)#,c=clr)
+			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl,c=clrd[q2wbin],marker=mrkrd[seq],s=50)
 		ax.set_ylim(0,600000)
 		ax.legend()
 		fig.savefig('%s/integ_yield.png'%(outdir))	
