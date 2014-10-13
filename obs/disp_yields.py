@@ -478,7 +478,7 @@ class DispYields:
 
 	def disp_integ_yield(self,seql=['C','F']):
 		"""
-		Walk the ROOT file and plot y(w;q2). 
+		Walk the ROOT file and plot y(w;seq,q2bin). 
 		"""
 		outdir=os.path.join(self.OUTDIR,"Obs_IntgYld")
 		if not os.path.exists(outdir):
@@ -505,44 +505,31 @@ class DispYields:
 		#! Now fill dict
 		for seq in seql:
 			for q2wbin in q2wbinl:
-				#! Get iq2bin
-				#q2bin_le=float(q2wbin.split('_')[0].split('-')[0])
 				q2bin=q2wbin.split('_')[0]
-				#iq2bin=q2bng['BINS_LE'].index(q2bin_le)
 				#! Get w, yield
 				w=float(q2wbin.split('_')[1].split('-')[0])
 				#wbin=q2wbin.split('_')[1]
 				h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
 				y[seq,q2bin][w]=thntool.GetIntegral(h5_UNPOL)
-		#! Make sure y[q2bin]=(w,yield) are sorted by w
-		#oy=[{} for i in range(len(y))]
-		#for iq2bin in range(len(y)):
+		#! Make sure y[seq,q2bin:w] are sorted by w
 		for k in y.keys():
 			oy[k]=OrderedDict(sorted(y[k].items()))
-			# print iq2bin
-			# print y[iq2bin]
-			# print oy[iq2bin] 
-
+			
 		#! 4. Now plot
 		fig=plt.figure()
 		ax=plt.subplot(111)
-		#clrs=['red','green','cyan','blue','black','yellow','brown','orange']
 		clrd={'1.25-1.75':'red','1.75-2.25':'brown','2.25-2.75':'magenta','2.75-3.25':'orange',
 		      '3.25-3.75':'yellow','3.75-4.25':'green','4.25-4.75':'cyan','4.75-5.25':'blue'}
 		mrkrd={'C':'o','F':'^'}
-		#for iq2bin in range(len(oy)):
 		for k in oy.keys():
-			#lbl='[%.2f-%.2f]'%(q2bng['BINS_LE'][iq2bin],q2bng['BINS_UE'][iq2bin])
 			seq=k[0]
 			q2wbin=k[1]
 			lbl='%s:[%s)'%(seq,q2wbin)
-			#clr=clrs[iq2bin]
-			#ax.scatter(oy[iq2bin].keys(),oy[iq2bin].values(),label=lbl,c=clr)
 			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl,c=clrd[q2wbin],marker=mrkrd[seq],s=50)
 		ax.set_ylim(0,600000)
 		ax.legend()
 		fig.savefig('%s/integ_yield.png'%(outdir))	
-		#fig.savefig('test.png')		
+			
 
 	def get_sim_stats(self):
 		"""
