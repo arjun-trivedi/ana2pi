@@ -21,6 +21,32 @@ from ROOT import THnTool
 # Tools 
 thntool=THnTool()
 
+#! For Luminosity & vgflux
+LUM=19.844 #fb^-1
+LUM_INVFB_TO_INVMICROB=1000000000
+
+PI=3.14159265358979312
+E1F_E0=5.499
+FSC=0.00729735253
+A=FSC
+NA=6.02214129E23
+QE=1.60217646E-19
+MP=0.93827203
+
+def nu(w,q2):
+	return (w*w-MP*MP+q2)/(2*MP)
+
+def epsilon(w,q2):
+	n=nu(w,q2)
+	e0=E1F_E0
+	e1=e0-n
+	epsInv=1+2*(q2+n*n)/(4*e0*e1-q2)
+	return 1.0/epsInv
+
+def getvgflux(w,q2,e0=E1F_E0):
+	eps=epsilon(w,q2)
+	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
+
 class DispYields:
 	def __init__(self,simnum='siml'):
 		self.SIM_NUM=simnum
@@ -476,11 +502,14 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_integ_yield(self,seql=['C','F']):
+	def disp_integ_yield(self,seql=['C','F'],norm=False):
 		"""
 		Walk the ROOT file and plot y(w;seq,q2bin). 
 		"""
-		outdir=os.path.join(self.OUTDIR,"Obs_IntgYld")
+		if norm==False:
+			outdir=os.path.join(self.OUTDIR,"Obs_IntgYld")
+		else:
+			outdir=os.path.join(self.OUTDIR,"Obs_IntgYld_norm")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
@@ -505,12 +534,20 @@ class DispYields:
 		#! Now fill dict
 		for seq in seql:
 			for q2wbin in q2wbinl:
+				print "seq,q2wbin,norm=",seq,q2wbin,norm
 				q2bin=q2wbin.split('_')[0]
 				#! Get w, yield
 				w=float(q2wbin.split('_')[1].split('-')[0])
 				#wbin=q2wbin.split('_')[1]
 				h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
 				y[seq,q2bin][w]=thntool.GetIntegral(h5_UNPOL)
+				if norm==True:
+					q2=float(q2wbin.split('_')[0].split('-')[0])
+					normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2)#!mub^-1
+					print "yield=",y[seq,q2bin][w]
+					print "norm=",normf
+					y[seq,q2bin][w]=y[seq,q2bin][w]/normf
+					print "yield after norm=",y[seq,q2bin][w]
 		#! Make sure y[seq,q2bin:w] are sorted by w
 		for k in y.keys():
 			oy[k]=OrderedDict(sorted(y[k].items()))
@@ -526,7 +563,12 @@ class DispYields:
 			q2wbin=k[1]
 			lbl='%s:[%s)'%(seq,q2wbin)
 			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl,c=clrd[q2wbin],marker=mrkrd[seq],s=50)
-		ax.set_ylim(0,600000)
+		if norm==False:
+			ax.set_ylim(0,600000)
+			ax.set_ylabel(r'Yield [A.U.]',fontsize='xx-large')
+		else:
+			ax.set_ylim(0,0.05)
+			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
 		ax.legend()
 		fig.savefig('%s/integ_yield.png'%(outdir))	
 			
@@ -758,14 +800,29 @@ class DispYields:
 		hTheta.Sumw2();
 		hTheta.Divide(hDCosTheta)
 
-	# def set_q2wbintitle(self,hl):
-	# 	q2wbintitle={}
-	# 	for k in hl.keys():
-	# 		if k[0]==q2bin and k[1]==wbin:
-	# 			title_orig=hl[k][0].GetTitle().split("_")
-	# 			q2wbintitle[]"%s_%s"%(title_orig[0],title_orig[1])
-	# 			break
-	# 	return q2wbintitle
+	# #! For Luminosity & vgflux
+	# LUM=19.844;
+
+	# PI=3.14159265358979312;
+	# E1F_E0=5.499;
+	# FSC=0.00729735253;
+	# A=FSC;
+	# NA=6.02214129E23;
+	# QE=1.60217646E-19;
+	# MP=0.93827203;
+	# def nu(w,q2):
+	# 	return (w*w-MP*MP+q2)/(2*MP)
+
+	# def epsilon(w,q2):
+	# 	n=nu(w,q2)
+	# 	e0=E1F_E0
+	# 	e1=e0-n
+	# 	epsInv=1+2*(q2+n*n)/(4*e0*e1-q2)
+	# 	return 1.0/epsInv
+
+	# def getvgflux(w,q2,e0=E1F_E0):
+	# 	eps=epsilon(w,q2)
+	# 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 
 

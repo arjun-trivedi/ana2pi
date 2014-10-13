@@ -25,4 +25,4 @@ else:
 print "Displaying integrated yields for %s"%simnum
 
 dy=DispYields(simnum)
-dy.disp_integ_yield()
+dy.disp_integ_yield(norm=True)
