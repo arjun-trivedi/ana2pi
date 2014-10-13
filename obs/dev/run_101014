@@ -1,0 +1,28 @@
+#echo ">ay sim1 sim2 sim3 sim4"
+#ay sim1 sim2 sim3 sim4
+
+#echo ">py sim sim1"
+#py sim sim1
+#echo ">py exp sim1"
+#py exp sim1
+
+#echo ">py sim sim01sim02sim03sim04"
+#py sim sim01sim02sim03sim04
+#echo ">py exp sim01sim02sim03sim04"
+#py exp sim01sim02sim03sim04
+
+#! Beam Helicity dependent yields
+echo ">py exp sim1 True"
+py exp sim1 True
+#echo ">py exp sim01sim02sim03sim04 True"
+#py exp sim01sim02sim03sim04 True
+
+echo ">ds sim1"
+ds sim1
+#echo ">ds sim01sim02sim03sim04"
+#ds sim01sim02sim03sim04
+
+echo ">dy all sim1"
+dy all sim1
+#echo ">dy all sim01sim02sim03sim04"
+#dy all sim01sim02sim03sim04
