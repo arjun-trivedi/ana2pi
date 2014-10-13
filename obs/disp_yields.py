@@ -443,18 +443,18 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_R2(self,dtypl=['EXP'],seql=['C']):
+	def disp_R2(self,R2,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'],hell=['UNPOL','POS','NEG']):
 		"""
 		Walk the ROOT file and extract:
 			+ h5(q2bin,wbin,dtyp,vst,seq,hel)
 		"""
-		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2")
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2","Q2_%.2f-%.2f"%(q2min,q2max))
 		if not os.path.exists(self.OUTDIR_OBS_R2):
 			os.makedirs(self.OUTDIR_OBS_R2)
 
 		print "In DispYields::disp_R2()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist()
+		q2wbinl=self.get_q2wbinlist(q2min,q2max)
 		print q2wbinl
 
 		#! 2. Now get relevant histograms
@@ -463,29 +463,34 @@ class DispYields:
 		for q2wbin in q2wbinl:
 			print "Getting h5 for",q2wbin
 			#! First make sure this bin is "good"
-			badbin=False
-			reason=''
-			for vst in self.VSTS:
-				h5_UNPOL=self.FEXP_HEL.Get("%s/VST%d/R/h5_UNPOL"%(q2wbin,vst))
-				if thntool.GetIntegral(h5_UNPOL)==0:
-					reason+="ER=0 for VST%d;"%vst
-					badbin=True
-			if badbin:
-				q2wbinl_bad[q2wbin]=reason
-				print "\"Bad\" bin: %s"%q2wbinl_bad[q2wbin]
+			is_badbin=self.is_bad_q2wbin(q2wbin,q2wbinl_bad)
+			if is_badbin:
 				continue
+			# badbin=False
+			# reason=''
+			# for vst in self.VSTS:
+			# 	h5_UNPOL=self.FEXP_HEL.Get("%s/VST%d/R/h5_UNPOL"%(q2wbin,vst))
+			# 	if thntool.GetIntegral(h5_UNPOL)==0:
+			# 		reason+="ER=0 for VST%d;"%vst
+			# 		badbin=True
+			# if badbin:
+			# 	q2wbinl_bad[q2wbin]=reason
+			# 	print "\"Bad\" bin: %s"%q2wbinl_bad[q2wbin]
+			# 	continue
 			#! Now that bin is "good", get h5
 			q2bin_le=self.get_q2bin_le(q2wbin)
 			wbin_le=self.get_wbin_le(q2wbin)
-			#h_dpp,h_rho,h_dzr=OrderedDict(),OrderedDict(),OrderedDict()
 			for dtyp in dtypl:
 				if   dtyp=='EXP':f=self.FEXP_HEL
 				elif dtyp=='SIM':f=self.FSIM
 				for vst in self.VSTS:
 					for seq in seql:
-						h5[q2bin_le,wbin_le,dtyp,vst,seq,'UNPOL']=f.Get("%s/VST%d/%s/h5_UNPOL"%(q2wbin,vst,seq))
-						h5[q2bin_le,wbin_le,dtyp,vst,seq,'POS']=f.Get("%s/VST%d/%s/h5_POS"%(q2wbin,vst,seq))
-						h5[q2bin_le,wbin_le,dtyp,vst,seq,'NEG']=f.Get("%s/VST%d/%s/h5_NEG"%(q2wbin,vst,seq))
+						for hel in hell:
+							if dtyp=='SIM' and (hel=='POS' or hel=='NEG'): continue
+							h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
+							# if dtyp=='EXP':
+							# 	h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
+							# 	h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
 
 		print "keys in h5:"
 		print h5.keys()
@@ -497,7 +502,7 @@ class DispYields:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
 		print "Finished getting h5s. Now going to display R2s"
-		self.plot_obs_R2(h5)
+		#self.plot_obs_R2(h5)
 		print "Done DispYields::disp_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
@@ -800,29 +805,19 @@ class DispYields:
 		hTheta.Sumw2();
 		hTheta.Divide(hDCosTheta)
 
-	# #! For Luminosity & vgflux
-	# LUM=19.844;
-
-	# PI=3.14159265358979312;
-	# E1F_E0=5.499;
-	# FSC=0.00729735253;
-	# A=FSC;
-	# NA=6.02214129E23;
-	# QE=1.60217646E-19;
-	# MP=0.93827203;
-	# def nu(w,q2):
-	# 	return (w*w-MP*MP+q2)/(2*MP)
-
-	# def epsilon(w,q2):
-	# 	n=nu(w,q2)
-	# 	e0=E1F_E0
-	# 	e1=e0-n
-	# 	epsInv=1+2*(q2+n*n)/(4*e0*e1-q2)
-	# 	return 1.0/epsInv
-
-	# def getvgflux(w,q2,e0=E1F_E0):
-	# 	eps=epsilon(w,q2)
-	# 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
+	#! First make sure this bin is "good"
+	def is_bad_q2wbin(self,q2wbin,q2wbinl_bad):
+		is_badbin=False
+		reason=''
+		for vst in self.VSTS:
+			h5_UNPOL=self.FEXP_HEL.Get("%s/VST%d/R/h5_UNPOL"%(q2wbin,vst))
+			if thntool.GetIntegral(h5_UNPOL)==0:
+				reason+="ER=0 for VST%d;"%vst
+				is_badbin=True
+		if is_badbin:
+			q2wbinl_bad[q2wbin]=reason
+		return is_badbin
+		
 
 
 
