@@ -464,19 +464,7 @@ class DispYields:
 			print "Getting h5 for",q2wbin
 			#! First make sure this bin is "good"
 			is_badbin=self.is_bad_q2wbin(q2wbin,q2wbinl_bad)
-			if is_badbin:
-				continue
-			# badbin=False
-			# reason=''
-			# for vst in self.VSTS:
-			# 	h5_UNPOL=self.FEXP_HEL.Get("%s/VST%d/R/h5_UNPOL"%(q2wbin,vst))
-			# 	if thntool.GetIntegral(h5_UNPOL)==0:
-			# 		reason+="ER=0 for VST%d;"%vst
-			# 		badbin=True
-			# if badbin:
-			# 	q2wbinl_bad[q2wbin]=reason
-			# 	print "\"Bad\" bin: %s"%q2wbinl_bad[q2wbin]
-			# 	continue
+			if is_badbin: continue
 			#! Now that bin is "good", get h5
 			q2bin_le=self.get_q2bin_le(q2wbin)
 			wbin_le=self.get_wbin_le(q2wbin)
