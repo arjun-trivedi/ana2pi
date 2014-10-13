@@ -347,8 +347,8 @@ class DispYields:
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from file
-		q2bng=self.get_q2bng()
-		wbng=self.get_wbng()
+		q2bng=self.get_q2bng(q2wbinl)
+		wbng=self.get_wbng(q2wbinl)
 		print "1D Observables will be extracted in the following Q2-bin,W-bin 2D space:"
 		print "Q2 bins:"
 		print q2bng['BINS']
@@ -476,7 +476,7 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_integ_yield(self,seq='F'):
+	def disp_integ_yield(self,seql=['C','F']):
 		"""
 		Walk the ROOT file and plot y(w;q2). 
 		"""
@@ -484,30 +484,41 @@ class DispYields:
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
-		#! 1. First of all get q2bng information
-		q2bng=self.get_q2bng()
+		#! 1. Get all q2wbins
+		q2wbinl=self.get_q2wbinlist(q2max=2.25)
+		#print q2wbinl
+
+		q2bng=self.get_q2bng(q2wbinl)
 		#print q2bng['BINW']
 		print "Yield(w) will be plotted for the following Q2 bins:"
 		print q2bng['BINS']
 
-		#! 2. Get all q2wbins
-		q2wbinl=self.get_q2wbinlist()
-		#print q2wbinl
-
-		#! 3. Now put together y[q2bin]=(w,yield)
-		y=[{} for i in range(q2bng['NBINS'])]
-		for q2wbin in q2wbinl:
-			#! Get iq2bin
-			q2bin_le=float(q2wbin.split('_')[0].split('-')[0])
-			iq2bin=q2bng['BINS_LE'].index(q2bin_le)
-			#! Get w, yield
-			w=float(q2wbin.split('_')[1].split('-')[0])
-			h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
-			y[iq2bin][w]=thntool.GetIntegral(h5_UNPOL)
+		#! 3. Now put together dictionary for yield: y{seq,q2bin:{w:yield}}
+		#! First create dict
+		y={}
+		oy={} #Will be used later to store yields ordered
+		for seq in seql:
+			for q2wbin in q2wbinl:
+				q2bin=q2wbin.split('_')[0]
+				y[seq,q2bin]={}
+				oy[seq,q2bin]={}
+		#! Now fill dict
+		for seq in seql:
+			for q2wbin in q2wbinl:
+				#! Get iq2bin
+				#q2bin_le=float(q2wbin.split('_')[0].split('-')[0])
+				q2bin=q2wbin.split('_')[0]
+				#iq2bin=q2bng['BINS_LE'].index(q2bin_le)
+				#! Get w, yield
+				w=float(q2wbin.split('_')[1].split('-')[0])
+				#wbin=q2wbin.split('_')[1]
+				h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
+				y[seq,q2bin][w]=thntool.GetIntegral(h5_UNPOL)
 		#! Make sure y[q2bin]=(w,yield) are sorted by w
-		oy=[{} for i in range(len(y))]
-		for iq2bin in range(len(y)):
-			oy[iq2bin]=OrderedDict(sorted(y[iq2bin].items()))
+		#oy=[{} for i in range(len(y))]
+		#for iq2bin in range(len(y)):
+		for k in y.keys():
+			oy[k]=OrderedDict(sorted(y[k].items()))
 			# print iq2bin
 			# print y[iq2bin]
 			# print oy[iq2bin] 
@@ -516,10 +527,13 @@ class DispYields:
 		fig=plt.figure()
 		ax=plt.subplot(111)
 		clrs=['red','green','cyan','blue','black','yellow','brown','orange']
-		for iq2bin in range(len(oy)):
-			lbl='[%.2f-%.2f]'%(q2bng['BINS_LE'][iq2bin],q2bng['BINS_UE'][iq2bin])
-			clr=clrs[iq2bin]
-			ax.scatter(oy[iq2bin].keys(),oy[iq2bin].values(),label=lbl,c=clr)
+		#for iq2bin in range(len(oy)):
+		for k in oy.keys():
+			#lbl='[%.2f-%.2f]'%(q2bng['BINS_LE'][iq2bin],q2bng['BINS_UE'][iq2bin])
+			lbl=k[1]
+			#clr=clrs[iq2bin]
+			#ax.scatter(oy[iq2bin].keys(),oy[iq2bin].values(),label=lbl,c=clr)
+			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl)#,c=clr)
 		ax.set_ylim(0,600000)
 		ax.legend()
 		fig.savefig('%s/integ_yield.png'%(outdir))	
@@ -625,7 +639,7 @@ class DispYields:
 		return ss
 
 
-	def get_q2wbinlist(self):
+	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000):
 		"""
 		The ROOT file is arranged in a Tree Structure. The
 		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
@@ -642,36 +656,34 @@ class DispYields:
 			#if i>1: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 
 		#! Remove "particular" q2wbins as implemented below
-		# q2max=1.75
-		# wmin=1.600
-		# wmax=2.200
-		# q2wbins_remove=[]
-		# for q2wbin in q2wbinl:
-		# 	q2bin_le=q2wbin.split("_")[0].split("-")[0]
-		# 	wbin_le =q2wbin.split("_")[1].split("-")[0]
-		# 	wbin_ue =q2wbin.split("_")[1].split("-")[1]
-		# 	if float(q2bin_le)>=q2max or float(wbin_le)>=wmax or float(wbin_ue)<=wmin:
-		# 		q2wbins_remove.append(q2wbin)
-		# for q2wbin in q2wbins_remove:
-		# 	q2wbinl.remove(q2wbin)
+		# q2max=2.25#1.75
+		# wmin=0.00#1.600
+		# wmax=3.00#2.200
+		q2wbins_remove=[]
+		for q2wbin in q2wbinl:
+			q2bin_le=q2wbin.split("_")[0].split("-")[0]
+			q2bin_ue=q2wbin.split("_")[0].split("-")[1]
+			wbin_le =q2wbin.split("_")[1].split("-")[0]
+			wbin_ue =q2wbin.split("_")[1].split("-")[1]
+			if float(q2bin_ue)<=q2min or float(q2bin_le)>=q2max or float(wbin_ue)<=wmin or float(wbin_le)>=wmax:
+				q2wbins_remove.append(q2wbin)
+		for q2wbin in q2wbins_remove:
+			q2wbinl.remove(q2wbin)
 
 		return q2wbinl
 
 
-	def get_q2bng(self):
-		return self.get_xbng(x='Q2')
-	def get_wbng(self):
-		return self.get_xbng(x='W')
+	def get_q2bng(self,q2wbinl):
+		return self.get_xbng('Q2',q2wbinl)
+	def get_wbng(self,q2wbinl):
+		return self.get_xbng('W',q2wbinl)
 
-	def get_xbng(self,x):
+	def get_xbng(self,x,q2wbinl):
 		"""
-		Gets x=(Q2 or W) binning information from yield_exp.root
+		Gets x=(Q2 or W) binning information from q2wbinl
 		"""
 
-		#! First get all q2w-bins
-		q2wbinl=self.get_q2wbinlist()
-		
-		#! 2. From q2wbinl, identify xbng 
+		#! 1. From q2wbinl, identify xbng 
 		xbins=[]
 		for q2wbin in q2wbinl:
 			#print q2wbin
