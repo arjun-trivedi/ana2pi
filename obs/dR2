@@ -14,5 +14,10 @@ else:
 
 print "Displaying Obs-R2: %s"%(simnum)
 dy=DispYields(simnum)
+
 dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='POS',dtypl=['EXP'],seql=['C','F'])
 dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='NEG',dtypl=['EXP'],seql=['C','F'])
+
+#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP'],seql=['C','F'])
+#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='POS',dtypl=['EXP'],seql=['C','F'])
+#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='NEG',dtypl=['EXP'],seql=['C','F'])

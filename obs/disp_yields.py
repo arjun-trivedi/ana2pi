@@ -348,6 +348,7 @@ class DispYields:
 										if hR2.has_key((q2bin_le,wbin_le,hel,vst,var,dtyp,seq)):
 											if i==0:
 												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw()
+												i+=1;
 											else:
 												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw("sames")
 								c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
