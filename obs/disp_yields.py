@@ -361,19 +361,23 @@ class DispYields:
 						for wbin_le in wbins_lel:
 							for q2bin_le in q2bins_lel:
 								c=ROOT.TCanvas()
-								l=ROOT.TLegend(0.1,0.7,0.48,0.9);
+								l=ROOT.TLegend(0.1,0.8,0.2,0.9)
 								mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 								i=0
 								for dtyp in dtypl:
 									for seq in seql:
+										if dtyp=='SIM' and seq=='C': continue
 										if hR2.has_key((q2bin_le,wbin_le,hel,vst,var,dtyp,seq)):
-											hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-											hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetMarkerColor(mrkrd[(dtyp,seq)])
+											h=hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]
+											h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+											h.SetMarkerColor(mrkrd[(dtyp,seq)])
+											l.AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if i==0:
-												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw()
+												h.Draw()
 												i+=1;
 											else:
-												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw("sames")
+												h.Draw("sames")
+								l.Draw("same")
 								c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
 								c.Close()
 						
