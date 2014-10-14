@@ -328,6 +328,7 @@ class DispYields:
 						for dtyp in dtypl:
 							for seq in seql:
 								if h5l.has_key((q2bin_le,wbin_le,dtyp,vst,seq,hel)):
+									#print "h5 key=",q2bin_le,wbin_le,dtyp,vst,seq,hel,"exists"
 									h5=h5l[q2bin_le,wbin_le,dtyp,vst,seq,hel]
 									if   hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
 									elif hel=='POS':   h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
@@ -345,53 +346,57 @@ class DispYields:
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
-				print "keys in hR2:\n",hR2.keys()
-
-				#! Now display hR2
-				for vst in self.VSTS:
-					for var in VARS:
-						if var=='PHI': continue
-						if vst==1 and var=='M2': continue
-						if vst==2 and var=='M1': continue
-						if vst==3 and var=='M1': continue
-
-						outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var))
-						if not os.path.exists(outdir):
-								os.makedirs(outdir)
-						for wbin_le in wbins_lel:
-							for q2bin_le in q2bins_lel:
-								if len(dtypl)==2:
-									c=ROOT.TCanvas("","",800,1000)
-									c.Divide(1,2)
 								else:
-									c=ROOT.TCanvas()
-								l=ROOT.TLegend(0.1,0.8,0.2,0.9)
-								mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
-								i=0
-								for dtyp in dtypl:
-									for seq in seql:
-										if dtyp=='SIM' and seq=='C': continue
-										if hR2.has_key((q2bin_le,wbin_le,hel,vst,var,dtyp,seq)):
-											h=hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]
-											h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-											h.SetMarkerColor(mrkrd[(dtyp,seq)])
-											l.AddEntry(h,"%s-%s"%(dtyp,seq),"p")
-											if dtyp=='EXP': 
-												c.cd(1)
-												if i==0:
-													h.Draw()
-													i+=1;
-												else:
-													h.Draw("sames")
-											if dtyp=='SIM':
-												c.cd(2)
-												h.Draw()
-								c.cd(1)				
-								l.Draw("same")
-								c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
-								c.Close()
+									#print "h5 key=",q2bin_le,wbin_le,dtyp,vst,seq,hel,"does NOT exist"
+		print "keys in hR2:\n",hR2.keys()
 
-		
+		#! Now display hR2
+		for vst in self.VSTS:
+			for var in VARS:
+				if var=='PHI': continue
+				if vst==1 and var=='M2': continue
+				if vst==2 and var=='M1': continue
+				if vst==3 and var=='M1': continue
+
+				outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var))
+				if not os.path.exists(outdir):
+						os.makedirs(outdir)
+				for wbin_le in wbins_lel:
+					for q2bin_le in q2bins_lel:
+						if len(dtypl)==2:
+							c=ROOT.TCanvas("","",800,1000)
+							c.Divide(1,2)
+						else:
+							c=ROOT.TCanvas()
+						l=ROOT.TLegend(0.1,0.8,0.2,0.9)
+						mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+						i=0
+						for dtyp in dtypl:
+							for seq in seql:
+								if dtyp=='SIM' and seq=='C': continue
+								if hR2.has_key((q2bin_le,wbin_le,hel,vst,var,dtyp,seq)):
+									#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
+									h=hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]
+									h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+									h.SetMarkerColor(mrkrd[(dtyp,seq)])
+									l.AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+									if dtyp=='EXP': 
+										c.cd(1)
+										if i==0:
+											h.Draw()
+											i+=1;
+										else:
+											h.Draw("sames")
+									if dtyp=='SIM':
+										c.cd(2)
+										h.Draw()
+								else:
+									#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
+						c.cd(1)				
+						l.Draw("same")
+						c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
+						c.Close()
+	
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
 		Walk the ROOT file and extract:
@@ -494,7 +499,8 @@ class DispYields:
 
 		print "In DispYields::disp_R2()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		print q2wbinl
 
 		#! 2. Now get relevant histograms

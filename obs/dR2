@@ -4,30 +4,36 @@ from disp_yields import DispYields
 import sys
 
 #! ---------------------
-#  dR2 [simnum]
+#  dR2 [R2] [simnum]
 #!----------------------
+if len(sys.argv)>=2: #i.e. User input R2 
+        R2=sys.argv[1]
+else:
+        R2='D'
 
-if len(sys.argv)>2: #i.e. User input simnum, else use siml
+if len(sys.argv)==3: #i.e. User input simnum, else use siml
 	simnum=sys.argv[2]
 else:
 	simnum='siml'
 
-print "Displaying Obs-R2: %s"%(simnum)
+print "Displaying Obs-R2: R2=%s,simnum=%s"%(R2,simnum)
 dy=DispYields(simnum)
-
-#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-
-#dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-
-#dy.disp_R2(R2='C',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#dy.disp_R2(R2='C',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#dy.disp_R2(R2='C',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-
-dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='POS',dtypl=['EXP'],seql=['C','F'])
-dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='NEG',dtypl=['EXP'],seql=['C','F'])
+if R2=='A':
+	dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
+	dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
+	dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
+elif R2=='B':
+	dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
+	dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
+	dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
+elif R2=='C':
+	dy.disp_R2(R2='C',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
+	dy.disp_R2(R2='C',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
+	dy.disp_R2(R2='C',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
+elif R2=='D':
+	dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
+	dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='POS',dtypl=['EXP'],seql=['C','F'])
+	dy.disp_R2(R2='D',q2min=1.25,q2max=1.75,hel='NEG',dtypl=['EXP'],seql=['C','F'])
+else:
+	print "R2=",R2,"is not valid. R2=A,B,C or D only"
 
