@@ -322,7 +322,7 @@ class DispYields:
 										if vst==3 and var=='M1': continue
 
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetName("%s_%d_%s_%s_%s"%(R2,vst,var,seq,hel))
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f))"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
