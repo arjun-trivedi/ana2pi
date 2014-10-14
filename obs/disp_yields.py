@@ -342,7 +342,7 @@ class DispYields:
 
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f))"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
 				print "keys in hR2:\n",hR2.keys()
@@ -361,6 +361,13 @@ class DispYields:
 						for wbin_le in wbins_lel:
 							for q2bin_le in q2bins_lel:
 								c=ROOT.TCanvas()
+								if len(dtypl)==2:
+									c.Divide(1,2)
+								# pad_exp=ROOT.TPad("pad_exp","",0,0,1,1)
+								# pad_sim=ROOT.TPad("pad_sim","",0,0,1,1)
+								#pad_sim.SetFillStyle(4000)# will be transparent
+								#pad_exp.Draw()
+								#pad_sim.Draw()
 								l=ROOT.TLegend(0.1,0.8,0.2,0.9)
 								mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 								i=0
@@ -372,11 +379,34 @@ class DispYields:
 											h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 											h.SetMarkerColor(mrkrd[(dtyp,seq)])
 											l.AddEntry(h,"%s-%s"%(dtyp,seq),"p")
-											if i==0:
+											if dtyp=='EXP': 
+												c.cd(1)
+												if i==0:
+													h.Draw()
+													i+=1;
+												else:
+													h.Draw("sames")
+												# pad_exp.Modified()
+												# c.cd()
+											if dtyp=='SIM':
+												c.cd(2)
 												h.Draw()
-												i+=1;
-											else:
-												h.Draw("sames")
+												# pad_sim.cd()
+												# ymin=h.GetMinimum()
+												# ymax=h.GetMaximum()
+												# dy=(ymax-ymin)/0.8#10 per cent margins top and bottom
+												# xmin=h.GetXaxis().GetXmin()
+												# xmax=h.GetXaxis().GetXmax()
+												# dx=(xmax-xmin)/0.8#10 per cent margins top and bottom
+												# pad_sim.Range(xmin-0.1*dx,ymin-0.1*dy,xmax+0.1*dx,ymax+0.1*dy)
+												# pad_sim.Draw()
+												# pad_sim.cd()
+												# h.Draw("][sames")
+												# pad_sim.Update()
+												# ax=ROOT.TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L")
+												# ax.SetLabelColor(ROOT.gROOT.ProcessLine("kRed"))
+												# ax.Draw()
+								c.cd(1)				
 								l.Draw("same")
 								c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
 								c.Close()
