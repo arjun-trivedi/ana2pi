@@ -271,12 +271,13 @@ class DispYields:
 				c.Close()
 		return
 
-	def plot_obs_R2(self,h5l,dtyp='EXP',seq='C'):
+	def plot_obs_R2(self,h5l,R2,hel,dtypl,seql):
 		"""
 		+ Plot Obs_R2
 		"""
 		#! Define some objects needed by this method
-		R2l=['T+L','LT','TT','LTp']
+		R2_namel=['T+L','LT','TT','LTp']
+		mfunc={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
 
 		# outdir=os.path.join(self.OUTDIR_OBS_R2)
 		# if not os.path.exists(outdir):
@@ -303,16 +304,27 @@ class DispYields:
 		#! Extract hR2(EC,vst,var) in every q2w-bin
 		for wbin in wbins_le:
 			for q2bin in q2bins_le:
+				hR2={}
 				for vst in self.VSTS:
-					for seq in ['C']:
-						for EC in R2l:
-							if EC=='LTp':
-								if h5l.has_key((q2bin,wbin,dtyp,vst,seq,'POS')) and h5l.has_key((q2bin,wbin,dtyp,vst,seq,'NEG')):
-									h5_POS=h5l[q2bin,wbin,dtyp,vst,seq,'POS']
-									h5_NEG=h5l[q2bin,wbin,dtyp,vst,seq,'NEG']
+					if R2=='A':
+						continue
+					elif R2=='B':
+						continue
+					elif R2=='C':
+						continue
+					elif R2=='D':
+						for dtyp in dtypl:
+							for seq in seql:
+								if h5l.has_key((q2bin,wbin,dtyp,vst,seq,hel)):
+									# h5_POS=h5l[q2bin,wbin,dtyp,vst,seq,'POS']
+									# h5_NEG=h5l[q2bin,wbin,dtyp,vst,seq,'NEG']
 
-									h5_POSm=thntool.MultiplyBy(h5_POS,'sphi',1)
-									h5_NEGm=thntool.MultiplyBy(h5_NEG,'sphi',-1)
+									# h5_POSm=thntool.MultiplyBy(h5_POS,'sphi',1)
+									# h5_NEGm=thntool.MultiplyBy(h5_NEG,'sphi',-1)
+
+									h5=h5l[q2bin,wbin,dtyp,vst,seq,hel]
+									if   hel=='POS': h5m=thntool.MultiplyBy(h5_POS,'sphi',1)	
+									elif hel=='NEG': h5m=thntool.MultiplyBy(h5_POS,'sphi',-1)	
 
 									for var in VARS:
 										if var=='PHI': continue
@@ -320,33 +332,33 @@ class DispYields:
 										if vst==2 and var=='M1': continue
 										if vst==3 and var=='M1': continue
 
-										hR2_POS=h5_POSm.Projection(H5_DIM[var],"E")
-										hR2_POS.SetName("D_%d_%s_%s_POS"%(vst,var,seq))
-										hR2_POS.SetTitle("R2_{LT^{\'}}_VST%d_%s_%s_POS(%.2f,%.3f)"%(vst,var,seq,q2bin,wbin))
-										hR2_POS.Scale(1/math.pi)
-										hR2_POS.Scale(1/50000)
-										hR2_NEG=h5_NEGm.Projection(H5_DIM[var],"E")
-										hR2_NEG.SetName("D_%d_%s_%s_NEG"%(vst,var,seq))
-										hR2_NEG.SetTitle("R2_{LT^{\'}}_VST%d_%s_%s_NEG(%.2f,%.3f)"%(vst,var,seq,q2bin,wbin))
-										hR2_NEG.Scale(1/math.pi)
-										hR2_NEG.Scale(1/50000)
-										hR2_AVG=hR2_POS.Clone("avg")
-										hR2_AVG.SetName("D_%d_%s_%s_AVG"%(vst,var,seq))
-										hR2_AVG.SetTitle("R2_{LT^{\'}}_VST%d_%s_%s_AVG(%.2f,%.3f)"%(vst,var,seq,q2bin,wbin))
-										hR2_AVG.Add(hR2_NEG,1)
-										hR2_AVG.Scale(0.5)
+										hR2[vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+										hR2[vst,var,dtyp,seq].SetName("D_%d_%s_%s_%s"%(vst,var,seq,hel))
+										hR2[vst,var,dtyp,seq].SetTitle("R2_{LT^{\'}}_VST%d_%s_%s(%.2f,%.3f)"%(vst,var,hel,q2bin,wbin))
+										hR2[vst,var,dtyp,seq].Scale(1/math.pi)
+										hR2[vst,var,dtyp,seq].Scale(1/50000)
+					else: 
+						print R2,"is not a valid Response Function. Please enter A,B,C or D"
 
-										#ROOT.gStyle.SetOptStat("nemruo")
-
-										outdir=os.path.join(self.OUTDIR_OBS_R2,"D_VST%d_%s_%s"%(vst,var,seq))
-										if not os.path.exists(outdir):
-											os.makedirs(outdir)
-										c=ROOT.TCanvas()
-										hR2_AVG.Draw()
-										c.SaveAs("%s/cD_%.3f_%0.2f_VST%d_%s.png"%(outdir,wbin,q2bin,vst,var))
-										c.Close()
-							else: #! Currently, not implemented if EC neq LTp
-								continue
+				outdir=os.path.join(self.OUTDIR_OBS_R2,"w%s_q2%s"%(wbin,q2bin))
+				if not os.path.exists(outdir):
+					os.makedirs(outdir)
+				for vst in self.VSTS:
+					for var in VARS:
+							if var=='PHI': continue
+							if vst==1 and var=='M2': continue
+							if vst==2 and var=='M1': continue
+							if vst==3 and var=='M1': continue
+							c=ROOT.TCanvas()
+							i=0
+							for dtyp in dtypl:
+								for seq in seql:
+									if i==0:
+										hR2[vst,var,dtyp,seq].Draw()
+									else:
+										hR2[vst,var,dtyp,seq].Draw("sames")
+							c.SaveAs("%s/c%s_%.3f_%0.2f_VST%d_%s.png"%(outdir,R2,wbin,q2bin,vst,var))
+							c.Close()
 
 
 
@@ -448,13 +460,13 @@ class DispYields:
 		Walk the ROOT file and extract:
 			+ h5(q2bin,wbin,dtyp,vst,seq,hel)
 		"""
-		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2","Q2_%.2f-%.2f"%(q2min,q2max))
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,"Q2_%.2f-%.2f"%(q2min,q2max))
 		if not os.path.exists(self.OUTDIR_OBS_R2):
 			os.makedirs(self.OUTDIR_OBS_R2)
 
 		print "In DispYields::disp_R2()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist(q2min,q2max)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
 		print q2wbinl
 
 		#! 2. Now get relevant histograms
@@ -491,6 +503,8 @@ class DispYields:
 		fout.close()
 		print "Finished getting h5s. Now going to display R2s"
 		#self.plot_obs_R2(h5)
+		self.plot_obs_R2(self,h5,'D','POS',['EXP','SIM'],['C','F'])
+		#plot_obs_R2(self,h5l,R2,hel,dtypl,seql)
 		print "Done DispYields::disp_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
@@ -666,21 +680,22 @@ class DispYields:
 		return ss
 
 
-	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000):
+	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=10):
 		"""
 		The ROOT file is arranged in a Tree Structure. The
 		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
 		q2wbin/vst/seq/hists
 		"""
 		q2wbinl=[]
-		i=0 #! for getting limted q2wbins
+		i=0 #! for dbg_bins
 		for path,dirs,files in self.FEXP.walk():
 			if path=="":continue #! Avoid root path
 			path_arr=path.split("/")
 			if len(path_arr)==1:
 				q2wbinl.append(path)
 				i+=1
-			#if i>1: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+			if dbg==True:
+				if i>=dbg_bins: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 
 		#! Remove "particular" q2wbins as implemented below
 		# q2max=2.25#1.75
