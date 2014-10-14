@@ -346,7 +346,7 @@ class DispYields:
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
 										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
-								else:
+								#else:
 									#print "h5 key=",q2bin_le,wbin_le,dtyp,vst,seq,hel,"does NOT exist"
 		print "keys in hR2:\n",hR2.keys()
 
@@ -390,7 +390,7 @@ class DispYields:
 									if dtyp=='SIM':
 										c.cd(2)
 										h.Draw()
-								else:
+								#else:
 									#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
 						c.cd(1)				
 						l.Draw("same")
