@@ -360,9 +360,11 @@ class DispYields:
 								os.makedirs(outdir)
 						for wbin_le in wbins_lel:
 							for q2bin_le in q2bins_lel:
-								c=ROOT.TCanvas()
 								if len(dtypl)==2:
+									c=ROOT.TCanvas("","",800,1000)
 									c.Divide(1,2)
+								else:
+									c=ROOT.TCanvas()
 								# pad_exp=ROOT.TPad("pad_exp","",0,0,1,1)
 								# pad_sim=ROOT.TPad("pad_sim","",0,0,1,1)
 								#pad_sim.SetFillStyle(4000)# will be transparent
