@@ -276,55 +276,44 @@ class DispYields:
 		+ Plot Obs_R2
 		"""
 		#! Define some objects needed by this method
-		R2_namel=['T+L','LT','TT','LTp']
-		mfunc={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
+		R2_named={'A':'R2_{T+L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
+		mfuncd={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
 
 		# outdir=os.path.join(self.OUTDIR_OBS_R2)
 		# if not os.path.exists(outdir):
 		# 	os.makedirs(outdir)
 
 		#! Get all q2- and w-bins from the keys of hVSTX
-		q2bins_le,wbins_le=[],[]
+		q2bins_lel,wbins_lel=[],[]
 		for k in h5l.keys():
-			q2bins_le.append(k[0])
-			wbins_le.append(k[1])
+			q2bins_lel.append(k[0])
+			wbins_lel.append(k[1])
 		#! Keep only unique entries
-		q2bins_le=set(q2bins_le) #! Keep only unique entries
-		q2bins_le=list(q2bins_le) #! convert 'set' back to 'list'
-		q2bins_le=sorted(q2bins_le)
-		wbins_le=set(wbins_le) #! Keep only unique entries
-		wbins_le=list(wbins_le) #! convert 'set' back to 'list'
-		wbins_le=sorted(wbins_le)
+		q2bins_lel=set(q2bins_lel) #! Keep only unique entries
+		q2bins_lel=list(q2bins_lel) #! convert 'set' back to 'list'
+		q2bins_lel=sorted(q2bins_lel)
+		wbins_lel=set(wbins_lel) #! Keep only unique entries
+		wbins_lel=list(wbins_lel) #! convert 'set' back to 'list'
+		wbins_lel=sorted(wbins_lel)
 		print "going to plot R2 obs for:"
 		print "Q2:"
-		print q2bins_le
+		print q2bins_lel
 		print "W:"
-		print wbins_le
+		print wbins_lel
 
-		#! Extract hR2(EC,vst,var) in every q2w-bin
-		for wbin in wbins_le:
-			for q2bin in q2bins_le:
-				hR2={}
+		#! Extract hR2(q2bin_le,wbin_le,vst,var,hel,dtyp,seq)
+		hR2={}
+		for wbin_le in wbins_lel:
+			for q2bin_le in q2bins_lel:
 				for vst in self.VSTS:
-					if R2=='A':
-						continue
-					elif R2=='B':
-						continue
-					elif R2=='C':
-						continue
-					elif R2=='D':
 						for dtyp in dtypl:
 							for seq in seql:
-								if h5l.has_key((q2bin,wbin,dtyp,vst,seq,hel)):
-									# h5_POS=h5l[q2bin,wbin,dtyp,vst,seq,'POS']
-									# h5_NEG=h5l[q2bin,wbin,dtyp,vst,seq,'NEG']
-
-									# h5_POSm=thntool.MultiplyBy(h5_POS,'sphi',1)
-									# h5_NEGm=thntool.MultiplyBy(h5_NEG,'sphi',-1)
-
-									h5=h5l[q2bin,wbin,dtyp,vst,seq,hel]
-									if   hel=='POS': h5m=thntool.MultiplyBy(h5_POS,'sphi',1)	
-									elif hel=='NEG': h5m=thntool.MultiplyBy(h5_POS,'sphi',-1)	
+								if h5l.has_key((q2bin_le,wbin_le,dtyp,vst,seq,hel)):
+									h5=h5l[q2bin_le,wbin_le,dtyp,vst,seq,hel]
+									if   hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
+									elif hel=='POS':   h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
+									elif hel=='NEG':   h5m=thntool.MultiplyBy(h5,mfuncd[R2],-1)	
+									else: print hel,"is not recognized. hel=POS/NEG/UNPOL"
 
 									for var in VARS:
 										if var=='PHI': continue
@@ -332,33 +321,59 @@ class DispYields:
 										if vst==2 and var=='M1': continue
 										if vst==3 and var=='M1': continue
 
-										hR2[vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
-										hR2[vst,var,dtyp,seq].SetName("D_%d_%s_%s_%s"%(vst,var,seq,hel))
-										hR2[vst,var,dtyp,seq].SetTitle("R2_{LT^{\'}}_VST%d_%s_%s(%.2f,%.3f)"%(vst,var,hel,q2bin,wbin))
-										hR2[vst,var,dtyp,seq].Scale(1/math.pi)
-										hR2[vst,var,dtyp,seq].Scale(1/50000)
-					else: 
-						print R2,"is not a valid Response Function. Please enter A,B,C or D"
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetName("%s_%d_%s_%s_%s"%(R2,vst,var,seq,hel))
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f))"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
+										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
+				print "keys in hR2:\n",hR2.keys()
 
-				outdir=os.path.join(self.OUTDIR_OBS_R2,"w%s_q2%s"%(wbin,q2bin))
-				if not os.path.exists(outdir):
-					os.makedirs(outdir)
+				#! Now display hR2
 				for vst in self.VSTS:
 					for var in VARS:
-							if var=='PHI': continue
-							if vst==1 and var=='M2': continue
-							if vst==2 and var=='M1': continue
-							if vst==3 and var=='M1': continue
-							c=ROOT.TCanvas()
-							i=0
-							for dtyp in dtypl:
-								for seq in seql:
-									if i==0:
-										hR2[vst,var,dtyp,seq].Draw()
-									else:
-										hR2[vst,var,dtyp,seq].Draw("sames")
-							c.SaveAs("%s/c%s_%.3f_%0.2f_VST%d_%s.png"%(outdir,R2,wbin,q2bin,vst,var))
-							c.Close()
+						if var=='PHI': continue
+						if vst==1 and var=='M2': continue
+						if vst==2 and var=='M1': continue
+						if vst==3 and var=='M1': continue
+
+						outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var))
+						if not os.path.exists(outdir):
+								os.makedirs(outdir)
+						for wbin_le in wbins_lel:
+							for q2bin_le in q2bins_lel:
+								c=ROOT.TCanvas()
+								i=0
+								for dtyp in dtypl:
+									for seq in seql:
+										if hR2.has_key((q2bin_le,wbin_le,hel,vst,var,dtyp,seq)):
+											if i==0:
+												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw()
+											else:
+												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw("sames")
+								c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
+								c.Close()
+						
+
+
+				# outdir=os.path.join(self.OUTDIR_OBS_R2,"w%s_q%s"%(wbin,q2bin))
+				# if not os.path.exists(outdir):
+				# 	os.makedirs(outdir)
+				# for vst in self.VSTS:
+				# 	for var in VARS:
+				# 			if var=='PHI': continue
+				# 			if vst==1 and var=='M2': continue
+				# 			if vst==2 and var=='M1': continue
+				# 			if vst==3 and var=='M1': continue
+				# 			c=ROOT.TCanvas()
+				# 			i=0
+				# 			for dtyp in dtypl:
+				# 				for seq in seql:
+				# 					if i==0:
+				# 						hR2[vst,var,dtyp,seq].Draw()
+				# 					else:
+				# 						hR2[vst,var,dtyp,seq].Draw("sames")
+				# 			c.SaveAs("%s/c%s_%.3f_%0.2f_VST%d_%s.png"%(outdir,R2,wbin,q2bin,vst,var))
+				# 			c.Close()
 
 
 
@@ -455,12 +470,12 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_R2(self,R2,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'],hell=['UNPOL','POS','NEG']):
+	def disp_R2(self,R2='D',q2min=1.25,q2max=1.75,hel='POS',dtypl=['EXP'],seql=['C','F']):
 		"""
 		Walk the ROOT file and extract:
 			+ h5(q2bin,wbin,dtyp,vst,seq,hel)
 		"""
-		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,"Q2_%.2f-%.2f"%(q2min,q2max))
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,hel,"Q2_%.2f-%.2f"%(q2min,q2max))
 		if not os.path.exists(self.OUTDIR_OBS_R2):
 			os.makedirs(self.OUTDIR_OBS_R2)
 
@@ -485,9 +500,8 @@ class DispYields:
 				elif dtyp=='SIM':f=self.FSIM
 				for vst in self.VSTS:
 					for seq in seql:
-						for hel in hell:
-							if dtyp=='SIM' and (hel=='POS' or hel=='NEG'): continue
-							h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
+						if dtyp=='SIM' and (hel=='POS' or hel=='NEG'): continue
+						h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
 							# if dtyp=='EXP':
 							# 	h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
 							# 	h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
@@ -503,7 +517,7 @@ class DispYields:
 		fout.close()
 		print "Finished getting h5s. Now going to display R2s"
 		#self.plot_obs_R2(h5)
-		self.plot_obs_R2(self,h5,'D','POS',['EXP','SIM'],['C','F'])
+		self.plot_obs_R2(h5,R2,hel,dtypl,seql)
 		#plot_obs_R2(self,h5l,R2,hel,dtypl,seql)
 		print "Done DispYields::disp_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"

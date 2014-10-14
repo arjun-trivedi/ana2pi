@@ -14,4 +14,4 @@ else:
 
 print "Displaying Obs-R2: %s"%(simnum)
 dy=DispYields(simnum)
-dy.disp_R2("A")
+dy.disp_R2()
