@@ -279,6 +279,25 @@ class DispYields:
 		R2_named={'A':'R2_{T+L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
 		mfuncd={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
 
+		#! Stats Box
+		# ROOT.gStyle.SetOptStat(0)
+
+		# # ROOT.gStyle.SetLabelSize(0.5,"t")
+		# # ROOT.gStyle.SetTitleSize(0.5,"t")
+		# #ROOT.gStyle.SetPaperSize(20,26);
+		# ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		# #ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+
+		# ROOT.gStyle.SetTitleW(10)# //title width 
+		# ROOT.gStyle.SetTitleFontSize(20)# //title width 
+		# ROOT.gStyle.SetTitleH(0.15)# //title height 
+		# ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001);
+
 		# outdir=os.path.join(self.OUTDIR_OBS_R2)
 		# if not os.path.exists(outdir):
 		# 	os.makedirs(outdir)
@@ -342,10 +361,14 @@ class DispYields:
 						for wbin_le in wbins_lel:
 							for q2bin_le in q2bins_lel:
 								c=ROOT.TCanvas()
+								l=ROOT.TLegend(0.1,0.7,0.48,0.9);
+								mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 								i=0
 								for dtyp in dtypl:
 									for seq in seql:
 										if hR2.has_key((q2bin_le,wbin_le,hel,vst,var,dtyp,seq)):
+											hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+											hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetMarkerColor(mrkrd[(dtyp,seq)])
 											if i==0:
 												hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Draw()
 												i+=1;
