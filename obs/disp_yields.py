@@ -365,11 +365,6 @@ class DispYields:
 									c.Divide(1,2)
 								else:
 									c=ROOT.TCanvas()
-								# pad_exp=ROOT.TPad("pad_exp","",0,0,1,1)
-								# pad_sim=ROOT.TPad("pad_sim","",0,0,1,1)
-								#pad_sim.SetFillStyle(4000)# will be transparent
-								#pad_exp.Draw()
-								#pad_sim.Draw()
 								l=ROOT.TLegend(0.1,0.8,0.2,0.9)
 								mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 								i=0
@@ -388,55 +383,13 @@ class DispYields:
 													i+=1;
 												else:
 													h.Draw("sames")
-												# pad_exp.Modified()
-												# c.cd()
 											if dtyp=='SIM':
 												c.cd(2)
 												h.Draw()
-												# pad_sim.cd()
-												# ymin=h.GetMinimum()
-												# ymax=h.GetMaximum()
-												# dy=(ymax-ymin)/0.8#10 per cent margins top and bottom
-												# xmin=h.GetXaxis().GetXmin()
-												# xmax=h.GetXaxis().GetXmax()
-												# dx=(xmax-xmin)/0.8#10 per cent margins top and bottom
-												# pad_sim.Range(xmin-0.1*dx,ymin-0.1*dy,xmax+0.1*dx,ymax+0.1*dy)
-												# pad_sim.Draw()
-												# pad_sim.cd()
-												# h.Draw("][sames")
-												# pad_sim.Update()
-												# ax=ROOT.TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L")
-												# ax.SetLabelColor(ROOT.gROOT.ProcessLine("kRed"))
-												# ax.Draw()
 								c.cd(1)				
 								l.Draw("same")
 								c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
 								c.Close()
-						
-
-
-				# outdir=os.path.join(self.OUTDIR_OBS_R2,"w%s_q%s"%(wbin,q2bin))
-				# if not os.path.exists(outdir):
-				# 	os.makedirs(outdir)
-				# for vst in self.VSTS:
-				# 	for var in VARS:
-				# 			if var=='PHI': continue
-				# 			if vst==1 and var=='M2': continue
-				# 			if vst==2 and var=='M1': continue
-				# 			if vst==3 and var=='M1': continue
-				# 			c=ROOT.TCanvas()
-				# 			i=0
-				# 			for dtyp in dtypl:
-				# 				for seq in seql:
-				# 					if i==0:
-				# 						hR2[vst,var,dtyp,seq].Draw()
-				# 					else:
-				# 						hR2[vst,var,dtyp,seq].Draw("sames")
-				# 			c.SaveAs("%s/c%s_%.3f_%0.2f_VST%d_%s.png"%(outdir,R2,wbin,q2bin,vst,var))
-				# 			c.Close()
-
-
-
 
 		
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
