@@ -276,7 +276,7 @@ class DispYields:
 		+ Plot Obs_R2
 		"""
 		#! Define some objects needed by this method
-		R2_named={'A':'R2_{T+L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
+		R2_named={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
 		mfuncd={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
 
 		#! Stats Box
@@ -352,6 +352,7 @@ class DispYields:
 		print "keys in hR2:\n",hR2.keys()
 
 		#! Now display hR2
+		mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		for vst in self.VSTS:
 			for var in VARS:
 				if var=='PHI': continue
@@ -362,15 +363,27 @@ class DispYields:
 				outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var))
 				if not os.path.exists(outdir):
 						os.makedirs(outdir)
-				for wbin_le in wbins_lel:
-					for q2bin_le in q2bins_lel:
-						if len(dtypl)==2:
-							c=ROOT.TCanvas("","",800,1000)
-							c.Divide(1,2)
-						else:
-							c=ROOT.TCanvas()
-						l=ROOT.TLegend(0.1,0.8,0.2,0.9)
-						mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+				for q2bin_le in q2bins_lel:
+					c=ROOT.TCanvas("c","c",2000,2000)
+					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					#pad_t.SetFillColor(11)
+  					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
+  					pad_p.SetFillColor(11)
+  					pad_t.Draw()
+  					pad_p.Draw()
+  					pad_t.cd()
+  					pt=ROOT.TPaveText(.05,.1,.95,.8)
+  					pt.AddText("%s(%s:hel=%s:Q2=%.2f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le))
+  					pt.Draw()
+ 					pad_p.cd()
+					pad_p.Divide(7,10)
+					#c.Divide(7,10)
+					ipad=0
+					l,t=[],[]
+					for wbin_le in wbins_lel:
+						pad=pad_p.cd(ipad+1)
+						if len(dtypl)==2: pad.Divide(1,2)
+						l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
 						i=0
 						for dtyp in dtypl:
 							for seq in seql:
@@ -380,23 +393,33 @@ class DispYields:
 									h=hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]
 									h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 									h.SetMarkerColor(mrkrd[(dtyp,seq)])
-									l.AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+									l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 									if dtyp=='EXP': 
-										c.cd(1)
+										pad.cd(1)
 										if i==0:
 											h.Draw()
 											i+=1;
 										else:
 											h.Draw("sames")
 									if dtyp=='SIM':
-										c.cd(2)
+										pad.cd(2)
 										h.Draw()
 								#else:
 									#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
-						c.cd(1)				
-						l.Draw("same")
-						c.SaveAs("%s/c_w%.3f_q%0.2f.png"%(outdir,wbin_le,q2bin_le))
-						c.Close()
+						l[ipad].Draw()
+						#! Add TText on pad to label W bin
+						#pad.cd()
+						t.append(ROOT.TText(0.5,0.5,"W=%s"%wbin_le))
+						#print "W label=",t[ipad].GetTitle()
+						t[ipad].SetNDC()
+						t[ipad].SetTextSize(0.1)
+						t[ipad].SetTextColor(ROOT.gROOT.ProcessLine("kMagenta"))
+						t[ipad].Draw()
+						#pad.Modified()
+						#! Increment ipad for next W-bin
+						ipad+=1
+					c.SaveAs("%s/c_q%0.2f.png"%(outdir,q2bin_le))
+					c.Close()
 	
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
