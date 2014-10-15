@@ -330,11 +330,12 @@ class DispYields:
 								if h5l.has_key((q2bin_le,wbin_le,dtyp,vst,seq,hel)):
 									#print "h5 key=",q2bin_le,wbin_le,dtyp,vst,seq,hel,"exists"
 									h5=h5l[q2bin_le,wbin_le,dtyp,vst,seq,hel]
-									if   hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
-									elif hel=='POS':   h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
-									elif hel=='NEG':   h5m=thntool.MultiplyBy(h5,mfuncd[R2],-1)	
-									else: print hel,"is not recognized. hel=POS/NEG/UNPOL"
-
+									if R2!='D':
+										h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
+									elif R2=='D':
+										if   hel=='POS' or hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)
+										elif hel=='NEG':                 h5m=thntool.MultiplyBy(h5,mfuncd[R2],-1)	
+																		
 									for var in VARS:
 										if var=='PHI': continue
 										if vst==1 and var=='M2': continue
