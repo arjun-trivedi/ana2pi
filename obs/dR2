@@ -19,8 +19,8 @@ else:
 print "Displaying Obs-R2: R2=%s,simnum=%s"%(R2,simnum)
 dy=DispYields(simnum)
 if R2=='A':
-	#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-	dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
+	dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
+	#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
 	#dy.disp_R2(R2='A',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
 elif R2=='B':
 	dy.disp_R2(R2='B',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])

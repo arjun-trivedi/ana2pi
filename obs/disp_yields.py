@@ -364,7 +364,7 @@ class DispYields:
 				if not os.path.exists(outdir):
 						os.makedirs(outdir)
 				for q2bin_le in q2bins_lel:
-					c=ROOT.TCanvas("c","c",2000,2000)
+					c=ROOT.TCanvas("c","c",4000,4000)
 					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 					#pad_t.SetFillColor(11)
   					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
