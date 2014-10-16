@@ -29,7 +29,9 @@
 
 
 #! [10-16-14] Post Functional-ization updates to disp_yields.py; in plot_obs_R2() when doing h5=>hR2
-echo ">dR2_all"
-dR2_all
+echo ">dev/dR2_all"
+dev/dR2_all
 echo ">dy full_ana"
 dy full_ana
+echo ">dy_integ"
+dy_integ

@@ -412,8 +412,8 @@ class DispYields:
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
-		#q2wbinl=self.get_q2wbinlist()
+		#q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from file
@@ -498,8 +498,8 @@ class DispYields:
 
 		print "In DispYields::disp_R2()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		print q2wbinl
 
 		#! 2. Now get relevant histograms
