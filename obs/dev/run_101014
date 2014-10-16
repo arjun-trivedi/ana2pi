@@ -12,17 +12,24 @@
 #py exp sim01sim02sim03sim04
 
 #! Beam Helicity dependent yields
-echo ">py exp sim1 True"
-py exp sim1 True
+#echo ">py exp sim1 True"
+#py exp sim1 True
 #echo ">py exp sim01sim02sim03sim04 True"
 #py exp sim01sim02sim03sim04 True
 
-echo ">ds sim1"
-ds sim1
+#echo ">ds sim1"
+#ds sim1
 #echo ">ds sim01sim02sim03sim04"
 #ds sim01sim02sim03sim04
 
-echo ">dy all sim1"
-dy all sim1
+#echo ">dy all sim1"
+#dy all sim1
 #echo ">dy all sim01sim02sim03sim04"
 #dy all sim01sim02sim03sim04
+
+
+#! [10-16-14] Post Functional-ization updates to disp_yields.py; in plot_obs_R2() when doing h5=>hR2
+echo ">dR2_all"
+dR2_all
+echo ">dy full_ana"
+dy full_ana
