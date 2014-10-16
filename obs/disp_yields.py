@@ -100,17 +100,7 @@ class DispYields:
 			sys.exit("view=%s not recognized. Exiting."%view)
 
 		#! Get all q2- and w-bins from the keys of hVSTX
-		q2bins_le,wbins_le=[],[]
-		for k in hVST1.keys():
-			q2bins_le.append(k[0])
-			wbins_le.append(k[1])
-		#! Keep only unique entries
-		q2bins_le=set(q2bins_le) #! Keep only unique entries
-		q2bins_le=list(q2bins_le) #! convert 'set' back to 'list'
-		q2bins_le=sorted(q2bins_le)
-		wbins_le=set(wbins_le) #! Keep only unique entries
-		wbins_le=list(wbins_le) #! convert 'set' back to 'list'
-		wbins_le=sorted(wbins_le)
+		q2bins_le,wbins_le=self.get_q2bin_lel_wbin_lel(hVST1)
 		print "going to plot 1D obs for:"
 		print "Q2:"
 		print q2bins_le
@@ -290,7 +280,7 @@ class DispYields:
 				c.Close()
 		return
 
-	def plot_obs_R2(self,h5l,R2,hel,dtypl,seql):
+	def plot_obs_R2(self,h5d,R2,hel,dtypl,seql):
 		"""
 		+ Plot Obs_R2
 		"""
@@ -298,79 +288,44 @@ class DispYields:
 		R2_named={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
 		mfuncd={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
 
-		#! Stats Box
-		# ROOT.gStyle.SetOptStat(0)
+		#! Set up ROOT-display aesthetics
+		self.plot_obs_R2_athtcs()
+		
+		#! Extract hR2(q2bin_le,wbin_le,hel,vst,var,dtyp,seq) from h5(q2bin_le,wbin_le,hel,vst,dtyp,seq)
+		hR2={}
+		for k in h5d:
+			q2bin_le,wbin_le,hel,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5]
+			h5=h5d[k]
+			if R2!='D':
+				h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
+			elif R2=='D':
+				if   hel=='POS' or hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)
+				elif hel=='NEG':                 h5m=thntool.MultiplyBy(h5,mfuncd[R2],-1)	
+												
+			for var in VARS:
+				if var=='PHI': continue
+				if vst==1 and var=='M2': continue
+				if vst==2 and var=='M1': continue
+				if vst==3 and var=='M1': continue
+				hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+				hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
+				hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+				hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
+				hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
+		print "keys in hR2:\n",hR2.keys()
 
-		# # ROOT.gStyle.SetLabelSize(0.5,"t")
-		# # ROOT.gStyle.SetTitleSize(0.5,"t")
-		# #ROOT.gStyle.SetPaperSize(20,26);
-		# ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
-		# #ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
-		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
-		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
-
-		# ROOT.gStyle.SetTitleW(10)# //title width 
-		# ROOT.gStyle.SetTitleFontSize(20)# //title width 
-		# ROOT.gStyle.SetTitleH(0.15)# //title height 
-		# ROOT.gStyle.SetTitleY(1)# //title Y location 
-
-		#!get rid of X error bars and y error bar caps
-		ROOT.gStyle.SetErrorX(0.001);
-
-		# outdir=os.path.join(self.OUTDIR_OBS_R2)
-		# if not os.path.exists(outdir):
-		# 	os.makedirs(outdir)
-
-		#! Get all q2- and w-bins from the keys of hVSTX
-		q2bins_lel,wbins_lel=[],[]
-		for k in h5l.keys():
-			q2bins_lel.append(k[0])
-			wbins_lel.append(k[1])
-		#! Keep only unique entries
-		q2bins_lel=set(q2bins_lel) #! Keep only unique entries
-		q2bins_lel=list(q2bins_lel) #! convert 'set' back to 'list'
-		q2bins_lel=sorted(q2bins_lel)
-		wbins_lel=set(wbins_lel) #! Keep only unique entries
-		wbins_lel=list(wbins_lel) #! convert 'set' back to 'list'
-		wbins_lel=sorted(wbins_lel)
+		#! Now display hR2 
+		#! Get all q2- and w-bins from the keys of h5d
+		#! (Code that actually makes the plots is not yet Function-alized and therefore
+		#! I have to go through the tedious process of Loop-ing, which requires me to get	
+		#! the q2- and w-bin informtion from h5d)
+		q2bins_lel,wbins_lel=self.get_q2bin_lel_wbin_lel(h5d)
 		print "going to plot R2 obs for:"
 		print "Q2:"
 		print q2bins_lel
 		print "W:"
 		print wbins_lel
 
-		#! Extract hR2(q2bin_le,wbin_le,vst,var,hel,dtyp,seq)
-		hR2={}
-		for wbin_le in wbins_lel:
-			for q2bin_le in q2bins_lel:
-				for vst in self.VSTS:
-						for dtyp in dtypl:
-							for seq in seql:
-								if h5l.has_key((q2bin_le,wbin_le,dtyp,vst,seq,hel)):
-									#print "h5 key=",q2bin_le,wbin_le,dtyp,vst,seq,hel,"exists"
-									h5=h5l[q2bin_le,wbin_le,dtyp,vst,seq,hel]
-									if R2!='D':
-										h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
-									elif R2=='D':
-										if   hel=='POS' or hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)
-										elif hel=='NEG':                 h5m=thntool.MultiplyBy(h5,mfuncd[R2],-1)	
-																		
-									for var in VARS:
-										if var=='PHI': continue
-										if vst==1 and var=='M2': continue
-										if vst==2 and var=='M1': continue
-										if vst==3 and var=='M1': continue
-
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/math.pi)
-										hR2[q2bin_le,wbin_le,hel,vst,var,dtyp,seq].Scale(1/50000)
-								#else:
-									#print "h5 key=",q2bin_le,wbin_le,dtyp,vst,seq,hel,"does NOT exist"
-		print "keys in hR2:\n",hR2.keys()
-
-		#! Now display hR2
 		mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		for vst in self.VSTS:
 			for var in VARS:
@@ -543,8 +498,8 @@ class DispYields:
 
 		print "In DispYields::disp_R2()"
 		#! 1. First get all q2wbin directories from file
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		print q2wbinl
 
 		#! 2. Now get relevant histograms
@@ -555,20 +510,16 @@ class DispYields:
 			#! First make sure this bin is "good"
 			is_badbin=self.is_bad_q2wbin(q2wbin,q2wbinl_bad)
 			if is_badbin: continue
-			#! Now that bin is "good", get h5
 			q2bin_le=self.get_q2bin_le(q2wbin)
-			wbin_le=self.get_wbin_le(q2wbin)
+			wbin_le =self.get_wbin_le(q2wbin)
 			for dtyp in dtypl:
 				if   dtyp=='EXP':f=self.FEXP_HEL
 				elif dtyp=='SIM':f=self.FSIM
 				for vst in self.VSTS:
 					for seq in seql:
 						if dtyp=='SIM' and (hel=='POS' or hel=='NEG'): continue
-						h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
-							# if dtyp=='EXP':
-							# 	h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
-							# 	h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
-
+						#h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
+						h5[q2bin_le,wbin_le,hel,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
 		print "keys in h5:"
 		print h5.keys()
 
@@ -897,7 +848,51 @@ class DispYields:
 		if is_badbin:
 			q2wbinl_bad[q2wbin]=reason
 		return is_badbin
+
+	def get_q2bin_lel_wbin_lel(self,hd):
+		"""
+		From a histogram dictionary, which has multi-dimensional keys of which the first two 
+		components are the low edges of q2bins and wbins, this function returns ordered
+		lists, one each for the of low edges of q2bins and wbins. The lists contain only
+		unique values and the values are ordered.
 		
+		q2bins and wbins. 
+		@hd = histogram dictionary which has multi-dimensional keys. 
+			+ Note, that for this function to work, the first two components
+		      of the key i.e. key[0] and key[1], HAVE to be q2bin_le and wbin_le, respectively.
+		"""
+		q2bins_lel,wbins_lel=[],[]
+		for k in hd.keys():
+			q2bins_lel.append(k[0])
+			wbins_lel.append(k[1])
+		#! Keep only unique entries
+		q2bins_lel=set(q2bins_lel) #! Keep only unique entries
+		q2bins_lel=list(q2bins_lel) #! convert 'set' back to 'list'
+		q2bins_lel=sorted(q2bins_lel)
+		wbins_lel=set(wbins_lel) #! Keep only unique entries
+		wbins_lel=list(wbins_lel) #! convert 'set' back to 'list'
+		wbins_lel=sorted(wbins_lel)
+		return q2bins_lel,wbins_lel
+		
+	def plot_obs_R2_athtcs(self):
+		#! Stats Box
+		# ROOT.gStyle.SetOptStat(0)
+
+		# # ROOT.gStyle.SetLabelSize(0.5,"t")
+		# # ROOT.gStyle.SetTitleSize(0.5,"t")
+		# #ROOT.gStyle.SetPaperSize(20,26);
+		# ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		# #ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+
+		# ROOT.gStyle.SetTitleW(10)# //title width 
+		# ROOT.gStyle.SetTitleFontSize(20)# //title width 
+		# ROOT.gStyle.SetTitleH(0.15)# //title height 
+		# ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001);
 
 
 
