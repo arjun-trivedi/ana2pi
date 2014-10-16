@@ -252,22 +252,41 @@ class DispYields:
 									htmp.SetMinimum(0.)
 									htmp.SetMaximum(maximum+10)
 								#! Scale EC, EH as per hEF_n
+								#! Obtain scale factor
 								hF=hEF_n.Clone("hF")
 								hF.Divide(h[q2bin,wbin,'EXP','F'][ivar])
-								h[q2bin,wbin,'EXP','C'][ivar].Multiply(hF)
-								h[q2bin,wbin,'EXP','C'][ivar].Draw("sames")
-								h[q2bin,wbin,'EXP','H'][ivar].Multiply(hF)
-								h[q2bin,wbin,'EXP','H'][ivar].Draw("sames")
+								#! Clone EC and EH histograms
+								hEC_n=h[q2bin,wbin,'EXP','C'][ivar].Clone()
+								hEH_n=h[q2bin,wbin,'EXP','H'][ivar].Clone()
+								#! Now scale them
+								hEC_n.Multiply(hF)
+								hEH_n.Multiply(hF)
+								hEC_n.Draw("sames")
+								hEH_n.Draw("sames")
 								#! Upate pad
 								pad.Update()
+								#! Add TLegend if padnum==1
+								if padnum==1:
+									l=ROOT.TLegend(0.45,0.6,1.0,0.85)
+									l.SetFillStyle(0)
+									l.SetBorderSize(0)
+									l.SetTextSize(0.03)
+									l.AddEntry(hEF_n,"Exp: Acc. corr + holes filled from evtgen.","p")#EF
+									l.AddEntry(hEC_n,"Exp: Acc. corr. only","p")#EC
+									l.AddEntry(hEH_n,"Exp: Holes from evtgen.","p")#EH
+									l.AddEntry(hER_n,"Exp: Before acc. corr.","p")#ER
+									l.AddEntry(hSF_n,"Sim: Acc. corr. + holes filled from evtgen.","p")#SF
+									l.AddEntry(hSR_n,"Sim: Before acc. corr.","p")#SR
+									l.AddEntry(hST_n,"Sim: Evtgen.","p")#ST
+									l.Draw()
 				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
-					outdir_q2bin=os.path.join(outdir,str(q2bin))
+					outdir_q2bin=os.path.join(outdir,"q%.2f"%q2bin)
 					if not os.path.exists(outdir_q2bin):
 						os.makedirs(outdir_q2bin)
-					c.SaveAs("%s/c%s_%s.png"%(outdir_q2bin,wbin,q2bin))
+					c.SaveAs("%s/c_w%.3f_q%.2f.png"%(outdir_q2bin,wbin,q2bin))
 					c.Close()
 			if view=="q2_evltn" and wbintitle.has_key((wbin)):
-				c.SaveAs("%s/c%s.png"%(outdir,wbin))
+				c.SaveAs("%s/c_w%.3f.png"%(outdir,wbin))
 				c.Close()
 		return
 
@@ -438,7 +457,8 @@ class DispYields:
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist()
+		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from file
