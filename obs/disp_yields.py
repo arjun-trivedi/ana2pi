@@ -79,6 +79,14 @@ class DispYields:
 
         #self.VAR_UNIT_NAMES={VARS[0]:"[GeV]",VARS[1]:"[GeV]",VARS[2]:"[#degree]",VARS[3]:"[#degree]",VARS[4]:"[#degree]"}
 
+        #! Following dictionaries for extracting R2
+		self.R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
+		self.H5_MFUNCD={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
+		self.MTHD_NAMED={'mthd1':'h5-mply-itg','mthd2':'phi-proj-fit','mthd3':'phi-prof-mply-itg'}
+		#! The following binning information taken from h8_bng.h
+		self.NBINS={'M1':14,'M2':14,'THETA':10,'PHI':10,'ALPHA':10}	
+
+
 	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F'):
 		"""
 		+ Plot 1D-Obs as per "view", where:
@@ -280,47 +288,56 @@ class DispYields:
 				c.Close()
 		return
 
-	def plot_obs_R2(self,h5d,R2,hel,dtypl,seql):
+	def extract_obs_R2(self,h5d,R2,mthd,dtypl,seql):#,hel,dtypl,seql):
 		"""
-		+ Plot Obs_R2
+		+ Given h5d, for a particular R2, obtain and return hR2d
 		"""
-		print "In plot_obs_R2()"
-		#! Define some objects needed by this method
-		R2_named={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
-		mfuncd={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
-
-		#! Set up ROOT-display aesthetics
-		self.plot_obs_R2_athtcs()
+		print "In DispYields::extract_obs_R2()"
 		
-		print "Doing h5d=>hR2d ..."
+		print "Doing h5d=>hR2d for method %s..."%mthd
 		#! h5d=>hR2d
 		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
-		for hel in h5d:
-			for k in h5d[hel]:
-				q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
-				h5=h5d[hel][k]
-				if R2!='D':
-					h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)	
-				elif R2=='D':
-					if   hel=='POS' or hel=='UNPOL': h5m=thntool.MultiplyBy(h5,mfuncd[R2],1)
-					elif hel=='NEG':                 h5m=thntool.MultiplyBy(h5,mfuncd[R2],-1)	
+		if mthd=='mthd1':#'h5-mply-itg'
+			for hel in h5d:
+				for k in h5d[hel]:
+					q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
+					h5=h5d[hel][k]
+					if R2!='D':
+						h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
+					elif R2=='D':
+						if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
+						elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
 												
-				for var in VARS:
-					if var=='PHI': continue
-					if vst==1 and var=='M2': continue
-					if vst==2 and var=='M1': continue
-					if vst==3 and var=='M1': continue
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/math.pi)
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
-		print "Done h5d=>hR2d"	
-		for hel in hR2d:				
-			print "keys in hR2d[%s]"%hel
-			print hR2d[hel].keys()
+					for var in VARS:
+						if var=='PHI': continue
+						if vst==1 and var=='M2': continue
+						if vst==2 and var=='M1': continue
+						if vst==3 and var=='M1': continue
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/math.pi)
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
+			print "Done h5d=>hR2d"	
+		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
+			#! 1. Make phi-proj
+			print "Going to make phi-proj for %s"%mthd
+			hR2d=self.plot_phi_proj_extract_R2(h5d,mthd,R2,dtypl,seql)
 
-		print "Plotting hR2"
+		# for hel in hR2d:				
+		# 	print "keys in hR2d[%s]"%hel
+		# 	print hR2d[hel].keys()
+		# print "Done DispYields::extract_obs_R2()"
+
+		return hR2d
+		
+
+	def plot_obs_R2(self,hR2d,R2,dtypl,seql):
+		print "In DispYields::plot_obs_R2()"
+		
+		#! Set up ROOT-display aesthetics
+		self.plot_obs_R2_athtcs()
+
 		#! Now display hR2 
 		#! Get all q2- and w-bins from the keys of hR2['UNPOL']
 		#! (Code that actually makes the plots is not yet Function-alized and therefore
@@ -355,7 +372,7 @@ class DispYields:
   						pad_p.Draw()
   						pad_t.cd()
   						pt=ROOT.TPaveText(.05,.1,.95,.8)
-  						pt.AddText("%s(%s:hel=%s:Q2=%.2f)"%(R2_named[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le))
+  						pt.AddText("%s(%s:hel=%s:Q2=%.2f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le))
   						pt.Draw()
  						pad_p.cd()
 						pad_p.Divide(7,10)
@@ -402,7 +419,82 @@ class DispYields:
 							ipad+=1
 						c.SaveAs("%s/c_q%0.2f.png"%(outdir,q2bin_le))
 						c.Close()
-		print "Plotting hR2"
+		print "Done DispYields::plot_obs_R2()"
+
+	def plot_phi_proj_extract_R2(self,h5d,R2,mthd,dtypl,seql):
+		"""
+		+ From h5d
+			1. make phi projections
+			2. From phi projections, using the specified mthd, extract R2
+		"""
+		print "In DispYields::plot_phi_proj_extract_R2()"
+		
+		#! Set up ROOT-display aesthetics
+		self.plot_phi_proj_extract_R2_athtcs()
+
+		#! Now display phi-proj 
+		#! Get all q2- and w-bins from the keys of h5d['UNPOL']
+		#! (Code that actually makes the plots is not yet Function-alized and therefore
+		#! I have to go through the tedious process of Loop-ing, which requires me to get	
+		#! the q2- and w-bin informtion from h5d)
+		q2bins_lel,wbins_lel=self.get_q2bin_lel_wbin_lel(h5d['UNP'])
+		print "going to plot R2 obs for:"
+		print "Q2:"
+		print q2bins_lel
+		print "W:"
+		print wbins_lel
+
+		mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		for vst in self.VSTS:
+			for var in VARS:
+				if var=='PHI': continue
+				if vst==1 and var=='M2': continue
+				if vst==2 and var=='M1': continue
+				if vst==3 and var=='M1': continue
+
+				for hel in h5d.keys():
+					for q2bin_le in q2bins_lel:
+						for wbin_le in wbins_lel:
+
+							outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var),"%s"%hel,"q%.2f_w%.3f"%(q2bin_le,wbin_le))
+							if not os.path.exists(outdir):
+								os.makedirs(outdir)
+
+							#h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
+							h5=h5d[hel][q2bin_le,wbin_le,vst,'EXP','C']
+
+							c=ROOT.TCanvas("c","c",4000,4000)
+							pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+							#pad_t.SetFillColor(11)
+  							pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
+  							pad_p.SetFillColor(11)
+  							pad_t.Draw()
+  							pad_p.Draw()
+  							pad_t.cd()
+  							pt=ROOT.TPaveText(.05,.1,.95,.8)
+  							pt.AddText("#phi-projections(%s:hel=%s:Q2,W=%.2f,%.3f)"%(self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+  							pt.Draw()
+ 							pad_p.cd()
+ 							if var=='M1' or var=='M2':
+ 								npads=14
+								pad_p.Divide(2,7)
+							else:
+								npads=10
+								pad_p.Divide(2,5)
+
+							for ipad in range(npads):
+								pad_p.cd(ipad+1)
+								h5.GetAxis(H5_DIM[var]).SetRange(ipad+1,ipad+1)
+								h=h5.Projection(H5_DIM['PHI'],"E")
+								h.Draw()
+								
+							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
+							c.Close()
+		#! Add code here to obtain hR2 from phi-proj => make dict for hphi
+		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+
+		print "Done DispYields::plot_phi_proj_extract_R2_athtcs()"
+		return hR2d
 	
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
@@ -496,58 +588,35 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_R2(self,R2='D',q2min=1.25,q2max=1.75,dtypl=['EXP'],seql=['C','F']):
+	def disp_obs_R2(self,R2,mthd,q2min,q2max,dtypl,seql):
 		"""
-		Walk the ROOT file and extract:
-			+ h5(q2bin,wbin,dtyp,vst,seq,hel)
+		For a given R2(=A/B/C/D) and method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
+		1. From file, get q2wbinl within specified q2min and q2max
+		2. From file, get h5d[hel][(q2,w,dtyp,seql)]
+		3. Extract hR2[hel][(q2,w,dtyp,seql)]
+		4. Plot hR2[hel][(q2,w,dtyp,seql)]
 		"""
-		print "In DispYields::disp_R2()"
+		print "In DispYields::disp_obs_R2()"
 
-		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,"Q2_%.2f-%.2f"%(q2min,q2max))
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,"mthd_%s"%self.MTHD_NAMED[mthd],"Q2_%.2f-%.2f"%(q2min,q2max))
 		if not os.path.exists(self.OUTDIR_OBS_R2):
 			os.makedirs(self.OUTDIR_OBS_R2)
 
 		#! 1. First get all q2wbin directories from file
+		print "Getting q2wbinl"
 		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
 		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
-		print q2wbinl
+		#print q2wbinl
+		#! 1.1. Make a dictionary for the "bad" q2wbins
+		q2wbinl_bad={}
 
 		#! 2. Now get h5d
-		h5d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
-		q2wbinl_bad={} 
-		for q2wbin in q2wbinl:
-			print "Getting h5 for",q2wbin
-			#! First make sure this bin is "good"
-			is_badbin=self.is_bad_q2wbin(q2wbin,q2wbinl_bad)
-			if is_badbin: continue
-			q2bin_le=self.get_q2bin_le(q2wbin)
-			wbin_le =self.get_wbin_le(q2wbin)
-			for dtyp in dtypl:
-				if   dtyp=='EXP':f=self.FEXP_HEL
-				elif dtyp=='SIM':f=self.FSIM
-				for vst in self.VSTS:
-					for seq in seql:
-						#if dtyp=='SIM' and (hel=='POS' or hel=='NEG'): continue
-						#h5[q2bin_le,wbin_le,dtyp,vst,seq,hel]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
-						#h5[q2bin_le,wbin_le,hel,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,hel))
-						if dtyp=='EXP':
-							h5d['UNP'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'UNPOL'))
-							h5d['POS'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'POS'))
-							h5d['NEG'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'NEG'))
-							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq]=h5d['POS'][q2bin_le,wbin_le,vst,dtyp,seq].Clone()
-							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].Add(h5d['NEG'][q2bin_le,wbin_le,vst,dtyp,seq],-1)
-							#! Set appropriate title for h5d['ASM']
-							#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
-							orig_title=h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].GetTitle().split("_")
-							new_title=orig_title
-							new_title[4]='ASM'
-							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].SetTitle("%s_%s_%s_%s_%s"%(new_title[0],new_title[1],new_title[2],new_title[3],new_title[4]))
-						elif dtyp=='SIM':
-							h5d['UNP'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'UNPOL'))	
-
-		for hel in h5d:				
-			print "keys in h5d[%s]"%hel
-			print h5d[hel].keys()
+		print "Getting h5d"
+		h5d=self.get_h5d(q2wbinl,q2wbinl_bad,dtypl,seql)
+		print "Done getting h5d"
+		# for hel in h5d:				
+		# 	print "keys in h5d[%s]"%hel
+		# 	print h5d[hel].keys()
 		# ct=ROOT.TCanvas()
 		# ct.Divide(1,3)
 		# ct.cd(1)
@@ -559,16 +628,20 @@ class DispYields:
 		# ct.SaveAs("ctest.png")
 
 		#! Write out the list of "bad" q2w bins and the reason why it is bad
+		print "Writing out q2wbinl_bad"
 		fout=open("%s/bad-q2wbins.txt"%self.OUTDIR_OBS_R2,"w")
 		fout.write("Following are the \"bad\" q2w bins:\n")
 		for k in q2wbinl_bad:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
-		print "Finished getting h5s. Now going to display R2s"
-		#self.plot_obs_R2(h5)
-		self.plot_obs_R2(h5d,R2,hel,dtypl,seql)
-		#plot_obs_R2(self,h5l,R2,hel,dtypl,seql)
-		print "Done DispYields::disp_R2()"
+		
+		#! 3. Now extract and plot R2
+		print "Going to extract and plot R2 for mthd %s"%mthd
+		hR2d=self.extract_obs_R2(h5d,R2,mthd,dtypl,seql)
+		if mthd=='mthd1': #since hR2 currently only extracted for mthd1
+			self.plot_obs_R2(hR2d,R2,dtypl,seql)
+
+		print "Done DispYields::disp_obs_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
@@ -821,6 +894,41 @@ class DispYields:
 	def get_wbin_le(self,q2wbin):
 		return float(q2wbin.split('_')[1].split('-')[0])
 
+	def get_h5d(self,q2wbinl,q2wbinl_bad,dtypl,seql):
+		"""
+		+ For given q2wbinl, from file, get and return:
+			h5[hel][(q2bin,wbin,dtyp,vst,dtyp,seq)]
+		+ Note bad q2wbins in q2wbinl_bad
+		"""
+		h5d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+		for q2wbin in q2wbinl:
+			print "Getting h5 for",q2wbin
+			#! First make sure this bin is "good"
+			is_badbin=self.is_bad_q2wbin(q2wbin,q2wbinl_bad)
+			if is_badbin: continue
+			q2bin_le=self.get_q2bin_le(q2wbin)
+			wbin_le =self.get_wbin_le(q2wbin)
+			for dtyp in dtypl:
+				if   dtyp=='EXP':f=self.FEXP_HEL
+				elif dtyp=='SIM':f=self.FSIM
+				for vst in self.VSTS:
+					for seq in seql:
+						if dtyp=='EXP':
+							h5d['UNP'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'UNPOL'))
+							h5d['POS'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'POS'))
+							h5d['NEG'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'NEG'))
+							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq]=h5d['POS'][q2bin_le,wbin_le,vst,dtyp,seq].Clone()
+							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].Add(h5d['NEG'][q2bin_le,wbin_le,vst,dtyp,seq],-1)
+							#! Set appropriate title for h5d['ASM']
+							#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+							orig_title=h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].GetTitle().split("_")
+							new_title=orig_title
+							new_title[4]='ASM'
+							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].SetTitle("%s_%s_%s_%s_%s"%(new_title[0],new_title[1],new_title[2],new_title[3],new_title[4]))
+						elif dtyp=='SIM':
+							h5d['UNP'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'UNPOL'))
+		return h5d					
+
 	def label_hist_obs1D(self,hVST1,hVST2,hVST3):
 		q2wbintitle={}
 		wbintitle={}
@@ -891,7 +999,6 @@ class DispYields:
 		lists, one each for the of low edges of q2bins and wbins. The lists contain only
 		unique values and the values are ordered.
 		
-		q2bins and wbins. 
 		@hd = histogram dictionary which has multi-dimensional keys. 
 			+ Note, that for this function to work, the first two components
 		      of the key i.e. key[0] and key[1], HAVE to be q2bin_le and wbin_le, respectively.
@@ -908,7 +1015,7 @@ class DispYields:
 		wbins_lel=list(wbins_lel) #! convert 'set' back to 'list'
 		wbins_lel=sorted(wbins_lel)
 		return q2bins_lel,wbins_lel
-		
+
 	def plot_obs_R2_athtcs(self):
 		#! Stats Box
 		# ROOT.gStyle.SetOptStat(0)
@@ -927,7 +1034,27 @@ class DispYields:
 		# ROOT.gStyle.SetTitleY(1)# //title Y location 
 
 		#!get rid of X error bars and y error bar caps
-		ROOT.gStyle.SetErrorX(0.001);
+		ROOT.gStyle.SetErrorX(0.001)
+
+	def plot_phi_proj_extract_R2_athtcs(self):
+		#! Stats Box
+		# ROOT.gStyle.SetOptStat(0)
+
+		# # ROOT.gStyle.SetLabelSize(0.5,"t")
+		# # ROOT.gStyle.SetTitleSize(0.5,"t")
+		# #ROOT.gStyle.SetPaperSize(20,26);
+		# ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		# #ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+
+		# ROOT.gStyle.SetTitleW(10)# //title width 
+		# ROOT.gStyle.SetTitleFontSize(20)# //title width 
+		# ROOT.gStyle.SetTitleH(0.15)# //title height 
+		# ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+		#!get rid of X error bars and y error bar caps
+		#ROOT.gStyle.SetErrorX(0.001);
 
 
 
