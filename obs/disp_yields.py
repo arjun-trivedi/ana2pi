@@ -461,7 +461,7 @@ class DispYields:
 								os.makedirs(outdir)
 
 							#h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
-							h5=h5d[hel][q2bin_le,wbin_le,vst,'EXP','C']
+							#h5=h5d[hel][q2bin_le,wbin_le,vst,'EXP','C']
 
 							c=ROOT.TCanvas("c","c",4000,4000)
 							pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
@@ -481,22 +481,59 @@ class DispYields:
 							else:
 								npads=10
 								pad_p.Divide(2,5)
-
+							l=[]	
 							for ipad in range(npads):
-								pad_p.cd(ipad+1)
-								h5.GetAxis(H5_DIM[var]).SetRange(ipad+1,ipad+1)
-								h=h5.Projection(H5_DIM['PHI'],"E")
-								#! Modify the title so also state projection range
-								#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
-								#! Get q2wbintitle
-								# orig_ttl=h5.GetTitle().split("_")
-								# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
-								#! get projection bin edges
-								xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
-								xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
-								new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
-								h.SetTitle(new_ttl)
-								h.Draw()
+								pad=pad_p.cd(ipad+1)
+								if len(dtypl)==2: pad.Divide(1,2)
+								l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+								i=0
+								for dtyp in dtypl:
+									for seq in seql:
+										if dtyp=='SIM' and seq=='C': continue
+										if h5d[hel].has_key((q2bin_le,wbin_le,vst,dtyp,seq)):
+											#print "h5d key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
+											h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
+											h=h5.Projection(H5_DIM['PHI'],"E")
+											#! Modify the title so also state projection range
+											#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+											#! Get q2wbintitle
+											# orig_ttl=h5.GetTitle().split("_")
+											# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
+											#! get projection bin edges
+											xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
+											xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
+											new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
+											h.SetTitle(new_ttl)
+											h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+											h.SetMarkerColor(mrkrd[(dtyp,seq)])
+											l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+											if dtyp=='EXP': 
+												pad.cd(1)
+												if i==0:
+													h.Draw()
+													i+=1;
+												else:
+													h.Draw("sames")
+											if dtyp=='SIM':
+												pad.cd(2)
+												h.Draw()
+										#else:
+											#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
+								l[ipad].Draw()
+								
+								# h5.GetAxis(H5_DIM[var]).SetRange(ipad+1,ipad+1)
+								# h=h5.Projection(H5_DIM['PHI'],"E")
+								# #! Modify the title so also state projection range
+								# #! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+								# #! Get q2wbintitle
+								# # orig_ttl=h5.GetTitle().split("_")
+								# # q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
+								# #! get projection bin edges
+								# xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
+								# xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
+								# new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
+								# h.SetTitle(new_ttl)
+								# h.Draw()
 								
 							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
 							c.Close()
