@@ -486,6 +486,16 @@ class DispYields:
 								pad_p.cd(ipad+1)
 								h5.GetAxis(H5_DIM[var]).SetRange(ipad+1,ipad+1)
 								h=h5.Projection(H5_DIM['PHI'],"E")
+								#! Modify the title so also state projection range
+								#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+								#! Get q2wbintitle
+								# orig_ttl=h5.GetTitle().split("_")
+								# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
+								#! get projection bin edges
+								xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
+								xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
+								new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
+								h.SetTitle(new_ttl)
 								h.Draw()
 								
 							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
@@ -919,12 +929,18 @@ class DispYields:
 							h5d['NEG'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'NEG'))
 							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq]=h5d['POS'][q2bin_le,wbin_le,vst,dtyp,seq].Clone()
 							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].Add(h5d['NEG'][q2bin_le,wbin_le,vst,dtyp,seq],-1)
-							#! Set appropriate title for h5d['ASM']
+							#! Set appropriate name and title for h5d['ASM']
+							#! + original name(set in proc_yields.py)=h5_HEL(HEL=POS/NEG/UNPOL)
 							#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
-							orig_title=h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].GetTitle().split("_")
-							new_title=orig_title
-							new_title[4]='ASM'
-							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].SetTitle("%s_%s_%s_%s_%s"%(new_title[0],new_title[1],new_title[2],new_title[3],new_title[4]))
+							#! 
+							orig_nm=h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].GetName().split("_")
+							new_nm=orig_nm
+							orig_nm[1]='ASM'
+							orig_ttl=h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].GetTitle().split("_")
+							new_ttl=orig_ttl
+							new_ttl[4]='ASM'
+							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].SetName("%s_%s"%(new_nm[0],new_nm[1]))
+							h5d['ASM'][q2bin_le,wbin_le,vst,dtyp,seq].SetTitle("%s_%s_%s_%s_%s"%(new_ttl[0],new_ttl[1],new_ttl[2],new_ttl[3],new_ttl[4]))
 						elif dtyp=='SIM':
 							h5d['UNP'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'UNPOL'))
 		return h5d					
@@ -1055,6 +1071,4 @@ class DispYields:
 
 		#!get rid of X error bars and y error bar caps
 		#ROOT.gStyle.SetErrorX(0.001);
-
-
-
+		return
