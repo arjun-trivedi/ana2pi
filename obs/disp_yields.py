@@ -380,7 +380,7 @@ class DispYields:
 
 			#! 2. Process hphiprojd accorinding to mthd and extractR2
 			print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			hR2d=self.plot_phi_proj_extract_R2(hphiprojd,R2,mthd,dtypl,seql)
+			hR2d=self.plot_phi_proj_extract_R2(h5d,hphiprojd,R2,mthd,dtypl,seql)
 			return hR2d
 			#return 1
 			print "Done h5d=>hR2d for method %s..."%mthd
@@ -482,7 +482,7 @@ class DispYields:
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
 
-	def plot_phi_proj_extract_R2(self,hphiprojd,R2,mthd,dtypl,seql):
+	def plot_phi_proj_extract_R2(self,h5d,hphiprojd,R2,mthd,dtypl,seql):
 		"""
 		+ For all hphiprojd
 			1. plot and extract hR2 according to mthd
@@ -493,6 +493,28 @@ class DispYields:
 
 		#! 1. Extract R2 from phi projections
 		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+		#! the following is a very "hack-ish" way to create hR2d by
+		#1 basically doing h5d=>hR2d directly as per mthd1 and then reseting the contents of the hR2!
+		for hel in h5d:
+			for k in h5d[hel]:
+				q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
+				h5=h5d[hel][k]
+				if R2!='D':
+					h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
+				elif R2=='D':
+					if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
+					elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
+											
+				for var in VARS:
+					if var=='PHI': continue
+					if vst==1 and var=='M2': continue
+					if vst==2 and var=='M1': continue
+					if vst==3 and var=='M1': continue
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Reset()
+					
 		if mthd=='mthd2':
 			print "Going to perform phi-proj fits"
 			for hel in hphiprojd:
@@ -504,6 +526,21 @@ class DispYields:
 					print "Going to fit phi proj for",hel,k
 					fstat=hphiprojd[hel][k].Fit(f,"Q")
 					print "fstat=",fstat
+					#! Now fill hR2 from fit
+					if R2=='A':
+						r2=f.GetParameter(0)
+						r2_err=f.GetParError(0)
+					elif R2=='B':
+						r2=f.GetParameter(1)
+						r2_err=f.GetParError(1)
+					elif R2=='C':
+						r2=f.GetParameter(2)
+						r2_err=f.GetParError(2)
+					elif R2=='D':
+						r2=f.GetParameter(3)
+						r2_err=f.GetParError(3)
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2)
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err)
 			print "Done phi-proj fits"
 		#elif mthd=='mthd3':
 			# for hel in hphiprojd:
@@ -740,7 +777,7 @@ class DispYields:
 		#! 3. Now extract and plot R2
 		print "Going to extract and plot R2 for mthd %s"%mthd
 		hR2d=self.extract_obs_R2(h5d,R2,mthd,dtypl,seql)
-		if mthd=='mthd1': #since hR2 currently only extracted for mthd1
+		if mthd=='mthd1' or mthd=='mthd2': #since hR2 currently only extracted for mthd1 and mthd2
 			self.plot_obs_R2(hR2d,R2,dtypl,seql)
 
 		print "Done DispYields::disp_obs_R2()"
