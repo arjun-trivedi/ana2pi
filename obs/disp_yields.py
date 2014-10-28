@@ -290,14 +290,15 @@ class DispYields:
 
 	def extract_obs_R2(self,h5d,R2,mthd,dtypl,seql):#,hel,dtypl,seql):
 		"""
-		+ Given h5d, for a particular R2, obtain and return hR2d
+		+ Given h5d, for a particular R2 and specified method, extract and return hR2d
 		"""
 		print "In DispYields::extract_obs_R2()"
 		
 		print "Doing h5d=>hR2d for method %s..."%mthd
-		#! h5d=>hR2d
-		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+		
 		if mthd=='mthd1':#'h5-mply-itg'
+			#! h5d=>hR2d, directly
+			hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
 			for hel in h5d:
 				for k in h5d[hel]:
 					q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
@@ -318,18 +319,59 @@ class DispYields:
 						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/math.pi)
 						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
-			print "Done h5d=>hR2d"	
+			return hR2d
+			print "Done h5d=>hR2d for method %s..."%mthd	
 		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
-			#! 1. Make phi-proj
-			print "Going to make phi-proj for %s"%mthd
-			hR2d=self.plot_phi_proj_extract_R2(h5d,mthd,R2,dtypl,seql)
+			mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+			hphiprojd={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+			#! 1. h5d=>hphiprojd
+			for hel in h5d:
+				for k in h5d[hel]:
+					q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
+					h5=h5d[hel][k]
+					for var in VARS:
+						if var=='PHI': continue
+						if vst==1 and var=='M2': continue
+						if vst==2 and var=='M1': continue
+						if vst==3 and var=='M1': continue
+						if var=='M1' or var=='M2':
+ 							nproj=14
+						else:
+							nproj=10
+
+						for iproj in range(nproj):
+							h=h5.Projection(H5_DIM['PHI'],"E")
+							#! Modify the title so also state projection range
+							#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+							#! Get q2wbintitle
+							# orig_ttl=h5.GetTitle().split("_")
+							# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
+							#! get projection bin edges
+							xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(iproj+1)
+							xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(iproj+1)
+							new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
+							h.SetTitle(new_ttl)
+							h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+							h.SetMarkerColor(mrkrd[(dtyp,seq)])
+							#! Finally, add this histogram to hphiprojd
+							hphiprojd[hel][q2bin_le,wbin_le,vst,var,iproj+1,dtyp,seq]=h
+			
+			for hel in hphiprojd:				
+				print "keys in hphiprojd[%s]"%hel
+				print hphiprojd[hel].keys()
+
+			#! 2. Process hphiprojd accorinding to mthd and extractR2
+			print "Going to plot phi-proj and extract R2 for method %s"%mthd
+			hR2d=self.plot_phi_proj_extract_R2(hphiprojd,mthd,R2,dtypl,seql)
+			return hR2d
+			print "Done h5d=>hR2d for method %s..."%mthd
 
 		# for hel in hR2d:				
 		# 	print "keys in hR2d[%s]"%hel
 		# 	print hR2d[hel].keys()
 		# print "Done DispYields::extract_obs_R2()"
 
-		return hR2d
+		#return hR2d
 		
 
 	def plot_obs_R2(self,hR2d,R2,dtypl,seql):
@@ -421,11 +463,10 @@ class DispYields:
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
 
-	def plot_phi_proj_extract_R2(self,h5d,R2,mthd,dtypl,seql):
+	def plot_phi_proj_extract_R2(self,hphiprojd,R2,mthd,dtypl,seql):
 		"""
-		+ From h5d
-			1. make phi projections
-			2. From phi projections, using the specified mthd, extract R2
+		+ For all hphiprojd
+			1. plot and extract hR2 according to mthd
 		"""
 		print "In DispYields::plot_phi_proj_extract_R2()"
 		
@@ -433,11 +474,11 @@ class DispYields:
 		self.plot_phi_proj_extract_R2_athtcs()
 
 		#! Now display phi-proj 
-		#! Get all q2- and w-bins from the keys of h5d['UNPOL']
+		#! Get all q2- and w-bins from the keys of hphiprojd['UNPOL']
 		#! (Code that actually makes the plots is not yet Function-alized and therefore
 		#! I have to go through the tedious process of Loop-ing, which requires me to get	
 		#! the q2- and w-bin informtion from h5d)
-		q2bins_lel,wbins_lel=self.get_q2bin_lel_wbin_lel(h5d['UNP'])
+		q2bins_lel,wbins_lel=self.get_q2bin_lel_wbin_lel(hphiprojd['UNP'])
 		print "going to plot R2 obs for:"
 		print "Q2:"
 		print q2bins_lel
@@ -452,7 +493,7 @@ class DispYields:
 				if vst==2 and var=='M1': continue
 				if vst==3 and var=='M1': continue
 
-				for hel in h5d.keys():
+				for hel in hphiprojd.keys():
 					for q2bin_le in q2bins_lel:
 						for wbin_le in wbins_lel:
 
@@ -460,10 +501,7 @@ class DispYields:
 							if not os.path.exists(outdir):
 								os.makedirs(outdir)
 
-							#h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
-							#h5=h5d[hel][q2bin_le,wbin_le,vst,'EXP','C']
-
-							c=ROOT.TCanvas("c","c",4000,4000)
+							c=ROOT.TCanvas("c","c",3000,4000)
 							pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 							#pad_t.SetFillColor(11)
   							pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
@@ -476,37 +514,39 @@ class DispYields:
   							pt.Draw()
  							pad_p.cd()
  							if var=='M1' or var=='M2':
- 								npads=14
+ 								nproj=14
 								pad_p.Divide(2,7)
 							else:
-								npads=10
+								nproj=10
 								pad_p.Divide(2,5)
 							l=[]	
-							for ipad in range(npads):
-								pad=pad_p.cd(ipad+1)
-								if len(dtypl)==2: pad.Divide(1,2)
+							for iproj in range(nproj):
+								pad=pad_p.cd(iproj+1)
+								if hel=='UNP' and len(dtypl)==2:
+									pad.Divide(1,2)
 								l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
 								i=0
 								for dtyp in dtypl:
 									for seq in seql:
-										if dtyp=='SIM' and seq=='C': continue
-										if h5d[hel].has_key((q2bin_le,wbin_le,vst,dtyp,seq)):
-											#print "h5d key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
-											h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
-											h=h5.Projection(H5_DIM['PHI'],"E")
-											#! Modify the title so also state projection range
-											#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
-											#! Get q2wbintitle
-											# orig_ttl=h5.GetTitle().split("_")
-											# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
-											#! get projection bin edges
-											xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
-											xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
-											new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
-											h.SetTitle(new_ttl)
-											h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-											h.SetMarkerColor(mrkrd[(dtyp,seq)])
-											l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+										#if dtyp=='SIM' and seq=='C': continue
+										if hphiprojd[hel].has_key((q2bin_le,wbin_le,vst,var,iproj+1,dtyp,seq)):
+											h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,iproj+1,dtyp,seq]
+											# #print "h5d key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
+											# h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
+											# h=h5.Projection(H5_DIM['PHI'],"E")
+											# #! Modify the title so also state projection range
+											# #! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+											# #! Get q2wbintitle
+											# # orig_ttl=h5.GetTitle().split("_")
+											# # q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
+											# #! get projection bin edges
+											# xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
+											# xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
+											# new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
+											# h.SetTitle(new_ttl)
+											# h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+											# h.SetMarkerColor(mrkrd[(dtyp,seq)])
+											l[iproj].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if dtyp=='EXP': 
 												pad.cd(1)
 												if i==0:
@@ -519,7 +559,7 @@ class DispYields:
 												h.Draw()
 										#else:
 											#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
-								l[ipad].Draw()
+								l[iproj].Draw()
 								
 								# h5.GetAxis(H5_DIM[var]).SetRange(ipad+1,ipad+1)
 								# h=h5.Projection(H5_DIM['PHI'],"E")
@@ -651,7 +691,7 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
 		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
@@ -944,7 +984,8 @@ class DispYields:
 	def get_h5d(self,q2wbinl,q2wbinl_bad,dtypl,seql):
 		"""
 		+ For given q2wbinl, from file, get and return:
-			h5[hel][(q2bin,wbin,dtyp,vst,dtyp,seq)]
+			h5d[hel][(q2bin,wbin,dtyp,vst,dtyp,seq)]
+			+ NOTE, currently h5d not filled if dtyp=='SIM' and seq=='C'
 		+ Note bad q2wbins in q2wbinl_bad
 		"""
 		h5d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
@@ -960,6 +1001,7 @@ class DispYields:
 				elif dtyp=='SIM':f=self.FSIM
 				for vst in self.VSTS:
 					for seq in seql:
+						if dtyp=='SIM' and seq=='C': continue
 						if dtyp=='EXP':
 							h5d['UNP'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'UNPOL'))
 							h5d['POS'][q2bin_le,wbin_le,vst,dtyp,seq]=f.Get("%s/VST%d/%s/h5_%s"%(q2wbin,vst,seq,'POS'))
