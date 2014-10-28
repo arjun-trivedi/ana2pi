@@ -524,23 +524,31 @@ class DispYields:
 					f=self.FPHI
 					f.SetLineColor(clrd[(dtyp,seq)])
 					print "Going to fit phi proj for",hel,k
-					fstat=hphiprojd[hel][k].Fit(f,"Q")
+					fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
 					print "fstat=",fstat
-					#! Now fill hR2 from fit
-					if R2=='A':
-						r2=f.GetParameter(0)
-						r2_err=f.GetParError(0)
-					elif R2=='B':
-						r2=f.GetParameter(1)
-						r2_err=f.GetParError(1)
-					elif R2=='C':
-						r2=f.GetParameter(2)
-						r2_err=f.GetParError(2)
-					elif R2=='D':
-						r2=f.GetParameter(3)
-						r2_err=f.GetParError(3)
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2)
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err)
+					if fstat==0:
+						#! Now fill hR2 from fit
+						if R2=='A':
+							r2=f.GetParameter(0)
+							r2_err=f.GetParError(0)
+						elif R2=='B':
+							r2=f.GetParameter(1)
+							r2_err=f.GetParError(1)
+						elif R2=='C':
+							r2=f.GetParameter(2)
+							r2_err=f.GetParError(2)
+						elif R2=='D':
+							if   hel=='POS' or hel=='UNP': r2=f.GetParameter(3)
+							elif hel=='NEG':               r2=-1*f.GetParameter(3)
+							r2_err=f.GetParError(3)
+						#! Hack-ish way to get norm to match with mthd1
+						if R2=='A': nmlzn_fctr=2/50000
+						else:		nmlzn_fctr=1/50000
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2*nmlzn_fctr)
+						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err*nmlzn_fctr)
+					# else:
+					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
+					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
 			print "Done phi-proj fits"
 		#elif mthd=='mthd3':
 			# for hel in hphiprojd:
@@ -582,7 +590,7 @@ class DispYields:
 					for q2bin_le in q2bins_lel:
 						for wbin_le in wbins_lel:
 
-							outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var),"%s"%hel,"q%.2f_w%.3f"%(q2bin_le,wbin_le))
+							outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var),"%s"%hel,"phi_projs_q%.2f_w%.3f"%(q2bin_le,wbin_le))
 							if not os.path.exists(outdir):
 								os.makedirs(outdir)
 
@@ -743,8 +751,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
