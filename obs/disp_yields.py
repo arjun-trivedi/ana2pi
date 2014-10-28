@@ -85,6 +85,19 @@ class DispYields:
 		self.MTHD_NAMED={'mthd1':'h5-mply-itg','mthd2':'phi-proj-fit','mthd3':'phi-prof-mply-itg'}
 		#! The following binning information taken from h8_bng.h
 		self.NBINS={'M1':14,'M2':14,'THETA':10,'PHI':10,'ALPHA':10}	
+		#! The following for phi-projection canvas
+		self.NXPADS={'M1':2,'M2':2,'THETA':2,'PHI':2,'ALPHA':2}
+		self.NYPADS={'M1':7,'M2':7,'THETA':5,'PHI':5,'ALPHA':5}
+		#! Fit function (needed for mthd2)
+		self.FPHI=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0, 360)
+  		self.FPHI.SetParameter(0,1)
+  		self.FPHI.SetParameter(1,10)
+  		self.FPHI.SetParameter(2,20)
+  		self.FPHI.SetParameter(3,100)
+ 		self.FPHI.SetParName(0, "A")
+  		self.FPHI.SetParName(1, "B")
+  		self.FPHI.SetParName(2, "C")
+  		self.FPHI.SetParName(3, "D")#hPD
 
 
 	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F'):
@@ -295,6 +308,9 @@ class DispYields:
 		print "In DispYields::extract_obs_R2()"
 		
 		print "Doing h5d=>hR2d for method %s..."%mthd
+
+		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		mrkr_styl=ROOT.gROOT.ProcessLine("kFullCircle")
 		
 		if mthd=='mthd1':#'h5-mply-itg'
 			#! h5d=>hR2d, directly
@@ -322,9 +338,10 @@ class DispYields:
 			return hR2d
 			print "Done h5d=>hR2d for method %s..."%mthd	
 		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
-			mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
-			hphiprojd={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
 			#! 1. h5d=>hphiprojd
+			print "Doing h5d=>hphiprojd for method %s..."%mthd
+			hphiprojd={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+			
 			for hel in h5d:
 				for k in h5d[hel]:
 					q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
@@ -334,12 +351,10 @@ class DispYields:
 						if vst==1 and var=='M2': continue
 						if vst==2 and var=='M1': continue
 						if vst==3 and var=='M1': continue
-						if var=='M1' or var=='M2':
- 							nproj=14
-						else:
-							nproj=10
-
-						for iproj in range(nproj):
+						nbins=self.NBINS[var]
+						#! Now make projections on to PHI per bin
+						for ibin in range(nbins):
+							h5.GetAxis(H5_DIM[var]).SetRange(ibin+1,ibin+1)
 							h=h5.Projection(H5_DIM['PHI'],"E")
 							#! Modify the title so also state projection range
 							#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
@@ -347,23 +362,27 @@ class DispYields:
 							# orig_ttl=h5.GetTitle().split("_")
 							# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
 							#! get projection bin edges
-							xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(iproj+1)
-							xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(iproj+1)
+							xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ibin+1)
+							xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ibin+1)
 							new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
 							h.SetTitle(new_ttl)
-							h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-							h.SetMarkerColor(mrkrd[(dtyp,seq)])
-							#! Finally, add this histogram to hphiprojd
-							hphiprojd[hel][q2bin_le,wbin_le,vst,var,iproj+1,dtyp,seq]=h
+							h.SetMarkerStyle(mrkr_styl)
+							h.SetMarkerColor(clrd[(dtyp,seq)])
+							#! Finally, add this histogram to hphibind
+							hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]=h
+							#! Before leaving projection loop, reset projection range for h5!
+							h5.GetAxis(H5_DIM[var]).SetRange()
+			print "Done h5d=>hphiprojd for method %s..."%mthd	
 			
-			for hel in hphiprojd:				
-				print "keys in hphiprojd[%s]"%hel
-				print hphiprojd[hel].keys()
+			# for hel in hphiprojd:				
+			# 	print "keys in hphiprojd[%s]"%hel
+			# 	print hphiprojd[hel].keys()
 
 			#! 2. Process hphiprojd accorinding to mthd and extractR2
 			print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			hR2d=self.plot_phi_proj_extract_R2(hphiprojd,mthd,R2,dtypl,seql)
+			hR2d=self.plot_phi_proj_extract_R2(hphiprojd,R2,mthd,dtypl,seql)
 			return hR2d
+			#return 1
 			print "Done h5d=>hR2d for method %s..."%mthd
 
 		# for hel in hR2d:				
@@ -392,7 +411,7 @@ class DispYields:
 		print "W:"
 		print wbins_lel
 
-		mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		for vst in self.VSTS:
 			for var in VARS:
 				if var=='PHI': continue
@@ -433,7 +452,7 @@ class DispYields:
 										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
 										h=hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]
 										h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-										h.SetMarkerColor(mrkrd[(dtyp,seq)])
+										h.SetMarkerColor(clrd[(dtyp,seq)])
 										l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 										if dtyp=='EXP': 
 											pad.cd(1)
@@ -468,8 +487,37 @@ class DispYields:
 		+ For all hphiprojd
 			1. plot and extract hR2 according to mthd
 		"""
-		print "In DispYields::plot_phi_proj_extract_R2()"
-		
+		print "In DispYields::plot_phi_proj_extract_R2() for R2=%s,mthd=%s"%(R2,mthd)
+
+		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+
+		#! 1. Extract R2 from phi projections
+		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+		if mthd=='mthd2':
+			print "Going to perform phi-proj fits"
+			for hel in hphiprojd:
+				for k in hphiprojd[hel]:
+					q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
+					#h=hphiprojd[hel][k]
+					f=self.FPHI
+					f.SetLineColor(clrd[(dtyp,seq)])
+					print "Going to fit phi proj for",hel,k
+					fstat=hphiprojd[hel][k].Fit(f,"Q")
+					print "fstat=",fstat
+			print "Done phi-proj fits"
+		#elif mthd=='mthd3':
+			# for hel in hphiprojd:
+			# 	for k in hphiprojd[hel]:
+			# 		q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
+			# 		h=hphiprojd[hel][k]
+			# 		if R2!='D':
+			# 			h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
+			# 		elif R2=='D':
+			# 			if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
+			# 			elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
+
+		#! 2. plot phi projections
+
 		#! Set up ROOT-display aesthetics
 		self.plot_phi_proj_extract_R2_athtcs()
 
@@ -479,13 +527,13 @@ class DispYields:
 		#! I have to go through the tedious process of Loop-ing, which requires me to get	
 		#! the q2- and w-bin informtion from h5d)
 		q2bins_lel,wbins_lel=self.get_q2bin_lel_wbin_lel(hphiprojd['UNP'])
-		print "going to plot R2 obs for:"
+		print "going to plot phi-proj for:"
 		print "Q2:"
 		print q2bins_lel
 		print "W:"
 		print wbins_lel
 
-		mrkrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		for vst in self.VSTS:
 			for var in VARS:
 				if var=='PHI': continue
@@ -513,15 +561,11 @@ class DispYields:
   							pt.AddText("#phi-projections(%s:hel=%s:Q2,W=%.2f,%.3f)"%(self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
   							pt.Draw()
  							pad_p.cd()
- 							if var=='M1' or var=='M2':
- 								nproj=14
-								pad_p.Divide(2,7)
-							else:
-								nproj=10
-								pad_p.Divide(2,5)
-							l=[]	
-							for iproj in range(nproj):
-								pad=pad_p.cd(iproj+1)
+ 							nbins=self.NBINS[var]
+ 							pad_p.Divide(self.NXPADS[var],self.NYPADS[var])
+ 							l=[]	
+							for ibin in range(nbins):
+								pad=pad_p.cd(ibin+1)
 								if hel=='UNP' and len(dtypl)==2:
 									pad.Divide(1,2)
 								l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
@@ -529,24 +573,9 @@ class DispYields:
 								for dtyp in dtypl:
 									for seq in seql:
 										#if dtyp=='SIM' and seq=='C': continue
-										if hphiprojd[hel].has_key((q2bin_le,wbin_le,vst,var,iproj+1,dtyp,seq)):
-											h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,iproj+1,dtyp,seq]
-											# #print "h5d key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
-											# h5=h5d[hel][q2bin_le,wbin_le,vst,dtyp,seq]
-											# h=h5.Projection(H5_DIM['PHI'],"E")
-											# #! Modify the title so also state projection range
-											# #! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
-											# #! Get q2wbintitle
-											# # orig_ttl=h5.GetTitle().split("_")
-											# # q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
-											# #! get projection bin edges
-											# xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
-											# xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
-											# new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
-											# h.SetTitle(new_ttl)
-											# h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-											# h.SetMarkerColor(mrkrd[(dtyp,seq)])
-											l[iproj].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+										if hphiprojd[hel].has_key((q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq)):
+											h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
+											l[ibin].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if dtyp=='EXP': 
 												pad.cd(1)
 												if i==0:
@@ -559,26 +588,12 @@ class DispYields:
 												h.Draw()
 										#else:
 											#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
-								l[iproj].Draw()
-								
-								# h5.GetAxis(H5_DIM[var]).SetRange(ipad+1,ipad+1)
-								# h=h5.Projection(H5_DIM['PHI'],"E")
-								# #! Modify the title so also state projection range
-								# #! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
-								# #! Get q2wbintitle
-								# # orig_ttl=h5.GetTitle().split("_")
-								# # q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
-								# #! get projection bin edges
-								# xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ipad+1)
-								# xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ipad+1)
-								# new_ttl="%s:proj. bin=[%.3f,%.3f]"%(self.VAR_NAMES[(vst,var)],xmin,xmax)
-								# h.SetTitle(new_ttl)
-								# h.Draw()
-								
+								l[ibin].Draw()
+															
 							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
 							c.Close()
 		#! Add code here to obtain hR2 from phi-proj => make dict for hphi
-		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+		# hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
 
 		print "Done DispYields::plot_phi_proj_extract_R2_athtcs()"
 		return hR2d
@@ -1149,5 +1164,5 @@ class DispYields:
 		# ROOT.gStyle.SetTitleY(1)# //title Y location 
 
 		#!get rid of X error bars and y error bar caps
-		#ROOT.gStyle.SetErrorX(0.001);
+		ROOT.gStyle.SetErrorX(0.001);
 		return
