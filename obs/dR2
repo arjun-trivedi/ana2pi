@@ -21,7 +21,7 @@ if len(sys.argv)==4: #i.e. User input simnum, else use siml
 else:
 	simnum='siml'
 
-print "Displaying Obs-R2: R2=%s,simnum=%s"%(R2,simnum)
+print "Displaying Obs-R2: R2=%s,mthd=%s,simnum=%s"%(R2,mthd,simnum)
 dy=DispYields(simnum)
 if R2=='A':
         dy.disp_obs_R2(R2='A',mthd=mthd,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'])
