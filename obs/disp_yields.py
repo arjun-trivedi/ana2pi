@@ -520,17 +520,20 @@ class DispYields:
 			for hel in hphiprojd:
 				for k in hphiprojd[hel]:
 					q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
-					#h=hphiprojd[hel][k]
 					f=self.FPHI
 					f.SetLineColor(clrd[(dtyp,seq)])
 					print "Going to fit phi proj for",hel,k
-					fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
+					#fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
+					fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
+					#fstat=0
 					print "fstat=",fstat
 					if fstat==0:
 						#! Now fill hR2 from fit
 						if R2=='A':
 							r2=f.GetParameter(0)
 							r2_err=f.GetParError(0)
+							# r2=10
+							# r2_err=1
 						elif R2=='B':
 							r2=f.GetParameter(1)
 							r2_err=f.GetParError(1)
