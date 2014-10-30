@@ -535,7 +535,7 @@ class DispYields:
   					fd[hel][k].SetParName(1, "B")
   					fd[hel][k].SetParName(2, "C")
   					fd[hel][k].SetParName(3, "D")#hPD
-  					fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
+  					#fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
 					print "Going to fit phi proj for",hel,k
 					#fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
 					#fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
@@ -632,7 +632,8 @@ class DispYields:
  							pad_p.cd()
  							nbins=self.NBINS[var]
  							pad_p.Divide(self.NXPADS[var],self.NYPADS[var])
- 							l=[]	
+ 							l=[]
+ 							pt_exp1,pt_exp2,pt_sim=[],[],[]# used to draw fit parameters
 							for ibin in range(nbins):
 								pad=pad_p.cd(ibin+1)
 								if hel=='UNP' and len(dtypl)==2:
@@ -645,21 +646,54 @@ class DispYields:
 										if hphiprojd[hel].has_key((q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq)):
 											h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
 											f=fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
+											f.SetLineColor(h.GetMarkerColor())
 											l[ibin].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if dtyp=='EXP': 
 												pad.cd(1)
 												if i==0:
 													h.Draw()
 													f.Draw("sames")
+													#! Draw fit stats
+													pt_exp1.append(ROOT.TPaveText(.20,.6,.30,1.0,"NDC"))
+													pt_exp1[ibin].AddText( "A=%.2f+/-%.2f"%(f.GetParameter(0),f.GetParError(0)) )
+													pt_exp1[ibin].AddText( "B=%.2f+/-%.2f"%(f.GetParameter(1),f.GetParError(1)) )
+													pt_exp1[ibin].AddText( "C=%.2f+/-%.2f"%(f.GetParameter(2),f.GetParError(2)) )
+													pt_exp1[ibin].AddText( "D=%.2f+/-%.2f"%(f.GetParameter(3),f.GetParError(3)) )
+													pt_exp1[ibin].SetTextColor(h.GetMarkerColor())
+													pt_exp1[ibin].SetFillColor(11)
+													pt_exp1[ibin].Draw()
 													#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw()
 													i+=1;
+													#pad.Update()
 												else:
 													h.Draw("sames")
+													f.Draw("sames")
+													#! Draw fit stats
+													pt_exp2.append(ROOT.TPaveText(.70,.6,.80,1.0,"NDC"))
+													pt_exp2[ibin].AddText( "A=%.2f+/-%.2f"%(f.GetParameter(0),f.GetParError(0)) )
+													pt_exp2[ibin].AddText( "B=%.2f+/-%.2f"%(f.GetParameter(1),f.GetParError(1)) )
+													pt_exp2[ibin].AddText( "C=%.2f+/-%.2f"%(f.GetParameter(2),f.GetParError(2)) )
+													pt_exp2[ibin].AddText( "D=%.2f+/-%.2f"%(f.GetParameter(3),f.GetParError(3)) )
+													pt_exp2[ibin].SetTextColor(h.GetMarkerColor())
+													pt_exp2[ibin].SetFillColor(11)
+													pt_exp2[ibin].Draw()
+													#pad.Update()
 													#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw("sames")
 											if dtyp=='SIM':
 												pad.cd(2)
 												h.Draw()
 												f.Draw("sames")
+												#! Draw fit stats
+												pt_sim.append(ROOT.TPaveText(.20,.6,.30,1.0,"NDC"))
+												pt_sim[ibin].AddText( "A=%.2f+/-%.2f"%(f.GetParameter(0),f.GetParError(0)) )
+												pt_sim[ibin].AddText( "B=%.2f+/-%.2f"%(f.GetParameter(1),f.GetParError(1)) )
+												pt_sim[ibin].AddText( "C=%.2f+/-%.2f"%(f.GetParameter(2),f.GetParError(2)) )
+												pt_sim[ibin].AddText( "D=%.2f+/-%.2f"%(f.GetParameter(3),f.GetParError(3)) )
+												pt_sim[ibin].SetTextColor(h.GetMarkerColor())
+												pt_sim[ibin].SetFillColor(11)
+												pt_sim[ibin].Draw()
+												#pad.Update()
+
 												#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw()
 										#else:
 											#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
@@ -779,8 +813,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
@@ -1221,7 +1255,7 @@ class DispYields:
 
 	def plot_phi_proj_extract_R2_athtcs(self):
 		#! Stats Box
-		#ROOT.gStyle.SetOptStat("n")
+		ROOT.gStyle.SetOptStat(0)
 		#ROOT.gStyle.SetOptFit(1111)
 
 		# # ROOT.gStyle.SetLabelSize(0.5,"t")
