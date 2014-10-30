@@ -89,7 +89,7 @@ class DispYields:
 		self.NXPADS={'M1':2,'M2':2,'THETA':2,'PHI':2,'ALPHA':2}
 		self.NYPADS={'M1':7,'M2':7,'THETA':5,'PHI':5,'ALPHA':5}
 		#! Fit function (needed for mthd2)
-		self.FPHI=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0, 360)
+		self.FPHI=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
   		self.FPHI.SetParameter(0,1)
   		self.FPHI.SetParameter(1,10)
   		self.FPHI.SetParameter(2,20)
@@ -517,33 +517,49 @@ class DispYields:
 					
 		if mthd=='mthd2':
 			print "Going to perform phi-proj fits"
+			#! Create dict to store fits (storing them directy in TH1 leads to increased mem. consumption)
+			fd={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
 			for hel in hphiprojd:
 				for k in hphiprojd[hel]:
 					q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
-					f=self.FPHI
-					f.SetLineColor(clrd[(dtyp,seq)])
+					# f=self.FPHI
+					# f.SetLineColor(clrd[(dtyp,seq)])
+					# fd[hel][k]=self.FPHI
+					# fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
+					fd[hel][k]=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+  					fd[hel][k].SetParameter(0,1)
+  					fd[hel][k].SetParameter(1,10)
+  					fd[hel][k].SetParameter(2,20)
+  					fd[hel][k].SetParameter(3,100)
+ 					fd[hel][k].SetParName(0, "A")
+  					fd[hel][k].SetParName(1, "B")
+  					fd[hel][k].SetParName(2, "C")
+  					fd[hel][k].SetParName(3, "D")#hPD
+  					fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
 					print "Going to fit phi proj for",hel,k
 					#fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
-					fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
+					#fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
+					fstat=int(hphiprojd[hel][k].Fit(fd[hel][k],"NQ"))
 					#fstat=0
 					print "fstat=",fstat
 					if fstat==0:
+						#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
 						#! Now fill hR2 from fit
 						if R2=='A':
-							r2=f.GetParameter(0)
-							r2_err=f.GetParError(0)
+							r2=fd[hel][k].GetParameter(0)
+							r2_err=fd[hel][k].GetParError(0)
 							# r2=10
 							# r2_err=1
 						elif R2=='B':
-							r2=f.GetParameter(1)
-							r2_err=f.GetParError(1)
+							r2=fd[hel][k].GetParameter(1)
+							r2_err=fd[hel][k].GetParError(1)
 						elif R2=='C':
-							r2=f.GetParameter(2)
-							r2_err=f.GetParError(2)
+							r2=fd[hel][k].GetParameter(2)
+							r2_err=fd[hel][k].GetParError(2)
 						elif R2=='D':
-							if   hel=='POS' or hel=='UNP': r2=f.GetParameter(3)
-							elif hel=='NEG':               r2=-1*f.GetParameter(3)
-							r2_err=f.GetParError(3)
+							if   hel=='POS' or hel=='UNP': r2=fd[hel][k].GetParameter(3)
+							elif hel=='NEG':               r2=-1*fd[hel][k].GetParameter(3)
+							r2_err=fd[hel][k].GetParError(3)
 						#! Hack-ish way to get norm to match with mthd1
 						if R2=='A': nmlzn_fctr=2/50000
 						else:		nmlzn_fctr=1/50000
@@ -552,6 +568,11 @@ class DispYields:
 					# else:
 					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
 					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
+					#print "dbg:",hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3)
+			# for hel in fd:
+			# 	for k in fd[hel]:
+			# 		print "dbg: fit pars for fd[%s][%s]=%f,%f,%f,%f"%(hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),
+			# 			fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3))
 			print "Done phi-proj fits"
 		#elif mthd=='mthd3':
 			# for hel in hphiprojd:
@@ -623,26 +644,30 @@ class DispYields:
 										#if dtyp=='SIM' and seq=='C': continue
 										if hphiprojd[hel].has_key((q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq)):
 											h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
+											f=fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
 											l[ibin].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if dtyp=='EXP': 
 												pad.cd(1)
 												if i==0:
 													h.Draw()
+													f.Draw("sames")
+													#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw()
 													i+=1;
 												else:
 													h.Draw("sames")
+													#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw("sames")
 											if dtyp=='SIM':
 												pad.cd(2)
 												h.Draw()
+												f.Draw("sames")
+												#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw()
 										#else:
 											#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
 								l[ibin].Draw()
 															
 							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
 							c.Close()
-		#! Add code here to obtain hR2 from phi-proj => make dict for hphi
-		# hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
-
+		
 		print "Done DispYields::plot_phi_proj_extract_R2_athtcs()"
 		return hR2d
 	
@@ -754,7 +779,7 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
 		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
@@ -1196,7 +1221,8 @@ class DispYields:
 
 	def plot_phi_proj_extract_R2_athtcs(self):
 		#! Stats Box
-		# ROOT.gStyle.SetOptStat(0)
+		#ROOT.gStyle.SetOptStat("n")
+		#ROOT.gStyle.SetOptFit(1111)
 
 		# # ROOT.gStyle.SetLabelSize(0.5,"t")
 		# # ROOT.gStyle.SetTitleSize(0.5,"t")
