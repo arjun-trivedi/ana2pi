@@ -301,42 +301,46 @@ class DispYields:
 				c.Close()
 		return
 
-	def extract_obs_R2(self,h5d,R2,mthd,dtypl,seql):#,hel,dtypl,seql):
+	def extract_and_plot_R2(self,h5d,R2l,mthd,dtypl,seql):#,hel,dtypl,seql):
 		"""
-		+ Given h5d, for a particular R2 and specified method, extract and return hR2d
+		+ Given h5d, extract R2s using the specified method, extract and plots R2s
 		"""
 		print "In DispYields::extract_obs_R2()"
 		
-		print "Doing h5d=>hR2d for method %s..."%mthd
-
 		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		mrkr_styl=ROOT.gROOT.ProcessLine("kFullCircle")
 		
+		print "Going to extract and plot R2s for mthd %s..."%mthd
 		if mthd=='mthd1':#'h5-mply-itg'
 			#! h5d=>hR2d, directly
 			hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
-			for hel in h5d:
-				for k in h5d[hel]:
-					q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
-					h5=h5d[hel][k]
-					if R2!='D':
-						h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
-					elif R2=='D':
-						if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
-						elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
+			for R2 in R2l:
+				print "Doing h5d=>hR2d for mthd %s:R2=%s"%(mthd,R2)
+				for hel in h5d:
+					for k in h5d[hel]:
+						q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
+						h5=h5d[hel][k]
+						if R2!='D':
+							h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
+						elif R2=='D':
+							if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
+							elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
 												
-					for var in VARS:
-						if var=='PHI': continue
-						if vst==1 and var=='M2': continue
-						if vst==2 and var=='M1': continue
-						if vst==3 and var=='M1': continue
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/math.pi)
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
-			return hR2d
-			print "Done h5d=>hR2d for method %s..."%mthd	
+						for var in VARS:
+							if var=='PHI': continue
+							if vst==1 and var=='M2': continue
+							if vst==2 and var=='M1': continue
+							if vst==3 and var=='M1': continue
+							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
+							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
+							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/math.pi)
+							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
+				print "Done h5d=>hR2d for mthd %s:R2=%s"%(mthd,R2)
+
+				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)			
+				self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)	
 		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
 			#! 1. h5d=>hphiprojd
 			print "Doing h5d=>hphiprojd for method %s..."%mthd
@@ -368,23 +372,94 @@ class DispYields:
 							h.SetTitle(new_ttl)
 							h.SetMarkerStyle(mrkr_styl)
 							h.SetMarkerColor(clrd[(dtyp,seq)])
-							#! Finally, add this histogram to hphibind
+							#! Finally, add this histogram to hphiprojd
 							hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]=h
 							#! Before leaving projection loop, reset projection range for h5!
 							h5.GetAxis(H5_DIM[var]).SetRange()
-			print "Done h5d=>hphiprojd for method %s..."%mthd	
-			
+			print "Done h5d=>hphiprojd for method %s..."%mthd
 			# for hel in hphiprojd:				
 			# 	print "keys in hphiprojd[%s]"%hel
 			# 	print hphiprojd[hel].keys()
 
+			#! 2. hphiprojd=>fd	
+			print "Going to perform phi-proj fits"
+			fd= {'UNP':{},'POS':{},'NEG':{},'ASM':{}}
+			fsd={'UNP':{},'POS':{},'NEG':{},'ASM':{}} #for storing fit stat
+			for hel in hphiprojd:
+				for k in hphiprojd[hel]:
+					q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
+					# f=self.FPHI
+					# f.SetLineColor(clrd[(dtyp,seq)])
+					# fd[hel][k]=self.FPHI
+					# fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
+					fd[hel][k]=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+  					fd[hel][k].SetParameter(0,1)
+  					fd[hel][k].SetParameter(1,10)
+  					fd[hel][k].SetParameter(2,20)
+  					fd[hel][k].SetParameter(3,100)
+ 					fd[hel][k].SetParName(0, "A")
+  					fd[hel][k].SetParName(1, "B")
+  					fd[hel][k].SetParName(2, "C")
+  					fd[hel][k].SetParName(3, "D")#hPD
+  					#fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
+					print "Going to fit phi proj for",hel,k
+					#fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
+					#fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
+					fstat=int(hphiprojd[hel][k].Fit(fd[hel][k],"NQ"))
+					#fstat=0
+					print "fstat=",fstat
+					fsd[hel][k]=fstat
+					# if fstat==0:
+					# 	#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
+					# 	#! Now fill hR2 from fit
+					# 	if R2=='A':
+					# 		r2=fd[hel][k].GetParameter(0)
+					# 		r2_err=fd[hel][k].GetParError(0)
+					# 		# r2=10
+					# 		# r2_err=1
+					# 	elif R2=='B':
+					# 		r2=fd[hel][k].GetParameter(1)
+					# 		r2_err=fd[hel][k].GetParError(1)
+					# 	elif R2=='C':
+					# 		r2=fd[hel][k].GetParameter(2)
+					# 		r2_err=fd[hel][k].GetParError(2)
+					# 	elif R2=='D':
+					# 		if   hel=='POS' or hel=='UNP': r2=fd[hel][k].GetParameter(3)
+					# 		elif hel=='NEG':               r2=-1*fd[hel][k].GetParameter(3)
+					# 		r2_err=fd[hel][k].GetParError(3)
+					# 	#! Hack-ish way to get norm to match with mthd1
+					# 	if R2=='A': nmlzn_fctr=2/50000
+					# 	else:		nmlzn_fctr=1/50000
+					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2*nmlzn_fctr)
+					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err*nmlzn_fctr)
+					# # else:
+					# # 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
+					# # 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
+					# #print "dbg:",hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3)
+			print "Done phi-proj fits"
+			# for hel in fd:
+			# 	for k in fd[hel]:
+			# 		print "dbg: fit pars for fd[%s][%s]=%f,%f,%f,%f"%(hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),
+			# 			fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3))
+
+			#! 2. Obtain hR2 for each R2 from fd and plot
+			for R2 in R2l:
+				
+				print "Going to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
+				hR2d=self.extract_R2_from_phiproj(h5d,fd,fsd,R2)
+				print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
+
+				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+				self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+
 			#! 2. Process hphiprojd accorinding to mthd and extractR2
 			print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			hR2d=self.plot_phi_proj_extract_R2(h5d,hphiprojd,R2,mthd,dtypl,seql)
+			hR2d=self.plot_phiproj(hphiprojd,fd,fsd,dtypl,seql)
 			return hR2d
 			#return 1
 			print "Done h5d=>hR2d for method %s..."%mthd
-
+		print "Done extract and plot R2s for mthd %s..."%mthd		
 		# for hel in hR2d:				
 		# 	print "keys in hR2d[%s]"%hel
 		# 	print hR2d[hel].keys()
@@ -420,7 +495,7 @@ class DispYields:
 				if vst==3 and var=='M1': continue
 
 				for hel in hR2d.keys():
-					outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var),"%s"%hel)
+					outdir=os.path.join(self.OUTDIR_OBS_R2,R2,"VST%d_%s"%(vst,var),"%s"%hel)
 					if not os.path.exists(outdir):
 						os.makedirs(outdir)
 					for q2bin_le in q2bins_lel:
@@ -482,16 +557,14 @@ class DispYields:
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
 
-	def plot_phi_proj_extract_R2(self,h5d,hphiprojd,R2,mthd,dtypl,seql):
+	def extract_R2_from_phiproj(self,h5d,fd,fsd,R2):
 		"""
-		+ For all hphiprojd
-			1. plot and extract hR2 according to mthd
+		+ From fd, for a particular R2, extract hR2
 		"""
-		print "In DispYields::plot_phi_proj_extract_R2() for R2=%s,mthd=%s"%(R2,mthd)
+		print "In DispYields::extract_R2_from_phiproj for R2=%s"%(R2)
 
 		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 
-		#! 1. Extract R2 from phi projections
 		hR2d={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
 		#! the following is a very "hack-ish" way to create hR2d by
 		#1 basically doing h5d=>hR2d directly as per mthd1 and then reseting the contents of the hR2!
@@ -515,80 +588,47 @@ class DispYields:
 					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Reset()
 					
-		if mthd=='mthd2':
-			print "Going to perform phi-proj fits"
-			#! Create dict to store fits (storing them directy in TH1 leads to increased mem. consumption)
-			fd={'UNP':{},'POS':{},'NEG':{},'ASM':{}}
-			for hel in hphiprojd:
-				for k in hphiprojd[hel]:
-					q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
-					# f=self.FPHI
-					# f.SetLineColor(clrd[(dtyp,seq)])
-					# fd[hel][k]=self.FPHI
-					# fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
-					fd[hel][k]=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
-  					fd[hel][k].SetParameter(0,1)
-  					fd[hel][k].SetParameter(1,10)
-  					fd[hel][k].SetParameter(2,20)
-  					fd[hel][k].SetParameter(3,100)
- 					fd[hel][k].SetParName(0, "A")
-  					fd[hel][k].SetParName(1, "B")
-  					fd[hel][k].SetParName(2, "C")
-  					fd[hel][k].SetParName(3, "D")#hPD
-  					#fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
-					print "Going to fit phi proj for",hel,k
-					#fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
-					#fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
-					fstat=int(hphiprojd[hel][k].Fit(fd[hel][k],"NQ"))
-					#fstat=0
-					print "fstat=",fstat
-					if fstat==0:
-						#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
-						#! Now fill hR2 from fit
-						if R2=='A':
-							r2=fd[hel][k].GetParameter(0)
-							r2_err=fd[hel][k].GetParError(0)
-							# r2=10
-							# r2_err=1
-						elif R2=='B':
-							r2=fd[hel][k].GetParameter(1)
-							r2_err=fd[hel][k].GetParError(1)
-						elif R2=='C':
-							r2=fd[hel][k].GetParameter(2)
-							r2_err=fd[hel][k].GetParError(2)
-						elif R2=='D':
-							if   hel=='POS' or hel=='UNP': r2=fd[hel][k].GetParameter(3)
-							elif hel=='NEG':               r2=-1*fd[hel][k].GetParameter(3)
-							r2_err=fd[hel][k].GetParError(3)
-						#! Hack-ish way to get norm to match with mthd1
-						if R2=='A': nmlzn_fctr=2/50000
-						else:		nmlzn_fctr=1/50000
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2*nmlzn_fctr)
-						hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err*nmlzn_fctr)
-					# else:
-					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
-					# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
-					#print "dbg:",hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3)
-			# for hel in fd:
-			# 	for k in fd[hel]:
-			# 		print "dbg: fit pars for fd[%s][%s]=%f,%f,%f,%f"%(hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),
-			# 			fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3))
-			print "Done phi-proj fits"
-		#elif mthd=='mthd3':
-			# for hel in hphiprojd:
-			# 	for k in hphiprojd[hel]:
-			# 		q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
-			# 		h=hphiprojd[hel][k]
-			# 		if R2!='D':
-			# 			h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
-			# 		elif R2=='D':
-			# 			if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
-			# 			elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
+		print "Going to extract R2 from phi-proj fits"
+		for hel in fd:
+			for k in fd[hel]:
+				q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
+				if fsd[hel][k]==0:
+					#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
+					#! Now fill hR2 from fit
+					if R2=='A':
+						r2=fd[hel][k].GetParameter(0)
+						r2_err=fd[hel][k].GetParError(0)
+						# r2=10
+						# r2_err=1
+					elif R2=='B':
+						r2=fd[hel][k].GetParameter(1)
+						r2_err=fd[hel][k].GetParError(1)
+					elif R2=='C':
+						r2=fd[hel][k].GetParameter(2)
+						r2_err=fd[hel][k].GetParError(2)
+					elif R2=='D':
+						if   hel=='POS' or hel=='UNP': r2=fd[hel][k].GetParameter(3)
+						elif hel=='NEG':               r2=-1*fd[hel][k].GetParameter(3)
+						r2_err=fd[hel][k].GetParError(3)
+					#! Hack-ish way to get norm to match with mthd1
+					if R2=='A': nmlzn_fctr=2/50000
+					else:		nmlzn_fctr=1/50000
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2*nmlzn_fctr)
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err*nmlzn_fctr)
+				else:
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
+		print "Done extracting R2 from phi-proj fits"
+		return hR2d
 
-		#! 2. plot phi projections
+	def plot_phiproj(self,hphiprojd,fd,fsd,dtypl,seql):
+		"""
+		+ plot phiprojs
+		"""
+		print "In DispYields::plot_phiproj"
 
 		#! Set up ROOT-display aesthetics
-		self.plot_phi_proj_extract_R2_athtcs()
+		self.plot_phiproj_athtcs()
 
 		#! Now display phi-proj 
 		#! Get all q2- and w-bins from the keys of hphiprojd['UNPOL']
@@ -614,7 +654,7 @@ class DispYields:
 					for q2bin_le in q2bins_lel:
 						for wbin_le in wbins_lel:
 
-							outdir=os.path.join(self.OUTDIR_OBS_R2,"VST%d_%s"%(vst,var),"%s"%hel,"phi_projs_q%.2f_w%.3f"%(q2bin_le,wbin_le))
+							outdir=os.path.join(self.OUTDIR_OBS_R2,"phiprojs","VST%d_%s"%(vst,var),"%s"%hel,"q%.2f_w%.3f"%(q2bin_le,wbin_le))
 							if not os.path.exists(outdir):
 								os.makedirs(outdir)
 
@@ -797,24 +837,30 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_obs_R2(self,R2,mthd,q2min,q2max,dtypl,seql):
+	def disp_obs_R2(self,mthd,R2l,q2min,q2max,dtypl,seql):
 		"""
-		For a given R2(=A/B/C/D) and method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
-		1. From file, get q2wbinl within specified q2min and q2max
-		2. From file, get h5d[hel][(q2,w,dtyp,seql)]
-		3. Extract hR2[hel][(q2,w,dtyp,seql)]
-		4. Plot hR2[hel][(q2,w,dtyp,seql)]
+		+ Extract user specified R2s using used specified method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
+			+ The user has to also specify:
+				1. List of R2s to extract
+				1. The Q2 limits i.e q2min and q2max
+				2. dtypl and seql 
+		+ The following is the outline of the process:
+			1. From file, get q2wbinl within specified q2min and q2max
+			2. From file, get h5d[hel][(q2,w,dtyp,seql)]
+			3. Extract hR2[hel][(q2,w,dtyp,seql)]
+			4. Plot hR2[hel][(q2,w,dtyp,seql)]
 		"""
 		print "In DispYields::disp_obs_R2()"
 
-		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,"mthd_%s"%self.MTHD_NAMED[mthd],"Q2_%.2f-%.2f"%(q2min,q2max))
+		#self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2",R2,"mthd_%s"%self.MTHD_NAMED[mthd],"Q2_%.2f-%.2f"%(q2min,q2max))
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2","Q2_%.2f-%.2f"%(q2min,q2max),"mthd_%s"%self.MTHD_NAMED[mthd])
 		if not os.path.exists(self.OUTDIR_OBS_R2):
 			os.makedirs(self.OUTDIR_OBS_R2)
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
@@ -843,12 +889,18 @@ class DispYields:
 		for k in q2wbinl_bad:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
-		
+
 		#! 3. Now extract and plot R2
 		print "Going to extract and plot R2 for mthd %s"%mthd
-		hR2d=self.extract_obs_R2(h5d,R2,mthd,dtypl,seql)
-		if mthd=='mthd1' or mthd=='mthd2': #since hR2 currently only extracted for mthd1 and mthd2
-			self.plot_obs_R2(hR2d,R2,dtypl,seql)
+		self.extract_and_plot_R2(h5d,R2l,mthd,dtypl,seql)
+		# if mthd=='mthd1' or mthd=='mthd2': #since hR2 currently only extracted for mthd1 and mthd2
+		# 	self.plot_obs_R2(hR2d,R2,dtypl,seql)
+		
+		# #! 3. Now extract and plot R2
+		# print "Going to extract and plot R2 for mthd %s"%mthd
+		# hR2d=self.extract_obs_R2(h5d,R2,mthd,dtypl,seql)
+		# if mthd=='mthd1' or mthd=='mthd2': #since hR2 currently only extracted for mthd1 and mthd2
+		# 	self.plot_obs_R2(hR2d,R2,dtypl,seql)
 
 		print "Done DispYields::disp_obs_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
@@ -1253,7 +1305,7 @@ class DispYields:
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)
 
-	def plot_phi_proj_extract_R2_athtcs(self):
+	def plot_phiproj_athtcs(self):
 		#! Stats Box
 		ROOT.gStyle.SetOptStat(0)
 		#ROOT.gStyle.SetOptFit(1111)
