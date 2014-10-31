@@ -517,7 +517,8 @@ class DispYields:
 						l,t=[],[]
 						for wbin_le in wbins_lel:
 							pad=pad_p.cd(ipad+1)
-							if len(dtypl)==2: pad.Divide(1,2)
+							if hel=='UNP' and len(dtypl)==2: 
+								pad.Divide(1,2)
 							l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
 							i=0
 							for dtyp in dtypl:
@@ -859,8 +860,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
