@@ -539,7 +539,7 @@ class DispYields:
   						pt.AddText("%s(%s:hel=%s:Q2=%.2f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le))
   						pt.Draw()
  						pad_p.cd()
- 						pad_p.Divide(6,10) #! Make this dynamic depending on W limits
+ 						pad_p.Divide(7,10) #! Make this dynamic depending on W limits
 						#pad_p.Divide(7,10)
 						#c.Divide(7,10)
 						ipad=0
@@ -602,18 +602,18 @@ class DispYields:
 			for k in h5d[hel]:
 				q2bin_le,wbin_le,vst,dtyp,seq=k[0],k[1],k[2],k[3],k[4]
 				h5=h5d[hel][k]
-				if R2!='D':
-					h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
-				elif R2=='D':
-					if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
-					elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
+				# if R2!='D':
+				# 	h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)	
+				# elif R2=='D':
+				# 	if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],1)
+				# 	elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,self.H5_MFUNCD[R2],-1)	
 											
 				for var in VARS:
 					if var=='PHI': continue
 					if vst==1 and var=='M2': continue
 					if vst==2 and var=='M1': continue
 					if vst==3 and var=='M1': continue
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5m.Projection(H5_DIM[var],"E")
+					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]=h5.Projection(H5_DIM[var],"E")
 					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetName("%s_VST%d_%s_%s_%s"%(R2,vst,var,seq,hel))
 					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetTitle("%s(%s:%s:%.2f,%.3f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le,wbin_le))
 					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Reset()
