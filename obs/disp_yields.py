@@ -381,7 +381,7 @@ class DispYields:
 			# 	print "keys in hphiprojd[%s]"%hel
 			# 	print hphiprojd[hel].keys()
 
-			#! 2. hphiprojd=>fd	
+			#! 2. hphiprojd=>fd,fsd
 			print "Going to perform phi-proj fits"
 			fd= {'UNP':{},'POS':{},'NEG':{},'ASM':{}}
 			fsd={'UNP':{},'POS':{},'NEG':{},'ASM':{}} #for storing fit stat
