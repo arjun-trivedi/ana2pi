@@ -453,10 +453,10 @@ class DispYields:
 				self.plot_obs_R2(hR2d,R2,dtypl,seql)
 				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
 
-			#! 2. Process hphiprojd accorinding to mthd and extractR2
-			print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			hR2d=self.plot_phiproj(hphiprojd,fd,fsd,dtypl,seql)
-			return hR2d
+			#! 3. Finally, for visual verification, plot phiprojs
+			# print "Going to plot phi-proj and extract R2 for method %s"%mthd
+			# hR2d=self.plot_phiproj(hphiprojd,fd,fsd,dtypl,seql)
+			# return hR2d
 			#return 1
 			print "Done h5d=>hR2d for method %s..."%mthd
 		print "Done extract and plot R2s for mthd %s..."%mthd		
