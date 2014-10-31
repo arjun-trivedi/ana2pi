@@ -382,33 +382,61 @@ class DispYields:
 			# 	print hphiprojd[hel].keys()
 
 			#! 2. hphiprojd=>fd,fsd
-			print "Going to perform phi-proj fits"
+			print "Doing hphiprojd=>fd,fsd"
 			fd= {'UNP':{},'POS':{},'NEG':{},'ASM':{}}
-			fsd={'UNP':{},'POS':{},'NEG':{},'ASM':{}} #for storing fit stat
+			#fsd={'UNP':{},'POS':{},'NEG':{},'ASM':{}} #for storing fit stat
 			for hel in hphiprojd:
 				for k in hphiprojd[hel]:
 					q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
-					# f=self.FPHI
+					f=self.FPHI
 					# f.SetLineColor(clrd[(dtyp,seq)])
 					# fd[hel][k]=self.FPHI
 					# fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
-					fd[hel][k]=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
-  					fd[hel][k].SetParameter(0,1)
-  					fd[hel][k].SetParameter(1,10)
-  					fd[hel][k].SetParameter(2,20)
-  					fd[hel][k].SetParameter(3,100)
- 					fd[hel][k].SetParName(0, "A")
-  					fd[hel][k].SetParName(1, "B")
-  					fd[hel][k].SetParName(2, "C")
-  					fd[hel][k].SetParName(3, "D")#hPD
+
+					# fd[hel][k]=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+  			# 		fd[hel][k].SetParameter(0,1)
+  			# 		fd[hel][k].SetParameter(1,10)
+  			# 		fd[hel][k].SetParameter(2,20)
+  			# 		fd[hel][k].SetParameter(3,100)
+ 				# 	fd[hel][k].SetParName(0, "A")
+  			# 		fd[hel][k].SetParName(1, "B")
+  			# 		fd[hel][k].SetParName(2, "C")
+  			# 		fd[hel][k].SetParName(3, "D")#hPD
+
+  				# 	f=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+  				# 	f.SetParameter(0,1)
+  				# 	f.SetParameter(1,10)
+  				# 	f.SetParameter(2,20)
+  				# 	f.SetParameter(3,100)
+ 					# f.SetParName(0, "A")
+  				# 	f.SetParName(1, "B")
+  				# 	f.SetParName(2, "C")
+  				# 	f.SetParName(3, "D")#hPD
+
   					#fd[hel][k].SetLineColor(clrd[(dtyp,seq)])
 					print "Going to fit phi proj for",hel,k
 					#fstat=int(hphiprojd[hel][k].Fit(f,"Q"))
 					#fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
-					fstat=int(hphiprojd[hel][k].Fit(fd[hel][k],"NQ"))
+
+					#fstat=int(hphiprojd[hel][k].Fit(fd[hel][k],"NQ"))
+					fstat=int(hphiprojd[hel][k].Fit(f,"NQ"))
+
 					#fstat=0
 					print "fstat=",fstat
-					fsd[hel][k]=fstat
+					#fsd[hel][k]=fstat
+					if fstat==0:
+						A=   f.GetParameter(0)
+						Aerr=f.GetParError(0)
+						B=   f.GetParameter(1)
+						Berr=f.GetParError(1)
+						C=   f.GetParameter(2)
+						Cerr=f.GetParError(2)
+						D=   f.GetParameter(3)
+						Derr=f.GetParError(3)
+						fd[hel][k]={'A':A,'Aerr':Aerr,'B':B,'Berr':Berr,'C':C,'Cerr':Cerr,'D':D,'Derr':Derr}
+					else:
+						fd[hel][k]={'A':0,'Aerr':0,'B':0,'Berr':0,'C':0,'Cerr':0,'D':0,'Derr':0}
+
 					# if fstat==0:
 					# 	#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
 					# 	#! Now fill hR2 from fit
@@ -436,27 +464,27 @@ class DispYields:
 					# # 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
 					# # 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
 					# #print "dbg:",hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3)
-			print "Done phi-proj fits"
-			# for hel in fd:
-			# 	for k in fd[hel]:
-			# 		print "dbg: fit pars for fd[%s][%s]=%f,%f,%f,%f"%(hel,k,fd[hel][k].GetParameter(0),fd[hel][k].GetParameter(1),
-			# 			fd[hel][k].GetParameter(2),fd[hel][k].GetParameter(3))
+			print "Done hphiprojd=>fd,fsd"
+			for hel in fd:
+				for k in fd[hel]:
+					print "dbg: fit pars for fd[%s][%s]=%f,%f,%f,%f"%(hel,k,fd[hel][k]['A'],fd[hel][k]['B'],
+						fd[hel][k]['C'],fd[hel][k]['D'])
 
 			#! 2. Obtain hR2 for each R2 from fd and plot
 			for R2 in R2l:
-				
 				print "Going to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
-				hR2d=self.extract_R2_from_phiproj(h5d,fd,fsd,R2)
+				hR2d=self.extract_R2_from_phiproj(h5d,fd,R2)
 				print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
 
 				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
 				self.plot_obs_R2(hR2d,R2,dtypl,seql)
 				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
 
-			#! 3. Finally, for visual verification, plot phiprojs
+			# #! 3. Finally, for visual verification, plot phiprojs
 			# print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			# hR2d=self.plot_phiproj(hphiprojd,fd,fsd,dtypl,seql)
-			# return hR2d
+			# self.plot_phiproj(hphiprojd,fd,dtypl,seql)
+			# print "Done to plot phi-proj and extract R2 for method %s"%mthd
+			#return hR2d
 			#return 1
 			print "Done h5d=>hR2d for method %s..."%mthd
 		print "Done extract and plot R2s for mthd %s..."%mthd		
@@ -511,7 +539,8 @@ class DispYields:
   						pt.AddText("%s(%s:hel=%s:Q2=%.2f)"%(self.R2_NAMED[R2],self.VAR_NAMES[(vst,var)],hel,q2bin_le))
   						pt.Draw()
  						pad_p.cd()
-						pad_p.Divide(7,10)
+ 						pad_p.Divide(6,10) #! Make this dynamic depending on W limits
+						#pad_p.Divide(7,10)
 						#c.Divide(7,10)
 						ipad=0
 						l,t=[],[]
@@ -558,7 +587,7 @@ class DispYields:
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
 
-	def extract_R2_from_phiproj(self,h5d,fd,fsd,R2):
+	def extract_R2_from_phiproj(self,h5d,fd,R2):
 		"""
 		+ From fd, for a particular R2, extract hR2
 		"""
@@ -593,36 +622,44 @@ class DispYields:
 		for hel in fd:
 			for k in fd[hel]:
 				q2bin_le,wbin_le,vst,var,bin,dtyp,seq=k[0],k[1],k[2],k[3],k[4],k[5],k[6]
-				if fsd[hel][k]==0:
-					#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
-					#! Now fill hR2 from fit
-					if R2=='A':
-						r2=fd[hel][k].GetParameter(0)
-						r2_err=fd[hel][k].GetParError(0)
-						# r2=10
-						# r2_err=1
-					elif R2=='B':
-						r2=fd[hel][k].GetParameter(1)
-						r2_err=fd[hel][k].GetParError(1)
-					elif R2=='C':
-						r2=fd[hel][k].GetParameter(2)
-						r2_err=fd[hel][k].GetParError(2)
-					elif R2=='D':
-						if   hel=='POS' or hel=='UNP': r2=fd[hel][k].GetParameter(3)
-						elif hel=='NEG':               r2=-1*fd[hel][k].GetParameter(3)
-						r2_err=fd[hel][k].GetParError(3)
-					#! Hack-ish way to get norm to match with mthd1
-					if R2=='A': nmlzn_fctr=2/50000
-					else:		nmlzn_fctr=1/50000
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2*nmlzn_fctr)
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err*nmlzn_fctr)
-				else:
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
-					hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
+				#fd[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
+				#! Now fill hR2 from fit
+				if R2=='A':
+					r2=fd[hel][k]['A']
+					r2_err=fd[hel][k]['Aerr']
+					# r2=fd[hel][k].GetParameter(0)
+					# r2_err=fd[hel][k].GetParError(0)
+					# r2=10
+					# r2_err=1
+				elif R2=='B':
+					r2=fd[hel][k]['B']
+					r2_err=fd[hel][k]['Berr']
+					# r2=fd[hel][k].GetParameter(1)
+					# r2_err=fd[hel][k].GetParError(1)
+				elif R2=='C':
+					r2=fd[hel][k]['C']
+					r2_err=fd[hel][k]['Cerr']
+					# r2=fd[hel][k].GetParameter(2)
+					# r2_err=fd[hel][k].GetParError(2)
+				elif R2=='D':
+					if   hel=='POS' or hel=='UNP': r2=fd[hel][k]['D']
+					elif hel=='NEG':               r2=-1*fd[hel][k]['D']
+					r2_err=fd[hel][k]['Derr']
+					# if   hel=='POS' or hel=='UNP': r2=fd[hel][k].GetParameter(3)
+					# elif hel=='NEG':               r2=-1*fd[hel][k].GetParameter(3)
+					# r2_err=fd[hel][k].GetParError(3)
+				#! Hack-ish way to get norm to match with mthd1
+				if R2=='A': nmlzn_fctr=2/50000
+				else:		nmlzn_fctr=1/50000
+				hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,r2*nmlzn_fctr)
+				hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,r2_err*nmlzn_fctr)
+				# else:
+				# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinContent(bin,0)
+				# 	hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].SetBinError(bin,0)
 		print "Done extracting R2 from phi-proj fits"
 		return hR2d
 
-	def plot_phiproj(self,hphiprojd,fd,fsd,dtypl,seql):
+	def plot_phiproj(self,hphiprojd,fd,dtypl,seql):
 		"""
 		+ plot phiprojs
 		"""
@@ -674,8 +711,9 @@ class DispYields:
  							nbins=self.NBINS[var]
  							pad_p.Divide(self.NXPADS[var],self.NYPADS[var])
  							l=[]
+ 							f_exp1,f_exp2,f_sim=[],[],[]# used to draw fit parameters
  							pt_exp1,pt_exp2,pt_sim=[],[],[]# used to draw fit parameters
-							for ibin in range(nbins):
+ 							for ibin in range(nbins):
 								pad=pad_p.cd(ibin+1)
 								if hel=='UNP' and len(dtypl)==2:
 									pad.Divide(1,2)
@@ -685,55 +723,116 @@ class DispYields:
 									for seq in seql:
 										#if dtyp=='SIM' and seq=='C': continue
 										if hphiprojd[hel].has_key((q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq)):
+											k=q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq
 											h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
-											f=fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
-											f.SetLineColor(h.GetMarkerColor())
+											#f=fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
+											#h=hphiprojd[hel][k]
+											# f=self.FPHI
+											# f.SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
+											# f.SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
+  									# 		f.SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
+  									# 		f.SetParError(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Berr'])
+  									# 		f.SetParameter(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['C'])
+  									# 		f.SetParError(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Cerr'])
+  									# 		f.SetParameter(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['D'])
+  									# 		f.SetParError(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Derr'])
+ 										# 	f.SetParName(0, "A")
+  									# 		f.SetParName(1, "B")
+  									# 		f.SetParName(2, "C")
+  									# 		f.SetParName(3, "D")#hPD
+									#		f.SetLineColor(h.GetMarkerColor())
 											l[ibin].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if dtyp=='EXP': 
 												pad.cd(1)
+												#gpad=pad.GetPad(1)
 												if i==0:
 													h.Draw()
-													f.Draw("sames")
+													f_exp1.append(self.FPHI)
+													f_exp1[ibin].SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
+													f_exp1[ibin].SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
+  													f_exp1[ibin].SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
+  													f_exp1[ibin].SetParError(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Berr'])
+  													f_exp1[ibin].SetParameter(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['C'])
+  													f_exp1[ibin].SetParError(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Cerr'])
+  													f_exp1[ibin].SetParameter(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['D'])
+  													f_exp1[ibin].SetParError(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Derr'])
+ 													f_exp1[ibin].SetParName(0, "A")
+  													f_exp1[ibin].SetParName(1, "B")
+  													f_exp1[ibin].SetParName(2, "C")
+  													f_exp1[ibin].SetParName(3, "D")#hPD
+  													f_exp1[ibin].SetLineColor(h.GetMarkerColor())
+													f_exp1[ibin].Draw("sames")
 													#! Draw fit stats
 													pt_exp1.append(ROOT.TPaveText(.20,.6,.30,1.0,"NDC"))
-													pt_exp1[ibin].AddText( "A=%.2f+/-%.2f"%(f.GetParameter(0),f.GetParError(0)) )
-													pt_exp1[ibin].AddText( "B=%.2f+/-%.2f"%(f.GetParameter(1),f.GetParError(1)) )
-													pt_exp1[ibin].AddText( "C=%.2f+/-%.2f"%(f.GetParameter(2),f.GetParError(2)) )
-													pt_exp1[ibin].AddText( "D=%.2f+/-%.2f"%(f.GetParameter(3),f.GetParError(3)) )
+													pt_exp1[ibin].AddText( "A=%.2f+/-%.2f"%(f_exp1[ibin].GetParameter(0),f_exp1[ibin].GetParError(0)) )
+													pt_exp1[ibin].AddText( "B=%.2f+/-%.2f"%(f_exp1[ibin].GetParameter(1),f_exp1[ibin].GetParError(1)) )
+													pt_exp1[ibin].AddText( "C=%.2f+/-%.2f"%(f_exp1[ibin].GetParameter(2),f_exp1[ibin].GetParError(2)) )
+													pt_exp1[ibin].AddText( "D=%.2f+/-%.2f"%(f_exp1[ibin].GetParameter(3),f_exp1[ibin].GetParError(3)) )
 													pt_exp1[ibin].SetTextColor(h.GetMarkerColor())
 													pt_exp1[ibin].SetFillColor(11)
 													pt_exp1[ibin].Draw()
 													#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw()
 													i+=1;
 													#pad.Update()
+													#gpad.Update()
 												else:
 													h.Draw("sames")
-													f.Draw("sames")
+													f_exp2.append(self.FPHI)
+													f_exp2[ibin].SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
+													f_exp2[ibin].SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
+  													f_exp2[ibin].SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
+  													f_exp2[ibin].SetParError(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Berr'])
+  													f_exp2[ibin].SetParameter(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['C'])
+  													f_exp2[ibin].SetParError(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Cerr'])
+  													f_exp2[ibin].SetParameter(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['D'])
+  													f_exp2[ibin].SetParError(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Derr'])
+ 													f_exp2[ibin].SetParName(0, "A")
+  													f_exp2[ibin].SetParName(1, "B")
+  													f_exp2[ibin].SetParName(2, "C")
+  													f_exp2[ibin].SetParName(3, "D")#hPD
+  													f_exp2[ibin].SetLineColor(h.GetMarkerColor())
+													f_exp2[ibin].Draw("sames")
 													#! Draw fit stats
 													pt_exp2.append(ROOT.TPaveText(.70,.6,.80,1.0,"NDC"))
-													pt_exp2[ibin].AddText( "A=%.2f+/-%.2f"%(f.GetParameter(0),f.GetParError(0)) )
-													pt_exp2[ibin].AddText( "B=%.2f+/-%.2f"%(f.GetParameter(1),f.GetParError(1)) )
-													pt_exp2[ibin].AddText( "C=%.2f+/-%.2f"%(f.GetParameter(2),f.GetParError(2)) )
-													pt_exp2[ibin].AddText( "D=%.2f+/-%.2f"%(f.GetParameter(3),f.GetParError(3)) )
+													pt_exp2[ibin].AddText( "A=%.2f+/-%.2f"%(f_exp2[ibin].GetParameter(0),f_exp2[ibin].GetParError(0)) )
+													pt_exp2[ibin].AddText( "B=%.2f+/-%.2f"%(f_exp2[ibin].GetParameter(1),f_exp2[ibin].GetParError(1)) )
+													pt_exp2[ibin].AddText( "C=%.2f+/-%.2f"%(f_exp2[ibin].GetParameter(2),f_exp2[ibin].GetParError(2)) )
+													pt_exp2[ibin].AddText( "D=%.2f+/-%.2f"%(f_exp2[ibin].GetParameter(3),f_exp2[ibin].GetParError(3)) )
 													pt_exp2[ibin].SetTextColor(h.GetMarkerColor())
 													pt_exp2[ibin].SetFillColor(11)
 													pt_exp2[ibin].Draw()
 													#pad.Update()
 													#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw("sames")
+													#gpad.Update()
 											if dtyp=='SIM':
 												pad.cd(2)
+												gpad=pad.GetPad(1)
 												h.Draw()
-												f.Draw("sames")
+												f_sim.append(self.FPHI)
+												f_sim[ibin].SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
+												f_sim[ibin].SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
+  												f_sim[ibin].SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
+  												f_sim[ibin].SetParError(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Berr'])
+  												f_sim[ibin].SetParameter(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['C'])
+  												f_sim[ibin].SetParError(2,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Cerr'])
+  												f_sim[ibin].SetParameter(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['D'])
+  												f_sim[ibin].SetParError(3,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Derr'])
+ 												f_sim[ibin].SetParName(0, "A")
+  												f_sim[ibin].SetParName(1, "B")
+  												f_sim[ibin].SetParName(2, "C")
+  												f_sim[ibin].SetParName(3, "D")#hPD
+  												f_sim[ibin].SetLineColor(h.GetMarkerColor())
+												f_sim[ibin].Draw("sames")
 												#! Draw fit stats
 												pt_sim.append(ROOT.TPaveText(.20,.6,.30,1.0,"NDC"))
-												pt_sim[ibin].AddText( "A=%.2f+/-%.2f"%(f.GetParameter(0),f.GetParError(0)) )
-												pt_sim[ibin].AddText( "B=%.2f+/-%.2f"%(f.GetParameter(1),f.GetParError(1)) )
-												pt_sim[ibin].AddText( "C=%.2f+/-%.2f"%(f.GetParameter(2),f.GetParError(2)) )
-												pt_sim[ibin].AddText( "D=%.2f+/-%.2f"%(f.GetParameter(3),f.GetParError(3)) )
+												pt_sim[ibin].AddText( "A=%.2f+/-%.2f"%(f_sim[ibin].GetParameter(0),f_sim[ibin].GetParError(0)) )
+												pt_sim[ibin].AddText( "B=%.2f+/-%.2f"%(f_sim[ibin].GetParameter(1),f_sim[ibin].GetParError(1)) )
+												pt_sim[ibin].AddText( "C=%.2f+/-%.2f"%(f_sim[ibin].GetParameter(2),f_sim[ibin].GetParError(2)) )
+												pt_sim[ibin].AddText( "D=%.2f+/-%.2f"%(f_sim[ibin].GetParameter(3),f_sim[ibin].GetParError(3)) )
 												pt_sim[ibin].SetTextColor(h.GetMarkerColor())
 												pt_sim[ibin].SetFillColor(11)
 												pt_sim[ibin].Draw()
-												#pad.Update()
+												#gpad.Update()
 
 												#fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq].Draw()
 										#else:
@@ -743,8 +842,7 @@ class DispYields:
 							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
 							c.Close()
 		
-		print "Done DispYields::plot_phi_proj_extract_R2_athtcs()"
-		return hR2d
+		print "Done DispYields::plot_phiproj()"	
 	
 	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
@@ -838,12 +936,12 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_obs_R2(self,mthd,R2l,q2min,q2max,dtypl,seql):
+	def disp_obs_R2(self,mthd,R2l,q2min,q2max,wmin,wmax,dtypl,seql):
 		"""
 		+ Extract user specified R2s using used specified method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
 			+ The user has to also specify:
 				1. List of R2s to extract
-				1. The Q2 limits i.e q2min and q2max
+				1. The Q2 & W limits i.e [q2min,q2max],[wmin,wmax]
 				2. dtypl and seql 
 		+ The following is the outline of the process:
 			1. From file, get q2wbinl within specified q2min and q2max
@@ -860,8 +958,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}

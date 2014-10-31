@@ -28,7 +28,7 @@ else:
 
 print "Displaying Obs-R2: R2l=%s:mthd=%s,simnum=%s"%(R2l,mthd,simnum)
 dy=DispYields(simnum)
-dy.disp_obs_R2(mthd=mthd,R2l=R2l,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'])
+dy.disp_obs_R2(mthd=mthd,R2l=R2l,q2min=1.25,q2max=1.75,wmin=1.300,wmax=3.000,dtypl=['EXP','SIM'],seql=['C','F'])
 
 #print "Displaying Obs-R2: R2=%s,mthd=%s,simnum=%s"%(R2,mthd,simnum)
 #dy=DispYields(simnum)
