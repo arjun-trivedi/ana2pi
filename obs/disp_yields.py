@@ -813,8 +813,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,dbg=True,dbg_bins=2)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
