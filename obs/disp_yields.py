@@ -470,20 +470,20 @@ class DispYields:
 					print "dbg: fit pars for fd[%s][%s]=%f,%f,%f,%f"%(hel,k,fd[hel][k]['A'],fd[hel][k]['B'],
 						fd[hel][k]['C'],fd[hel][k]['D'])
 
-			#! 2. Obtain hR2 for each R2 from fd and plot
-			for R2 in R2l:
-				print "Going to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
-				hR2d=self.extract_R2_from_phiproj(h5d,fd,R2)
-				print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
+			# #! 2. Obtain hR2 for each R2 from fd and plot
+			# for R2 in R2l:
+			# 	print "Going to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
+			# 	hR2d=self.extract_R2_from_phiproj(h5d,fd,R2)
+			# 	print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
 
-				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
-				self.plot_obs_R2(hR2d,R2,dtypl,seql)
-				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+			# 	print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+			# 	self.plot_obs_R2(hR2d,R2,dtypl,seql)
+			# 	print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
 
-			# #! 3. Finally, for visual verification, plot phiprojs
-			# print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			# self.plot_phiproj(hphiprojd,fd,dtypl,seql)
-			# print "Done to plot phi-proj and extract R2 for method %s"%mthd
+			#! 3. Finally, for visual verification, plot phiprojs
+			print "Going to plot phi-proj and extract R2 for method %s"%mthd
+			self.plot_phiproj(hphiprojd,fd,dtypl,seql)
+			print "Done to plot phi-proj and extract R2 for method %s"%mthd
 			#return hR2d
 			#return 1
 			print "Done h5d=>hR2d for method %s..."%mthd
@@ -747,7 +747,8 @@ class DispYields:
 												#gpad=pad.GetPad(1)
 												if i==0:
 													h.Draw()
-													f_exp1.append(self.FPHI)
+													#f_exp1.append(self.FPHI)
+													f_exp1.append(ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360))
 													f_exp1[ibin].SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
 													f_exp1[ibin].SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
   													f_exp1[ibin].SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
@@ -777,7 +778,8 @@ class DispYields:
 													#gpad.Update()
 												else:
 													h.Draw("sames")
-													f_exp2.append(self.FPHI)
+													#f_exp2.append(self.FPHI)
+													f_exp2.append(ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360))
 													f_exp2[ibin].SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
 													f_exp2[ibin].SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
   													f_exp2[ibin].SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
@@ -808,7 +810,8 @@ class DispYields:
 												pad.cd(2)
 												gpad=pad.GetPad(1)
 												h.Draw()
-												f_sim.append(self.FPHI)
+												#f_sim.append(self.FPHI)
+												f_sim.append(ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360))
 												f_sim[ibin].SetParameter(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['A'])
 												f_sim[ibin].SetParError(0,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['Aerr'])
   												f_sim[ibin].SetParameter(1,fd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]['B'])
