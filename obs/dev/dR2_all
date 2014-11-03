@@ -3,7 +3,21 @@
 #dR2 C mthd1
 #dR2 D mthd1
 
-dR2 A mthd2
-dR2 B mthd2
-dR2 C mthd2
-dR2 D mthd2
+#dR2 A mthd2
+#dR2 B mthd2
+#dR2 C mthd2
+#dR2 D mthd2
+
+#! R2s from mthd1
+#! Have to dR2 separately for each R2 for mthd1 due to memory leak in h5d=>hR2(?)
+echo ">dR2 mthd1 A"
+dR2 mthd1 A
+echo ">dR2 mthd1 B"
+dR2 mthd1 B
+echo ">dR2 mthd1 C"
+dR2 mthd1 C
+echo ">dR2 mthd1 D"
+dR2 mthd1 D
+#! R2s for mthd2
+echo ">dR2 mthd2"
+dR2 mthd2
