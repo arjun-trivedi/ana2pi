@@ -57,14 +57,12 @@ ana2pi Branches
 						2. ./obs/setup.tcshrc: Environment variables modified
 						3. Added ./sub_studies/study_mem
 						4. Added obs/dev: scripts and other tools in development
-
-						+ extract_obs-new_h8bng_test-add-alpha-angle [09-30-14] ==> [10-01-14] Merged with extract_obs-new_h8bng:
-						 Created mainly to test code after adding alpha-angle to ProcD2pi. Following is a list of all changes:
-						 	1. ProcD2pi
+						5. Added code to extract alpha angle:
+						 	5.i. ProcD2pi
 						 		+ Added getAlpha()
 						 		+ Not using getTheta() method anymore to get theta_cms; LorentVectors once boosted into CMS can directly give theta_cms and going through getTheta() method which use the boosted LorentzVector's dot product with lvQCMS is redundant
-						 	2. Changes to h10->d2pi infrastructure in order to make d2pi_T.root and d2pi_R.root separately (to keep simulation jobs within memory resources):
-						 		+ make* scripts => h10_2_d2piR* and h10_2_d2piT* scripts
-						 			+ submit.make_d2pi_sim* => submit.h10_2_d2piR-sim & submit.h10_2_d2piT-sim 
+						6. Changes to h10->d2pi infrastructure in order to make d2pi_T.root and d2pi_R.root separately (to keep simulation jobs within memory resources):
+						 	+ make* scripts => h10_2_d2piR* and h10_2_d2piT* scripts
+						 		+ submit.make_d2pi_sim* => submit.h10_2_d2piR-sim & submit.h10_2_d2piT-sim 
 
 				
