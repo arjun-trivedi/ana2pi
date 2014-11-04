@@ -324,7 +324,7 @@ def plot_comp_var2(hX,OUTDIR,frange):
 			c.Divide(nq2wbins,1)
 		else:
 			ncols=4
-			nrows=nq2wbins/ncols
+			nrows=int(nq2wbins/ncols)
 			print ncols,nrows
 			c.Divide(ncols,nrows)
 		for iq2w in range(nq2wbins):
@@ -337,7 +337,7 @@ def plot_comp_var2(hX,OUTDIR,frange):
 		c.Close()
 	return (Xmu,Xsg)
 
-def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
+def plot_varpar_vs_q2w(Xmu,Xsg,XMU,OUTDIR):
 	#-- Get R
 	R=Xmu.keys()
 	clrs=['red','green','blue','yellow']
@@ -345,20 +345,29 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU):
 	for ir,r in enumerate(R):
 		#print len(Xmu[r])
 		clr=np.random.rand(3,1)
-		ax=plt.subplot(131)
+		ax=plt.subplot(121)#131
 		ax.scatter(np.arange(len(Xmu[r])),Xmu[r],label=r,color=clrs[ir],s=50)#color=clrs[id])
+		ax.set_xlim(-0.95,len(Xmu[r])+0.05)
 		ax.set_ylim(XMU-.05,XMU+0.05)
-		ax.set_xlabel("W-bin")
-		ax.set_ylabel("mean")
+		ax.set_xlabel("W-bin#",fontsize='xx-large')
+		ax.set_ylabel("Mean [GeV]",fontsize='xx-large')
 		ax.hlines(XMU,0,len(Xmu[r])-1)#1,25)
-		ax=plt.subplot(132)
+		ax.legend(loc="upper right",prop={'size':10})
+		ax.tick_params(axis='both', which='major', labelsize=20)
+
+		ax=plt.subplot(122)#132
 		ax.scatter(np.arange(len(Xsg[r])),Xsg[r],label=r,color=clrs[ir],s=50)#color=clrs[id])
+		ax.set_xlim(-0.95,len(Xmu[r])+0.05)
 		ax.set_ylim(0,0.06)#[0]=0
-		ax.set_xlabel("W-bin")
-		ax.set_ylabel("sigma")
-		ax=plt.subplot(133)
-		ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
-		ax.legend(loc="center",prop={'size':10})
+		ax.set_xlabel("W-bin#",fontsize='xx-large')
+		ax.set_ylabel("RMS [GeV]",fontsize='xx-large')
+		ax.legend(loc="upper right",prop={'size':10})
+		ax.tick_params(axis='both', which='major', labelsize=20)
+
+		# ax=plt.subplot(133)
+		# ax.scatter([1],[1],label=r,color=clrs[ir],s=50)#color=clrs[id])
+		#ax.legend(loc="center",prop={'size':10})
+	fig.savefig("%s/result.eps"%(OUTDIR))
 
 def plot_varpar_vs_R(Xmu,Xsg):#,norm='exp_nmcor'):
 	#-- Get R
