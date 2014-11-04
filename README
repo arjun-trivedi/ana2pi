@@ -65,4 +65,5 @@ ana2pi Branches
 						 	+ make* scripts => h10_2_d2piR* and h10_2_d2piT* scripts
 						 		+ submit.make_d2pi_sim* => submit.h10_2_d2piR-sim & submit.h10_2_d2piT-sim 
 
+						+ IITG_CommitteUpdate_Nov14	[11-04-14]: Created this branch when I moved into the mode of creating presentations for updating my PhD. Committee and IITG. In such a mode, I wish to make changes rather quickly without worrying about the larger integrity of the code. If such changes are lasting, I merge them in.
 				
