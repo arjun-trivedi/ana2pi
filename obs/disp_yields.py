@@ -326,32 +326,6 @@ class DispYields:
 				c.Close()
 		return
 
-	def plot_obs_1D_athtcs(self):
-		#ROOT.gStyle.Reset()
-		#! Stats Box
-		ROOT.gStyle.SetOptStat(0)
-
-		# ROOT.gStyle.SetLabelSize(0.5,"t")
-		# ROOT.gStyle.SetTitleSize(0.5,"t")
-		#ROOT.gStyle.SetPaperSize(20,26);
-		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
-		#ROOT.gStyle.SetPadRightMargin(0.15)#(0.05);
-		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
-		#ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
-
-		ROOT.gStyle.SetTitleW(10)# //title width 
-		ROOT.gStyle.SetTitleFontSize(20)# 
-		ROOT.gStyle.SetTitleH(0.15)# //title height 
-		
-		#! + The following options do not seem to work from here
-		#! + I have to set them in label_hist_obs1D()
-		#ROOT.gStyle.SetTitleFont(42,"xyz")
-		#ROOT.gStyle.SetTitleSize(.35,"xyz")
-		#ROOT.gStyle.SetTitleOffset(0.5,"xyz");
-
-		#!get rid of X error bars and y error bar caps
-		ROOT.gStyle.SetErrorX(0.001)
-
 	def extract_and_plot_R2(self,h5d,R2l,mthd,dtypl,seql):#,hel,dtypl,seql):
 		"""
 		+ Given h5d, extract R2s using the specified method, extract and plots R2s
@@ -512,7 +486,7 @@ class DispYields:
 					if not os.path.exists(outdir):
 						os.makedirs(outdir)
 					for q2bin_le in q2bins_lel:
-						c=ROOT.TCanvas("c","c",4000,4000)
+						c=ROOT.TCanvas("c","c",6000,6000)
 						pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 						#pad_t.SetFillColor(11)
   						pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
@@ -543,6 +517,10 @@ class DispYields:
 										h=hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]
 										h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 										h.SetMarkerColor(clrd[(dtyp,seq)])
+										h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
+										h.GetXaxis().SetLabelSize(.05)
+										h.GetXaxis().SetTitleSize(.10)
+										h.GetXaxis().SetTitleOffset(.7)
 										l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 										if dtyp=='EXP': 
 											pad.cd(1)
@@ -668,7 +646,7 @@ class DispYields:
 							if not os.path.exists(outdir):
 								os.makedirs(outdir)
 
-							c=ROOT.TCanvas("c","c",3000,4000)
+							c=ROOT.TCanvas("c","c",5000,7000)
 							pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 							#pad_t.SetFillColor(11)
   							pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
@@ -698,6 +676,10 @@ class DispYields:
 											k=q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq
 											#h=hphiprojd[hel][q2bin_le,wbin_le,vst,var,ibin+1,dtyp,seq]
 											h=hphiprojd[hel][k]
+											h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,'PHI')],self.VAR_UNIT_NAMES['PHI']) )
+											h.GetXaxis().SetLabelSize(.05)
+											h.GetXaxis().SetTitleSize(.10)
+											h.GetXaxis().SetTitleOffset(.7)
 											l[ibin].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
 											if dtyp=='EXP': 
 												pad.cd(1)
@@ -917,8 +899,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
@@ -1351,7 +1333,7 @@ class DispYields:
 
 	def plot_obs_R2_athtcs(self):
 		#! Stats Box
-		# ROOT.gStyle.SetOptStat(0)
+		ROOT.gStyle.SetOptStat(0)
 
 		# # ROOT.gStyle.SetLabelSize(0.5,"t")
 		# # ROOT.gStyle.SetTitleSize(0.5,"t")
@@ -1361,9 +1343,9 @@ class DispYields:
 		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
 		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
 
-		# ROOT.gStyle.SetTitleW(10)# //title width 
-		# ROOT.gStyle.SetTitleFontSize(20)# //title width 
-		# ROOT.gStyle.SetTitleH(0.15)# //title height 
+		ROOT.gStyle.SetTitleW(8)# //title width 
+		ROOT.gStyle.SetTitleFontSize(10)# //title width 
+		ROOT.gStyle.SetTitleH(0.10)# //title height 
 		# ROOT.gStyle.SetTitleY(1)# //title Y location 
 
 		#!get rid of X error bars and y error bar caps
@@ -1382,11 +1364,37 @@ class DispYields:
 		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
 		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
 
-		# ROOT.gStyle.SetTitleW(10)# //title width 
-		# ROOT.gStyle.SetTitleFontSize(20)# //title width 
-		# ROOT.gStyle.SetTitleH(0.15)# //title height 
+		ROOT.gStyle.SetTitleW(5)# //title width 
+		ROOT.gStyle.SetTitleFontSize(10)# //title width 
+		ROOT.gStyle.SetTitleH(0.10)# //title height 
 		# ROOT.gStyle.SetTitleY(1)# //title Y location 
 
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001);
 		return
+
+	def plot_obs_1D_athtcs(self):
+		#ROOT.gStyle.Reset()
+		#! Stats Box
+		ROOT.gStyle.SetOptStat(0)
+
+		# ROOT.gStyle.SetLabelSize(0.5,"t")
+		# ROOT.gStyle.SetTitleSize(0.5,"t")
+		#ROOT.gStyle.SetPaperSize(20,26);
+		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		#ROOT.gStyle.SetPadRightMargin(0.15)#(0.05);
+		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		#ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
+
+		ROOT.gStyle.SetTitleW(10)# //title width 
+		ROOT.gStyle.SetTitleFontSize(20)# 
+		ROOT.gStyle.SetTitleH(0.15)# //title height 
+		
+		#! + The following options do not seem to work from here
+		#! + I have to set them in label_hist_obs1D()
+		#ROOT.gStyle.SetTitleFont(42,"xyz")
+		#ROOT.gStyle.SetTitleSize(.35,"xyz")
+		#ROOT.gStyle.SetTitleOffset(0.5,"xyz");
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001)
