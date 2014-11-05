@@ -77,7 +77,7 @@ class DispYields:
                         (3,VARS[2]):"#theta_{#pi^{+}}",(3,VARS[3]): "#phi_{#pi^{+}}",
                         (3,VARS[4]):"#alpha_{[p_{f}#pi^{-}][p#pi^{+}]}"}
 
-        #self.VAR_UNIT_NAMES={VARS[0]:"[GeV]",VARS[1]:"[GeV]",VARS[2]:"[#degree]",VARS[3]:"[#degree]",VARS[4]:"[#degree]"}
+		self.VAR_UNIT_NAMES={VARS[0]:"[GeV]",VARS[1]:"[GeV]",VARS[2]:"",VARS[3]:"",VARS[4]:""}
 
         #! Following dictionaries for extracting R2
 		self.R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
@@ -104,17 +104,21 @@ class DispYields:
 		"""
 		+ Plot 1D-Obs as per "view", where:
 			+ view="full_ana" (dtyp,seq not required to be specified)
+			+ view="EC"       (dtyp,seq not required to be specified)
+			+ view="EF"       (dtyp,seq not required to be specified)
+			+ view="EC_SF"    (dtyp,seq not required to be specified)
+			+ view="EF_SF"    (dtyp,seq not required to be specified)
 			+ view="q2_evltn" (dtyp and seq need to specific)
 		"""
 
 		if view=="q2_evltn":
-			print "Going to display 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
+			print "Going to plot 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
 			outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s"%(dtyp,seq))
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
-		elif view=="full_ana":
-			print "Going to display 1D-Obs: full_ana"
-			outdir=os.path.join(self.OUTDIR_OBS_1D,"full_ana")
+		elif view=="full_ana" or view=="EC" or view=="EF":
+			print "Going to plot 1D-Obs: %s"%(view)
+			outdir=os.path.join(self.OUTDIR_OBS_1D,view)
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
 		else:
@@ -148,31 +152,17 @@ class DispYields:
 			      ('SIM','T'):ROOT.gROOT.ProcessLine("kGreen"),
 			      ('SIM','R'):ROOT.gROOT.ProcessLine("kMagenta"),
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		elif view=="EC":
+			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kBlack")}
+		elif view=="EF":
+			coll={('EXP','F'):ROOT.gROOT.ProcessLine("kBlack")}
+			      
+		self.plot_obs_1D_athtcs()
 		#! Label histograms
 		q2wbintitle,wbintitle=self.label_hist_obs1D(hVST1,hVST2,hVST3)
 		for k in wbintitle:
 			print k,wbintitle[k]
-		#! Stats Box
-		ROOT.gStyle.SetOptStat(0)
-
-		# ROOT.gStyle.SetLabelSize(0.5,"t")
-		# ROOT.gStyle.SetTitleSize(0.5,"t")
-		#ROOT.gStyle.SetPaperSize(20,26);
-		ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
-		#ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
-		#ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
-		#ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
-
-		ROOT.gStyle.SetTitleW(10)# //title width 
-		ROOT.gStyle.SetTitleFontSize(20)# //title width 
-		ROOT.gStyle.SetTitleH(0.15)# //title height 
-		ROOT.gStyle.SetTitleY(1)# //title Y location 
-
-		#!get rid of X error bars and y error bar caps
-		ROOT.gStyle.SetErrorX(0.001);
-
-
-
+		
 		ivars=[0,1,2]
 		#! 3x3 TCanvas-pads as per VSTs: VST1=1,2,3; VST2=3,6,9; VST3=2,5,8 (To adapt to Gleb's display)
 		pads=[[1,4,7],[3,6,9],[2,5,8]]
@@ -193,12 +183,12 @@ class DispYields:
  				#pad_p.cd()
 				pad_p.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
-				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
+				if (view=="full_ana" or view=="EC" or view=="EF") and q2wbintitle.has_key((q2bin,wbin)):
 					c=ROOT.TCanvas("c","c",1000,1000)
 					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 					#pad_t.SetFillColor(11)
   					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
-  					pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+  					if (view=="full_ana"):pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
   					pad_t.Draw()
   					pad_p.Draw()
   					pad_t.cd()
@@ -290,7 +280,40 @@ class DispYields:
 									l.AddEntry(hSR_n,"Sim: Before acc. corr.","p")#SR
 									l.AddEntry(hST_n,"Sim: Evtgen.","p")#ST
 									l.Draw()
-				if view=="full_ana" and q2wbintitle.has_key((q2bin,wbin)):
+							elif view=="EC" or view=="EF":
+								if view=="EC":
+									htmp=h[q2bin,wbin,'EXP','C'][ivar]
+									htmp.SetMarkerColor(coll['EXP','C'])
+								elif view=="EF":
+									htmp=h[q2bin,wbin,'EXP','F'][ivar]
+									htmp.SetMarkerColor(coll['EXP','F'])
+								htmp.SetMinimum(0)
+								htmp.SetYTitle("count per bin")
+								htmp.Sumw2()
+								#! Get normalization
+								# normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(wbin,q2bin)#!mub^-1
+								normf=1000
+								htmp.Scale(1/normf)
+								htmp.SetMinimum(0)
+								htmp.Draw()
+								# h[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
+								# h[q2bin,wbin,'EXP','C'][ivar].SetMinimum(0)
+								# h[q2bin,wbin,'EXP','C'][ivar].Draw()
+								#! Add TLegend if padnum==1
+								# if padnum==1:
+								# 	l=ROOT.TLegend(0.45,0.6,1.0,0.85)
+								# 	l.SetFillStyle(0)
+								# 	l.SetBorderSize(0)
+								# 	l.SetTextSize(0.03)
+								# 	l.AddEntry(hEF_n,"Exp: Acc. corr + holes filled from evtgen.","p")#EF
+								# 	l.AddEntry(hEC_n,"Exp: Acc. corr. only","p")#EC
+								# 	l.AddEntry(hEH_n,"Exp: Holes from evtgen.","p")#EH
+								# 	l.AddEntry(hER_n,"Exp: Before acc. corr.","p")#ER
+								# 	l.AddEntry(hSF_n,"Sim: Acc. corr. + holes filled from evtgen.","p")#SF
+								# 	l.AddEntry(hSR_n,"Sim: Before acc. corr.","p")#SR
+								# 	l.AddEntry(hST_n,"Sim: Evtgen.","p")#ST
+								# 	l.Draw()
+				if (view=="full_ana" or view=="EC" or view=="EF") and q2wbintitle.has_key((q2bin,wbin)):
 					outdir_q2bin=os.path.join(outdir,"q%.2f"%q2bin)
 					if not os.path.exists(outdir_q2bin):
 						os.makedirs(outdir_q2bin)
@@ -300,6 +323,32 @@ class DispYields:
 				c.SaveAs("%s/c_w%.3f.png"%(outdir,wbin))
 				c.Close()
 		return
+
+	def plot_obs_1D_athtcs(self):
+		#ROOT.gStyle.Reset()
+		#! Stats Box
+		ROOT.gStyle.SetOptStat(0)
+
+		# ROOT.gStyle.SetLabelSize(0.5,"t")
+		# ROOT.gStyle.SetTitleSize(0.5,"t")
+		#ROOT.gStyle.SetPaperSize(20,26);
+		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		#ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		#ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+
+		ROOT.gStyle.SetTitleW(10)# //title width 
+		ROOT.gStyle.SetTitleFontSize(20)# 
+		ROOT.gStyle.SetTitleH(0.15)# //title height 
+		
+		#! + The following options do not seem to work from here
+		#! + I have to set them in label_hist_obs1D()
+		#ROOT.gStyle.SetTitleFont(42,"xyz")
+		#ROOT.gStyle.SetTitleSize(.35,"xyz")
+		#ROOT.gStyle.SetTitleOffset(0.5,"xyz");
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001)
 
 	def extract_and_plot_R2(self,h5d,R2l,mthd,dtypl,seql):#,hel,dtypl,seql):
 		"""
@@ -753,17 +802,25 @@ class DispYields:
 			+ VST2=rho,p
 			+ VST3=delta_0,pip
 		"""
+		#! First check if view is OK
+		if view=="q2_evltn":
+			print "Going to display 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
+		elif view=="full_ana" or view=="EC" or view=="EF":
+			print "Going to display 1D-Obs: %s"%(view)
+		else:
+			sys.exit("view=%s not recognized. Exiting."%view)
+
 		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs_1D")
 		if not os.path.exists(self.OUTDIR_OBS_1D):
 			os.makedirs(self.OUTDIR_OBS_1D)
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		#q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
-		q2wbinl=self.get_q2wbinlist()
+		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
-		#! 2. Get q2bng and wbng from file
+		#! 2. Get q2bng and wbng from q2wbinl
 		q2bng=self.get_q2bng(q2wbinl)
 		wbng=self.get_wbng(q2wbinl)
 		print "1D Observables will be extracted in the following Q2-bin,W-bin 2D space:"
@@ -821,13 +878,13 @@ class DispYields:
 		for k in q2wbinl_bad:
 			fout.write("%s:%s\n"%(k,q2wbinl_bad[k]))
 		fout.close()
-		print "Finished getting hVST1,hVST2,hVST3. Now going to display yields"
+		print "Finished getting hVST1,hVST2,hVST3. Now going to plot yields"
 		if view=="q2_evltn":
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
-		elif view=="full_ana":
-			self.plot_obs_1D(hVST1,hVST2,hVST3,view="full_ana")
+		elif view=="full_ana" or view=="EC" or view=="EF":
+			self.plot_obs_1D(hVST1,hVST2,hVST3,view=view)
 		else:
 			sys.exit("view=%s not recognized. Exiting."%view)
 		print "Done DispYields::disp_1D()"
@@ -1212,14 +1269,21 @@ class DispYields:
 					wbintitle[k[1]]="%s"%(title_orig[1])
 
 			for k in hl.keys():	
-				#! Now set title
-				# hl[k][0].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,m)],q2wbintitle))
-				# hl[k][1].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,'THETA')],q2wbintitle))
-				# hl[k][2].SetTitle("%s:%s"%(self.VAR_NAMES[(vst,'ALPHA')],q2wbintitle))
-
-				hl[k][0].SetTitle("%s"%(self.VAR_NAMES[(vst,m)]))
-				hl[k][1].SetTitle("%s"%(self.VAR_NAMES[(vst,'THETA')]))
-				hl[k][2].SetTitle("%s"%(self.VAR_NAMES[(vst,'ALPHA')]))
+				# hl[k][0].SetTitle("%s"%(self.VAR_NAMES[(vst,m)]))
+				# hl[k][1].SetTitle("%s"%(self.VAR_NAMES[(vst,'THETA')]))
+				# hl[k][2].SetTitle("%s"%(self.VAR_NAMES[(vst,'ALPHA')]))
+				hl[k][0].SetTitle("")
+				hl[k][1].SetTitle("")
+				hl[k][2].SetTitle("")
+				hl[k][0].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,m)],self.VAR_UNIT_NAMES[m]) )
+				hl[k][0].GetXaxis().SetLabelSize(.05)
+				hl[k][0].GetXaxis().SetTitleSize(.10)
+				hl[k][1].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,'THETA')],self.VAR_UNIT_NAMES['THETA']) )
+				hl[k][1].GetXaxis().SetLabelSize(.05)
+				hl[k][1].GetXaxis().SetTitleSize(.10)
+				hl[k][2].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,'ALPHA')],self.VAR_UNIT_NAMES['ALPHA']) )
+				hl[k][2].GetXaxis().SetLabelSize(.05)
+				hl[k][2].GetXaxis().SetTitleSize(.10)
 		return q2wbintitle,wbintitle
 
 	def russ_norm_theta_dist(self,hTheta):
