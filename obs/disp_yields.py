@@ -318,6 +318,7 @@ class DispYields:
 					if not os.path.exists(outdir_q2bin):
 						os.makedirs(outdir_q2bin)
 					c.SaveAs("%s/c_w%.3f_q%.2f.png"%(outdir_q2bin,wbin,q2bin))
+					c.SaveAs("%s/c_w%.3f_q%.2f.eps"%(outdir_q2bin,wbin,q2bin))
 					c.Close()
 			if view=="q2_evltn" and wbintitle.has_key((wbin)):
 				c.SaveAs("%s/c_w%.3f.png"%(outdir,wbin))
@@ -333,9 +334,9 @@ class DispYields:
 		# ROOT.gStyle.SetTitleSize(0.5,"t")
 		#ROOT.gStyle.SetPaperSize(20,26);
 		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
-		#ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		#ROOT.gStyle.SetPadRightMargin(0.15)#(0.05);
 		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
-		#ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+		#ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
 
 		ROOT.gStyle.SetTitleW(10)# //title width 
 		ROOT.gStyle.SetTitleFontSize(20)# 
@@ -1278,12 +1279,18 @@ class DispYields:
 				hl[k][0].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,m)],self.VAR_UNIT_NAMES[m]) )
 				hl[k][0].GetXaxis().SetLabelSize(.05)
 				hl[k][0].GetXaxis().SetTitleSize(.10)
+				hl[k][0].GetXaxis().SetTitleOffset(.7)
+				hl[k][0].GetYaxis().SetTitleOffset(1.5)
 				hl[k][1].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,'THETA')],self.VAR_UNIT_NAMES['THETA']) )
 				hl[k][1].GetXaxis().SetLabelSize(.05)
 				hl[k][1].GetXaxis().SetTitleSize(.10)
+				hl[k][1].GetXaxis().SetTitleOffset(.7)
+				hl[k][1].GetYaxis().SetTitleOffset(1.5)
 				hl[k][2].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,'ALPHA')],self.VAR_UNIT_NAMES['ALPHA']) )
 				hl[k][2].GetXaxis().SetLabelSize(.05)
 				hl[k][2].GetXaxis().SetTitleSize(.10)
+				hl[k][2].GetXaxis().SetTitleOffset(.7)
+				hl[k][2].GetYaxis().SetTitleOffset(1.5)
 		return q2wbintitle,wbintitle
 
 	def russ_norm_theta_dist(self,hTheta):
