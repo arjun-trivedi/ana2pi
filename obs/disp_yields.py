@@ -322,6 +322,7 @@ class DispYields:
 					c.Close()
 			if view=="q2_evltn" and wbintitle.has_key((wbin)):
 				c.SaveAs("%s/c_w%.3f.png"%(outdir,wbin))
+				c.SaveAs("%s/c_w%.3f.eps"%(outdir,wbin))
 				c.Close()
 		return
 
@@ -568,6 +569,7 @@ class DispYields:
 							#! Increment ipad for next W-bin
 							ipad+=1
 						c.SaveAs("%s/c_q%0.2f.png"%(outdir,q2bin_le))
+						c.SaveAs("%s/c_q%0.2f.eps"%(outdir,q2bin_le))
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
 
@@ -788,6 +790,7 @@ class DispYields:
 								l[ibin].Draw()
 															
 							c.SaveAs("%s/c_q%0.2f_w%0.3f.png"%(outdir,q2bin_le,wbin_le))
+							c.SaveAs("%s/c_q%0.2f_w%0.3f.eps"%(outdir,q2bin_le,wbin_le))
 							c.Close()
 		
 		print "Done DispYields::plot_phiproj()"	
@@ -1021,7 +1024,8 @@ class DispYields:
 			ax.set_ylim(0,0.05)
 			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
 		ax.legend()
-		fig.savefig('%s/integ_yield.png'%(outdir))	
+		fig.savefig('%s/integ_yield.png'%(outdir))
+		fig.savefig('%s/integ_yield.eps'%(outdir))	
 			
 
 	def get_sim_stats(self):
