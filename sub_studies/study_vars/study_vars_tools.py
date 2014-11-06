@@ -352,7 +352,7 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU,OUTDIR):
 		ax.set_xlabel("W-bin#",fontsize='xx-large')
 		ax.set_ylabel("Mean [GeV]",fontsize='xx-large')
 		ax.hlines(XMU,0,len(Xmu[r])-1)#1,25)
-		ax.legend(loc="upper right",prop={'size':10})
+		ax.legend(loc="upper right",prop={'size':15})
 		ax.tick_params(axis='both', which='major', labelsize=20)
 
 		ax=plt.subplot(122)#132
@@ -361,7 +361,7 @@ def plot_varpar_vs_q2w(Xmu,Xsg,XMU,OUTDIR):
 		ax.set_ylim(0,0.06)#[0]=0
 		ax.set_xlabel("W-bin#",fontsize='xx-large')
 		ax.set_ylabel("RMS [GeV]",fontsize='xx-large')
-		ax.legend(loc="upper right",prop={'size':10})
+		ax.legend(loc="upper right",prop={'size':15})
 		ax.tick_params(axis='both', which='major', labelsize=20)
 
 		# ax=plt.subplot(133)

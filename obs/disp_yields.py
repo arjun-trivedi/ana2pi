@@ -802,8 +802,8 @@ class DispYields:
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
-		#q2wbinl=self.get_q2wbinlist()
+		#q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from q2wbinl
@@ -899,8 +899,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
