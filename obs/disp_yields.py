@@ -571,7 +571,7 @@ class DispYields:
 		#! Russian-normalize theta distributions
 		
 		#! Set up some plotting related styles and aesthetics 
-		self.plot_obs_R2_athtcs()
+		self.plot_obs_R2_v2_athtcs()
 		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 				
 		#ivars=[0,1,2]
@@ -1442,6 +1442,32 @@ class DispYields:
 		ROOT.gStyle.SetTitleFontSize(10)# //title width 
 		ROOT.gStyle.SetTitleH(0.10)# //title height 
 		# ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001)
+
+	def plot_obs_R2_v2_athtcs(self):
+		#ROOT.gStyle.Reset()
+		#! Stats Box
+		ROOT.gStyle.SetOptStat(0)
+
+		# ROOT.gStyle.SetLabelSize(0.5,"t")
+		# ROOT.gStyle.SetTitleSize(0.5,"t")
+		#ROOT.gStyle.SetPaperSize(20,26);
+		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		#ROOT.gStyle.SetPadRightMargin(0.15)#(0.05);
+		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		#ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
+
+		ROOT.gStyle.SetTitleW(10)# //title width 
+		ROOT.gStyle.SetTitleFontSize(20)# 
+		ROOT.gStyle.SetTitleH(0.15)# //title height 
+		
+		#! + The following options do not seem to work from here
+		#! + I have to set them in label_hist_obs1D()
+		#ROOT.gStyle.SetTitleFont(42,"xyz")
+		#ROOT.gStyle.SetTitleSize(.35,"xyz")
+		#ROOT.gStyle.SetTitleOffset(0.5,"xyz");
 
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)

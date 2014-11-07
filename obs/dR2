@@ -38,8 +38,8 @@ else:
 	simnum='siml'
 
 print "Displaying Obs-R2: mthd=%s,R2l=%s,view=%s,plotphiproj=%s,simnum=%s"%(R2l,mthd,view,plotphiproj,simnum)
-#dy=DispYields(simnum)
-#dy.disp_obs_R2(mthd=mthd,R2l=R2l,view=view,q2min=1.25,q2max=1.75,wmin=1.300,wmax=3.000,dtypl=['EXP','SIM'],seql=['C','F'])
+dy=DispYields(simnum)
+dy.disp_obs_R2(mthd=mthd,R2l=R2l,view=view,plotphiproj=plotphiproj,q2min=1.25,q2max=1.75,wmin=1.300,wmax=3.000,dtypl=['EXP','SIM'],seql=['C','F'])
 
 #print "Displaying Obs-R2: R2=%s,mthd=%s,simnum=%s"%(R2,mthd,simnum)
 #dy=DispYields(simnum)
