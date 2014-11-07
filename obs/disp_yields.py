@@ -326,9 +326,9 @@ class DispYields:
 				c.Close()
 		return
 
-	def extract_and_plot_R2(self,h5d,R2l,mthd,dtypl,seql):#,hel,dtypl,seql):
+	def extract_and_plot_R2(self,h5d,mthd,R2l,view,plotphiproj,dtypl,seql):#,hel,dtypl,seql):
 		"""
-		+ Given h5d, extract R2s using the specified method, extract and plots R2s
+		+ Given h5d, extract R2s using the specified method, plots R2s in specied view
 		"""
 		print "In DispYields::extract_obs_R2()"
 		
@@ -363,10 +363,10 @@ class DispYields:
 							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
 				print "Done h5d=>hR2d for mthd %s:R2=%s"%(mthd,R2)
 
-				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)			
-				#self.plot_obs_R2(hR2d,R2,dtypl,seql)
-				self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
-				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)	
+				print "Going to plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
+				if   view=="v1":self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				elif view=="v2":self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
+				print "Done plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)	
 		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
 			#! 1. h5d=>hphiprojd
 			print "Doing h5d=>hphiprojd for method %s..."%mthd
@@ -442,15 +442,16 @@ class DispYields:
 				hR2d=self.extract_R2_from_phiproj(h5d,fpard,R2)
 				print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
 
-				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
-				#self.plot_obs_R2(hR2d,R2,dtypl,seql)
-				self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
-				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+				print "Going to plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
+				if   view=="v1":self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				elif view=="v2":self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
+				print "Done plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
 
 			#! 3. Finally, for visual verification, plot phiprojs
-			print "Going to plot phi-proj and extract R2 for method %s"%mthd
-			self.plot_phiproj(hphiprojd,fpard,dtypl,seql)
-			print "Done to plot phi-proj and extract R2 for method %s"%mthd
+			if plotphiproj:
+				print "Going to plot phi-proj and extract R2 for method %s"%mthd
+				self.plot_phiproj(hphiprojd,fpard,dtypl,seql)
+				print "Done to plot phi-proj and extract R2 for method %s"%mthd
 			
 			print "Done h5d=>hR2d for method %s..."%mthd
 		print "Done to extract and plot R2s=%s for mthd %s..."%(R2l,mthd)		
@@ -971,7 +972,7 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_obs_R2(self,mthd,R2l,q2min,q2max,wmin,wmax,dtypl,seql):
+	def disp_obs_R2(self,mthd,R2l,view,plotphiproj,q2min,q2max,wmin,wmax,dtypl,seql):
 		"""
 		+ Extract user specified R2s using used specified method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
 			+ The user has to also specify:
@@ -1026,7 +1027,7 @@ class DispYields:
 
 		#! 3. and 4. Extract and plot R2
 		print "Going to extract and plot R2 for mthd %s"%mthd
-		self.extract_and_plot_R2(h5d,R2l,mthd,dtypl,seql)
+		self.extract_and_plot_R2(h5d,mthd,R2l,view,plotphiproj,dtypl,seql)
 				
 		print "Done DispYields::disp_obs_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
