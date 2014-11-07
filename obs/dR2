@@ -4,29 +4,24 @@ from disp_yields import DispYields
 import sys
 
 #! ---------------------
-#  dR2 [mthd=mthd1] [R2s=ABCD] [view=v1] [plotphiproj=False] [simnum=siml]
+#  dR2 [R2s=A:B:C:D] [mthd=mthd1] [viewl=view1:view2] [plotphiproj=False] [simnum=siml]
 #!----------------------
-#if len(sys.argv)>=2: #i.e. User input R2 
-#        R2=sys.argv[1]
-#else:
-#        R2='D'
-
-if len(sys.argv)>=2: #i.e. User input mthd 
-        mthd=sys.argv[1]
-else:
-        mthd='mthd1'
-
-if len(sys.argv)>=3: #i.e. User input R2s
-        R2l=list(sys.argv[2])
+if len(sys.argv)>=2: #i.e. User input R2s
+        R2l=sys.argv[1].split(":")
 else:
         R2l=['A','B','C','D']
 
-if len(sys.argv)>=4: #i.e. User input view 
-        view=sys.argv[3]
+if len(sys.argv)>=3: #i.e. User input mthd 
+        mthd=sys.argv[2]
 else:
-        view="v1"
+        mthd='mthd1'
 
-if len(sys.argv)>=5: #i.e. User input view 
+if len(sys.argv)>=4: #i.e. User input viewl 
+        viewl=sys.argv[3].split(":")
+else:
+        viewl=["view1","view2"]
+
+if len(sys.argv)>=5: #i.e. User input plotphiproj 
         if   sys.argv[4]=="True": plotphiproj=True
 	elif sys.argv[4]=="False":plotphiproj=False
 else:
@@ -37,37 +32,6 @@ if len(sys.argv)==6: #i.e. User input simnum, else use siml
 else:
 	simnum='siml'
 
-print "Displaying Obs-R2: mthd=%s,R2l=%s,view=%s,plotphiproj=%s,simnum=%s"%(R2l,mthd,view,plotphiproj,simnum)
+print "Displaying Obs-R2: R2l=%s,mthd=%s,viewl=%s,plotphiproj=%s,simnum=%s"%(R2l,mthd,viewl,plotphiproj,simnum)
 dy=DispYields(simnum)
-dy.disp_obs_R2(mthd=mthd,R2l=R2l,view=view,plotphiproj=plotphiproj,q2min=1.25,q2max=1.75,wmin=1.300,wmax=3.000,dtypl=['EXP','SIM'],seql=['C','F'])
-
-#print "Displaying Obs-R2: R2=%s,mthd=%s,simnum=%s"%(R2,mthd,simnum)
-#dy=DispYields(simnum)
-#if R2=='A':
-#        dy.disp_obs_R2(R2='A',mthd=mthd,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'])
-#        #dy.disp_obs_R2(R2='A',q2min=1.25,q2max=1.75,dtypl=['EXP'],seql=['C','F'])
-#
-#	#dy.disp_obs_R2(R2='A',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='A',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='A',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-#elif R2=='B':
-#        dy.disp_obs_R2(R2='B',mthd=mthd,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'])
-#
-#	#dy.disp_obs_R2(R2='B',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='B',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='B',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-#elif R2=='C':
-#        dy.disp_obs_R2(R2='C',mthd=mthd,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'])
-#
-#	#dy.disp_obs_R2(R2='C',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='C',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='C',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-#elif R2=='D':
-#        dy.disp_obs_R2(R2='D',mthd=mthd,q2min=1.25,q2max=1.75,dtypl=['EXP','SIM'],seql=['C','F'])
-#
-#	#dy.disp_obs_R2(R2='D',q2min=1.25,q2max=1.75,hel='UNPOL',dtypl=['EXP','SIM'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='D',q2min=1.25,q2max=1.75,hel='POS',  dtypl=['EXP'],seql=['C','F'])
-#	#dy.disp_obs_R2(R2='D',q2min=1.25,q2max=1.75,hel='NEG',  dtypl=['EXP'],seql=['C','F'])
-#else:
-#	print "R2=",R2,"is not valid. R2=A,B,C or D only"
-#
+dy.disp_obs_R2(R2l=R2l,mthd=mthd,viewl=viewl,plotphiproj=plotphiproj,q2min=1.25,q2max=1.75,wmin=1.300,wmax=3.000,dtypl=['EXP','SIM'],seql=['C','F'])

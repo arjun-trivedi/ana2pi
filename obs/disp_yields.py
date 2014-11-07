@@ -346,7 +346,7 @@ class DispYields:
 				c.Close()
 		return
 
-	def extract_and_plot_R2(self,h5d,mthd,R2l,view,plotphiproj,dtypl,seql):#,hel,dtypl,seql):
+	def extract_and_plot_R2(self,h5d,R2l,mthd,viewl,plotphiproj,dtypl,seql):#,hel,dtypl,seql):
 		"""
 		+ Given h5d, extract R2s using the specified method, plots R2s in specied view
 		"""
@@ -383,10 +383,11 @@ class DispYields:
 							hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq].Scale(1/50000)
 				print "Done h5d=>hR2d for mthd %s:R2=%s"%(mthd,R2)
 
-				print "Going to plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
-				if   view=="v1":self.plot_obs_R2(hR2d,R2,dtypl,seql)
-				elif view=="v2":self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
-				print "Done plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)	
+				for view in viewl:
+					print "Going to plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
+					if   view=="view1":self.plot_obs_R2(hR2d,R2,dtypl,seql)
+					elif view=="view2":self.plot_obs_R2_view2(hR2d,R2,dtypl,seql)
+					print "Done plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)	
 		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
 			#! 1. h5d=>hphiprojd
 			print "Doing h5d=>hphiprojd for method %s..."%mthd
@@ -462,10 +463,11 @@ class DispYields:
 				hR2d=self.extract_R2_from_phiproj(h5d,fpard,R2)
 				print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
 
-				print "Going to plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
-				if   view=="v1":self.plot_obs_R2(hR2d,R2,dtypl,seql)
-				elif view=="v2":self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
-				print "Done plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
+				for view in viewl:
+					print "Going to plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
+					if   view=="view1":self.plot_obs_R2(hR2d,R2,dtypl,seql)
+					elif view=="view2":self.plot_obs_R2_view2(hR2d,R2,dtypl,seql)
+					print "Done plot hR2d for mthd %s:R2=%s:view=%s"%(mthd,R2,view)
 
 			#! 3. Finally, for visual verification, plot phiprojs
 			if plotphiproj:
@@ -504,7 +506,7 @@ class DispYields:
 				if vst==3 and var=='M1': continue
 
 				for hel in hR2d.keys():
-					outdir=os.path.join(self.OUTDIR_OBS_R2,R2,"VST%d_%s"%(vst,var),"%s"%hel)
+					outdir=os.path.join(self.OUTDIR_OBS_R2,"view1",R2,"VST%d_%s"%(vst,var),"%s"%hel)
 					if not os.path.exists(outdir):
 						os.makedirs(outdir)
 					for q2bin_le in q2bins_lel:
@@ -573,12 +575,12 @@ class DispYields:
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
 
-	def plot_obs_R2_v2(self,hR2d,R2,dtypl,seql):
+	def plot_obs_R2_view2(self,hR2d,R2,dtypl,seql):
 		"""
 		+ Plot R2s just like 1D observables are plotted
 		"""
 
-		print "In DispYields::plot_obs_R2_v2()"
+		print "In DispYields::plot_obs_R2_view2()"
 
 		#! Get all q2- and w-bins from the keys of hR2d['UNP']
 		q2bins_le,wbins_le=self.get_q2bin_lel_wbin_lel(hR2d['UNP'])
@@ -591,7 +593,7 @@ class DispYields:
 		#! Russian-normalize theta distributions
 		
 		#! Set up some plotting related styles and aesthetics 
-		self.plot_obs_R2_v2_athtcs()
+		self.plot_obs_R2_view2_athtcs()
 		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 				
 		#ivars=[0,1,2]
@@ -659,13 +661,13 @@ class DispYields:
 										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
 							l[ipad].Draw()
 							ipad+=1
-					outdir=os.path.join(self.OUTDIR_OBS_R2,"q%.2f"%q2bin,hel)
+					outdir=os.path.join(self.OUTDIR_OBS_R2,"view2","q%.2f"%q2bin,hel)
 					if not os.path.exists(outdir):
 						os.makedirs(outdir)
 					c.SaveAs("%s/c%s_w%.3f_q%.2f.png"%(outdir,R2,wbin,q2bin))
 					c.SaveAs("%s/c%s_w%.3f_q%.2f.eps"%(outdir,R2,wbin,q2bin))
 					c.Close()
-		print "Done DispYields::plot_obs_R2_v2()"
+		print "Done DispYields::plot_obs_R2_view2()"
 		return
 
 	def extract_R2_from_phiproj(self,h5d,fpard,R2):
@@ -994,7 +996,7 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_obs_R2(self,mthd,R2l,view,plotphiproj,q2min,q2max,wmin,wmax,dtypl,seql):
+	def disp_obs_R2(self,R2l,mthd,viewl,plotphiproj,q2min,q2max,wmin,wmax,dtypl,seql):
 		"""
 		+ Extract user specified R2s using used specified method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
 			+ The user has to also specify:
@@ -1049,7 +1051,7 @@ class DispYields:
 
 		#! 3. and 4. Extract and plot R2
 		print "Going to extract and plot R2 for mthd %s"%mthd
-		self.extract_and_plot_R2(h5d,mthd,R2l,view,plotphiproj,dtypl,seql)
+		self.extract_and_plot_R2(h5d,R2l,mthd,viewl,plotphiproj,dtypl,seql)
 				
 		print "Done DispYields::disp_obs_R2()"
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
@@ -1468,7 +1470,7 @@ class DispYields:
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)
 
-	def plot_obs_R2_v2_athtcs(self):
+	def plot_obs_R2_view2_athtcs(self):
 		#ROOT.gStyle.Reset()
 		#! Stats Box
 		ROOT.gStyle.SetOptStat(0)
