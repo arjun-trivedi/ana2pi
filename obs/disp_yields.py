@@ -364,7 +364,8 @@ class DispYields:
 				print "Done h5d=>hR2d for mthd %s:R2=%s"%(mthd,R2)
 
 				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)			
-				self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				#self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
 				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)	
 		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
 			#! 1. h5d=>hphiprojd
@@ -442,15 +443,15 @@ class DispYields:
 				print "Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
 
 				print "Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
-				self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				#self.plot_obs_R2(hR2d,R2,dtypl,seql)
+				self.plot_obs_R2_v2(hR2d,R2,dtypl,seql)
 				print "Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
 
 			#! 3. Finally, for visual verification, plot phiprojs
 			print "Going to plot phi-proj and extract R2 for method %s"%mthd
 			self.plot_phiproj(hphiprojd,fpard,dtypl,seql)
 			print "Done to plot phi-proj and extract R2 for method %s"%mthd
-			#return hR2d
-			#return 1
+			
 			print "Done h5d=>hR2d for method %s..."%mthd
 		print "Done to extract and plot R2s=%s for mthd %s..."%(R2l,mthd)		
 			
@@ -550,6 +551,99 @@ class DispYields:
 						c.SaveAs("%s/c_q%0.2f.eps"%(outdir,q2bin_le))
 						c.Close()
 		print "Done DispYields::plot_obs_R2()"
+
+	def plot_obs_R2_v2(self,hR2d,R2,dtypl,seql):
+		"""
+		+ Plot R2s just like 1D observables are plotted
+		"""
+
+		print "In DispYields::plot_obs_R2_v2()"
+
+		#! Get all q2- and w-bins from the keys of hR2d['UNP']
+		q2bins_le,wbins_le=self.get_q2bin_lel_wbin_lel(hR2d['UNP'])
+		print "going to plot 1D obs for:"
+		print "Q2:"
+		print q2bins_le
+		print "W:"
+		print wbins_le
+
+		#! Russian-normalize theta distributions
+		
+		#! Set up some plotting related styles and aesthetics 
+		self.plot_obs_R2_athtcs()
+		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+				
+		#ivars=[0,1,2]
+		ivars=[[0,2,4],[1,2,4],[1,2,4]]
+		#! 3x3 TCanvas-pads as per VSTs: VST1=1,2,3; VST2=3,6,9; VST3=2,5,8 (To adapt to Gleb's display)
+		pads=[[1,4,7],[3,6,9],[2,5,8]]
+		#map_padnums_vars=[zip(pads[0],ivars),zip(pads[1],ivars),zip(pads[2],ivars)]
+		map_padnums_vars=[zip(pads[0],ivars[0]),zip(pads[1],ivars[1]),zip(pads[2],ivars[2])]
+		for wbin in wbins_le:
+			for iq2bin,q2bin in enumerate(q2bins_le):
+				for hel in hR2d:
+					print "Plotting hR2 for R2=%s,w=%0.3f,q2=%0.2f,hel=%s"%(R2,wbin,q2bin,hel)
+					c=ROOT.TCanvas("c","c",1000,1000)
+					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					#pad_t.SetFillColor(11)
+  					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  					pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+  					pad_t.Draw()
+  					pad_p.Draw()
+  					pad_t.cd()
+  					pt=ROOT.TPaveText(.05,.1,.95,.8)
+  					pt.AddText("%s for Q2,W =(%s,%s):hel=%s"%(self.R2_NAMED[R2],q2bin,wbin,hel))
+  					pt.Draw()
+  					#pad_p.Draw()
+  					#pad_p.cd()
+					pad_p.Divide(3,3)
+					ipad=0
+					l,t=[],[]
+					for ivst,vst in enumerate(self.VSTS):
+						for m in map_padnums_vars[ivst]:
+							padnum=m[0]
+							ivar=m[1]
+							var=VARS[ivar]
+							pad=pad_p.cd(padnum)
+							if hel=='UNP' and len(dtypl)==2: 
+								pad.Divide(1,2)
+							l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+							i=0
+							for dtyp in dtypl:
+								for seq in seql:
+									if dtyp=='SIM' and seq=='C': continue
+									if hR2d[hel].has_key((q2bin,wbin,vst,var,dtyp,seq)):
+										h=hR2d[hel][q2bin,wbin,vst,var,dtyp,seq]
+										h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+										h.SetMarkerColor(clrd[(dtyp,seq)])
+										h.SetTitle("")
+										h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
+										h.GetXaxis().SetLabelSize(.05)
+										h.GetXaxis().SetTitleSize(.10)
+										h.GetXaxis().SetTitleOffset(.7)
+										l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+										if dtyp=='EXP': 
+											pad.cd(1)
+											if i==0:
+												h.Draw()
+												i+=1;
+											else:
+												h.Draw("sames")
+										if dtyp=='SIM':
+											pad.cd(2)
+											h.Draw()
+									#else:
+										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
+							l[ipad].Draw()
+							ipad+=1
+					outdir=os.path.join(self.OUTDIR_OBS_R2,"q%.2f"%q2bin,hel)
+					if not os.path.exists(outdir):
+						os.makedirs(outdir)
+					c.SaveAs("%s/c%s_w%.3f_q%.2f.png"%(outdir,R2,wbin,q2bin))
+					c.SaveAs("%s/c%s_w%.3f_q%.2f.eps"%(outdir,R2,wbin,q2bin))
+					c.Close()
+		print "Done DispYields::plot_obs_R2_v2()"
+		return
 
 	def extract_R2_from_phiproj(self,h5d,fpard,R2):
 		"""
@@ -899,8 +993,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
