@@ -116,7 +116,7 @@ class DispYields:
 			outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s"%(dtyp,seq))
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
-		elif view=="full_ana" or view=="EC" or view=="EF":
+		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF":
 			print "Going to plot 1D-Obs: %s"%(view)
 			outdir=os.path.join(self.OUTDIR_OBS_1D,view)
 			if not os.path.exists(outdir):
@@ -156,6 +156,13 @@ class DispYields:
 			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kBlack")}
 		elif view=="EF":
 			coll={('EXP','F'):ROOT.gROOT.ProcessLine("kBlack")}
+		elif view=="EC-SF":
+			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kBlack"),
+			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		elif view=="EF-SF":
+			coll={('EXP','F'):ROOT.gROOT.ProcessLine("kBlack"),
+			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+			
 			      
 		self.plot_obs_1D_athtcs()
 		#! Label histograms
@@ -183,7 +190,7 @@ class DispYields:
  				#pad_p.cd()
 				pad_p.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
-				if (view=="full_ana" or view=="EC" or view=="EF") and q2wbintitle.has_key((q2bin,wbin)):
+				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
 					c=ROOT.TCanvas("c","c",1000,1000)
 					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 					#pad_t.SetFillColor(11)
@@ -296,24 +303,33 @@ class DispYields:
 								htmp.Scale(1/normf)
 								htmp.SetMinimum(0)
 								htmp.Draw()
-								# h[q2bin,wbin,'EXP','C'][ivar].SetMarkerColor(coll['EXP','C'])
-								# h[q2bin,wbin,'EXP','C'][ivar].SetMinimum(0)
-								# h[q2bin,wbin,'EXP','C'][ivar].Draw()
+							elif view=="EC-SF" or view=="EF-SF":
+								if view=="EC-SF":
+									htmp_exp=h[q2bin,wbin,'EXP','C'][ivar]
+									htmp_exp.SetMarkerColor(coll['EXP','C'])
+								elif view=="EF-SF":
+									htmp_exp=h[q2bin,wbin,'EXP','F'][ivar]
+									htmp_exp.SetMarkerColor(coll['EXP','F'])
+								htmp_sim=h[q2bin,wbin,'SIM','F'][ivar]
+								htmp_sim.SetMarkerColor(coll['SIM','F'])
+								htmp_exp.SetMinimum(0)
+								htmp_exp.SetYTitle("count per bin")
+								htmp_exp.Sumw2()
+								htmp_sim.SetMinimum(0)
+								htmp_sim.SetYTitle("count per bin")
+								htmp_sim.Sumw2()
+								htmp_exp.DrawNormalized("",1000)
+								htmp_sim.DrawNormalized("sames",1000)
 								#! Add TLegend if padnum==1
-								# if padnum==1:
-								# 	l=ROOT.TLegend(0.45,0.6,1.0,0.85)
-								# 	l.SetFillStyle(0)
-								# 	l.SetBorderSize(0)
-								# 	l.SetTextSize(0.03)
-								# 	l.AddEntry(hEF_n,"Exp: Acc. corr + holes filled from evtgen.","p")#EF
-								# 	l.AddEntry(hEC_n,"Exp: Acc. corr. only","p")#EC
-								# 	l.AddEntry(hEH_n,"Exp: Holes from evtgen.","p")#EH
-								# 	l.AddEntry(hER_n,"Exp: Before acc. corr.","p")#ER
-								# 	l.AddEntry(hSF_n,"Sim: Acc. corr. + holes filled from evtgen.","p")#SF
-								# 	l.AddEntry(hSR_n,"Sim: Before acc. corr.","p")#SR
-								# 	l.AddEntry(hST_n,"Sim: Evtgen.","p")#ST
-								# 	l.Draw()
-				if (view=="full_ana" or view=="EC" or view=="EF") and q2wbintitle.has_key((q2bin,wbin)):
+								if padnum==1:
+									l=ROOT.TLegend(0.70,0.75,0.90,0.90)
+									l.SetFillStyle(0)
+									#l.SetBorderSize(0)
+									l.SetTextSize(0.05)
+									l.AddEntry(htmp_exp,"Exp.","p")#EF
+									l.AddEntry(htmp_sim,"Sim.","p")#EC
+									l.Draw()
+				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
 					outdir_q2bin=os.path.join(outdir,"q%.2f"%q2bin)
 					if not os.path.exists(outdir_q2bin):
 						os.makedirs(outdir_q2bin)
@@ -886,7 +902,7 @@ class DispYields:
 		#! First check if view is OK
 		if view=="q2_evltn":
 			print "Going to display 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
-		elif view=="full_ana" or view=="EC" or view=="EF":
+		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF":
 			print "Going to display 1D-Obs: %s"%(view)
 		else:
 			sys.exit("view=%s not recognized. Exiting."%view)
@@ -897,8 +913,8 @@ class DispYields:
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		#q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
-		q2wbinl=self.get_q2wbinlist()
+		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from q2wbinl
@@ -964,7 +980,7 @@ class DispYields:
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
-		elif view=="full_ana" or view=="EC" or view=="EF":
+		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF":
 			self.plot_obs_1D(hVST1,hVST2,hVST3,view=view)
 		else:
 			sys.exit("view=%s not recognized. Exiting."%view)
