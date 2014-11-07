@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#- R2s from mthd1
+#- Have to dR2 separately for each R2 for mthd1 due to memory leak in h5d=>hR2(?)
+for R2 in A B C D
+do
+  echo ">dR2 $R2 mthd1 view1:view2"
+  dR2 $R2 mthd1 view1:view2
+done
+
+#- R2s for mthd2
+echo ">dR2 A:B:C:D mthd2 view1:view2"
+dR2 A:B:C:D mthd2 view1:view2
