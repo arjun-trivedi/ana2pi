@@ -661,11 +661,14 @@ class DispYields:
 										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
 							l[ipad].Draw()
 							ipad+=1
-					outdir=os.path.join(self.OUTDIR_OBS_R2,"view2","q%.2f"%q2bin,hel)
+					#outdir=os.path.join(self.OUTDIR_OBS_R2,"view2","q%.2f"%q2bin,hel)
+					outdir=os.path.join(self.OUTDIR_OBS_R2,"view2","q%.2f_w%.3f"%(q2bin,wbin),hel)
 					if not os.path.exists(outdir):
 						os.makedirs(outdir)
-					c.SaveAs("%s/c%s_w%.3f_q%.2f.png"%(outdir,R2,wbin,q2bin))
-					c.SaveAs("%s/c%s_w%.3f_q%.2f.eps"%(outdir,R2,wbin,q2bin))
+					# c.SaveAs("%s/c%s_w%.3f_q%.2f.png"%(outdir,R2,wbin,q2bin))
+					# c.SaveAs("%s/c%s_w%.3f_q%.2f.eps"%(outdir,R2,wbin,q2bin))
+					c.SaveAs("%s/c%s.png"%(outdir,R2))
+					c.SaveAs("%s/c%s.eps"%(outdir,R2))
 					c.Close()
 		print "Done DispYields::plot_obs_R2_view2()"
 		return
