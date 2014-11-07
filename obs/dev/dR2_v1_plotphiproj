@@ -1,0 +1,13 @@
+#- R2s from mthd1
+#- Have to dR2 separately for each R2 for mthd1 due to memory leak in h5d=>hR2(?)
+echo ">dR2 mthd1 A v1 True"
+dR2 mthd1 A v1 True
+echo ">dR2 mthd1 B v1 True"
+dR2 mthd1 B v1 True
+echo ">dR2 mthd1 C v1 True"
+dR2 mthd1 C v1 True 
+echo ">dR2 mthd1 D v1 True"
+dR2 mthd1 D v1 True
+#- R2s for mthd2
+echo ">dR2 mthd2 ABCD v1 True"
+dR2 mthd2 ABCD v1 True
