@@ -177,7 +177,8 @@ class DispYields:
 		for wbin in wbins_le:
 			if view=="q2_evltn" and wbintitle.has_key((wbin)):
 				c=ROOT.TCanvas("c","c",1000,1000)
-				pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+				#pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+				pad_t=ROOT.TPad("pad_t","Title pad",0.25,0.935,0.75,1.00)
 				#pad_t.SetFillColor(11)
   				pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
   				pad_p.SetFillColor(11)
@@ -186,21 +187,24 @@ class DispYields:
   				pad_t.cd()
   				pt=ROOT.TPaveText(.05,.1,.95,.8)
   				pt.AddText("W bin=%s"%wbintitle[wbin])
+  				pt.SetTextSize(0.40)
   				pt.Draw()
  				#pad_p.cd()
 				pad_p.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
 				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
 					c=ROOT.TCanvas("c","c",1000,1000)
-					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					#pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					pad_t=ROOT.TPad("pad_t","Title pad",0.25,0.935,0.75,1.00)
 					#pad_t.SetFillColor(11)
   					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
   					if (view=="full_ana"):pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-  					pad_t.Draw()
   					pad_p.Draw()
+  					pad_t.Draw()
   					pad_t.cd()
   					pt=ROOT.TPaveText(.05,.1,.95,.8)
   					pt.AddText("Q2_W bin=%s"%q2wbintitle[q2bin,wbin])
+  					pt.SetTextSize(0.40)
   					pt.Draw()
   					#pad_p.Draw()
   					#pad_p.cd()
@@ -601,15 +605,17 @@ class DispYields:
 				for hel in hR2d:
 					print "Plotting hR2 for R2=%s,w=%0.3f,q2=%0.2f,hel=%s"%(R2,wbin,q2bin,hel)
 					c=ROOT.TCanvas("c","c",1000,1000)
-					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					#pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
 					#pad_t.SetFillColor(11)
   					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
-  					pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-  					pad_t.Draw()
+  					#pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
   					pad_p.Draw()
+  					pad_t.Draw()
   					pad_t.cd()
   					pt=ROOT.TPaveText(.05,.1,.95,.8)
   					pt.AddText("%s for Q2,W =(%s,%s):hel=%s"%(self.R2_NAMED[R2],q2bin,wbin,hel))
+  					pt.SetTextSize(0.42)
   					pt.Draw()
   					#pad_p.Draw()
   					#pad_p.cd()
@@ -913,7 +919,7 @@ class DispYields:
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=10)
+		q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=2)
 		#q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
