@@ -596,6 +596,16 @@ class DispYields:
 									hl[i].Draw("sames")
 							#! Draw legend
 							l[ipad].Draw()
+							#! Add TText on pad to label W bin
+							#pad.cd()
+							t.append(ROOT.TText(0.5,0.5,"W=%s"%wbin_le))
+							#print "W label=",t[ipad].GetTitle()
+							t[ipad].SetNDC()
+							t[ipad].SetTextSize(0.1)
+							t[ipad].SetTextColor(ROOT.gROOT.ProcessLine("kMagenta"))
+							t[ipad].Draw()
+							#pad.Modified()
+							#! Increment ipad for next W-bin
 							ipad+=1
 
 							#! [11-15-14] Before drawing Exp. and Sim on same pad
@@ -1160,8 +1170,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=10)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
