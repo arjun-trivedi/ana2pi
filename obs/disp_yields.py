@@ -582,6 +582,7 @@ class DispYields:
 							l[ipad].Draw()
 							ipad+=1
 
+							#! [11-15-14] Before drawing Exp. and Sim on same pad
 							# if hel=='UNP' and len(dtypl)==2: 
 							# 	pad.Divide(1,2)
 							# l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
@@ -736,7 +737,7 @@ class DispYields:
 							l[ipad].Draw()
 							ipad+=1
 
-
+							#! [11-15-14] Before drawing Exp. and Sim on same pad	
 							# l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
 							# if hel=='UNP' and len(dtypl)==2: 
 							# 	pad.Divide(1,2)
