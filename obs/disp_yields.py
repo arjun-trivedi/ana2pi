@@ -547,8 +547,8 @@ class DispYields:
 							for dtyp in dtypl:
 								for seq in seql:
 									if dtyp=='SIM' and seq=='C': continue
-									if hR2d[hel].has_key((q2bin,wbin,vst,var,dtyp,seq)):
-										hl.append(hR2d[hel][q2bin,wbin,vst,var,dtyp,seq])
+									if hR2d[hel].has_key((q2bin_le,wbin_le,vst,var,dtyp,seq)):
+										hl.append(hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq])
 										hl[i].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 										hl[i].SetMarkerColor(clrd[(dtyp,seq)])
 										hl[i].SetTitle("")
