@@ -497,6 +497,16 @@ class DispYields:
 		print "W:"
 		print wbins_lel
 
+		#! Russian-normalize theta distributions
+		for hel in hR2d:
+			for q2bin in q2bins_lel:
+				for wbin in wbins_lel:
+					for vst in self.VSTS:
+						for dtyp in dtypl:
+								for seq in seql:
+									if hR2d[hel].has_key((q2bin,wbin,vst,'THETA',dtyp,seq)):
+										self.russ_norm_theta_dist(hR2d[hel][q2bin,wbin,vst,'THETA',dtyp,seq])
+
 		clrd={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		for vst in self.VSTS:
 			for var in VARS:
@@ -526,50 +536,94 @@ class DispYields:
 						#pad_p.Divide(7,10)
 						#c.Divide(7,10)
 						ipad=0
-						l,t=[],[]
+						l,t,ln=[],[],[]
 						for wbin_le in wbins_lel:
 							pad=pad_p.cd(ipad+1)
-							if hel=='UNP' and len(dtypl)==2: 
-								pad.Divide(1,2)
+							#! Legend for this pad
 							l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
-							i=0
+							#! Get all hists to be drawn on this pad
+							hl=[]
+							i=0 #index for histograms in hl
 							for dtyp in dtypl:
 								for seq in seql:
 									if dtyp=='SIM' and seq=='C': continue
-									if hR2d[hel].has_key((q2bin_le,wbin_le,vst,var,dtyp,seq)):
-										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
-										h=hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]
-										h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-										h.SetMarkerColor(clrd[(dtyp,seq)])
-										h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
-										h.GetXaxis().SetLabelSize(.05)
-										h.GetXaxis().SetTitleSize(.10)
-										h.GetXaxis().SetTitleOffset(.7)
-										l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
-										if dtyp=='EXP': 
-											pad.cd(1)
-											if i==0:
-												h.Draw()
-												i+=1;
-											else:
-												h.Draw("sames")
-										if dtyp=='SIM':
-											pad.cd(2)
-											h.Draw()
-									#else:
-										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
+									if hR2d[hel].has_key((q2bin,wbin,vst,var,dtyp,seq)):
+										hl.append(hR2d[hel][q2bin,wbin,vst,var,dtyp,seq])
+										hl[i].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+										hl[i].SetMarkerColor(clrd[(dtyp,seq)])
+										hl[i].SetTitle("")
+										hl[i].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
+										hl[i].GetXaxis().SetLabelSize(.05)
+										hl[i].GetXaxis().SetTitleSize(.10)
+										hl[i].GetXaxis().SetTitleOffset(.7)
+										l[ipad].AddEntry(hl[i],"%s-%s"%(dtyp,seq),"p")
+										i+=1
+							#! Normalized histograms to the signed integral of the 1st hist in hl 
+							itg=self.get_signed_integral(hl[0])
+							#! Scale the rest of the hists to itg
+							for i in range(1,len(hl)):
+								#! First call Sumw2() so that errors are also scaled
+								hl[i].Sumw2()
+								#! Now get scale factor and scale bin contents
+								scale_factor=itg/self.get_signed_integral(hl[i])
+								hl[i].Scale(scale_factor)
+							#! Now draw histograms on the same pad
+							for i in range(len(hl)):
+								if i==0:
+									hl[i].Draw()
+									#! TLine at y=0
+									ln.append(ROOT.TLine(hl[i].GetXaxis().GetXmin(),0,hl[i].GetXaxis().GetXmax(),0))
+									#! Draw TLine only if ymin<0
+									if hl[i].GetMinimum()<0:
+										ln[ipad].Draw("same")
+								else:
+									hl[i].Draw("sames")
+							#! Draw legend
 							l[ipad].Draw()
-							#! Add TText on pad to label W bin
-							#pad.cd()
-							t.append(ROOT.TText(0.5,0.5,"W=%s"%wbin_le))
-							#print "W label=",t[ipad].GetTitle()
-							t[ipad].SetNDC()
-							t[ipad].SetTextSize(0.1)
-							t[ipad].SetTextColor(ROOT.gROOT.ProcessLine("kMagenta"))
-							t[ipad].Draw()
-							#pad.Modified()
-							#! Increment ipad for next W-bin
 							ipad+=1
+
+							# if hel=='UNP' and len(dtypl)==2: 
+							# 	pad.Divide(1,2)
+							# l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+							# i=0
+							# for dtyp in dtypl:
+							# 	for seq in seql:
+							# 		if dtyp=='SIM' and seq=='C': continue
+							# 		if hR2d[hel].has_key((q2bin_le,wbin_le,vst,var,dtyp,seq)):
+							# 			#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"exists"
+							# 			h=hR2d[hel][q2bin_le,wbin_le,vst,var,dtyp,seq]
+							# 			h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+							# 			h.SetMarkerColor(clrd[(dtyp,seq)])
+							# 			h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
+							# 			h.GetXaxis().SetLabelSize(.05)
+							# 			h.GetXaxis().SetTitleSize(.10)
+							# 			h.GetXaxis().SetTitleOffset(.7)
+							# 			l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+							# 			if dtyp=='EXP': 
+							# 				pad.cd(1)
+							# 				if i==0:
+							# 					h.Draw()
+							# 					i+=1;
+							# 				else:
+							# 					h.Draw("sames")
+							# 			if dtyp=='SIM':
+							# 				pad.cd(2)
+							# 				h.Draw()
+							# 		#else:
+							# 			#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
+							# l[ipad].Draw()
+							# #! Add TText on pad to label W bin
+							# #pad.cd()
+							# t.append(ROOT.TText(0.5,0.5,"W=%s"%wbin_le))
+							# #print "W label=",t[ipad].GetTitle()
+							# t[ipad].SetNDC()
+							# t[ipad].SetTextSize(0.1)
+							# t[ipad].SetTextColor(ROOT.gROOT.ProcessLine("kMagenta"))
+							# t[ipad].Draw()
+							# #pad.Modified()
+							# #! Increment ipad for next W-bin
+							# ipad+=1
+
 						c.SaveAs("%s/c_q%0.2f.png"%(outdir,q2bin_le))
 						c.SaveAs("%s/c_q%0.2f.eps"%(outdir,q2bin_le))
 						c.Close()
@@ -591,6 +645,15 @@ class DispYields:
 		print wbins_le
 
 		#! Russian-normalize theta distributions
+		for hel in hR2d:
+			for q2bin in q2bins_le:
+				for wbin in wbins_le:
+					for vst in self.VSTS:
+						for dtyp in dtypl:
+								for seq in seql:
+									if hR2d[hel].has_key((q2bin,wbin,vst,'THETA',dtyp,seq)):
+										self.russ_norm_theta_dist(hR2d[hel][q2bin,wbin,vst,'THETA',dtyp,seq])
+
 		
 		#! Set up some plotting related styles and aesthetics 
 		self.plot_obs_R2_view2_athtcs()
@@ -623,44 +686,87 @@ class DispYields:
   					#pad_p.cd()
 					pad_p.Divide(3,3)
 					ipad=0
-					l,t=[],[]
+					l,t,ln=[],[],[]
 					for ivst,vst in enumerate(self.VSTS):
 						for m in map_padnums_vars[ivst]:
 							padnum=m[0]
 							ivar=m[1]
 							var=VARS[ivar]
 							pad=pad_p.cd(padnum)
-							if hel=='UNP' and len(dtypl)==2: 
-								pad.Divide(1,2)
+							#! Legend for this pad
 							l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
-							i=0
+							#! Get all hists to be drawn on this pad
+							hl=[]
+							i=0 #index for histograms in hl
 							for dtyp in dtypl:
 								for seq in seql:
 									if dtyp=='SIM' and seq=='C': continue
 									if hR2d[hel].has_key((q2bin,wbin,vst,var,dtyp,seq)):
-										h=hR2d[hel][q2bin,wbin,vst,var,dtyp,seq]
-										h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
-										h.SetMarkerColor(clrd[(dtyp,seq)])
-										h.SetTitle("")
-										h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
-										h.GetXaxis().SetLabelSize(.05)
-										h.GetXaxis().SetTitleSize(.10)
-										h.GetXaxis().SetTitleOffset(.7)
-										l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
-										if dtyp=='EXP': 
-											pad.cd(1)
-											if i==0:
-												h.Draw()
-												i+=1;
-											else:
-												h.Draw("sames")
-										if dtyp=='SIM':
-											pad.cd(2)
-											h.Draw()
-									#else:
-										#print "hR2 key=",q2bin_le,wbin_le,hel,vst,var,dtyp,seq,"does NOT exist"
+										hl.append(hR2d[hel][q2bin,wbin,vst,var,dtyp,seq])
+										hl[i].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+										hl[i].SetMarkerColor(clrd[(dtyp,seq)])
+										hl[i].SetTitle("")
+										hl[i].SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
+										hl[i].GetXaxis().SetLabelSize(.05)
+										hl[i].GetXaxis().SetTitleSize(.10)
+										hl[i].GetXaxis().SetTitleOffset(.7)
+										l[ipad].AddEntry(hl[i],"%s-%s"%(dtyp,seq),"p")
+										i+=1
+							#! Normalized histograms to the signed integral of the 1st hist in hl 
+							itg=self.get_signed_integral(hl[0])
+							#! Scale the rest of the hists to itg
+							for i in range(1,len(hl)):
+								#! First call Sumw2() so that errors are also scaled
+								hl[i].Sumw2()
+								#! Now get scale factor and scale bin contents
+								scale_factor=itg/self.get_signed_integral(hl[i])
+								hl[i].Scale(scale_factor)
+							#! Now draw histograms on the same pad
+							for i in range(len(hl)):
+								if i==0:
+									hl[i].Draw()
+									#! TLine at y=0
+									ln.append(ROOT.TLine(hl[i].GetXaxis().GetXmin(),0,hl[i].GetXaxis().GetXmax(),0))
+									#! Draw TLine only if ymin<0
+									if hl[i].GetMinimum()<0:
+										ln[ipad].Draw("same")
+								else:
+									hl[i].Draw("sames")
+							#! Draw legend
 							l[ipad].Draw()
 							ipad+=1
+
+
+							# l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+							# if hel=='UNP' and len(dtypl)==2: 
+							# 	pad.Divide(1,2)
+							# l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+							# i=0
+							# for dtyp in dtypl:
+							# 	for seq in seql:
+							# 		if dtyp=='SIM' and seq=='C': continue
+							# 		if hR2d[hel].has_key((q2bin,wbin,vst,var,dtyp,seq)):
+							# 			h=hR2d[hel][q2bin,wbin,vst,var,dtyp,seq]
+							# 			h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+							# 			h.SetMarkerColor(clrd[(dtyp,seq)])
+							# 			h.SetTitle("")
+							# 			h.SetXTitle( "%s%s"%(self.VAR_NAMES[(vst,var)],self.VAR_UNIT_NAMES[var]) )
+							# 			h.GetXaxis().SetLabelSize(.05)
+							# 			h.GetXaxis().SetTitleSize(.10)
+							# 			h.GetXaxis().SetTitleOffset(.7)
+							# 			l[ipad].AddEntry(h,"%s-%s"%(dtyp,seq),"p")
+							# 			if dtyp=='EXP': 
+							# 				pad.cd(1)
+							# 				if i==0:
+							# 					h.Draw()
+							# 					i+=1;
+							# 				else:
+							# 					h.Draw("sames")
+							# 			if dtyp=='SIM':
+							# 				pad.cd(2)
+							# 				h.Draw()
+							# l[ipad].Draw()
+							# ipad+=1
 					#outdir=os.path.join(self.OUTDIR_OBS_R2,"view2","q%.2f"%q2bin,hel)
 					outdir=os.path.join(self.OUTDIR_OBS_R2,"view2","q%.2f_w%.3f"%(q2bin,wbin),hel)
 					if not os.path.exists(outdir):
@@ -1021,8 +1127,8 @@ class DispYields:
 
 		#! 1. First get all q2wbin directories from file
 		print "Getting q2wbinl"
-		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
+		q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,dbg=True,dbg_bins=2)
+		#q2wbinl=self.get_q2wbinlist(q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax)
 		#print q2wbinl
 		#! 1.1. Make a dictionary for the "bad" q2wbins
 		q2wbinl_bad={}
@@ -1546,3 +1652,10 @@ class DispYields:
 
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)
+
+	def get_signed_integral(self,h):
+		itg=0
+		for i in range(h.GetNbinsX()):
+			itg+=math.fabs(h.GetBinContent(i+1))
+		return itg
+
