@@ -560,16 +560,32 @@ class DispYields:
 										i+=1
 							#! Normalized histograms to the signed integral of the 1st hist in hl 
 							itg=self.get_signed_integral(hl[0])
-							#! Scale the rest of the hists to itg
-							for i in range(1,len(hl)):
+							#! Scale the rest of the hists to itg 
+							#! and
+							#! make list of min and max of each hist (used later to set limit)
+							minl=[]
+							maxl=[]
+							for i in range(len(hl)):
 								#! First call Sumw2() so that errors are also scaled
 								hl[i].Sumw2()
 								#! Now get scale factor and scale bin contents
 								scale_factor=itg/self.get_signed_integral(hl[i])
 								hl[i].Scale(scale_factor)
+								#! minl, maxl
+								minl.append(hl[i].GetMinimum())
+								maxl.append(hl[i].GetMaximum())
+							#! Get minimum and maximum from minl and maxl
+							minimum=min(minl)
+							maximum=max(maxl)
 							#! Now draw histograms on the same pad
+							fctr=1.5
 							for i in range(len(hl)):
 								if i==0:
+									if R2!="A":
+										# hl[i].SetMinimum(minimum-math.fabs((50/100)*minimum))
+										# hl[i].SetMaximum(maximum+math.fabs((50/100)*maximum))
+										hl[i].SetMinimum(minimum-math.fabs(fctr*minimum))
+										hl[i].SetMaximum(maximum+math.fabs(fctr*maximum))
 									hl[i].Draw()
 									#! TLine at y=0
 									ln.append(ROOT.TLine(hl[i].GetXaxis().GetXmin(),0,hl[i].GetXaxis().GetXmax(),0))
@@ -715,16 +731,32 @@ class DispYields:
 										i+=1
 							#! Normalized histograms to the signed integral of the 1st hist in hl 
 							itg=self.get_signed_integral(hl[0])
-							#! Scale the rest of the hists to itg
-							for i in range(1,len(hl)):
+							#! Scale the rest of the hists to itg 
+							#! and
+							#! make list of min and max of each hist (used later to set limit)
+							minl=[]
+							maxl=[]
+							for i in range(len(hl)):
 								#! First call Sumw2() so that errors are also scaled
 								hl[i].Sumw2()
 								#! Now get scale factor and scale bin contents
 								scale_factor=itg/self.get_signed_integral(hl[i])
 								hl[i].Scale(scale_factor)
+								#! minl, maxl
+								minl.append(hl[i].GetMinimum())
+								maxl.append(hl[i].GetMaximum())
+							#! Get minimum and maximum from minl and maxl
+							minimum=min(minl)
+							maximum=max(maxl)
 							#! Now draw histograms on the same pad
+							fctr=1.5
 							for i in range(len(hl)):
 								if i==0:
+									if R2!="A":
+										# hl[i].SetMinimum(minimum-math.fabs((50/100)*minimum))
+										# hl[i].SetMaximum(maximum+math.fabs((50/100)*maximum))
+										hl[i].SetMinimum(minimum-math.fabs(fctr*minimum))
+										hl[i].SetMaximum(maximum+math.fabs(fctr*maximum))
 									hl[i].Draw()
 									#! TLine at y=0
 									ln.append(ROOT.TLine(hl[i].GetXaxis().GetXmin(),0,hl[i].GetXaxis().GetXmax(),0))
