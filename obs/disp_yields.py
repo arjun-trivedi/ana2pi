@@ -672,14 +672,17 @@ class DispYields:
 		print wbins_le
 
 		#! Russian-normalize theta distributions
-		for hel in hR2d:
-			for q2bin in q2bins_le:
-				for wbin in wbins_le:
-					for vst in self.VSTS:
-						for dtyp in dtypl:
-								for seq in seql:
-									if hR2d[hel].has_key((q2bin,wbin,vst,'THETA',dtyp,seq)):
-										self.russ_norm_theta_dist(hR2d[hel][q2bin,wbin,vst,'THETA',dtyp,seq])
+		#! [11-16-14] This is commented out for view2, since view1 is
+		#! called before view2 and in the same process. Therefore, the 
+		#! following Russian-normalizes the distribution again!
+		# for hel in hR2d:
+		# 	for q2bin in q2bins_le:
+		# 		for wbin in wbins_le:
+		# 			for vst in self.VSTS:
+		# 				for dtyp in dtypl:
+		# 						for seq in seql:
+		# 							if hR2d[hel].has_key((q2bin,wbin,vst,'THETA',dtyp,seq)):
+		# 								self.russ_norm_theta_dist(hR2d[hel][q2bin,wbin,vst,'THETA',dtyp,seq])
 
 		
 		#! Set up some plotting related styles and aesthetics 
@@ -721,7 +724,10 @@ class DispYields:
 							var=VARS[ivar]
 							pad=pad_p.cd(padnum)
 							#! Legend for this pad
-							l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+							#l.append(ROOT.TLegend(0.1,0.8,0.2,0.9))
+							l.append(ROOT.TLegend(0.70,0.75,0.90,0.90))
+							l[ipad].SetFillStyle(0)
+							l[ipad].SetTextSize(0.05)
 							#! Get all hists to be drawn on this pad
 							hl=[]
 							i=0 #index for histograms in hl
@@ -776,7 +782,8 @@ class DispYields:
 								else:
 									hl[i].Draw("sames")
 							#! Draw legend
-							l[ipad].Draw()
+							if padnum==1:
+								l[ipad].Draw()
 							ipad+=1
 
 							#! [11-15-14] Before drawing Exp. and Sim on same pad	
