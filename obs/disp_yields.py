@@ -1228,7 +1228,7 @@ class DispYields:
 			os.makedirs(outdir)
 
 		#! 1. Get all q2wbins
-		q2wbinl=self.get_q2wbinlist(q2max=2.25,wmax=2.125)
+		q2wbinl=self.get_q2wbinlist(q2max=2.25,wmin=1.400,wmax=2.125) #wbins to agree with Isupov
 		#print q2wbinl
 
 		q2bng=self.get_q2bng(q2wbinl)
@@ -1277,6 +1277,8 @@ class DispYields:
 			q2wbin=k[1]
 			lbl='%s:[%s)'%(seq,q2wbin)
 			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl,c=clrd[q2wbin],marker=mrkrd[seq],s=50)
+			ax.set_xticks(oy[k].keys())
+			ax.set_xticklabels(oy[k].keys(),rotation='vertical')
 		if norm==False:
 			ax.set_ylim(0,600000)
 			ax.set_ylabel(r'Yield [A.U.]',fontsize='xx-large')
