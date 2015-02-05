@@ -51,3 +51,12 @@ ep_dict.cpp
 # libreoffice specific #
 ########################
 *~lock*odp#
+
+#####################################
+# specific to various subdirectories#
+#####################################
+
+# sub_studies
+sub_studies/study_vars/q2w2/exp_nmcor/mmppip/mmppip*.png
+sub_studies/study_vars/q2w2/exp_ymcor/mmppip/mmppip*.png
+sub_studies/study_vars/q2w2/sim_nmcor/mmppip/mmppip*.png
