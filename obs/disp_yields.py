@@ -1252,12 +1252,14 @@ class DispYields:
 				q2bin=q2wbin.split('_')[0]
 				#! Get w, yield
 				w=float(q2wbin.split('_')[1].split('-')[0])
+				dw=float(q2wbin.split('_')[1].split('-')[1])-w
 				#wbin=q2wbin.split('_')[1]
 				h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
 				y[seq,q2bin][w]=thntool.GetIntegral(h5_UNPOL)
 				if norm==True:
 					q2=float(q2wbin.split('_')[0].split('-')[0])
-					normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2)#!mub^-1
+					dq2=float(q2wbin.split('_')[0].split('-')[1])-q2
+					normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2)*dw*dq2#!mub^-1
 					print "yield=",y[seq,q2bin][w]
 					print "norm=",normf
 					y[seq,q2bin][w]=y[seq,q2bin][w]/normf
@@ -1283,7 +1285,7 @@ class DispYields:
 			ax.set_ylim(0,600000)
 			ax.set_ylabel(r'Yield [A.U.]',fontsize='xx-large')
 		else:
-			ax.set_ylim(0,0.05)
+			#ax.set_ylim(0,0.05)
 			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
 		ax.legend()
 		fig.savefig('%s/integ_yield.png'%(outdir))
