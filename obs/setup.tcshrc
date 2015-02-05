@@ -25,6 +25,7 @@ endif
 setenv OBSDIR "${D2PIDIR}/obs"
 alias obs 'gqview $OBSDIR/siml/ &'
 alias gleb_obs 'gqview /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/gleb_obs/ &'
+alias isupov_obs 'gqview /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/isupov_obs/ &'
 
 ##-- dir where h10.lst and d2pi are kept
 #if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then

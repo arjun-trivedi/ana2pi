@@ -1228,7 +1228,7 @@ class DispYields:
 			os.makedirs(outdir)
 
 		#! 1. Get all q2wbins
-		q2wbinl=self.get_q2wbinlist(q2max=2.25)
+		q2wbinl=self.get_q2wbinlist(q2max=2.25,wmax=2.125)
 		#print q2wbinl
 
 		q2bng=self.get_q2bng(q2wbinl)
