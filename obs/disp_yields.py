@@ -100,25 +100,32 @@ class DispYields:
   		self.FPHI.SetParName(3, "D")#hPD
 
 
-	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F'):
+	def plot_obs_1D(self,hVST1,hVST2,hVST3,view="q2_evltn",norm=False,dtyp='EXP',seq='F'):
 		"""
 		+ Plot 1D-Obs as per "view", where:
 			+ view="full_ana" (dtyp,seq not required to be specified)
 			+ view="EC"       (dtyp,seq not required to be specified)
 			+ view="EF"       (dtyp,seq not required to be specified)
-			+ view="EC_SF"    (dtyp,seq not required to be specified)
-			+ view="EF_SF"    (dtyp,seq not required to be specified)
+			+ view="EC-SF"    (dtyp,seq not required to be specified)
+			+ view="EF-SF"    (dtyp,seq not required to be specified)
+			+ view="EC-EF-SF" (dtyp,seq not required to be specified)
 			+ view="q2_evltn" (dtyp and seq need to specific)
 		"""
 
 		if view=="q2_evltn":
 			print "Going to plot 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
-			outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s"%(dtyp,seq))
+			if norm==False:
+				outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s"%(dtyp,seq))
+			else:
+				outdir=os.path.join(self.OUTDIR_OBS_1D,"Q2_Evolution_%s_%s_norm"%(dtyp,seq))
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
-		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF":
+		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF" or view=="EC-EF-SF":
 			print "Going to plot 1D-Obs: %s"%(view)
-			outdir=os.path.join(self.OUTDIR_OBS_1D,view)
+			if norm==False:
+				outdir=os.path.join(self.OUTDIR_OBS_1D,view)
+			else:
+				outdir=os.path.join(self.OUTDIR_OBS_1D,"%s_norm"%view)
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
 		else:
@@ -162,6 +169,10 @@ class DispYields:
 		elif view=="EF-SF":
 			coll={('EXP','F'):ROOT.gROOT.ProcessLine("kBlack"),
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
+		elif view=="EC-EF-SF":
+			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kBlue"),
+				  ('EXP','F'):ROOT.gROOT.ProcessLine("kCyan"),
+			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 			
 			      
 		self.plot_obs_1D_athtcs()
@@ -192,7 +203,7 @@ class DispYields:
  				#pad_p.cd()
 				pad_p.Divide(3,3)
 			for iq2bin,q2bin in enumerate(q2bins_le):
-				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
+				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF" or view=="EC-EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
 					c=ROOT.TCanvas("c","c",1000,1000)
 					#pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
 					pad_t=ROOT.TPad("pad_t","Title pad",0.25,0.935,0.75,1.00)
@@ -333,7 +344,40 @@ class DispYields:
 									l.AddEntry(htmp_exp,"Exp.","p")#EF
 									l.AddEntry(htmp_sim,"Sim.","p")#EC
 									l.Draw()
-				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
+							elif view=="EC-EF-SF":
+								htmp_EC=h[q2bin,wbin,'EXP','C'][ivar]
+								htmp_EC.SetMarkerColor(coll['EXP','C'])
+								htmp_EF=h[q2bin,wbin,'EXP','F'][ivar]
+								htmp_EF.SetMarkerColor(coll['EXP','F'])
+								htmp_SF=h[q2bin,wbin,'SIM','F'][ivar]
+								htmp_SF.SetMarkerColor(coll['SIM','F'])
+								#! Get normalization
+								normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(wbin,q2bin)*0.025*0.5#!mub^-1
+								#! Before normalizing, call Sumw2()
+								htmp_EC.Sumw2()
+								htmp_EF.Sumw2()
+								htmp_SF.Sumw2()
+								#! Normalize EXP hists to normf
+								#! Normalize SF to Integral of EF later when Drawing
+								htmp_EC.Scale(1/normf)	
+								htmp_EF.Scale(1/normf)				
+								htmp_EC.SetYTitle("d\sigma")
+								htmp_EF.SetYTitle("d\sigma")
+
+								htmp_EF.Draw()
+								htmp_EC.Draw("sames")
+								htmp_SF.DrawNormalized("sames",htmp_EF.Integral())
+								#! Add TLegend if padnum==1
+								if padnum==1:
+									l=ROOT.TLegend(0.70,0.75,0.90,0.90)
+									l.SetFillStyle(0)
+									#l.SetBorderSize(0)
+									l.SetTextSize(0.05)
+									l.AddEntry(htmp_EC,"EC","p")#EF
+									l.AddEntry(htmp_EF,"EF","p")#EC
+									l.AddEntry(htmp_SF,"SF","p")#EC
+									l.Draw()
+				if (view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF" or view=="EC-EF-SF") and q2wbintitle.has_key((q2bin,wbin)):
 					outdir_q2bin=os.path.join(outdir,"q%.2f"%q2bin)
 					if not os.path.exists(outdir_q2bin):
 						os.makedirs(outdir_q2bin)
@@ -1055,7 +1099,7 @@ class DispYields:
 		
 		print "Done DispYields::plot_phiproj()"	
 	
-	def disp_1D(self,view="q2_evltn",dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
+	def disp_1D(self,view="q2_evltn",norm=False,dbg=False,dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
 		Walk the ROOT file and extract:
 			+ hVST1(q2bin,wbin,dtyp,seq)=[VST1.M1, VST1.THETA, VST1.ALPHA]
@@ -1069,10 +1113,10 @@ class DispYields:
 		#! First check if view is OK
 		if view=="q2_evltn":
 			print "Going to display 1D-Obs: q2-evol,%s,%s"%(dtyp,seq)
-		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF":
+		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF" or view=="EC-EF-SF":
 			print "Going to display 1D-Obs: %s"%(view)
 		else:
-			sys.exit("view=%s not recognized. Exiting."%view)
+			sys.exit("disp_1D::view=%s not recognized. Exiting."%view)
 
 		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs_1D")
 		if not os.path.exists(self.OUTDIR_OBS_1D):
@@ -1080,8 +1124,10 @@ class DispYields:
 
 		print "In DispYields::disp_1D()"
 		#! 1. First get all q2wbin directories from file
-		#q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=2)
-		q2wbinl=self.get_q2wbinlist()
+		if dbg==True:
+			q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=2)
+		else:
+			q2wbinl=self.get_q2wbinlist()
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from q2wbinl
@@ -1144,11 +1190,11 @@ class DispYields:
 		fout.close()
 		print "Finished getting hVST1,hVST2,hVST3. Now going to plot yields"
 		if view=="q2_evltn":
-			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='C')
-			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='EXP',seq='F')
-			self.plot_obs_1D(hVST1,hVST2,hVST3,view="q2_evltn",dtyp='SIM',seq='F')
-		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF":
-			self.plot_obs_1D(hVST1,hVST2,hVST3,view=view)
+			self.plot_obs_1D(hVST1,hVST2,hVST3,"q2_evltn",norm,dtyp='EXP',seq='C')
+			self.plot_obs_1D(hVST1,hVST2,hVST3,"q2_evltn",norm,dtyp='EXP',seq='F')
+			self.plot_obs_1D(hVST1,hVST2,hVST3,"q2_evltn",norm,dtyp='SIM',seq='F')
+		elif view=="full_ana" or view=="EC" or view=="EF" or view=="EC-SF" or view=="EF-SF" or view=="EC-EF-SF":
+			self.plot_obs_1D(hVST1,hVST2,hVST3,view,norm)
 		else:
 			sys.exit("view=%s not recognized. Exiting."%view)
 		print "Done DispYields::disp_1D()"
