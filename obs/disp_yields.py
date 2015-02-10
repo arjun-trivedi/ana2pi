@@ -170,8 +170,8 @@ class DispYields:
 			coll={('EXP','F'):ROOT.gROOT.ProcessLine("kBlack"),
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 		elif view=="EC-EF-SF":
-			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kBlue"),
-				  ('EXP','F'):ROOT.gROOT.ProcessLine("kCyan"),
+			coll={('EXP','C'):ROOT.gROOT.ProcessLine("kCyan"),
+				  ('EXP','F'):ROOT.gROOT.ProcessLine("kBlue"),
 			      ('SIM','F'):ROOT.gROOT.ProcessLine("kRed")}
 			
 			      
@@ -352,7 +352,7 @@ class DispYields:
 								htmp_SF=h[q2bin,wbin,'SIM','F'][ivar]
 								htmp_SF.SetMarkerColor(coll['SIM','F'])
 								#! Get normalization
-								normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(wbin,q2bin)*0.025*0.5#!mub^-1
+								normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(wbin,q2bin)*0.025*0.5*htmp_EF.GetBinWidth(1)#!mub^-1
 								#! Before normalizing, call Sumw2()
 								htmp_EC.Sumw2()
 								htmp_EF.Sumw2()
@@ -366,7 +366,7 @@ class DispYields:
 
 								htmp_EF.Draw()
 								htmp_EC.Draw("sames")
-								htmp_SF.DrawNormalized("sames",htmp_EF.Integral())
+								#htmp_SF.DrawNormalized("sames",htmp_EF.Integral())
 								#! Add TLegend if padnum==1
 								if padnum==1:
 									l=ROOT.TLegend(0.70,0.75,0.90,0.90)
@@ -1099,7 +1099,7 @@ class DispYields:
 		
 		print "Done DispYields::plot_phiproj()"	
 	
-	def disp_1D(self,view="q2_evltn",norm=False,dbg=False,dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
+	def disp_1D(self,view,q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,norm=False,dbg=False,dtypl=['EXP','SIM'],seql=['T','R','C','H','F']):
 		"""
 		Walk the ROOT file and extract:
 			+ hVST1(q2bin,wbin,dtyp,seq)=[VST1.M1, VST1.THETA, VST1.ALPHA]
@@ -1127,7 +1127,7 @@ class DispYields:
 		if dbg==True:
 			q2wbinl=self.get_q2wbinlist(dbg=True,dbg_bins=2)
 		else:
-			q2wbinl=self.get_q2wbinlist()
+			q2wbinl=self.get_q2wbinlist(q2min,q2max,wmin,wmax)
 		print q2wbinl
 
 		#! 2. Get q2bng and wbng from q2wbinl
