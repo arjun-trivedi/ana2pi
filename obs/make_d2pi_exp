@@ -1,9 +1,0 @@
-#!/bin/bash
-
-##-- This is a Convenience script
-nentries=${1:-1000000000}
-debug=${2:-false}
-trackmem=${3:-false}
-
-#-- Note simnum is just a place-holder and not really used
-make_d2pi exp simnum $nentries $debug $trackmem
