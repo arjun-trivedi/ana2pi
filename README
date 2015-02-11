@@ -71,11 +71,13 @@ ana2pi Branches
 						[02-05-15]: Decided to continue using this branch in moving forward with my research in 2015. It seems that the changes I made when preparing for IITG_CommitteeUpdate are consistent with the overall integrity of the code, but I have decided to not merge this branch in with the extract_obs-new_h8bng till I work on it for some more time and re-gain my faith in the code, for it has been a while since I used it!
 
 						[02-11-15] Renamed extract_obs-new_h8bng.v2
-						Renamed so because I the name was more consistent with the overall consitency of this repository. While most of the work was hitherto done in extract_obs-new_h8bng, I did also want to take this opportunity to
-						+ Remove any code the I was not using anymore, but was still hanging around and was creating confusion. Removed
+						Renamed so because I the name was more consistent with the overall consitency of this repository. While most of the work was hitherto done in extract_obs-new_h8bng, I did also want to take this opportunity to:
+						+ Remove any code the I was not using anymore, but was still hanging around and was creating confusion. Removed:
 							+ obs/make_d2pi* (in  extract_obs-new_h8bng,the jobs of these scripts has already been noted as having been move to obs/ h10_2_d2piR* and h10_2_d2piT* scripts)
-							+ scripts
-						+ Produce observables only for W<=2.125 GeV (genev has "problems" for W>2.125 GeV)
+							+ scripts/
+							+ and many others that were not found noteworthy
+						+ Produce Observables only for W<=2.125 GeV (genev has "problems" for W>2.125 GeV)						
+
 
 
 				
