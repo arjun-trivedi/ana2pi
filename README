@@ -65,8 +65,8 @@ ana2pi Branches
 						 	+ make* scripts => h10_2_d2piR* and h10_2_d2piT* scripts
 						 		+ submit.make_d2pi_sim* => submit.h10_2_d2piR-sim & submit.h10_2_d2piT-sim 
 
-						+ IITG_CommitteUpdate_Nov14 
-						[11-04-14]: Created this branch when I moved into the mode of creating presentations for updating my PhD. Committee and IITG. In such a mode, I wish to make changes rather quickly without worrying about the larger integrity of the code. If such changes are lasting, I merge them in. 
+						+ [11-04-14] IITG_CommitteUpdate_Nov14
+						Created this branch when I moved into the mode of creating presentations for updating my PhD. Committee and IITG. In such a mode, I wish to make changes rather quickly without worrying about the larger integrity of the code. If such changes are lasting, I merge them in. 
 
 						[02-05-15]: Decided to continue using this branch in moving forward with my research in 2015. It seems that the changes I made when preparing for IITG_CommitteeUpdate are consistent with the overall integrity of the code, but I have decided to not merge this branch in with the extract_obs-new_h8bng till I work on it for some more time and re-gain my faith in the code, for it has been a while since I used it!
 				
