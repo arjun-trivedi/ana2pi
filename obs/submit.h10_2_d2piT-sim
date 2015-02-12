@@ -28,7 +28,7 @@ for simnum in "${simlist[@]}"; do
    echo "JOBNAME: e1f_h10_2_d2piT-sim-$simnum"     >> ${JSUBFILE}
    echo "PROJECT: E1F"      >> ${JSUBFILE}
    echo "SINGLE_JOB: true"  >> ${JSUBFILE}
-   echo "OS: centos62"         >> ${JSUBFILE}
+   echo "OS: centos65"         >> ${JSUBFILE} #[02-12-15]
    echo "TRACK: analysis" >> ${JSUBFILE}
    echo "DISK_SPACE: 5000 MB" >> ${JSUBFILE}
    echo "MEMORY: 9500 MB" >> ${JSUBFILE} 

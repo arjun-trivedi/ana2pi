@@ -76,7 +76,10 @@ ana2pi Branches
 							+ obs/make_d2pi* (in  extract_obs-new_h8bng,the jobs of these scripts has already been noted as having been move to obs/ h10_2_d2piR* and h10_2_d2piT* scripts)
 							+ scripts/
 							+ and many others that were not found noteworthy
-						+ Produce Observables only for W<=2.125 GeV (genev has "problems" for W>2.125 GeV)						
+						+ Produce Observables only for W<=2.125 GeV (genev has "problems" for W>2.125 GeV)
+
+						Additional, noteworthy changes
+						+ obs/submit.h10_2_d2pi[R/T]-sim: centos62 => centos65
 
 
 
