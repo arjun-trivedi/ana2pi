@@ -1,0 +1,11 @@
+setenv ANA2PI_STUDY_LUM "${ANA2PI}/sub_studies/study_lum"
+alias ana2pi_study_lum 'cd ${ANA2PI_STUDY_LUM}'
+
+##- modify PATH
+setenv PATH "${PATH}:${ANA2PI_STUDY_LUM}"
+
+##- modify PYTHONPATH
+setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_LUM}"
+
+#setenv STUDY_LUM_DATADIR 
+#setenv STUDY_LUM_ANADIR 
