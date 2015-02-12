@@ -26,11 +26,13 @@ in the desired <output> from proc_h10, which could be:
 	+ deid
 	+ d<substudy>
 Depending on the desired <output>, this program sets up the necessary inputs to 'proc_h10', mainly the 
-'procorder'& 'fout'(=<outdir>/<output.root>)
+'procorder'& 'fout'(=<outdir>/<output>.root). The sytax to call this program is:
+proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries --debug=[false]
 
 + The input arguments are:
 	+ h10type = <expt>:<dtyp>:<rctn>; directly passed to proc_h10
-	+ output = This is the main input which is used to set up the call to 'proc_h10'
+	+ output = This is the main input which is used to set up the call to 'proc_h10':
+	'procorder' & 'fout'(=<outdir>/<output>.root)
 	+ simnum = This is mainly used to set up the appropriate <outdir> depending on the simX
 	+ debug = This creates output in <outdir>/debug
 	+ nentries = optional argument that can be used for debugging
