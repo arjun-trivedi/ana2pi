@@ -4,20 +4,42 @@ import sys,os,subprocess#,shlex
 import getopt
 
 """
-This file sets up all the input arguments needed by 'proc_h10' (compiled C++ program) that does the following:
-h10 => "outdir"/"output".root
-+ Note that the "outdir" should contain the h10.lst to be used by 'proc_h10'
-where "output" could be
-	+ d2pi
-	+ deid
-	+ d"substudy"
+The job of this program is to set up the input arguments and call the underlying compiled C++ program
+'proc_h10' that processes a chain of h10s to produce an output as illustrated below:
+h10 -> proc1 -> proc2 -> ... -> procX -> fout
 
-The input arguments are:
-	+ h10type:<expt>:<dtyp>:<rctn>
-	+ simnum
-	+ output: This governs the output from 'proc_h10' and therefore sets up 'procorder','outdir' & 'fout'
-	+ debug: This creates output in 'outdir/debug'
-	+ nentries
+'proc_h10' is called as:
+>proc_h10 -i h10lst -t h10type -p procorder -o fout -n nentries
+where
+	+ h10lst = TChain of h10s
+	+ h10type = Tells 'proc_h10' about the type of h10s in the chain;<expt>:<dtyp>:<rctn>. Among other possible
+	uses, this information is chiefly used to appropriately Bind the TBranches, which vary with h10type,
+	to C++ Arrays created for them by 'proc_h10'
+	+ procorder = Sequence of EProcessors that process the data in the h10 chain
+	+ fout = name of output file created by 'proc_h10'
+	+ nentries = total number of entries in the chain to process
+
+The main reason for having this program is to efficiently call 'proc_h10' based on the different ways
+in which I would like to process h10s. The "different ways in which I would like to process h10s" is encoded
+in the desired <output> from proc_h10, which could be:
+	+ d2piR,d2piT
+	+ deid
+	+ d<substudy>
+Depending on the desired <output>, this program sets up the necessary inputs to 'proc_h10', mainly the 
+'procorder'& 'fout'(=<outdir>/<output.root>)
+
++ The input arguments are:
+	+ h10type = <expt>:<dtyp>:<rctn>; directly passed to proc_h10
+	+ output = This is the main input which is used to set up the call to 'proc_h10'
+	+ simnum = This is mainly used to set up the appropriate <outdir> depending on the simX
+	+ debug = This creates output in <outdir>/debug
+	+ nentries = optional argument that can be used for debugging
+
++ Note that the <outdir> should contain the h10.lst to be used by 'proc_h10'
+
++ Currently the following outputs are being made from h10:
+	+ exp: d2piR (h10_2_d2piR-exp)
+	+ sim: d2piR,d2piT (h10_2_d2piR-sim,h10_2_d2piT-sim)
 """
 def main(argv):
 	h10type=''
