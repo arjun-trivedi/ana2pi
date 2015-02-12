@@ -5,7 +5,7 @@ import getopt
 
 """
 This file sets up all the input arguments needed by 'proc_h10' (compiled C++ program) that does the following:
-h10 ----> "outdir"/"output".root
+h10 => "outdir"/"output".root
 + Note that the "outdir" should contain the h10.lst to be used by 'proc_h10'
 where "output" could be
 	+ d2pi
