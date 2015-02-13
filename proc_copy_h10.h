@@ -53,7 +53,9 @@ void ProcCopyH10::handle()
 
 void ProcCopyH10::write()
 {
-	dirout->cd();
+	//dirout->cd();
+	TDirectory* dir=(TDirectory*)dirout->GetMother();
+	dir->cd();
 	_tH10copy->Write();
 }
 
