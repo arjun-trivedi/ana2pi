@@ -1,0 +1,9 @@
+#!/bin/bash
+h10lst=$1
+debug=${2:-false}
+nentries=${3:-1000000000}
+if [[ -z "$1" ]]; then
+    echo "No h10lst specified"
+    echo "The first argument to this file must be a valid h10lst"
+fi
+proc_h10.py --h10type="e1f:exp:2pi" --output=h10skim --h10lst=$h10lst --debug=$debug --nentries=$nentries
