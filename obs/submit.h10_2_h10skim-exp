@@ -1,0 +1,30 @@
+#!/bin/bash
+echo "Enter identifier: "
+read identifier
+HERE=`pwd`
+SUBDIR=${BSUBDIR}/e1f/2pi/exp/h10_2_h10skim
+OUTDIR=${H10SKIMDIR_EXP}
+mkdir -p ${SUBDIR}
+for h10lst in $(ls  ${HOME}/ongoing/e1f_allruns_h10lst/*.lst);
+do
+ runnum=(`echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}'`)  
+ JSUBFILE=${SUBDIR}/$runnum.sub
+ if [ -f "${JSUBFILE}" ]; then
+  echo $runnum".sub exists. Skipping."
+  continue
+ fi
+ echo "JOBNAME: h10_2_h10skim-exp_"$runnum      >> ${JSUBFILE}
+ echo "PROJECT: E1F"      >> ${JSUBFILE}
+ echo "SINGLE_JOB: true"  >> ${JSUBFILE}
+ echo "OS: centos65"         >> ${JSUBFILE}
+ echo "TRACK: analysis" >> ${JSUBFILE}
+ echo "DISK_SPACE: 500 MB" >> ${JSUBFILE}
+ echo "MEMORY: 1000 MB" >> ${JSUBFILE}
+ echo "TIME: 30" >> ${JSUBFILE}
+ echo " "                 >> ${JSUBFILE}
+ echo "COMMAND: h10_2_h10skim-exp "$h10lst  >> ${JSUBFILE}
+ echo "OUTPUT_DATA: h10skim.root" >> ${JSUBFILE}
+ echo "OUTPUT_TEMPLATE: ${OUTDIR}/$runnum.root" >> ${JSUBFILE}
+ jsub ${JSUBFILE}
+ echo "submitted jobs for runnum $runnum"
+done
