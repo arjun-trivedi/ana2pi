@@ -101,10 +101,12 @@ int main(int argc,  char* const argv[])
 		
 	//TString fout_name = TString::Format("d%s.root",rctn.Data());
 	//TString fout_name = TString::Format("d%s.root",rctn.Data());
-	
-	fout = new TFile(output,"RECREATE");
 
+	fout = new TFile(output,"RECREATE");
 	h10type=TString::Format("%s:%s:%s",expt.Data(),dtyp.Data(),rctn.Data());
+
+	Info("proc_h10","h10lst=%s,h10type=%s,procorder=%s,fout=%s,nentries=%llu",fin.Data(),h10type.Data(),procorder.Data(),fout->GetName(),nentries);
+
 	dH10 = new DataH10(h10type);
 	dAna = new DataAna();
 	proc_chain = SetupProcs();
@@ -113,6 +115,12 @@ int main(int argc,  char* const argv[])
 
 	fout->Write();
 	fout->Close();
+
+	delete h10chain;
+	delete fout;
+	delete dH10;
+	delete dAna;
+	delete h10looper;
 	
 	return 0;
 }
@@ -126,7 +134,7 @@ void parseArgs(int argc, char* const argv[]){
 	while ((c = getopt(argc, argv, "hi:t:p:o:l:m:q:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("proc_h10 -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -l <use_q2w_elist> -m <fname_q2w_el> -q=<q2wX>-n <nevts>\n");
+			printf("proc_h10 -i <h10.lst> -t <expt>:<dtyp>:<rctn> -p <procorder> -o <output> -l <use_q2w_elist> -m <fname_q2w_el> -q=<q2wX> -n <nevts>\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<rctn>=2pi/elast/2pi_userana/elast_userana\n");

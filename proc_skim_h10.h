@@ -26,12 +26,16 @@ public:
 	
 protected:
 	TTree* _tH10skim;
+	static const Int_t NUM_EVTCUTS=2;
+	enum {EVT_NULL, EVT,EVT_PASS};
 };
 
 ProcSkimH10::ProcSkimH10(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 						 : EpProcessor(td, dataH10, dataAna)
 {
 	_tH10skim = NULL;
+	dirout->cd();
+	hevtsum=new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 }
 
 ProcSkimH10::~ProcSkimH10()
@@ -42,6 +46,7 @@ ProcSkimH10::~ProcSkimH10()
 void ProcSkimH10::handle()
 {
 	//Info("ProcSkimH10::handle()", "");
+	hevtsum->Fill(EVT);
 	pass = kFALSE;
 	if (_tH10skim==NULL){
 		//dirout->cd();
@@ -96,12 +101,14 @@ void ProcSkimH10::handle()
 	_tH10skim->Fill();
 	
 	pass = kTRUE;
+	hevtsum->Fill(EVT);
 	EpProcessor::handle();
 	return;
 }
 
 void ProcSkimH10::write()
 {
+	Info("ProcSkimH10::write()", "");
 	//dirout->cd();
 	TDirectory* dir=(TDirectory*)dirout->GetMother();
 	dir->cd();
