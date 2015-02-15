@@ -80,7 +80,12 @@ ana2pi Branches
 
 						Additional, noteworthy changes:
 						+ obs/submit.h10_2_d2pi[R/T]-sim: centos62 => centos65
-						+ sub_studies/study_lum: 1st time addition
+						+ Code addition to study Luminosity:
+							+ sub_studies/study_lum/: 1st time addition of directory and files
+							+ obs/h10_2_dh10skim-exp: 1st time addition
+							+ proc_skim_h10.h: 1st time addition (rename of proc_fill_skim.h)
+							+ proc_h10.py: Modified to accomodate making of h10skim
+
 
 
 

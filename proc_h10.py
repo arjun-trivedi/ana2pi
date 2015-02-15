@@ -34,32 +34,36 @@ proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --n
 	+ output = This is the main input which is used to set up the call to 'proc_h10':
 	'procorder' & 'fout'(=<outdir>/<output>.root)
 	+ simnum = This is mainly used to set up the appropriate <outdir> depending on the simX
+	+ h10lst=optional. If not provided, as is the case for d2piR,d2piT, h10lst is expected to be in <outdir>
 	+ debug = This creates output in <outdir>/debug
 	+ nentries = optional argument that can be used for debugging
 
-+ Note that the <outdir> should contain the h10.lst to be used by 'proc_h10'
++ Note that for d2piR,d2piT, <outdir> should contain the h10.lst to be used by 'proc_h10'
 
 + Currently the following outputs are being made from h10:
-	+ exp: d2piR (h10_2_d2piR-exp)
-	+ sim: d2piR,d2piT (h10_2_d2piR-sim,h10_2_d2piT-sim)
+	+ d2piR: for exp (h10_2_d2piR-exp)
+	+ d2piR,d2piT: for sim (h10_2_d2piR-sim,h10_2_d2piT-sim)
+	+ h10skim: for exp (h10_2_h10skim-exp)
 """
 def main(argv):
 	h10type=''
 	simnum=''
 	output=''
+	h10lst=''
 	debug='false'
 	fout=''
 	nentries='1000000000'
+	
 	try:
-		opts, args = getopt.getopt(argv,"h",["h10type=","simnum=","output=","nentries=","debug="])
+		opts, args = getopt.getopt(argv,"h",["h10type=","simnum=","output=", "h10lst=", "nentries=","debug="])
 	except getopt.GetoptError:
 		print('Arguments not entered correctly. Correct syntax is:')
-		print('proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries --debug=[false]')
+		print('proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --h10lst=<h10lst> --nentries --debug=[false]')
 		sys.exit('Exiting.')
 		#sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries --debug=[false]'
+			print 'proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --h10lst=<h10lst> --nentries --debug=[false]'
 			sys.exit()
 		elif opt in ("--h10type"):
 			h10type=arg
@@ -67,6 +71,8 @@ def main(argv):
 			simnum=arg
 		elif opt in ("--output"):
 			output=arg
+		elif opt in ("--h10lst"):
+			h10lst=arg
 		elif opt in ("--nentries"):
 			nentries=arg
 		elif opt in ("--debug"):
@@ -85,15 +91,22 @@ def main(argv):
 	print 'output=%s'%output
 	print 'nentries=%s'%nentries
 	print 'debug=%s'%debug
+	if output=='h10skim': 
+		if h10lst=='':
+			print "For output=h10skim, input argument h10lst is needed!"
+			sys.exit()
+		else: print 'h10lst=%s'%h10lst
 
 	#! Prepare outdir,procorder
 	if dtyp=='exp':
 		if output=='d2piR':
-			if debug=='true': 
-				outdir=os.path.join(os.environ['D2PIDIR_EXP'],'debug')
-			else:
-				outdir=os.path.join(os.environ['D2PIDIR_EXP'])	
+			if debug=='true':outdir=os.path.join(os.environ['D2PIDIR_EXP'],'debug')
+			else:            outdir=os.path.join(os.environ['D2PIDIR_EXP'])	
 			procorder="eid:efid:qskim:mom:pid:d2piR"
+		elif output=='h10skim':
+			if debug=='true':outdir=os.path.join(os.environ['H10SKIMDIR_EXP'],debug)
+			else:            outdir=os.path.join(os.environ['H10SKIMDIR_EXP'])
+			procorder='skimh10'
 		elif output=='memtest':
 			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
 			procorder="eid:efid:qskim:mom:pid:d2piR"
@@ -101,10 +114,8 @@ def main(argv):
 			sys.exit("output=%s not recognized"%output)
 	elif dtyp=='sim':
 		if output.find('d2pi')>=0:
-			if debug=='true':
-				outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum,'debug')
-			else: 
-				outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)           
+			if debug=='true':outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum,'debug')
+			else:            outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)           
 			if output.find("T")>=0:
 				procorder="d2piT" 
 			elif output.find("R")>=0:
@@ -120,8 +131,12 @@ def main(argv):
 
 	#! Prepare fout,h10lst
 	if not os.path.exists(outdir):
-		sys.exit("%s does not exist! Please create it and put appropriate h10.lst in it"%outdir)
-	h10lst=os.path.join(outdir,"h10.lst")
+		print "%s does not exist! Please create it"%outdir
+		if output.find('d2pi')>=0:
+			print "And also put appropriate h10.lst in it!"
+		sys.exit()
+	if output.find('d2pi')>=0:
+		h10lst=os.path.join(outdir,"h10.lst")
 	fout=os.path.join(outdir,"%s.root"%output)
 
 	#! Finall call proc_h10

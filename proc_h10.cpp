@@ -13,6 +13,7 @@
 #include "proc_mom_cor.h"
 #include "proc_d2pi.h"
 #include "proc_copy_h10.h"
+#include "proc_skim_h10.h"
 
 #include <TChain.h>
 #include <TFileCollection.h>
@@ -221,6 +222,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("copyh10"))    proc = new ProcCopyH10(mkdir("copyh10"),dH10,dAna);
+         else if (str.EqualTo("skimh10"))    proc = new ProcSkimH10(mkdir("skimh10"),dH10,dAna);
          else if (str.EqualTo("d2piT"))      proc = new ProcD2pi(mkdir("d2piT"),dH10,dAna,kTRUE,kFALSE);
          else if (str.EqualTo("d2piR"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE);
          else if (str.EqualTo("d2piTR"))     proc = new ProcD2pi(mkdir("d2piTR"),dH10,dAna,kTRUE,kTRUE);
