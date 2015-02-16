@@ -10,6 +10,7 @@ mkdir -p ${SUBDIR}
 #for f in $(cat $HOME/ongoing/e1f_allruns_h10_full_mss_path.lst);
 for f in $(cat $HOME/ongoing/e1f_allruns_h10.lst);
 do
+ echo "Going to submit job for $f"
  #runnum=(`echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}'`)  
  #idtfr=(`echo $f | awk -F/ '{print $10}' | awk -F_ '{print $2}'`)
  #idtfr=(`echo $f | awk -F/ '{print $10}' | awk -Froot_ '{print $2}' | awk -F.root '{print $1}'`)
@@ -17,8 +18,8 @@ do
  #JSUBFILE=${SUBDIR}/$runnum.sub
  JSUBFILE=${SUBDIR}/$idtfr.sub
  if [ -f "${JSUBFILE}" ]; then
-  echo $runnum".sub exists. Skipping."
-  continue
+  echo "job.sub exists. Deleting it before creating new one."
+  rm ${JSUBFILE}
  fi
  #echo "JOBNAME: e1f_h10_2_h10skim-exp_"$runnum      >> ${JSUBFILE}
  echo "JOBNAME: e1f_h10_2_h10skim-exp_"$idtfr      >> ${JSUBFILE} 
@@ -37,13 +38,19 @@ do
  #echo $f >> /tmp/atrivedi/$idtfr.lst
  echo "OTHER_FILES: $E1FD/$f" >> ${JSUBFILE}
  #echo  $f >> $HOME/ongoing/tmp/$idtfr.lst 
- echo  $f > $HOME/ongoing/tmp/$idtfr.lst 
- echo "INPUT_FILES: $HOME/ongoing/tmp/$idtfr.lst" >> ${JSUBFILE}
+ #echo  $f > $HOME/ongoing/tmp/$idtfr.lst 
+ echo  $f > $SUBDIR/"$idtfr"_h10.lst
+ #echo "INPUT_FILES: $HOME/ongoing/tmp/$idtfr.lst" >> ${JSUBFILE}
+ echo "INPUT_FILES: $SUBDIR/"$idtfr"_h10.lst" >> ${JSUBFILE}
  echo "INPUT_DATA: h10.lst" >> ${JSUBFILE} 
- #echo "OUTPUT_DATA: h10skim.root" >> ${JSUBFILE}
+ echo "OUTPUT_DATA: h10skim.root" >> ${JSUBFILE}
  #echo "OUTPUT_TEMPLATE: ${OUTDIR}/$runnum.root" >> ${JSUBFILE}
- #echo "OUTPUT_TEMPLATE: ${OUTDIR}/$idtfr.root" >> ${JSUBFILE} 
- #jsub ${JSUBFILE}
+ echo "OUTPUT_TEMPLATE: $OUTDIR/root_"$idtfr".root" >> ${JSUBFILE} 
+ echo "OUTPUT_DATA: job.out"  >> ${JSUBFILE}
+ echo "OUTPUT_TEMPLATE: $OUTDIR/job_"$idtfr".out" >> ${JSUBFILE}
+ echo "OUTPUT_DATA: job.err" >> ${JSUBFILE}
+ echo "OUTPUT_TEMPLATE: $OUTDIR/job_"$idtfr".err" >> ${JSUBFILE}
+ jsub ${JSUBFILE}
  #echo "submitted jobs for runnum $runnum"
- echo "submitted jobs for runnum $f"
+ echo "submitted jobs for $f"
 done
