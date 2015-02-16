@@ -1,30 +1,49 @@
 #!/bin/bash
-echo "Enter identifier: "
-read identifier
+#echo "Enter identifier: "
+#read identifier
 HERE=`pwd`
 SUBDIR=${BSUBDIR}/e1f/2pi/exp/h10_2_h10skim
 OUTDIR=${H10SKIMDIR_EXP}
 mkdir -p ${SUBDIR}
-for h10lst in $(ls  ${HOME}/ongoing/e1f_allruns_h10lst/*.lst);
+#for h10lst in $(ls  ${HOME}/ongoing/e1f_allruns_h10lst/*.lst);
+#for f in $(ls  $E1FD/*.root);
+#for f in $(cat $HOME/ongoing/e1f_allruns_h10_full_mss_path.lst);
+for f in $(cat $HOME/ongoing/e1f_allruns_h10.lst);
 do
- runnum=(`echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}'`)  
- JSUBFILE=${SUBDIR}/$runnum.sub
+ #runnum=(`echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}'`)  
+ #idtfr=(`echo $f | awk -F/ '{print $10}' | awk -F_ '{print $2}'`)
+ #idtfr=(`echo $f | awk -F/ '{print $10}' | awk -Froot_ '{print $2}' | awk -F.root '{print $1}'`)
+ idtfr=(`echo $f |  awk -Froot_ '{print $2}' | awk -F.root '{print $1}'`)
+ #JSUBFILE=${SUBDIR}/$runnum.sub
+ JSUBFILE=${SUBDIR}/$idtfr.sub
  if [ -f "${JSUBFILE}" ]; then
   echo $runnum".sub exists. Skipping."
   continue
  fi
- echo "JOBNAME: h10_2_h10skim-exp_"$runnum      >> ${JSUBFILE}
+ #echo "JOBNAME: e1f_h10_2_h10skim-exp_"$runnum      >> ${JSUBFILE}
+ echo "JOBNAME: e1f_h10_2_h10skim-exp_"$idtfr      >> ${JSUBFILE} 
  echo "PROJECT: E1F"      >> ${JSUBFILE}
  echo "SINGLE_JOB: true"  >> ${JSUBFILE}
  echo "OS: centos65"         >> ${JSUBFILE}
  echo "TRACK: analysis" >> ${JSUBFILE}
  echo "DISK_SPACE: 500 MB" >> ${JSUBFILE}
  echo "MEMORY: 1000 MB" >> ${JSUBFILE}
- echo "TIME: 30" >> ${JSUBFILE}
+ #echo "TIME: 30" >> ${JSUBFILE}
+ echo "TIME: 2" >> ${JSUBFILE} 
  echo " "                 >> ${JSUBFILE}
- echo "COMMAND: h10_2_h10skim-exp "$h10lst  >> ${JSUBFILE}
- echo "OUTPUT_DATA: h10skim.root" >> ${JSUBFILE}
- echo "OUTPUT_TEMPLATE: ${OUTDIR}/$runnum.root" >> ${JSUBFILE}
- jsub ${JSUBFILE}
- echo "submitted jobs for runnum $runnum"
+ #echo "COMMAND: h10_2_h10skim-exp "$h10lst  >> ${JSUBFILE}
+ #echo "COMMAND: h10_2_h10skim-exp /tmp/atrivedi/$idtfr.lst"  >> ${JSUBFILE} 
+ echo "COMMAND: h10_2_h10skim-exp h10.lst"  >> ${JSUBFILE} 
+ #echo $f >> /tmp/atrivedi/$idtfr.lst
+ echo "OTHER_FILES: $E1FD/$f" >> ${JSUBFILE}
+ #echo  $f >> $HOME/ongoing/tmp/$idtfr.lst 
+ echo  $f > $HOME/ongoing/tmp/$idtfr.lst 
+ echo "INPUT_FILES: $HOME/ongoing/tmp/$idtfr.lst" >> ${JSUBFILE}
+ echo "INPUT_DATA: h10.lst" >> ${JSUBFILE} 
+ #echo "OUTPUT_DATA: h10skim.root" >> ${JSUBFILE}
+ #echo "OUTPUT_TEMPLATE: ${OUTDIR}/$runnum.root" >> ${JSUBFILE}
+ #echo "OUTPUT_TEMPLATE: ${OUTDIR}/$idtfr.root" >> ${JSUBFILE} 
+ #jsub ${JSUBFILE}
+ #echo "submitted jobs for runnum $runnum"
+ echo "submitted jobs for runnum $f"
 done
