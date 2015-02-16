@@ -25,6 +25,8 @@ public:
 	
 	void handle();
 	//void write();
+	Bool_t goodE();
+	Bool_t goodE_bos();
 		
 protected:
 	Eid* _eidTool;
@@ -35,8 +37,8 @@ protected:
 	       EVT_DCSTAT1, EVT_ECLOW1, EVT_SF, EVT_BOS11
 	     };
 	
-	Bool_t goodE();
-	Bool_t goodE_bos();
+	//Bool_t goodE();
+	//Bool_t goodE_bos();
 	void updateEid();
 	void updateEkin(Bool_t useMc = kFALSE);
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
