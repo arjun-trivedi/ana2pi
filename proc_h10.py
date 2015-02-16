@@ -25,14 +25,14 @@ in the desired <output> from proc_h10, which could be:
 	+ d2piR,d2piT
 	+ deid
 	+ d<substudy>
-Depending on the desired <output>, this program sets up the necessary inputs to 'proc_h10', mainly the 
-'procorder'& 'fout'(=<outdir>/<output>.root). The sytax to call this program is:
+Depending on the desired <output>, this program sets up the necessary inputs to 'proc_h10': 
+'h10lst', procorder'& 'fout'(=<outdir>/<output>.root). The sytax to call this program is:
 proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --nentries --debug=[false]
 
 + The input arguments are:
 	+ h10type = <expt>:<dtyp>:<rctn>; directly passed to proc_h10
 	+ output = This is the main input which is used to set up the call to 'proc_h10':
-	'procorder' & 'fout'(=<outdir>/<output>.root)
+	'h10lst','procorder' & 'fout'(=<outdir>/<output>.root)
 	+ simnum = This is mainly used to set up the appropriate <outdir> depending on the simX
 	+ h10lst=optional. If not provided, as is the case for d2piR,d2piT, h10lst is expected to be in <outdir>
 	+ debug = This creates output in <outdir>/debug
@@ -44,6 +44,7 @@ proc_h10.py --h10type=<expt>:<dtyp>:<rctn> --simnum=<simX> --output=<output> --n
 	+ d2piR: for exp (h10_2_d2piR-exp)
 	+ d2piR,d2piT: for sim (h10_2_d2piR-sim,h10_2_d2piT-sim)
 	+ h10skim: for exp (h10_2_h10skim-exp)
+	+ memtest
 """
 def main(argv):
 	h10type=''
@@ -78,7 +79,7 @@ def main(argv):
 		elif opt in ("--debug"):
 			debug=arg
 	
-	#! Make sure the input is sound
+	#! Make sure the input arguments are sound
 	if h10type=='' or output=='':
 		sys.exit("Not all required arguments entered. Exiting.")
 	expt,dtyp,rctn=h10type.split(":")
@@ -97,47 +98,62 @@ def main(argv):
 			sys.exit()
 		else: print 'h10lst=%s'%h10lst
 
-	#! Prepare outdir,procorder
+	#! Prepare h10lst,procorder,fout
 	if dtyp=='exp':
 		if output=='d2piR':
 			if debug=='true':outdir=os.path.join(os.environ['D2PIDIR_EXP'],'debug')
 			else:            outdir=os.path.join(os.environ['D2PIDIR_EXP'])	
+			if not os.path.exists(outdir):
+				print "%s does not exist! Please create it and put appropriate h10.lst in it"%outdir
+				sys.exit()
+			h10lst=os.path.join(outdir,"h10.lst")
 			procorder="eid:efid:qskim:mom:pid:d2piR"
+			fout=os.path.join(outdir,"%s.root"%output)
 		elif output=='h10skim':
-			if debug=='true':outdir=os.path.join(os.environ['H10SKIMDIR_EXP'],debug)
-			else:            outdir=os.path.join(os.environ['H10SKIMDIR_EXP'])
+			# if debug=='true':outdir=os.path.join(os.environ['H10SKIMDIR_EXP'],debug)
+			# else:            outdir=os.path.join(os.environ['H10SKIMDIR_EXP'])
+			#! Since these jobs will be run on the farm, the jobs local dir will store the output
+			#! and the submit script will appropriately rename the output and put it in H10SKIMDIR_EXP
+			outdir=("./") 
+			#! h10lst is input by user
 			procorder='skimh10'
+			fout=os.path.join(outdir,"%s.root"%output)
 		elif output=='memtest':
 			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
+			h10lst=os.path.join(outdir,"h10.lst")
 			procorder="eid:efid:qskim:mom:pid:d2piR"
+			fout=os.path.join(outdir,"%s.root"%output)
 		else:
 			sys.exit("output=%s not recognized"%output)
 	elif dtyp=='sim':
 		if output.find('d2pi')>=0:
 			if debug=='true':outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum,'debug')
-			else:            outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)           
-			if output.find("T")>=0:
-				procorder="d2piT" 
-			elif output.find("R")>=0:
-				procorder="eid:efid:qskim:pid:d2piR" 
-			else:
-				sys.exit("output=%s is invalid. output can only be d2piR or d2piT!"%output)
+			else:            outdir=os.path.join(os.environ['D2PIDIR_SIM'],simnum)
+			if not os.path.exists(outdir):
+				print "%s does not exist! Please create it and put appropriate h10.lst in it"%outdir
+				sys.exit()
+			h10lst=os.path.join(outdir,"h10.lst")
+			if   output.find("T")>=0:  procorder="d2piT" 
+			elif output.find("R")>=0:  procorder="eid:efid:qskim:pid:d2piR" 
+			else:                      sys.exit("output=%s is invalid. output can only be d2piR or d2piT!"%output)
+			fout=os.path.join(outdir,"%s.root"%output)
 		elif output=='memtest':
 			outdir=os.path.join(os.environ['D2PIDIR'],'memtest')
-			#procorder="d2piT"
+			h10lst=os.path.join(outdir,"h10.lst")
 			procorder="eid:efid:qskim:pid:d2piR"
+			fout=os.path.join(outdir,"%s.root"%output)
 		else:
 			sys.exit("output=%s not recognized"%output)
 
 	#! Prepare fout,h10lst
-	if not os.path.exists(outdir):
-		print "%s does not exist! Please create it"%outdir
-		if output.find('d2pi')>=0:
-			print "And also put appropriate h10.lst in it!"
-		sys.exit()
-	if output.find('d2pi')>=0:
-		h10lst=os.path.join(outdir,"h10.lst")
-	fout=os.path.join(outdir,"%s.root"%output)
+	# if not os.path.exists(outdir):
+	# 	print "%s does not exist! Please create it"%outdir
+	# 	if output.find('d2pi')>=0:
+	# 		print "And also put appropriate h10.lst in it!"
+	# 	sys.exit()
+	# if output.find('d2pi')>=0:
+	# 	h10lst=os.path.join(outdir,"h10.lst")
+	# fout=os.path.join(outdir,"%s.root"%output)
 
 	#! Finall call proc_h10
 	cmd=["proc_h10","-i",h10lst,"-t",h10type,"-p",procorder,"-o",fout,"-n",nentries]#,"-l",str(use_q2w_elist),"-m",f_q2w_el,"-q",q2w]
