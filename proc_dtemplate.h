@@ -45,7 +45,7 @@ ProcD<template>::~ProcD<template>() {
 }
 
 void ProcD<template>::handle() {
-	//Info("In ProcD<template>::handle()");
+	//Info("In ProcD<template>::handle()","");
 	pass = kFALSE;
 	
 	if (pass) {
