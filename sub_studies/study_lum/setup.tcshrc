@@ -11,4 +11,5 @@ if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
   setenv STUDY_LUM_DATADIR "/data/trivedia/e1f/study_lum"
 else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv STUDY_LUM_DATADIR "${VOLHOME}/data/e1f/study_lum"
+endif
 #setenv STUDY_LUM_ANADIR 
