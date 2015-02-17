@@ -7,5 +7,8 @@ setenv PATH "${PATH}:${ANA2PI_STUDY_LUM}"
 ##- modify PYTHONPATH
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_LUM}"
 
-#setenv STUDY_LUM_DATADIR 
+if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
+  setenv STUDY_LUM_DATADIR "/data/trivedia/e1f/study_lum"
+else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
+  setenv STUDY_LUM_DATADIR "${VOLHOME}/data/e1f/study_lum"
 #setenv STUDY_LUM_ANADIR 

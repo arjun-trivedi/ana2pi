@@ -75,12 +75,12 @@ void ProcSkimH10::handle()
 		_tH10skim->Branch("sc_sect",dH10->sc_sect,"sc_sect[sc_part]/b"); //atrivedi: 042413
 		_tH10skim->Branch("sc_pd",  dH10->sc_pd,"sc_pd[sc_part]/b"); //atrivedi: 042413
 		_tH10skim->Branch("ec_part",&dH10->ec_part,"ec_part/I"); //atrivedi: 042413
+		_tH10skim->Branch("etot",   dH10->etot,"etot[ec_part]/F"); //atrivedi: 042413
 		//! Branches needed to calculate Luminosity (currently made)
 		_tH10skim->Branch("q_l",    &dH10->q_l,"q_l/F");
 		_tH10skim->Branch("t_l",    &dH10->t_l,"t_l/F");
 		//! 
 		/*_tH10skim->Branch("tr_time",&dH10->vz,"tr_time/F");
-		_tH10skim->Branch("etot",   dH10->etot,"etot[ec_part]/F"); //atrivedi: 042413
 		_tH10skim->Branch("ec_eo",  dH10->ec_eo,"ec_eo[ec_part]/F"); 
 		_tH10skim->Branch("ec_ei",  dH10->ec_ei,"ec_ei[ec_part]/F");
 		_tH10skim->Branch("vx",     dH10->vx,"vx[gpart]/F");
