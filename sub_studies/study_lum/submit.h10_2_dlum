@@ -1,0 +1,48 @@
+#!/bin/bash
+#SUBDIR=$BSUBDIR/e1f/2pi/exp/h10_2_dlum
+SUBDIR=/tmp/atrivedi/h10_2_dlum
+if [[ ! -d ${SUBDIR} ]]; then
+    mkdir -p $SUBDIR
+fi
+OUTDIR=$STUDY_LUM_DATADIR
+
+for runnum in $(ls  ${HOME}/ongoing/e1f_allruns_h10lst/*.lst | awk -F/ '{print $6}' | awk -F. '{print $1}');
+do
+  JSUBFILE=$SUBDIR/$runnum.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo $runnum".sub exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e1f_h10_2_dlum_$runnum\"/>
+    <Project name=\"E1F\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"500\" unit=\"MB\"/>
+    <Memory space=\"500\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"5\"/>
+    <Command><![CDATA[
+      proc_h10 -i h10.lst -t e1f:exp:2pi  -p lum -o lum.root
+    ]]></Command>
+
+    <Job>
+        <Input src=\"$HOME/ongoing/e1f_allruns_h10lst/$runnum.lst\" dest=\"h10.lst\" />
+        `for f in $(cat $HOME/ongoing/e1f_allruns_h10lst/$runnum.lst)
+         do
+           echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
+         done`
+        <Output src=\"lum.root\" dest=\"$STUDY_LUM_DATADIR/$runnum.root\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+done
+
+#<List name=\"H10LST\">
+#    `ls ${HOME}/ongoing/e1f_allruns_h10lst/*.lst | awk -F/ '{print $6}' | awk -F. '{print $1}'`
+#</List>
+
+#echo "jsub -xml ${DIR}/job.xml.$SUFFIX"
+#jsub -xml ${DIR}/job.xml.$SUFFIX
