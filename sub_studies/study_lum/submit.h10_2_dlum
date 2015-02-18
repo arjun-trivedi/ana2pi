@@ -1,13 +1,22 @@
 #!/bin/bash
-#SUBDIR=$BSUBDIR/e1f/2pi/exp/h10_2_dlum
-SUBDIR=/tmp/atrivedi/h10_2_dlum
+
+##########################################################
+# [02-18-15]
+# + Get h10.lst files for all E1F Runs from ${HOME}/ongoing/e1f_allruns_h10lst
+# and submit h10->dlum jobs for each of them.
+# + The h10.lst files contain just the root file names for each Run, therefore
+# this script additionally appends the full /mss path to the files and lists them
+# as separate input files for the job
+###########################################################
+SUBDIR=$BSUBDIR/e1f/2pi/exp/h10_2_dlum
 if [[ ! -d ${SUBDIR} ]]; then
     mkdir -p $SUBDIR
 fi
 OUTDIR=$STUDY_LUM_DATADIR
 
-for runnum in $(ls  ${HOME}/ongoing/e1f_allruns_h10lst/*.lst | awk -F/ '{print $6}' | awk -F. '{print $1}');
+for h10lst in $(ls  ${HOME}/ongoing/e1f_allruns_h10lst/*.lst);
 do
+  runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
   JSUBFILE=$SUBDIR/$runnum.sub
   if [ -f "${JSUBFILE}" ]; then
     echo $runnum".sub exists. Will delete it before creating new one."
@@ -28,8 +37,8 @@ do
     ]]></Command>
 
     <Job>
-        <Input src=\"$HOME/ongoing/e1f_allruns_h10lst/$runnum.lst\" dest=\"h10.lst\" />
-        `for f in $(cat $HOME/ongoing/e1f_allruns_h10lst/$runnum.lst)
+        <Input src=\"$h10lst\" dest=\"h10.lst\" />
+        `for f in $(cat $h10lst)
          do
            echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
          done`
@@ -38,11 +47,6 @@ do
 
   </Request>
   " > $JSUBFILE 
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
 done
-
-#<List name=\"H10LST\">
-#    `ls ${HOME}/ongoing/e1f_allruns_h10lst/*.lst | awk -F/ '{print $6}' | awk -F. '{print $1}'`
-#</List>
-
-#echo "jsub -xml ${DIR}/job.xml.$SUFFIX"
-#jsub -xml ${DIR}/job.xml.$SUFFIX
