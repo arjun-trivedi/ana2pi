@@ -87,10 +87,12 @@ ana2pi Branches
 							+ proc_skim_h10.h: 1st time addition (rename of proc_fill_skim.h)
 							+ proc_h10.py: Modified to accomodate making of h10skim
 
-							+ test_proc_lum [02-16-15] To test proc_lum. 	
+							+ test_proc_lum [02-16-15] To test proc_lum	
 								+ proc_lum.h: 1st time addition
 								+ proc_eid.h: goodE(), goodE_bos() made Public so that other Procs can use them, for example ProcLum
 								+ proc_h10.cpp: Added capability to add ProcLum to Proc chain
+								+ sub_studies/study_lum/submit.h10_2_dlum
+
 
 
 
