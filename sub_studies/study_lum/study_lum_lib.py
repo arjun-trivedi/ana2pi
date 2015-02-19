@@ -1,3 +1,4 @@
+from __future__ import division
 import os,glob#,subprocess
 import ROOT
 
@@ -33,6 +34,7 @@ def make_dlum_txt(dlumdir,flumname,runl=None):
 def disp_lum(flumname):
 	'''
 	+ flumname=name of output text file that contains lum data
+	+ Returns Q(=list of Q per Run)
         '''
 	ff=open(flumname)
 	runnuml=[]
@@ -64,6 +66,7 @@ def disp_lum(flumname):
 	axs[1].scatter(runnuml,norm_Ntrigger)
 	axs[2].scatter(runnuml,norm_Ngoode)
 	axs[3].scatter(runnuml,norm_Ngoodebos)
+	return Q
 
 def calc_lum(Q):
     	'''
