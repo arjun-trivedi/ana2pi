@@ -3,18 +3,21 @@ import ROOT
 
 import matplotlib.pyplot as plt
 
-def make_dlum_txt(dlumdir,flumname):
+def make_dlum_txt(dlumdir,flumname,runl=None):
 	'''
 	+ dlumdir=directory where dlum is located
 	+ flumname=name of output text file that contains lum data
+	+ runl=optional; if provided then dlum_txt only made from runl provided
 	'''
 	lumdl=glob.glob(os.path.join(dlumdir,"*.root"))
 	lumdl.sort()
         fout=open(flumname, 'w')
-	print lumdl
+	#print lumdl
 	for lumd in lumdl:
 		runnum=int(lumd.split("/")[-1].split(".")[0])
 		#print runnum
+		if runl is not None:
+			if runnum not in runl: continue
 		f=ROOT.TFile(lumd)
 		#print f.GetName()
 		hevtsum=f.Get("lum/hevtsum")
@@ -38,7 +41,7 @@ def disp_lum(flumname):
 	norm_Ngoode=[]
 	norm_Ngoodebos=[]
 	for l in ff.readlines():
-		print l
+		#print l
     		dl=l.split(" ")
     		runnum=int(dl[0].strip())
     		q=float(dl[1].strip())
