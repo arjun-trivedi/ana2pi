@@ -68,6 +68,7 @@ def disp_lum(flumname):
 	axs[3].scatter(runnuml,norm_Ngoodebos)
 	return Q
 
+KIJUN_Q=2128.7181*1e-6
 def calc_lum(Q):
     	'''
 	+ Q=Total Faraday Cup charge in Coulombs
