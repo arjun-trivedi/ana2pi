@@ -73,14 +73,22 @@ def calc_lum(Q):
     	'''
 	+ Q=Total Faraday Cup charge in Coulombs
     	+ Returns Luminosity in fb^-1 (inverse femtobarns)
+
+        The formula for Luminosity for me is not an exact calculation. It makes sense to me if think of it
+	as following:
+	+ The goal is to calculate total number of possible interactions per unit area.
+	Therefore, 
+	1. Target: Even though it has a 5 cm length, the formula seems to be such that the incoming beam particles "see" all the target particles distributed in 2D space
+	2. Beam: The beam is such that within the 2D extent of the target, all target particles present to the particles in the beam the same probability of interaction. 
+	
     	'''
 	#! + The source for Luminosity calculation is Kijun Park's thesis, page 139
         #! + If I enter Q as obtained by Kijun(=2128.7181 microC), L returned ~ 28 fb^-1 (=E16 Lum)
     	rho=0.0708 #[g/cm^3] Liquid Hydrogen target density at 20K
     	Na=6.022136e23 #[mol^-1] Avogadro's number
     	Ltg=5 #[cm] E1F target length
-    	amu=1.00795 #[g/mol] Atomic Mass Unit
+    	M_H=1.00795 #[g/mol] Molar mass of Hydrogen (Kijun had called this amu in his thesis)
     	e=1.602176e-19 #[C] electron charge
     
-    	L=(Q/e)*((Na*rho*Ltg)/amu) #[cm^-2]
+    	L=(Q/e)*((Na*rho*Ltg)/M_H) #[cm^-2]
     	return L*10e-39 #[fb^-1]
