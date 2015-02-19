@@ -68,7 +68,7 @@ def disp_lum(flumname):
 	axs[3].scatter(runnuml,norm_Ngoodebos)
 	return Q
 
-KIJUN_Q=2128.7181*1e-6
+KHETARPAL_Q=21.287*1e-3
 def calc_lum(Q):
     	'''
 	+ Q=Total Faraday Cup charge in Coulombs
@@ -82,13 +82,13 @@ def calc_lum(Q):
 	2. Beam: The beam is such that within the 2D extent of the target, all target particles present to the particles in the beam the same probability of interaction. 
 	
     	'''
-	#! + The source for Luminosity calculation is Kijun Park's thesis, page 139
-        #! + If I enter Q as obtained by Kijun(=2128.7181 microC), L returned ~ 28 fb^-1 (=E16 Lum)
-    	rho=0.0708 #[g/cm^3] Liquid Hydrogen target density at 20K
-    	Na=6.022136e23 #[mol^-1] Avogadro's number
+	#! + The formula for Luminosity calculation is as per Kijun Park's thesis, page 139
+        #! + If I enter Q as obtained by Khetarpal for E16(=21.287 mC), L returned ~29 fb^-1 (=E16 Lum)
+    	rho=0.073 #[g/cm^3] Liquid Hydrogen target density (Kijun=0.0708 at 20K)
+    	Na=6.022e23 #[mol^-1] Avogadro's number
     	Ltg=5 #[cm] E1F target length
-    	M_H=1.00795 #[g/mol] Molar mass of Hydrogen (Kijun had called this amu in his thesis)
-    	e=1.602176e-19 #[C] electron charge
+    	M_H=1.007 #[g/mol] Molar mass of Hydrogen 
+    	e=1.602e-19 #[C] electron charge
     
     	L=(Q/e)*((Na*rho*Ltg)/M_H) #[cm^-2]
-    	return L*10e-39 #[fb^-1]
+    	return L*1e-39 #[fb^-1]
