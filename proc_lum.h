@@ -28,8 +28,8 @@ public:
 	void write();
 protected:
 	ProcEid* proc_eid;
-	static const Int_t NUM_EVTCUTS = 2;
-	enum {EVT_NULL,EVT,EVT_GOODE};
+	static const Int_t NUM_EVTCUTS = 3;
+	enum {EVT_NULL,EVT,EVT_GOODE,EVT_GOODE_BOS};
 	TH1F* _hQ;
 	float _totalQ;
  	float _qcurr;
@@ -78,11 +78,17 @@ void ProcLum::handle() {
 	//cout<<"totalQ="<<totalQ<<endl;
     }
 
-	pass = kFALSE;
-	Bool_t gE = kFALSE;
+	pass=kFALSE;
+	Bool_t gE=kFALSE;
+	Bool_t gE_bos=kFALSE;
 	gE=proc_eid->goodE();
+	gE_bos=proc_eid->goodE_bos();
 	if (gE) {
 		hevtsum->Fill(EVT_GOODE);
+		EpProcessor::handle();
+	}
+	if (gE_bos) {
+		hevtsum->Fill(EVT_GOODE_BOS);
 		EpProcessor::handle();
 	}
 }
