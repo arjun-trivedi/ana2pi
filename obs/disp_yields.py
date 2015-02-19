@@ -1305,8 +1305,10 @@ class DispYields:
 				if norm==True:
 					q2=float(q2wbin.split('_')[0].split('-')[0])
 					dq2=float(q2wbin.split('_')[0].split('-')[1])-q2
-					normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2)*dw*dq2#!mub^-1
+					#normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2)*dw*dq2#!mub^-1
+					normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+(0.025/2),q2+(0.5/2))*dw*dq2#!mub^-1
 					print "yield=",y[seq,q2bin][w]
+					print "dw,dq2=",dw,dq2
 					print "norm=",normf
 					y[seq,q2bin][w]=y[seq,q2bin][w]/normf
 					print "yield after norm=",y[seq,q2bin][w]
