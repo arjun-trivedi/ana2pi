@@ -11,7 +11,9 @@ if [[ ! -d ${SUBDIR} ]]; then
 fi
 OUTDIR=$STUDY_LUM_DATADIR
 
-JSUBFILE=$SUBDIR/h10_2_d2piR-exp.sub
+date=`date +%m%d%y`
+
+JSUBFILE=$SUBDIR/h10_2_d2piR-exp_$date.sub
 if [ -f "${JSUBFILE}" ]; then
   echo "h10_2_d2piR-exp.sub exists. Will delete it before creating new one."
   rm $JSUBFILE
@@ -36,7 +38,7 @@ echo "\
        do
          echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
        done`
-      <Output src=\"d2pi.root\" dest=\"$D2PIDIR_EXP/d2pi.root\"/>
+      <Output src=\"d2pi.root\" dest=\"$D2PIDIR_EXP/d2pi_$date.root\"/>
   </Job>
 
 </Request>
