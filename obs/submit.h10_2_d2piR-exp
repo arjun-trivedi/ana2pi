@@ -1,0 +1,45 @@
+#!/bin/bash
+
+##########################################################
+# [02-20-15]
+# + h10 -> d2piR on the farm
+# + Uses $HOME/ongoing/e1f_goldenrun_h10.lst
+###########################################################
+SUBDIR=$BSUBDIR/e1f/2pi/exp/h10_2_d2piR-exp
+if [[ ! -d ${SUBDIR} ]]; then
+    mkdir -p $SUBDIR
+fi
+OUTDIR=$STUDY_LUM_DATADIR
+
+JSUBFILE=$SUBDIR/h10_2_d2piR-exp.sub
+if [ -f "${JSUBFILE}" ]; then
+  echo "h10_2_d2piR-exp.sub exists. Will delete it before creating new one."
+  rm $JSUBFILE
+fi
+
+echo "\
+<Request>
+  <Name name=\"e1f_h10_2_d2piR-exp\"/>
+  <Project name=\"E1F\"/>
+  <OS name=\"centos65\"/>
+  <DiskSpace space=\"5000\" unit=\"MB\"/>
+  <Memory space=\"5000\" unit=\"MB\"/>
+  <Track name=\"analysis\"/>
+  <TimeLimit unit=\"minutes\" time=\"500\"/>
+  <Command><![CDATA[
+    proc_h10 -i h10.lst -t e1f:exp:2pi  -p eid:efid:qskim:mom:pid:d2piR -o d2pi.root
+  ]]></Command>
+
+  <Job>
+      <Input src=\"$HOME/ongoing/e1f_goldenruns_h10.lst\" dest=\"h10.lst\" />
+      `for f in $(cat $HOME/ongoing/e1f_goldenruns_h10.lst)
+       do
+         echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
+       done`
+      <Output src=\"d2pi.root\" dest=\"$D2PIDIR_EXP/d2pi.root\"/>
+  </Job>
+
+</Request>
+" > $JSUBFILE 
+#echo "jsub -xml $JSUBFILE"
+#jsub -xml $JSUBFILE
