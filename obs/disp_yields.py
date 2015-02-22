@@ -352,7 +352,8 @@ class DispYields:
 								htmp_SF=h[q2bin,wbin,'SIM','F'][ivar]
 								htmp_SF.SetMarkerColor(coll['SIM','F'])
 								#! Get normalization
-								normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(wbin,q2bin)*0.025*0.5*htmp_EF.GetBinWidth(1)#!mub^-1
+								#normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(wbin,q2bin)*0.025*0.5*htmp_EF.GetBinWidth(1)#!mub^-1
+								normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+(dw/2),q2+(dq2/2))*0.025*0.5*htmp_EF.GetBinWidth(1)#!mub^-1
 								#! Before normalizing, call Sumw2()
 								htmp_EC.Sumw2()
 								htmp_EF.Sumw2()
