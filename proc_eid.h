@@ -167,7 +167,7 @@ Bool_t ProcEid::goodE(){
 						hevtsum->Fill(EVT_DC1);
 						if (dH10->ec[0]>0) {
 							hevtsum->Fill(EVT_EC1);
-							if (dH10->cc[0]>0 || dH10->dtyp=="sim") {
+							//if (dH10->cc[0]>0 || dH10->dtyp=="sim") {
 								hevtsum->Fill(EVT_CC1);
 								if (dH10->dc_stat[dH10->dc[0]-1]>0) {
 									hevtsum->Fill(EVT_DCSTAT1);
@@ -185,7 +185,7 @@ Bool_t ProcEid::goodE(){
 										}
 									}
 								}
-							}
+							//}
 						}
 					}
 				}
