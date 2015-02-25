@@ -89,6 +89,34 @@ ana2pi Branches
 							+ proc_lum.h: 1st time addition
 							+ proc_eid.h: goodE(), goodE_bos() made Public so that other Procs can use them, for example ProcLum
 							+ proc_h10.cpp: Added capability to add ProcLum to Proc chain
+
+							+[02-22-15]test_yield_normalization
+							Created this branch because debugging the matter of obtaining the correct normalization factor required extensive testing. 
+
+							Noteworthy changes:
+								+ data_ana.cpp: makeHistsMM() and fillHistsMM() modified to make, apart from MM_vs_W, directly MM histograms. Additionally, the MM and W ranges were adapted to be able to extract more meaning from the histograms.
+								+ proc_skim_q.h, proc_pid.h, proc_d2pi.h:
+									+ hevtsum: Keep only meaningful information i.e. removed information that I was not finding useful
+									+ Cleaned up code	to make logic of the process clearer in the code. I tested the cleaned up code on ST,SR and ER and found there to be no difference.
+								+ proc_skim_q2w.h: Fixed default Q2-W ranges to reflect "thesis range"
+								+ proc_h10.cpp: Re-added capability to add ProcSkimQ2W in the Processor chain.
+								+ obs/q2w_bng.py: Modified to adjust binning to "thesis range" i.e  excluded W>2.125 GeV
+								+ obs/proc_yields.py:
+									+ Added capability to name output file as per the Tops used to process the yields
+									+ Added capability to take in range of Q2,W to use in processing yields
+								+ obs/py: Modified to be able to take Tops as input from user.
+								+ obs/disp_yields.py:
+									+ Added capability to display yields as per Topologies used to make the yields
+									+ disp_integ_yield(): Added capability to display yield for different VSTS.
+								+ obs/dy_integ: Modified to be able to take Tops as input from user.
+								+ The following are 1st time additions:
+									+ obs/dev/dy_integ_per_top
+									+ obs/dev/py_per_top
+									+ sub_studies/study_lum/nb_check-count_d2pi_2_yields-ER.ipynb
+									+ sub_studies/study_lum/nb_check-count_d2pi_2_yields-SR.ipynb
+									+ sub_studies/study_lum/notes/
+
+
 							
 
 

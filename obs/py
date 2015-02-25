@@ -42,5 +42,5 @@ else:
 
 print "py: Going to process yields for (dtyp simmnum tops usehel dbg)=(", dtyp,simnum,tops,usehel,dbg,")"
 time.sleep(3)
-py=ProcYields(dtyp,simnum=simnum,tops=tops,usehel=usehel,dbg=dbg,q2min=1.25,q2max=2.25)
+py=ProcYields(dtyp,simnum=simnum,tops=tops,usehel=usehel,dbg=dbg)#,q2min=1.25,q2max=2.25)
 py.execute()
