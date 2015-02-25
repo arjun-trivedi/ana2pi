@@ -1,10 +1,10 @@
 #!/usr/bin/python
 from proc_yields import ProcYields
 from disp_yields import DispYields
-import sys
+import sys,time
 
 """
-py [dtyp] [simnum=siml] [usehel=False] [dbg=False]
+py [dtyp] [simnum=siml] [tops=tops] [usehel=False] [dbg=False]
 """
 dtyp=sys.argv[1]
 
@@ -13,20 +13,34 @@ if len(sys.argv)>2:#i.e. simnum entered by user
 else:
 	simnum='siml'
 
-if len(sys.argv)>3:#i.e. usehel entered by user
-        if   sys.argv[3]=='True':  usehel=True
-	elif sys.argv[3]=='False': usehel=False
+if len(sys.argv)>3:#i.e. tops by user
+	tops=[]
+        if len(sys.argv[3].split(":"))>0:
+		for top in map(int,sys.argv[3].split(":")):
+			if top!=1 and top!=2 and top!=3 and top!=4:
+				sys.exit("valid tops are 1,2,3 and 4 only!")
+			tops.append(top)
+	else:
+		sys.exit("Please enter tops as 1:2:3:4")
+else:
+        tops=[1,2,3,4]
+
+if len(sys.argv)>4:#i.e. usehel entered by user
+        if   sys.argv[4]=='True':  usehel=True
+	elif sys.argv[4]=='False': usehel=False
         else: sys.exit("usehel=\'%s\' not valid. Exiting."%sys.argv[3])
 	
 else:
         usehel=False
 
-if len(sys.argv)>4:#i.e. dbg entered by user
+if len(sys.argv)>5:#i.e. dbg entered by user
 	if   sys.argv[4]=='True':  dbg=True
         elif sys.argv[4]=='False': dbg=False
         else: sys.exit("dbg=\'%s\' not valid. Exiting"%sys.argv[4])
 else:
         dbg=False
 
-py=ProcYields(dtyp,simnum=simnum,usehel=usehel,dbg=dbg)
+print "py: Going to process yields for (dtyp simmnum tops usehel dbg)=(", dtyp,simnum,tops,usehel,dbg,")"
+time.sleep(3)
+py=ProcYields(dtyp,simnum=simnum,tops=tops,usehel=usehel,dbg=dbg,q2min=1.25,q2max=2.25)
 py.execute()
