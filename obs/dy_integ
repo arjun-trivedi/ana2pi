@@ -3,27 +3,31 @@ from proc_yields import ProcYields
 from disp_yields import DispYields
 import sys
 
-#q2wl=['q2w%i'%i for i in range(1,50)]
-##! Remove "bad" bins (cases where there is no data in yields_exp.root)
-#q2wl_bad=['q2w7','q2w14','q2w20','q2w21','q2w27','q2w28','q2w29','q2w34','q2w35','q2w36','q2w40','q2w41','q2w42','q2w43','q2w46','q2w47','q2w48','q2w49']
-#q2wl=[x for x in q2wl if x not in q2wl_bad]
-#
-##q2wl=['q2w%i'%i for i in range(49,50)]
-##for q2w in ['q2w8','q2w9','q2w10','q2w11']:#,'q2w3','q2w4']:
-#
-#for q2w in q2wl:
-#        print "*** Preparing to display yields for %s ***"%q2w
-#	dy=DispYields(q2w,'sim1sim2sim3')
-#	dy.disp_1D()
-#        print "*** Done display yields for %s ***"%q2w
-
+'''
+dy_integ [simnum=siml] [tops=tops]
+'''
 #! User input simnum, else use siml
-if len(sys.argv)<2:
+if len(sys.argv)>1:
 	simnum='siml'
 else:
 	simnum=sys.argv[1]
+
+if len(sys.argv)>2:#i.e. tops by user
+        tops=[]
+        if len(sys.argv[2].split(":"))>0:
+                for top in map(int,sys.argv[2].split(":")):
+                        if top!=1 and top!=2 and top!=3 and top!=4:
+                                sys.exit("valid tops are 1,2,3 and 4 only!")
+                        tops.append(top)
+        else:
+                sys.exit("Please enter tops as 1:2:3:4")
+else:
+        tops=[1,2,3,4]
+
 print "Displaying integrated yields for %s"%simnum
 
-dy=DispYields(simnum)
-dy.disp_integ_yield()
-dy.disp_integ_yield(norm=True)
+dy=DispYields(simnum=simnum,tops=tops)
+#dy.disp_integ_yield()
+dy.disp_integ_yield(vst='VST1',norm=True)
+dy.disp_integ_yield(vst='VST2',norm=True)
+dy.disp_integ_yield(vst='VST3',norm=True)
