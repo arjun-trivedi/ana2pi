@@ -7,6 +7,18 @@
 
 using namespace ParticleConstants;
 
+/******************************************************
+[02-24-15]
++ Note, ProcPid must follow ProcSkimQ
++ Currently using BOS PID
++ Pass Events only if:
+	+ dAna->skimq.isEVT_2POS1NEG_EX AND proton,pip,pim are identified
+	OR	+ 
+	+ dAna->skimq.isEVT_2POS_EX     AND proton,pip are identified
+	OR
+	+ dAna->skimq.isEVT_1POS1NEG_EX AND (p,pim identified OR pip,pim identfied)
+*******************************************************/
+
 class ProcPid : public EpProcessor
 {
 
@@ -19,11 +31,11 @@ public:
 	//void write();
 				
 protected:
-	Int_t _h10idxP;
+	/*Int_t _h10idxP;
 	Int_t _h10idxPip;
-	Int_t _h10idxPim;
+	Int_t _h10idxPim;*/
 	
-	static const Int_t NUM_EVTCUTS = 18;
+	/*static const Int_t NUM_EVTCUTS = 18;
 	enum { EVT_NULL, EVT, EVT_TRK,
 		   EVT_SPACE1, 	
 		   EVT_TRK_POS, EVT_TRK_POS_DC, EVT_TRK_POS_SC, EVT_TRK_POS_BOSP, EVT_TRK_POS_BOSPIP,
@@ -31,7 +43,10 @@ protected:
 	       EVT_TRK_NEG, EVT_TRK_NEG_DC, EVT_TRK_NEG_SC, EVT_TRK_NEG_BOSPIM,
 	       EVT_SPACE3,
 	       EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_PPIPPIM_EX
-	};     
+	}; */  
+
+	static const Int_t NUM_EVTCUTS=6;
+	enum { EVT_NULL, EVT, EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};   
 	     
 	void updatePid();
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
@@ -43,7 +58,7 @@ ProcPid::ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 {
 	td->cd();	
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
-	hevtsum->SetMinimum(0);
+	/*hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_TRK,"Charged Tracks");
 	
@@ -61,7 +76,14 @@ ProcPid::ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,"e^{-} + p + #pi^{+}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,"e^{-} + p + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX,"e^{-} + #pi^{+} + #pi^{-}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"e^{-} + p + #pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"e^{-} + p + #pi^{+} + #pi^{-}");*/
+
+	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"p + #pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,"p + #pi^{+}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,"p + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX,"#pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
 }
 
 ProcPid::~ProcPid()
@@ -107,60 +129,59 @@ void ProcPid::handle()
 	//pid cut
 	dAna->pid.h10IdxP = dAna->pid.h10IdxPip = dAna->pid.h10IdxPim = 0; //atrivedi 041713: First reset indices set in monitoring mode; better soln?
 	for (Int_t i = 1; i < dH10->gpart; i++) {
-		hevtsum->Fill(EVT_TRK);
-		
 		if(dH10->q[i]==1){
-			hevtsum->Fill(EVT_TRK_POS);
 			if (dH10->dc[i]>0) {
-				hevtsum->Fill(EVT_TRK_POS_DC);
 				if (dH10->sc[i]>0) {
-					hevtsum->Fill(EVT_TRK_POS_SC);
 					if (dH10->id[i]==PROTON){
-						hevtsum->Fill(EVT_TRK_POS_BOSP);
 						dH10->id[i]=PROTON;
-						dAna->pid.h10IdxP = i;
+						dAna->pid.h10IdxP=i;
 					}
 					if (dH10->id[i]==PIP){
-						hevtsum->Fill(EVT_TRK_POS_BOSPIP);
 						dH10->id[i]=PIP;
-						dAna->pid.h10IdxPip = i;
+						dAna->pid.h10IdxPip=i;
 					}
 				}
 			}
 		}else if(dH10->q[i]==-1){
-			hevtsum->Fill(EVT_TRK_NEG);
 			if (dH10->dc[i]>0) {
-				hevtsum->Fill(EVT_TRK_NEG_DC);
 				if (dH10->sc[i]>0) {
-					hevtsum->Fill(EVT_TRK_NEG_SC);
 					if (dH10->id[i]==PIM){
-						hevtsum->Fill(EVT_TRK_NEG_BOSPIM);
 						dH10->id[i]=PIM;
-						dAna->pid.h10IdxPim = i;
+						dAna->pid.h10IdxPim=i;
 					}
 				}
 			}
 		}
 		
 	}
-	if(dAna->skimq.isEVT_2POS_EX && dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0) {
-		hevtsum->Fill(EVT_PPIP_EX);
-		pass = kTRUE;
+	if(dAna->skimq.isEVT_2POS1NEG_EX){
+	 	if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
+			hevtsum->Fill(EVT_PPIPPIM_EX);
+			pass = kTRUE;
+		}else{
+			hevtsum->Fill(EVT_OTHER);
+		}
+	}
+	if(dAna->skimq.isEVT_2POS_EX){
+		if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0) {
+			hevtsum->Fill(EVT_PPIP_EX);
+			pass = kTRUE;
+		}else{
+			hevtsum->Fill(EVT_OTHER);
+		}
 	}
 	if(dAna->skimq.isEVT_1POS1NEG_EX){
 		if(dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPim>0) {
 			hevtsum->Fill(EVT_PPIM_EX);
 			pass = kTRUE;
-		}
-		if(dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
+		}else if(dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
 			hevtsum->Fill(EVT_PIPPIM_EX);
 			pass = kTRUE;
+		}else{
+			hevtsum->Fill(EVT_OTHER);	
 		}
 	}
-	if(dAna->skimq.isEVT_2POS1NEG_EX && dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
-		hevtsum->Fill(EVT_PPIPPIM_EX);
-		pass = kTRUE;
-	}
+	
 	
 	if (pass) {
 		if (mon)

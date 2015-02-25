@@ -13,6 +13,19 @@
 using namespace TMath;
 using namespace ParticleConstants;
 
+/******************************************************
+[02-24-15]
++ Note
+	+ For Reconstructed data, ProcD2pi must follow a "chain of processors" (set up in scripts)
+	+ For Thrown data, it is directly called (setup in scripts)
++ For Reconstruction,Pass Events only if:
+	+ proton,pip,pim are identified AND MMppippim satisfied
+	OR	
+	+ proton,pip are identified     AND MMppip satisfied 
+	OR
+	+ ( (p,pim identified  AND MMppim satisfied)  OR (pip,pim identfied AND MMpippim satisfied) )
+*******************************************************/
+
 class ProcD2pi : public EpProcessor {
 
 public:
@@ -28,7 +41,7 @@ protected:
 	
 	void ResetLvs();
 	void SetLabFrmHadronLvs();
-	void UpdateD2pi_MM(Bool_t ismc  = kFALSE);
+	void UpdateD2pi_Q2_W_MM(Bool_t ismc  = kFALSE);
 	void UpdateD2pi(Bool_t ismc = kFALSE);
 
 	void AddBranches(TTree* t, Bool_t ismc=kFALSE);
@@ -66,11 +79,13 @@ protected:
 	TTree* _tT;
 	TTree* _tR;
 protected:
-	static const Int_t NUM_EVTCUTS = 16;
+	/*static const Int_t NUM_EVTCUTS = 16;
 	enum { EVT_NULL,  EVT,       EVT_GPART0,  EVT_GPARTEQ1, EVT_GPARTEQ2, EVT_GPARTEQ3, EVT_GPARTEQ4, EVT_GPART4,
 	       EVT_GOODE, EVT_GOODP, EVT_GOODPIP, EVT_GOODPIM,
 	       EVT_T1,    EVT_T2,    EVT_T3,      EVT_T4,       EVT_OTHER
-	     };
+	     };*/
+	static const Int_t NUM_EVTCUTS=6;
+	enum { EVT_NULL, EVT, EVT_T1, EVT_T2, EVT_T3, EVT_T4, EVT_OTHER };
 };
 
 ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
@@ -86,7 +101,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
-	hevtsum->SetMinimum(0);
+	/*hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_GPART0,"gpart > 0");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_GPARTEQ1,"gpart = 1");
@@ -102,6 +117,13 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T2,"Type2(p#pi^{+})");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T3,"Type3(p#pi^{-})");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T4,"Type4(#pi^{+}#pi^{-})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");*/
+
+	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T1,"T1(p#pi^{+}#pi^{-})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T2,"T2(p#pi^{+})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T3,"T3(p#pi^{-})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T4,"T4(#pi^{+}#pi^{-})");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
 
 	if (_procT) {
@@ -191,13 +213,6 @@ void ProcD2pi::handle() {
 	//! (In case of _procT, Lvs will have been set to Thrown values)
 	ResetLvs(); 
 
-	if (dH10->gpart>0) {hevtsum->Fill(EVT_GPART0);}
-	if (dH10->gpart==1) {hevtsum->Fill(EVT_GPARTEQ1);}
-	if (dH10->gpart==2) {hevtsum->Fill(EVT_GPARTEQ2);}
-	if (dH10->gpart==3) {hevtsum->Fill(EVT_GPARTEQ3);}
-	if (dH10->gpart==4) {hevtsum->Fill(EVT_GPARTEQ4);}
-	if (dH10->gpart>4) {hevtsum->Fill(EVT_GPART4);}
-	
 	Bool_t gE, gP, gPip, gPim;
 	gE = gP = gPip = gPim = kFALSE;
 	for (Int_t i = 0; i < dH10->gpart; i++) {
@@ -206,28 +221,28 @@ void ProcD2pi::handle() {
 			//if (i == 0){
 				dAna->h10idxE = i;
 				gE = kTRUE;
-				hevtsum->Fill(EVT_GOODE); 
+				//hevtsum->Fill(EVT_GOODE); 
 			//}
 			break;
 		case PROTON:
 			//if (i > 0 && dH10->q[i] == 1 && dH10->dc[i] > 0 && dH10->sc[i] > 0) {
 				dAna->h10idxP = i;
 				gP = kTRUE;
-				hevtsum->Fill(EVT_GOODP); 
+				//hevtsum->Fill(EVT_GOODP); 
 			//}
 			break;
 		case PIP:
 			//if (i > 0 && dH10->q[i] == 1) {
 				dAna->h10idxPip = i;
 				gPip = kTRUE;
-				hevtsum->Fill(EVT_GOODPIP);
+				//hevtsum->Fill(EVT_GOODPIP);
 			//}
 			break;
 		case PIM:
 		    //if (i > 0 && dH10->q[i] == -1) {
 				dAna->h10idxPim = i;
 				gPim = kTRUE;
-				hevtsum->Fill(EVT_GOODPIM);
+				//hevtsum->Fill(EVT_GOODPIM);
 			//}
 			break;
 		default:
@@ -235,7 +250,12 @@ void ProcD2pi::handle() {
 		}
 	}
 	if (gE) { 
-		if ( (gP && gPip && gPim) || (gP && gPip) || (gP && gPim) || (gPip && gPim) ) {
+		//! Determine if identified particles match requirement of tops
+		Bool_t t1a = gP   && gPip &&  gPim;
+		Bool_t t2a = gP   && gPip && !gPim;
+		Bool_t t3a = gP   && gPim && !gPip;
+		Bool_t t4a = gPip && gPim && !gP;
+		if ( t1a || t2a || t3a || t4a ) { //top:particle selection
 			/* *** Q2, W *** */
 			Double_t mom = dH10->p[dAna->h10idxE];
 	        Double_t px = mom*dH10->cx[dAna->h10idxE];
@@ -245,19 +265,24 @@ void ProcD2pi::handle() {
 	        _lvE.SetPxPyPzE(px,py,pz,energy);
 	        _lvQ = lvE0-_lvE;
 	        _lvW = _lvQ+lvP0;
-	        /*dAna->d2pi.Q2 = -1*(_lvQ.Mag2());
-	        dAna->d2pi.W = _lvW.Mag();*/
-	        
+	        	        
 	        /* *** _lvP, _lvPip, _lvPim, _lvMM[TOP1/2/3/4] *** */
+	        //! lvs for only particular top is set; rest are 0
 	        SetLabFrmHadronLvs();
 	              
-	        /* *** MM *** */   
+	        /* *** MM *** */ 
+	        //! MM for only particular top is set; rest are 0  
 	        Float_t mm2ppippim = _lvMM[TOP1].Mag2();
 			Float_t mm2ppip    = _lvMM[TOP2].Mag2();
 			Float_t mm2ppim    = _lvMM[TOP3].Mag2();
 			Float_t mm2pippim  = _lvMM[TOP4].Mag2();
+
+			//used to study and determine top MM cut
+			UpdateD2pi_Q2_W_MM();
+			dAna->fillHistsMM(_hists_ana_MM); //method "knows" the particular top's MM hist to fill
+			UpdateEkin();
 						
-			Bool_t t1a = gP && gPip && gPim;
+			/*Bool_t t1a = gP && gPip && gPim;
 			Bool_t t1b = TMath::Abs(mm2ppippim) < 0.0005;
 			Bool_t t2a = gP && gPip && !gPim;
 			Bool_t t2b = mm2ppip>0 && mm2ppip<0.04;//0.16
@@ -269,14 +294,25 @@ void ProcD2pi::handle() {
 			Bool_t t1 = t1a && t1b;
 			Bool_t t2 = t2a && t2b;
 			Bool_t t3 = t3a && t3b;
-			Bool_t t4 = t4a && t4b;
+			Bool_t t4 = t4a && t4b;*/
+
+			//! Make final top selection cut
+			Bool_t t1b=TMath::Abs(mm2ppippim) < 0.0005;
+			Bool_t t2b=mm2ppip>0 && mm2ppip<0.04;//0.16
+			Bool_t t3b=mm2ppim>0 && mm2ppim<0.04;//0.16;
+			Bool_t t4b=mm2pippim>0.8 && mm2pippim<1.00;//mm2pippim>0.0 && mm2pippim<1.25;
+
+			Bool_t t1=t1a && t1b;
+			Bool_t t2=t2a && t2b;
+			Bool_t t3=t3a && t3b;
+			Bool_t t4=t4a && t4b;
 			
-			if (t1a || t2a || t3a || t4a) { //used to determine top MM cut
-				UpdateD2pi_MM();
+			/*if (t1a || t2a || t3a || t4a) { //used to determine top MM cut
+				UpdateD2pi_Q2_W_MM();
 				dAna->fillHistsMM(_hists_ana_MM);
 				UpdateEkin();
-			}
-			if ( t1 || t2 || t3 || t4) { //final top selection post MM cut
+			}*/
+			if ( t1 || t2 || t3 || t4) { //top:particle selection + MM cut
 				pass = kTRUE;
 				
 				if (t1) {
@@ -376,7 +412,7 @@ void ProcD2pi::McKin() {
 	dAna->d2pi_mc.W = _lvW.Mag();*/
 	
 	UpdateEkin(kTRUE);
-	UpdateD2pi_MM(kTRUE);
+	UpdateD2pi_Q2_W_MM(kTRUE);
 	UpdateD2pi(kTRUE);
 }
 
@@ -476,15 +512,30 @@ void ProcD2pi::SetLabFrmHadronLvs(){
 		_lvPim.SetPxPyPzE(px,py,pz,energy);
 	}
 	
-	_lvMM[TOP1] = (_lvW-(_lvP+_lvPip+_lvPim));
-	_lvMM[TOP2] = (_lvW-(_lvP+_lvPip));
-    _lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
-	_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
+	
+	if (dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim>0){
+		_lvMM[TOP1] = (_lvW-(_lvP+_lvPip+_lvPim));
+	}
+	if (dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim==-1){
+		_lvMM[TOP2] = (_lvW-(_lvP+_lvPip));
+	}
+	if (dAna->h10idxP>0 && dAna->h10idxPim>0 && dAna->h10idxPip==-1){
+    	_lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
+	}
+	if (dAna->h10idxPip>0 && dAna->h10idxPim>0 && dAna->h10idxP==-1){
+		_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
+	}
 }
 
-void ProcD2pi::UpdateD2pi_MM(Bool_t ismc /* = kFALSE */) {
+void ProcD2pi::UpdateD2pi_Q2_W_MM(Bool_t ismc /* = kFALSE */) {
 	Data2pi *tp = &(dAna->d2pi);
 	if (ismc) tp = &(dAna->d2pi_mc);
+
+	//!Q2,W
+	tp->Q2 = -1*(_lvQ.Mag2());
+	tp->W = _lvW.Mag();
+
+	//! {MMs}
 	tp->mm2ppippim = _lvMM[TOP1].Mag2();
 	tp->mmppippim  = _lvMM[TOP1].Mag();
 	tp->mm2ppip    = _lvMM[TOP2].Mag2();
@@ -591,14 +642,14 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 		}*/
 	}
 
-	//!Q2,W
-	tp->Q2 = -1*(_lvQ.Mag2());
-	tp->W = _lvW.Mag();
+	//!Q2,W should be updated already by UpdateD2pi_Q2_W_MM()
+	/*tp->Q2 = -1*(_lvQ.Mag2());
+	tp->W = _lvW.Mag();*/
 
 	//Helicity
 	if(!ismc) {tp->h = dH10->evthel;} //e1f
 
-	//!{MMs} should be updated already by UpdateD2pi_MM()
+	//!{MMs} should be updated already by UpdateD2pi_Q2_W_MM()
 
 	//! Varsets
 	//! Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
