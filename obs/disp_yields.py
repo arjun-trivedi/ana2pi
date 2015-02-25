@@ -48,15 +48,12 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispYields:
-	def __init__(self,simnum='siml'):
+	def __init__(self,simnum='siml',tops=[1,2,3,4]):
 		self.SIM_NUM=simnum
-		#self.Q2W=q2w
-		# self.FEXP=root_open('$HOME/ongoing/mem_test/exp/new-h8-bng/yield_exp.root')
-		# self.FSIM=root_open('$HOME/ongoing/mem_test/sim/new-h8-bng/yield_sim.root')
-		# self.OUTDIR='/home/trivedia/ongoing/mem_test/obs'
-		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp.root'))
-		self.FEXP_HEL=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp_hel.root'))
-		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_sim.root'))
+		self.TOPS=tops
+		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		#self.FEXP_HEL=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp_hel_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
 		self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIM_NUM)
 		if not os.path.exists(self.OUTDIR):
 			sys.exit("%s does not exist!"%self.OUTDIR)
@@ -1119,7 +1116,7 @@ class DispYields:
 		else:
 			sys.exit("disp_1D::view=%s not recognized. Exiting."%view)
 
-		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs_1D")
+		self.OUTDIR_OBS_1D=os.path.join(self.OUTDIR,"Obs_1D_top%s"%(''.join(str(t) for t in self.TOPS)))
 		if not os.path.exists(self.OUTDIR_OBS_1D):
 			os.makedirs(self.OUTDIR_OBS_1D)
 
@@ -1263,14 +1260,14 @@ class DispYields:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_integ_yield(self,seql=['C','F'],norm=False):
+	def disp_integ_yield(self,seql=['C','F'],vst='VST1',norm=False):
 		"""
 		Walk the ROOT file and plot y(w;seq,q2bin). 
 		"""
 		if norm==False:
-			outdir=os.path.join(self.OUTDIR,"Obs_IntgYld")
+			outdir=os.path.join(self.OUTDIR,"Obs_IntgYld_top%s"%(''.join(str(t) for t in self.TOPS)))
 		else:
-			outdir=os.path.join(self.OUTDIR,"Obs_IntgYld_norm")
+			outdir=os.path.join(self.OUTDIR,"Obs_IntgYld_norm_top%s"%(''.join(str(t) for t in self.TOPS)))
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
@@ -1301,7 +1298,7 @@ class DispYields:
 				w=float(q2wbin.split('_')[1].split('-')[0])
 				dw=float(q2wbin.split('_')[1].split('-')[1])-w
 				#wbin=q2wbin.split('_')[1]
-				h5_UNPOL=self.FEXP.Get("%s/VST1/%s/h5_UNPOL"%(q2wbin,seq))
+				h5_UNPOL=self.FEXP.Get("%s/%s/%s/h5_UNPOL"%(q2wbin,vst,seq))
 				y[seq,q2bin][w]=thntool.GetIntegral(h5_UNPOL)
 				if norm==True:
 					q2=float(q2wbin.split('_')[0].split('-')[0])
@@ -1338,8 +1335,8 @@ class DispYields:
 			#ax.set_ylim(0,0.05)
 			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
 		ax.legend()
-		fig.savefig('%s/integ_yield.png'%(outdir))
-		fig.savefig('%s/integ_yield.eps'%(outdir))	
+		fig.savefig('%s/integ_yield_%s.png'%(outdir,vst))
+		fig.savefig('%s/integ_yield_%s.eps'%(outdir,vst))	
 			
 
 	def get_sim_stats(self):
