@@ -56,7 +56,7 @@ class ProcYields:
 		+ if self.USEHEL=true:  h8(VST,SEQ) => h5(VST,SEQ) 
 	
 	"""
-	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False):
+	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False,q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
@@ -77,15 +77,19 @@ class ProcYields:
 		self.DBG=dbg
 		print "DBG=",self.DBG
 
+		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
+		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
+
+
 		if self.EXP:
 			self.DATADIR=os.environ['D2PIDIR_EXP']
 			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2piR.root'))
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR): #! This path should already exist when making yield_exp
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
-			self.FIN_SIMYIELD=ROOT.TFile(os.path.join(self.OUTDIR,"yield_sim.root"))
-			if self.USEHEL: self.FOUTNAME="yield_exp_hel.root"
-			else:           self.FOUTNAME="yield_exp.root" 
+			self.FIN_SIMYIELD=ROOT.TFile(os.path.join( self.OUTDIR,"yield_sim_top%s.root"%(''.join(str(t) for t in self.TOPS)) ))
+			if self.USEHEL: self.FOUTNAME="yield_exp_hel_top%s.root"%(''.join(str(t) for t in self.TOPS))
+			else:           self.FOUTNAME="yield_exp_top%s.root"%(''.join(str(t) for t in self.TOPS))
 			print "DATADIR=%s\nOUTDIR=%s\nFIN_R=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s"%(self.DATADIR,self.OUTDIR,self.FIN_R.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUTNAME)
 		if self.SIM:
 			self.DATADIR=os.path.join(os.environ['D2PIDIR_SIM'],self.SIMNUM)
@@ -94,7 +98,7 @@ class ProcYields:
 			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR)
-			self.FOUTNAME="yield_sim.root"
+			self.FOUTNAME="yield_sim_top%s.root"%(''.join(str(t) for t in self.TOPS))
 			print "DATADIR=%s\nOUTDIR=%s\nFIN_T=%s\nFIN_R=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN_T.GetName(),self.FIN_R.GetName(),self.FOUTNAME)
 
 		self.wmax=None #Used for setM1M2axisrange()
@@ -188,9 +192,11 @@ class ProcYields:
 		
 		#! 4. Loop over Q2W-bins
 		for i in range(self.Q2BNG['NBINS']):
+			if self.Q2BNG['BINS_LE'][i]<self.Q2MIN or self.Q2BNG['BINS_UE'][i]>self.Q2MAX:continue
 			if self.DBG:
 				if i>1: break
 			for j in range(self.WBNG['NBINS']):
+				if self.WBNG['BINS_LE'][j]<self.WMIN or self.WBNG['BINS_UE'][j]>self.WMAX:continue
 				if self.DBG:
 					if j>1: break
 				q2wbin="%0.2f-%0.2f_%0.3f-%0.3f"%(self.Q2BNG['BINS_LE'][i],self.Q2BNG['BINS_UE'][i],self.WBNG['BINS_LE'][j],self.WBNG['BINS_UE'][j])
