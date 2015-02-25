@@ -1,0 +1,176 @@
+\title{Yield normalization}
+\date{February 26, 2015}
+
+\documentclass[12pt]{article}
+
+\usepackage{hyperref}
+\usepackage{cite}
+
+\usepackage{graphicx}
+%\usepackage{epsfig}
+\usepackage{epstopdf}
+
+\usepackage{mathtools}
+\newcommand{\defeq}{\vcentcolon=}
+
+\usepackage{float}
+\restylefloat{table}
+
+
+\begin{document}
+\maketitle
+
+% \begin{abstract}
+% This is the paper's abstract \ldots
+% \end{abstract}
+
+\section{Formula for normalizing yields}
+
+Equation 4.14 from Gleb's analysis note, in the absence of Empty-Target-Background-Subtraction terms and with some re-grouping and some new definition of terms and symbols can be written as 
+
+\begin{equation}
+\frac{\Delta^{7}\sigma^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta W \Delta Q^{2} \Delta^{5} \tau}
+ =
+\frac{1}{L}\frac{1}{F \cdot F_{cherenkov} \cdot R}\frac{\Delta^{7}N_{R}^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta W \Delta Q^{2} \Delta^{5} \tau}  
+\end{equation}
+
+where
+\begin{itemize}
+	\item $\Delta^{7}N_{R}^{ep \rightarrow e'p'\pi^{+}\pi^{-}}$ = Reconstructed events in a 7D cell specified by binning in $Q^2,W,M1,M2,\theta,\phi,\alpha$
+	\item $F$=Acceptance*Efficiency factor in a 7D cell obtained from Simulation
+	\item $F_{cherenkov}$ = Efficiency factor in a 7D cell for the Cherenkov detector
+	\item $R$=Radiative correction factor in a 7D cell
+	\item $L=\frac{Q_{tot}l_{t}D_{t}N_{A}}{q_{e}M_{H}}$
+\end{itemize}
+
+Equation 4.15, also from Gleb's analysis note, which is used to extract the Cross Section for the Hadronic Interaction, is directly reproduced here
+
+\begin{equation}
+\frac{\Delta^{5}\sigma^{\gamma^{*}p \rightarrow p'\pi^{+}\pi^{-}}}{\Delta^{5} \tau}
+=
+\frac{1}{\Gamma_{v}}\frac{\Delta^{7}\sigma^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta W \Delta Q^{2} \Delta^{5} \tau}
+\end{equation}
+
+where
+\begin{itemize}
+	\item $\Gamma_{v}=\frac{\alpha}{4\pi}\frac{1}{E^{2}M_{p}^2}\frac{W(W^2-M_{p}^2)}{(1-\epsilon)Q^{2}}$ (Gleb 4.17)
+	\item $\epsilon=\frac{1}{1+\frac{2(Q^2+\omega^{2})}{4EE'-Q^{2}}}$ (Gleb 4.18 re-formulated)
+\end{itemize}
+
+
+Therefore, from Eq. 2
+\begin{equation}
+\sum_{\Delta^{5} \tau}\frac{\Delta^{5}\sigma^{\gamma^{*}p \rightarrow p'\pi^{+}\pi^{-}}}{\Delta^{5} \tau} \Delta^{5}\tau
+=
+\sum_{\Delta^{5}\tau} \frac{1}{\Gamma_{v}}\frac{\Delta^{7}\sigma^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta W \Delta Q^{2} \Delta^{5} \tau} \Delta^{5}\tau
+\end{equation}
+
+Substituting a part of RHS of Eq. 3 from Eq. 1
+\begin{equation}
+\sum_{\Delta^{5} \tau}\frac{\Delta^{5}\sigma^{\gamma^{*}p \rightarrow p'\pi^{+}\pi^{-}}}{\Delta^{5} \tau} \Delta^{5}\tau
+=
+\sum_{\Delta^{5}\tau} \frac{1}{\Gamma_{v}}\underbrace{\frac{1}{L}\frac{1}{F \cdot F_{cherenkov} \cdot R}\frac{\Delta^{7}N_{R}^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta W \Delta Q^{2} \Delta^{5} \tau}}_{\frac{\Delta^{7}\sigma^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta W \Delta Q^{2} \Delta^{5} \tau}}  \Delta^{5}\tau
+\end{equation}
+
+Carrying on mathematically,
+\begin{equation}
+\sum_{\Delta^{5} \tau}\frac{\Delta^{5}\sigma^{\gamma^{*}p \rightarrow p'\pi^{+}\pi^{-}}}{\Delta^{5} \tau} \Delta^{5}\tau
+=
+\frac{1}{\Gamma_{v}}\frac{1}{L}\frac{1}{\Delta W \Delta Q^{2}}\sum_{\Delta^{5}\tau} \frac{1}{F \cdot F_{cherenkov} \cdot R}\frac{\Delta^{7}N_{R}^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta^{5} \tau} \Delta^{5}\tau
+\end{equation}
+
+Therefore, finally we obtain the following formula for the Integrated Hadronic Cross Section in a Q2-W bin ($[Q^2+\Delta Q^{2},W+\Delta W]$)
+\begin{equation}
+\sigma^{\gamma^{*}p \rightarrow p'\pi^{+}\pi^{-}}
+=
+\frac{1}{\Gamma_{v}}\frac{1}{L}\frac{1}{\Delta W \Delta Q^{2}} N^{ep \rightarrow e'p'\pi^{+}\pi^{-}}
+\end{equation}
+
+where
+\begin{itemize}
+	\item
+	\begin{equation*}
+	N^{ep \rightarrow e'p'\pi^{+}\pi^{-}} = \sum_{\Delta^{5}\tau} \frac{1}{F \cdot F_{cherenkov} \cdot R}\frac{\Delta^{7}N_{R}^{ep \rightarrow e'p'\pi^{+}\pi^{-}}}{\Delta^{5} \tau} \Delta^{5}\tau
+	\end{equation*}
+	\item $\Gamma_{v}$ is evaluated at the center of the bin.
+\end{itemize}
+
+Therefore, to calculate the Integrated Cross Section in a $Q^2-W$ bin, one can simply count all the Events in that bin and divide it by the $Q^2-W$ bin width multiplied by the Luminosity and the Virtual Photon Flux.
+
+
+\section{Technical implementation of the formula}
+\begin{itemize}
+	\item My data is organized in 7D histograms ($\defeq$ h7) (ROOT's THnSparse Objects), where the 7 dimensions are:$Q^2,W,M1,M2,\theta,\phi,\alpha$.
+	\item The histogram is binned as per the binning requirements of the finally needed Observables.
+\end{itemize}
+
+Therefore, in order to implement Eq. 6, I take the following steps:
+\begin{enumerate}
+	\item Set the appropriate range in Q2,W dimensions for h7
+	\item Project h7 onto $M1,M2,\theta,\phi,\alpha$($\defeq$ h5)
+	\begin{itemize}
+		\item In Simulation: h5-ST,h5-SR $\rightarrow$ h5-SA \\
+		(ST=Sim. Thrown, SR=Sim. Reconstructed, SA=Sim. Acceptance)
+		\item In Experiment: h5-ER,h5-SA $\rightarrow$ h5-EC $\rightarrow$ h5-EH $\rightarrow$ h5-EF(=h5-EC+h5-EH)\\
+		(ER=Exp. Reconstructed,EC=Exp. Acceptance Corrected,EH=Exp. Holes,EF=Exp. Acceptance and Hole Corrected)
+	\end{itemize}
+	\item $N^{ep \rightarrow e'p'\pi^{+}\pi^{-}}$=Get total entries(=total number of Events) in h5-EC (and h5-EF to keep track of Holes)
+	\item Divide $N^{ep \rightarrow e'p'\pi^{+}\pi^{-}}$ by $\Gamma_{v} L \Delta W \Delta Q^{2}$
+\end{enumerate}
+
+\section{Term by term analysis of the results obtained using the formula}
+My Cross Section, currently, is lower by a factor of $\approx$4 as compared to data from Ripani at $Q^2 bin = [1.1,1.5] GeV^{2}$. Generally the matter could be that
+\begin{enumerate}
+	\item $N_{R}$ is less by a factor of 4
+	\item $L$ is larger by a factor of 4
+	\item $\Gamma_{v} \cdot \Delta W \cdot \Delta Q^{2}$ is larger by a factor of 4
+	\item $F \cdot F_{cherenkov} \cdot R$ is overestimated and that leads to underestimated $N$ by a factor of 4
+\end{enumerate}
+
+Following is a term by term analysis and on their refinement, possible effect on the Cross Section:
+\subsection{$N_{R}$: Possible effect: Not determined}
+\begin{itemize}
+	\item Run over 576 Golden Runs for E1F as identified by Wes Gohn (11790 files).
+	\item Investigating 
+	\begin{itemize}
+		\item Possible errors relating to techincalities of going from data in 11790 files $\rightarrow$ h7 $\rightarrow$ h5 $\rightarrow$ $N$
+	\end{itemize}
+\end{itemize}
+
+\subsection{$L$: Possible effect: Marginally increase Cross Section}
+\begin{itemize}
+	\item Estimated a Luminosity of $\approx 20 fb^{-1}$from Golden Runs for E1F.
+	\item I expect the Luminosity to marginally decrease after
+	\begin{itemize}
+		\item File-by-file Luminosity analysis is done. This has to be done because not only are 208 files missing at the beginning of a Run, but also 70 files from in between a Run; Due to the tecnicalities of how $Q_{FC}$ is stored in the files, calculation of $Q$ for a Run has to be done on a file-by-file basis to get the most accurate measure of Luminosity.
+	\end{itemize}
+\end{itemize}
+
+\subsection{$\Gamma_{v} \cdot \Delta W \cdot \Delta Q^{2}$: Possible effect: Not determined}
+\begin{itemize}
+	\item Is my formula for $\epsilon$ equivalent to Gleb's?
+	\item $\Gamma_{v} \cdot \Delta W \cdot \Delta Q^{2}$ with $\Gamma_{v}$ evaluated at the center of the bin is within +/- 2\%-3\% of result of integration. 
+\end{itemize}
+
+\subsection{$F \cdot F_{cherenkov} \cdot R$: Possible effect: increase in Cross Section, upto $>10\%$}
+\begin{itemize}
+	\item Currently $F_{cherenkov} = R = 1$ i.e. these correction factors have not been determined; when determined, I expect them to increase $\Delta^{7} N$ in each 7D cell and therefore increase the total yield.
+	\item $F$:
+	\begin{itemize}
+		\item Missing Mass cuts currently do not have the same efficiency in Experiment and Simulation. Efficiency of the cut in Experiment is generally lower and this leads to a (theoreticaly estimated) underestimation of the Acceptance Corrected yield by upto a factor of 10\% level at the highest W bin.
+		\item Investigating possible sources in error due to technicalities of using ROOT's THnSparse histograms.
+	\end{itemize}
+	
+\end{itemize}
+
+\section{Comparison with Evan's $p\omega$ Cross Section}
+The following is relevant only if at $W \approx 1.8 GeV$, Cross Section from $p\pi^{+}\pi^{-}$ can be compared with $p\omega$. If so then:
+\begin{itemize}
+	\item Are Evan and I in agreement and together, in systematic disagreement with the true Cross Section?
+\end{itemize}
+
+
+
+
+
+\end{document}
