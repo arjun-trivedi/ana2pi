@@ -196,15 +196,23 @@ TObjArray* DataAna::makeHistsEkin()
 
 TObjArray* DataAna::makeHistsMM()
 {
-	TObjArray *ret = new TObjArray(4);
-	ret->Add(new TH2F("hmm2ppippimVw","Missing Mass2 of p,#pi^{+},#pi^{-} vs W",150, 0, 4, 600,-0.003,0.003));
-	ret->Add(new TH2F("hmmppippimVw", "Missing Mass of p,#pi^{+},#pi^{-} vs W", 150, 0, 4, 20000, -0.1, 0.1));
-	ret->Add(new TH2F("hmm2ppipVw",   "Missing Mass2 of p,#pi^{+} vs W",        150, 0, 4, 100, -0.02, 0.16));
-	ret->Add(new TH2F("hmmppipVw",    "Missing Mass of p,#pi^{+} vs W",         150, 0, 4, 100, 0.00, 0.40));
-	ret->Add(new TH2F("hmm2ppimVw",   "Missing Mass2 of p,#pi^{-} vs W",        150, 0, 4, 100, -0.02, 0.16));
-	ret->Add(new TH2F("hmmppimVw",    "Missing Mass of p,#pi^{-} vs W",         150, 0, 4, 100, 0.00, 0.40));
-	ret->Add(new TH2F("hmm2pippimVw", "Missing Mass2 of #pi^{+},#pi^{-} vs W",  100, 0, 4, 100,  0.8, 1.2));
-	ret->Add(new TH2F("hmmpippimVw",  "Missing Mass of #pi^{+},#pi^{-} vs W",   100, 0, 4, 100,  0.8, 1.2));
+	TObjArray *ret = new TObjArray(16);
+	ret->Add(new TH1F("hmm2ppippim","Missing Mass2 of p,#pi^{+},#pi^{-}",600,   -0.003,0.003));
+	ret->Add(new TH1F("hmmppippim", "Missing Mass of p,#pi^{+},#pi^{-}", 20000, -0.10,  0.1));
+	ret->Add(new TH1F("hmm2ppip",   "Missing Mass2 of p,#pi^{+}",        100,   -0.02, 1.00));//0.16));
+	ret->Add(new TH1F("hmmppip",    "Missing Mass of p,#pi^{+}",         100,    0.00, 1.00));//0.40));
+	ret->Add(new TH1F("hmm2ppim",   "Missing Mass2 of p,#pi^{-}",        100,   -0.02, 1.00));//0.16));
+	ret->Add(new TH1F("hmmppim",    "Missing Mass of p,#pi^{-}",         100,    0.00, 1.00));//0.40));
+	ret->Add(new TH1F("hmm2pippim", "Missing Mass2 of #pi^{+},#pi^{-}",  100,    0.80,  1.2));
+	ret->Add(new TH1F("hmmpippim",  "Missing Mass of #pi^{+},#pi^{-}",   100,    0.80,  1.2));
+	ret->Add(new TH2F("hmm2ppippimVw","Missing Mass2 of p,#pi^{+},#pi^{-} vs W",150, 0, 3, 600,   -0.003,0.003));
+	ret->Add(new TH2F("hmmppippimVw", "Missing Mass of p,#pi^{+},#pi^{-} vs W", 150, 0, 3, 20000, -0.10,  0.1));
+	ret->Add(new TH2F("hmm2ppipVw",   "Missing Mass2 of p,#pi^{+} vs W",        150, 0, 3, 100,   -0.02, 1.00));//0.16));
+	ret->Add(new TH2F("hmmppipVw",    "Missing Mass of p,#pi^{+} vs W",         150, 0, 3, 100,    0.00, 1.00));//0.40));
+	ret->Add(new TH2F("hmm2ppimVw",   "Missing Mass2 of p,#pi^{-} vs W",        150, 0, 3, 100,   -0.02, 1.00));//0.16));
+	ret->Add(new TH2F("hmmppimVw",    "Missing Mass of p,#pi^{-} vs W",         150, 0, 3, 100,    0.00, 1.00));//0.40));
+	ret->Add(new TH2F("hmm2pippimVw", "Missing Mass2 of #pi^{+},#pi^{-} vs W",  100, 0, 3, 100,    0.80,  1.2));
+	ret->Add(new TH2F("hmmpippimVw",  "Missing Mass of #pi^{+},#pi^{-} vs W",   100, 0, 3, 100,    0.80,  1.2));
 	return ret;
 }
 
@@ -544,39 +552,59 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	if (useMc) tp = &d2pi_mc;
 		
 	if ((useMc || (h10idxP>0 && h10idxPip>0 && h10idxPim>0)) ) {	
-		hIdx = 0;
-		TH2* h1 = (TH2*)hists->At(hIdx);
-		h1->Fill(tp->W,tp->mm2ppippim);
-		
-		TH2* h2 = (TH2*)hists->At(hIdx+1);
-		h2->Fill(tp->W,tp->mmppippim);
+		hIdx=0;
+		TH1* h1 = (TH2*)hists->At(hIdx);
+		h1->Fill(tp->mm2ppippim);
+		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		h2->Fill(tp->mmppippim);
+
+		hIdx=8;
+		TH2* h3 = (TH2*)hists->At(hIdx);
+		h3->Fill(tp->W,tp->mm2ppippim);
+		TH2* h4 = (TH2*)hists->At(hIdx+1);
+		h4->Fill(tp->W,tp->mmppippim);
 	}
 	
     if ((useMc || (h10idxP>0 && h10idxPip>0 && h10idxPim==-1)) ) {
-		hIdx = 2;
-		TH2* h1 = (TH2*)hists->At(hIdx);
-		h1->Fill(tp->W,tp->mm2ppip);
-		
-		TH2* h2 = (TH2*)hists->At(hIdx+1);
-		h2->Fill(tp->W,tp->mmppip);
+		hIdx=2;
+		TH1* h1 = (TH2*)hists->At(hIdx);
+		h1->Fill(tp->mm2ppip);
+		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		h2->Fill(tp->mmppip);
+
+		hIdx=10;
+		TH2* h3 = (TH2*)hists->At(hIdx);
+		h3->Fill(tp->W,tp->mm2ppip);
+		TH2* h4 = (TH2*)hists->At(hIdx+1);
+		h4->Fill(tp->W,tp->mmppip);
 	}
 	
 	if ((useMc || (h10idxP>0 && h10idxPim>0 && h10idxPip==-1)) ) {
-		hIdx = 4;
-		TH2* h1 = (TH2*)hists->At(hIdx);
-		h1->Fill(tp->W,tp->mm2ppim);
-		
-		TH2* h2 = (TH2*)hists->At(hIdx+1);
-		h2->Fill(tp->W,tp->mmppim);
+		hIdx=4;
+		TH1* h1 = (TH2*)hists->At(hIdx);
+		h1->Fill(tp->mm2ppim);
+		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		h2->Fill(tp->mmppim);
+
+		hIdx=12;
+		TH2* h3 = (TH2*)hists->At(hIdx);
+		h3->Fill(tp->W,tp->mm2ppim);
+		TH2* h4 = (TH2*)hists->At(hIdx+1);
+		h4->Fill(tp->W,tp->mmppim);
 	}
 	
 	if ((useMc || (h10idxPip>0 && h10idxPim>0 && h10idxP==-1)) ) {
 		hIdx = 6;
-		TH2* h1 = (TH2*)hists->At(hIdx);
-		h1->Fill(tp->W,tp->mm2pippim);
-		
-		TH2* h2 = (TH2*)hists->At(hIdx+1);
-		h2->Fill(tp->W,tp->mmpippim);
+		TH1* h1 = (TH2*)hists->At(hIdx);
+		h1->Fill(tp->mm2pippim);
+		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		h2->Fill(tp->mmpippim);
+
+		hIdx=14;
+		TH2* h3 = (TH2*)hists->At(hIdx);
+		h3->Fill(tp->W,tp->mm2pippim);
+		TH2* h4 = (TH2*)hists->At(hIdx+1);
+		h4->Fill(tp->W,tp->mmpippim);
 	}
 	
 }
