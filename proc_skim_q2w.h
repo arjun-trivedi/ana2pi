@@ -8,12 +8,19 @@
 
 using namespace ParticleConstants;
 
+/**********************************************************************************
+[02-23-15] 
++ This processor is being used to cut off events for W>2.125 GeV because genev is not 
+working beyond this limit.
++ The rest of the kinematical edges in Q2 and W should be similar to that specified in h8_bng.h
+***********************************************************************************/
+
 class ProcSkimQ2W : public EpProcessor
 {
 
 public:
 	ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-				Float_t q2min=1.2,Float_t q2max=5.20,Float_t wmin=1.3,Float_t wmax=3.0);
+				Float_t q2min=1.25,Float_t q2max=5.25,Float_t wmin=1.300,Float_t wmax=2.125);
 	~ProcSkimQ2W();
 	
 	void handle();
@@ -29,7 +36,7 @@ protected:
 };
 
 ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-						Float_t q2min/*=1.2*/,Float_t q2max/*=5.20*/,Float_t wmin/*=1.3*/,Float_t wmax/*=3.0*/)
+						Float_t q2min/*=1.20*/,Float_t q2max/*=5.20*/,Float_t wmin/*=1.12*/,Float_t wmax/*=2.23*/)
 						 : EpProcessor(td, dataH10, dataAna)
 {
 	_q2min=q2min;
@@ -41,14 +48,6 @@ ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"pass Q2W skim");
-	//! atrivedi [06-13-14]: The following logic is based on
-	//! the assumption that when making subsets of 'q2wFull',
-	//!   - for simulation, Q2W filtering will be done at ST level
-	//!   - for experiment, Q2W filtering will be done at ER level
-	_useMc=kFALSE;
-	if (dH10->dtyp=="sim") {
-		_useMc=kTRUE;
-	}
 }
 
 ProcSkimQ2W::~ProcSkimQ2W()
@@ -75,7 +74,7 @@ void ProcSkimQ2W::handle()
 	}
 	
 	
-	updateEkin(_useMc);
+	updateEkin();
 		
 	if (dAna->d2pi.top == 0) { //i.e inclusive event
 		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC],_useMc);
