@@ -19,6 +19,8 @@ import numpy as np
 
 
 """
+ds [sim=siml]
+
 + This script displays simstats for user entered simnum (siml by default):
 + The display is saved in $OBSDIR/simnum/simstats
 
