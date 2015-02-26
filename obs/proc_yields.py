@@ -42,9 +42,9 @@ HEL_NAME={UNPOL:'UNPOL',NEG:'NEG',ZERO:'ZERO',POS:'POS'}
 
 class ProcYields:
 	"""
-	+ Accomplishes
-		+ if self.USEHEL=false: d2pi.root => yield_exp/sim.root
-		+ if self.USEHEL=true:  d2pi.root => yield_exp_hel.root 
+	+ Accomplishes d2pi.root -> yield.root
+		+ if self.USEHEL=false: d2pi.root -> yield_exp/sim.root
+		+ if self.USEHEL=true:  d2pi.root -> yield_exp_hel.root 
 
 	+ The direct interface for the user is the 'execute()' method that calls 'proc()' for h8(VST,SEQ) in each Crs-W bin. 
 		+ The 'execute()' method uses Python's multiprocessing module to accomplish the task of processing each h8(VST,SEQ) in 
