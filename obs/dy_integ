@@ -6,11 +6,12 @@ import sys
 '''
 dy_integ [simnum=siml] [tops=tops]
 '''
+print len(sys.argv)
 #! User input simnum, else use siml
 if len(sys.argv)>1:
-	simnum='siml'
-else:
 	simnum=sys.argv[1]
+else:
+	simnum='siml'
 
 if len(sys.argv)>2:#i.e. tops by user
         tops=[]
@@ -24,7 +25,7 @@ if len(sys.argv)>2:#i.e. tops by user
 else:
         tops=[1,2,3,4]
 
-print "Displaying integrated yields for %s"%simnum
+print "Displaying integrated yields for sim:tops = %s:%s"%(simnum,tops)
 
 dy=DispYields(simnum=simnum,tops=tops)
 #dy.disp_integ_yield()
