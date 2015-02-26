@@ -91,9 +91,12 @@ ana2pi Branches
 							+ proc_h10.cpp: Added capability to add ProcLum to Proc chain
 
 							+[02-22-15]test_yield_normalization
-							Created this branch because debugging the matter of obtaining the correct normalization factor required extensive testing. 
+							Created this branch because debugging the matter of obtaining the correct normalization factor required extensive testing. Further changes that I made:
+								+ Adapted d2pi->yields to process only W<=2.125 GeV
+								  (Note h10->d2pi is still capable of processing all W bins)
+								+ Added capability to make yields as per Top enter by user
 
-							Noteworthy changes:
+							Noteworthy code changes:
 								+ data_ana.cpp: makeHistsMM() and fillHistsMM() modified to make, apart from MM_vs_W, directly MM histograms. Additionally, the MM and W ranges were adapted to be able to extract more meaning from the histograms.
 								+ proc_skim_q.h, proc_pid.h, proc_d2pi.h:
 									+ hevtsum: Keep only meaningful information i.e. removed information that I was not finding useful
