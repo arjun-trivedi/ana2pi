@@ -95,6 +95,7 @@ ana2pi Branches
 								+ Adapted d2pi->yields to process only W<=2.125 GeV
 								  (Note h10->d2pi is still capable of processing all W bins)
 								+ Added capability to make yields as per Top enter by user
+								+ Refined proc_delast.h,data_elastic.h,data_elastic.cpp
 
 							Noteworthy code changes:
 								+ data_ana.cpp: makeHistsMM() and fillHistsMM() modified to make, apart from MM_vs_W, directly MM histograms. Additionally, the MM and W ranges were adapted to be able to extract more meaning from the histograms.
@@ -102,7 +103,9 @@ ana2pi Branches
 									+ hevtsum: Keep only meaningful information i.e. removed information that I was not finding useful
 									+ Cleaned up code	to make logic of the process clearer in the code. I tested the cleaned up code on ST,SR and ER and found there to be no difference.
 								+ proc_skim_q2w.h: Fixed default Q2-W ranges to reflect "thesis range"
-								+ proc_h10.cpp: Re-added capability to add ProcSkimQ2W in the Processor chain.
+								+ proc_h10.cpp: Re-added capability to add in the Processor chain:
+									+ ProcSkimQ2W
+									+ ProcDelast
 								+ obs/q2w_bng.py: Modified to adjust binning to "thesis range" i.e  excluded W>2.125 GeV
 								+ obs/proc_yields.py:
 									+ Added capability to name output file as per the Tops used to process the yields
@@ -113,6 +116,7 @@ ana2pi Branches
 									+ disp_integ_yield(): Added capability to display yield for different VSTS.
 								+ obs/dy_integ: Modified to be able to take Tops as input from user.
 								+ obs/ds: Modified code to display simstats on for Thesis Range.
+								+ proc_delast.h,data_elastic.h/cpp: Modifications (read proc_delast.h for details)
 								+ The following are 1st time additions:
 									+ obs/dev/dy_integ_per_top
 									+ obs/dev/py_per_top
