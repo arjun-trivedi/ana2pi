@@ -13,17 +13,32 @@ public:
 	virtual ~DataElastic();
 	void Clear();
 	
+	//! gpart
 	Int_t gpart;
-	Int_t ne;
-	Int_t np;
-	//Int_t sector;
+	//!Q2,W
 	Float_t Q2;
 	Float_t W;
-	Float_t MMp;
-	TVector3 vxE;
-	TVector3 vxP;
-	TLorentzVector lvE;
-	TLorentzVector lvP;
+	//! MMs for Event Selection
+	Float_t MMep;
+	Float_t MM2ep;
+	//! Reconstructed Kinematics
+	//! for e',p' at e' vertex
+	Float_t p_e;
+	Float_t p_p;
+	Float_t theta_e;
+	Float_t theta_p;
+	Float_t phi_e;
+	Float_t phi_p;
+	//! Reconstructed e' vertex
+	Float_t vx_e;
+	Float_t vx_p;
+	Float_t vy_e;
+	Float_t vy_p;
+	Float_t vz_e;
+	Float_t vz_p;
+	//! EID
+	UShort_t nphe;
+
 };
 
 #endif // DATAELASTIC_H
