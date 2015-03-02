@@ -1,0 +1,27 @@
+setenv ANA2PI_STUDY_ELASTIC "${ANA2PI}/sub_studies/study_elastic"
+alias study_elastic 'cd ${ANA2PI_STUDY_ELASTIC}
+
+##- modify PATH
+setenv PATH "${PATH}:${ANA2PI_STUDY_ELASTIC}"
+
+##- modify PYTHONPATH
+setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_ELASTIC}"
+
+##-- dir where h10.lst and delast are kept
+if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
+  #-- setenv H10DIR_EXP :same as for obs
+  #-- setenv H10DIR_SIM : only needed on farm
+  #-- setenv H10SKIMDIR_EXP :same as for obs
+  setenv DELASTDIR "/data/trivedia/e1f/elastic/delast"
+  setenv DELASTDIR_EXP "${DELASTDIR}/exp"
+  setenv DELASTDIR_SIM "${DELASTDIR}/sim"
+else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
+  setenv H10DIR_ELAST_EXP "${VOLHOME}/data/e1f/elastic/exp"
+  setenv H10DIR_ELAST_SIM "${VOLHOME}/data/e1f/elastic/sim"
+  setenv DELASTDIR "${EG3HOME}/data/e1f/elastic/delast"
+  setenv DELASTDIR_EXP "${D2PIDIR}/exp"
+  setenv DELASTDIR_SIM "${D2PIDIR}/sim"
+endif
+##-- dir where where yields and their displays are kept
+setenv OBSDIR "${DELASTDIR}/obs"
+alias obs_elast 'gqview $OBSDIR/siml/ &'
