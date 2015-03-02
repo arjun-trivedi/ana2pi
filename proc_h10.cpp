@@ -219,7 +219,13 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("fid"),dH10,dAna);
-         else if (str.EqualTo("delast"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna);
+         //else if (str.EqualTo("delast"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna);
+         else if (str.EqualTo("delastT"))            proc = new ProcDelast(mkdir("delast"),dH10,dAna,kFALSE,kFALSE,kTRUE, kFALSE);
+         else if (str.EqualTo("delastTmon"))         proc = new ProcDelast(mkdir("delast"),dH10,dAna,kTRUE, kFALSE,kTRUE, kFALSE);
+         else if (str.EqualTo("delastTmononly"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna,kFALSE,kTRUE, kTRUE, kFALSE);
+         else if (str.EqualTo("delastR"))            proc = new ProcDelast(mkdir("delast"),dH10,dAna,kFALSE,kFALSE,kFALSE,kTRUE);
+         else if (str.EqualTo("delastRmon"))         proc = new ProcDelast(mkdir("delast"),dH10,dAna,kTRUE, kFALSE,kFALSE,kTRUE);
+         else if (str.EqualTo("delastRmononly"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna,kFALSE,kTRUE, kFALSE,kTRUE);
          else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
