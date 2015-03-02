@@ -1,5 +1,5 @@
 setenv ANA2PI_STUDY_ELASTIC "${ANA2PI}/sub_studies/study_elastic"
-alias study_elastic 'cd ${ANA2PI_STUDY_ELASTIC}
+alias study_elastic 'cd ${ANA2PI_STUDY_ELASTIC}'
 
 ##- modify PATH
 setenv PATH "${PATH}:${ANA2PI_STUDY_ELASTIC}"
