@@ -18,8 +18,8 @@ else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv H10DIR_ELAST_EXP "${VOLHOME}/data/e1f/elastic/exp"
   setenv H10DIR_ELAST_SIM "${VOLHOME}/data/e1f/elastic/sim"
   setenv DELASTDIR "${EG3HOME}/data/e1f/elastic/delast"
-  setenv DELASTDIR_EXP "${D2PIDIR}/exp"
-  setenv DELASTDIR_SIM "${D2PIDIR}/sim"
+  setenv DELASTDIR_EXP "$DELASTDIR/exp"
+  setenv DELASTDIR_SIM "$DELASTDIR/sim"
 endif
 ##-- dir where where yields and their displays are kept
 setenv OBSDIR "${DELASTDIR}/obs"
