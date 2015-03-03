@@ -53,6 +53,9 @@ public:
 	TObjArray* makeHistsEkin();
 	TObjArray* makeHistsMM();
 	TObjArray** makeYields();
+
+	TObjArray* makeHistsMMElastic();
+	TObjArray* makeYieldsElastic();
 	
 	void writeHists(TObjArray** hists, TDirectory *dirout);
 	
@@ -67,6 +70,9 @@ public:
 	void fillHistsEkin(TObjArray* hists, Bool_t useMc = kFALSE);
 	void fillHistsMM(TObjArray *hists, Bool_t useMc = kFALSE);
 	void fillYields(TObjArray** hists, Float_t w, Bool_t useMc = kFALSE);
+
+	void fillHistsMMElastic(TObjArray *hists, Bool_t useMc = kFALSE);
+	void fillYieldsElastic(TObjArray* hists, Bool_t useMc = kFALSE);
 };
 
 #endif // DATAANA_H

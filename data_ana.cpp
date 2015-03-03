@@ -216,6 +216,14 @@ TObjArray* DataAna::makeHistsMM()
 	return ret;
 }
 
+TObjArray* DataAna::makeHistsMMElastic()
+{
+	TObjArray *ret = new TObjArray(2);
+	ret->Add(new TH2F("hmmepVw","Missing Mass of ep vs. W",150,0,3,100,-0.02,1.00));
+	ret->Add(new TH1F("hW", "W", 150,0,3));
+	return ret;
+}
+
 TObjArray** DataAna::makeYields()
 {
 	TObjArray** ret=new TObjArray* [NBINS_WCRS];
@@ -301,6 +309,32 @@ TObjArray** DataAna::makeYields()
 
 		ret[i]=h8;
 	}	
+	return ret;
+}
+
+TObjArray* DataAna::makeYieldsElastic()
+{
+	TObjArray* ret=new TObjArray(1);
+	Int_t hdim=2;
+
+	Int_t theta_nbins=40; //2 deg/bin
+	Int_t theta_min=0;
+	Int_t theta_max=80;
+
+	Int_t phi_nbins=180; //2 deg/bin
+	Int_t phi_min=0;
+	Int_t phi_max=360;
+
+
+	//                   {theta,       phi      }
+	Int_t bins[]    =    {theta_nbins, phi_nbins};
+	Double_t xmin[] =    {theta_min,   phi_min};
+	Double_t xmax[] =    {theta_max,   phi_max};
+	THnSparse* h2=new THnSparseF("yield","theta, phi",hdim, bins, xmin,xmax);
+	h2->Sumw2();
+    gDirectory->Append(h2);
+	ret->Add(h2);
+
 	return ret;
 }
 
@@ -553,9 +587,9 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 		
 	if ((useMc || (h10idxP>0 && h10idxPip>0 && h10idxPim>0)) ) {	
 		hIdx=0;
-		TH1* h1 = (TH2*)hists->At(hIdx);
+		TH1* h1 = (TH1*)hists->At(hIdx);
 		h1->Fill(tp->mm2ppippim);
-		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		TH1* h2 = (TH1*)hists->At(hIdx+1);
 		h2->Fill(tp->mmppippim);
 
 		hIdx=8;
@@ -567,9 +601,9 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	
     if ((useMc || (h10idxP>0 && h10idxPip>0 && h10idxPim==-1)) ) {
 		hIdx=2;
-		TH1* h1 = (TH2*)hists->At(hIdx);
+		TH1* h1 = (TH1*)hists->At(hIdx);
 		h1->Fill(tp->mm2ppip);
-		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		TH1* h2 = (TH1*)hists->At(hIdx+1);
 		h2->Fill(tp->mmppip);
 
 		hIdx=10;
@@ -581,9 +615,9 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	
 	if ((useMc || (h10idxP>0 && h10idxPim>0 && h10idxPip==-1)) ) {
 		hIdx=4;
-		TH1* h1 = (TH2*)hists->At(hIdx);
+		TH1* h1 = (TH1*)hists->At(hIdx);
 		h1->Fill(tp->mm2ppim);
-		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		TH1* h2 = (TH1*)hists->At(hIdx+1);
 		h2->Fill(tp->mmppim);
 
 		hIdx=12;
@@ -595,9 +629,9 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	
 	if ((useMc || (h10idxPip>0 && h10idxPim>0 && h10idxP==-1)) ) {
 		hIdx = 6;
-		TH1* h1 = (TH2*)hists->At(hIdx);
+		TH1* h1 = (TH1*)hists->At(hIdx);
 		h1->Fill(tp->mm2pippim);
-		TH1* h2 = (TH2*)hists->At(hIdx+1);
+		TH1* h2 = (TH1*)hists->At(hIdx+1);
 		h2->Fill(tp->mmpippim);
 
 		hIdx=14;
@@ -607,6 +641,17 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 		h4->Fill(tp->W,tp->mmpippim);
 	}
 	
+}
+
+void DataAna::fillHistsMMElastic(TObjArray *hists, Bool_t useMc /* = kFALSE */)
+{
+	DataElastic *de = &dElast;
+	if (useMc) de = &dElast_ST;
+		
+	TH2* h1 = (TH2*)hists->At(0);
+	h1->Fill(de->W,de->MMep);
+	TH1* h2 = (TH1*)hists->At(1);
+	h2->Fill(de->W);
 }
 
 void DataAna::fillYields(TObjArray **hists, Float_t w, Bool_t useMc /* = kFALSE */)
@@ -641,4 +686,14 @@ void DataAna::fillYields(TObjArray **hists, Float_t w, Bool_t useMc /* = kFALSE 
 	h8_3->Fill(coord3);
 
 	return;
+}
+
+void DataAna::fillYieldsElastic(TObjArray *hists, Bool_t useMc /* = kFALSE */)
+{
+	DataElastic *de = &dElast;
+	if (useMc) de = &dElast_ST;
+
+	THnSparse* h2 = (THnSparse*)hists->At(0);
+	Double_t coord[] = {de->theta_e,de->phi_e};
+	h2->Fill(coord);
 }
