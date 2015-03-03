@@ -98,7 +98,9 @@ ana2pi Branches
 								+ Refined proc_delast.h,data_elastic.h,data_elastic.cpp
 
 							Noteworthy code changes:
-								+ data_ana.cpp: makeHistsMM() and fillHistsMM() modified to make, apart from MM_vs_W, directly MM histograms. Additionally, the MM and W ranges were adapted to be able to extract more meaning from the histograms.
+								+ data_ana.cpp: 
+									+ makeHistsMM() and fillHistsMM(): modified to make, apart from MM_vs_W, directly MM histograms. Additionally, the MM and W ranges were adapted to be able to extract more meaning from the histograms.
+									+ Added methods: makeHistsMMElastic(),makeYieldsElastic(),fillHistsMMElastic(),fillYieldsElastic()
 								+ proc_skim_q.h, proc_pid.h, proc_d2pi.h:
 									+ hevtsum: Keep only meaningful information i.e. removed information that I was not finding useful
 									+ Cleaned up code	to make logic of the process clearer in the code. I tested the cleaned up code on ST,SR and ER and found there to be no difference.

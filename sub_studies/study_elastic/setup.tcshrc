@@ -9,9 +9,8 @@ setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_ELASTIC}"
 
 ##-- dir where h10.lst and delast are kept
 if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
-  #-- setenv H10DIR_EXP :same as for obs
-  #-- setenv H10DIR_SIM : only needed on farm
-  #-- setenv H10SKIMDIR_EXP :same as for obs
+  setenv H10DIR_ELAST_EXP "$H10DIR_EXP" #same as for obs
+  setenv H10DIR_ELAST_SIM "/data/trivedia/e1f/elastic/sim" 
   setenv DELASTDIR "/data/trivedia/e1f/elastic/delast"
   setenv DELASTDIR_EXP "${DELASTDIR}/exp"
   setenv DELASTDIR_SIM "${DELASTDIR}/sim"

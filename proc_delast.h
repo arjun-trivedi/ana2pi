@@ -27,10 +27,12 @@ protected:
 	//! For Thrown 
 	TObjArray* _hists_ekin_ST;
 	TTree* _t_ST;
+	TObjArray* _yields_ST;
 	//! For Reconstructed
 	TObjArray* _hists_ekin[NPROCMODES];
 	TObjArray* _hists_cuts[NPROCMODES];
 	TTree* _t[NPROCMODES];
+	TObjArray* _yields[NPROCMODES];
 	bool _det_e,_det_p;
 	int _h10idxE,_h10idxP;
 	//! Used by ST,ER and SR
@@ -55,6 +57,10 @@ protected:
 	
 	void setLabFrmLvs();
 	bool passEvent();
+
+	Float_t getPhi(TLorentzVector lv);
+	Float_t invTan(Float_t y, Float_t x);
+
 
 	//** Following 2 functions used to apply efid to ST-electrons
 	bool inFid(); 
@@ -104,14 +110,18 @@ void ProcDelast::handle() {
 				_t_ST = new TTree("t_ST","TTree containing data for Elastic events");
 				AddBranches(_t_ST,kTRUE);
 				_hists_ekin_ST=dAna->makeHistsEkin();
+				_yields_ST=dAna->makeYieldsElastic();
 			}
-			dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
 			_t_ST->Fill();
+			dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
+			dAna->fillYieldsElastic(_yields_ST,kTRUE);
 		}else{//! If regular mode
 			if (_hists_ekin_ST==NULL){
 				_hists_ekin_ST=dAna->makeHistsEkin();
+				_yields_ST=dAna->makeYieldsElastic();
 			}
 			dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
+			dAna->fillYieldsElastic(_yields_ST,kTRUE);
 		}
 		EpProcessor::handle(); 
 		return;
@@ -131,9 +141,13 @@ void ProcDelast::handle() {
 				_t[MONMODE] = new TTree("t","TTree containing data for Elastic events");
 				AddBranches(_t[MONMODE]);
 				_hists_ekin[MONMODE]=dAna->makeHistsEkin();
+				_hists_cuts[MONMODE]=dAna->makeHistsMMElastic();
+				_yields[MONMODE]=dAna->makeYieldsElastic();
 			}
-			dAna->fillHistsEkin(_hists_ekin[MONMODE]);
 			_t[MONMODE]->Fill();
+			dAna->fillHistsEkin(_hists_ekin[MONMODE]);
+			dAna->fillHistsMMElastic(_hists_cuts[MONMODE]);
+			dAna->fillYieldsElastic(_yields[MONMODE]);
 			if (mononly){
 				pass=kTRUE;
 				hevtsum->Fill(EVT_PASS);
@@ -142,8 +156,8 @@ void ProcDelast::handle() {
 			}
 		}
 		
-
 		pass=passEvent(); //! Elastic event selection
+
 		if (pass) {
 			if (mon){//! If mon mode
 				if (_t[CUTMODE]==NULL){
@@ -153,15 +167,23 @@ void ProcDelast::handle() {
 					_t[CUTMODE] = new TTree("t","TTree containing data for Elastic events");
 					AddBranches(_t[CUTMODE]);
 					_hists_ekin[CUTMODE]=dAna->makeHistsEkin();
+					_hists_cuts[CUTMODE]=dAna->makeHistsMMElastic();
+					_yields[CUTMODE]=dAna->makeYieldsElastic();
 				}
 				_t[CUTMODE]->Fill();
 				dAna->fillHistsEkin(_hists_ekin[CUTMODE]);
+				dAna->fillHistsMMElastic(_hists_cuts[CUTMODE]);
+				dAna->fillYieldsElastic(_yields[CUTMODE]);
 			}else{//! If regular mode
 				if (_hists_ekin[CUTMODE]==NULL){
 					dirout->cd();
 					_hists_ekin[CUTMODE]=dAna->makeHistsEkin();
+					_hists_cuts[CUTMODE]=dAna->makeHistsMMElastic();
+					_yields[CUTMODE]=dAna->makeYieldsElastic();
 				}
 				dAna->fillHistsEkin(_hists_ekin[CUTMODE]);
+				dAna->fillHistsMMElastic(_hists_cuts[CUTMODE]);
+				dAna->fillYieldsElastic(_yields[CUTMODE]);
 			}
 			hevtsum->Fill(EVT_PASS);
 			EpProcessor::handle();
@@ -249,7 +271,14 @@ void ProcDelast::setLabFrmLvs(){
 
 bool ProcDelast::passEvent(){
 	bool ret=kFALSE;
-	if (dH10->gpart<=4 && _det_e==kTRUE && _det_p==kTRUE) ret=kTRUE;
+	DataElastic *de = &(dAna->dElast);
+	if (dH10->gpart<=4 && 
+		_det_e==kTRUE && _det_p==kTRUE && 
+		dH10->dc[_h10idxP]>0 && dH10->sc[_h10idxP]>0 &&
+		de->MMep<0.1 && de->W<1.1)
+		{
+			ret=kTRUE;
+		}
 	return ret;
 }
 
@@ -272,8 +301,8 @@ void ProcDelast::UpdateDelast(bool ismc /* = kFALSE */){
 	de->p_p=_lvP.P();
 	de->theta_e=_lvE.Theta()*RadToDeg();
 	de->theta_p=_lvP.Theta()*RadToDeg();
-	de->phi_e=_lvE.Phi()*RadToDeg();
-	de->phi_p=_lvP.Phi()*RadToDeg();
+	de->phi_e=getPhi(_lvE);//_lvE.Phi()*RadToDeg();
+	de->phi_p=getPhi(_lvP);//_lvP.Phi()*RadToDeg();
 	//! Reconstructed e' Vertex
 	if (!ismc){
 		de->vx_e=dH10->vx[_h10idxE];
@@ -429,6 +458,23 @@ void ProcDelast::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	ekin->theta = _4vQ.Theta()*RadToDeg();
 	phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
 	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
+}
+
+Float_t ProcDelast::getPhi(TLorentzVector lv) {
+	Float_t retVal = 0;
+	retVal = RadToDeg()*invTan(lv.Py(), lv.Px());
+	return retVal;
+}
+
+Float_t ProcDelast::invTan(Float_t y, Float_t x){
+	Float_t retVal = 0; 
+	if (x > 0 && y > 0)  retVal = ATan(y/x);          //1st Quad.
+	if (x < 0 && y > 0)  retVal = ATan(y/x) + Pi();   //2nd Quad
+	if (x < 0 && y < 0)  retVal = ATan(y/x) + Pi();   //3rd Quad
+	if (x > 0 && y < 0)  retVal = ATan(y/x) + 2*Pi(); //4th Quad 
+	if (x == 0 && y > 0) retVal = Pi()/2;
+	if (x == 0 && y < 0) retVal = 3*Pi()/2; 
+	return retVal;  
 }
 
 
