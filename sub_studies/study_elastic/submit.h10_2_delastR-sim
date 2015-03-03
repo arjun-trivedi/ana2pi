@@ -3,7 +3,6 @@
 # Usage submit.h10_2_delastR-sim sim1 sim2 ... simX
 ##-----------------------------------------------##
 
-
 ##-- Get list of simnum from user
 simlist=("$@")
 echo "Going to submit h10_2_delastR-sim for the following"
@@ -13,7 +12,7 @@ done
 
 ##-- Now submit jobs for each simnum
 for simnum in "${simlist[@]}"; do
-  SUBDIR=$BSUBDIR/e1f/elast/sim/h10_2_delastR-sim-$simnum
+  SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastR-sim-$simnum
   OUTDIR=$DELASTDIR_SIM/$simnum
   mkdir -p $SUBDIR
   mkdir -p $OUTDIR
@@ -45,6 +44,6 @@ for simnum in "${simlist[@]}"; do
 
   </Request>
   " > $JSUBFILE 
-  #echo "jsub -xml $JSUBFILE"
-  #jsub -xml $JSUBFILE
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
 done

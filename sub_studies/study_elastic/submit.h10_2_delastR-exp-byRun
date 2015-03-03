@@ -9,7 +9,7 @@
 # as separate input files for the job
 ###########################################################
 date=`date +%m%d%y`
-SUBDIR=$BSUBDIR/e1f/elast/exp/h10_2_delastR-exp-byRun_$date
+SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_delastR-exp-byRun_$date
 if [[ ! -d ${SUBDIR} ]]; then
     mkdir -p $SUBDIR
 fi
