@@ -22,5 +22,5 @@ else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv DELASTDIR_SIM "$DELASTDIR/sim"
 endif
 ##-- dir where where yields and their displays are kept
-setenv OBSDIR "${DELASTDIR}/obs"
+setenv OBSDIR_ELASTIC "${DELASTDIR}/obs"
 alias obs_elast 'gqview $OBSDIR/siml/ &'

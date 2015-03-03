@@ -81,7 +81,7 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
-	hevtsum->SetMinimum(0);
+	//hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"nevts");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"passed");
 }
@@ -123,6 +123,8 @@ void ProcDelast::handle() {
 			dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
 			dAna->fillYieldsElastic(_yields_ST,kTRUE);
 		}
+		pass=kTRUE;
+		hevtsum->Fill(EVT_PASS);
 		EpProcessor::handle(); 
 		return;
 	}
