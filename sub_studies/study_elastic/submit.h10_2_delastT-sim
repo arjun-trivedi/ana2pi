@@ -1,0 +1,50 @@
+#!/bin/bash
+##-----------------------------------------------##
+# Usage submit.h10_2_delastT-sim sim1 sim2 ... simX
+##-----------------------------------------------##
+
+
+##-- Get list of simnum from user
+simlist=("$@")
+echo "Going to submit h10_2_delastT-sim for the following"
+for simnum in "${simlist[@]}"; do
+   echo "$simnum"
+done
+
+##-- Now submit jobs for each simnum
+for simnum in "${simlist[@]}"; do
+  SUBDIR=$BSUBDIR/e1f/elast/sim/h10_2_delastT-sim-$simnum
+  OUTDIR=$DELASTDIR_SIM/$simnum
+  mkdir -p $SUBDIR
+  mkdir -p $OUTDIR
+
+  date=`date +%m%d%y`
+  JSUBFILE=${SUBDIR}/job_$date.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo "$JSUBFILE exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e1f_h10_2_delastT-sim\"/>
+    <Project name=\"E1F\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"5000\" unit=\"MB\"/>
+    <Memory space=\"5000\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"1440\"/>
+    <Command><![CDATA[
+      proc_h10 -i h10.lst -t e1f:sim:elast -p delastT -o delastT.root
+    ]]></Command>
+
+    <Job>
+      <Input src=\"$DELASTDIR_SIM/$simnum/h10-T.lst\" dest=\"h10.lst\" />
+      <Output src=\"delastT.root\" dest=\"$OUTDIR/delastT_$date.root\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+  #echo "jsub -xml $JSUBFILE"
+  #jsub -xml $JSUBFILE
+done
