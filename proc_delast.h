@@ -11,6 +11,23 @@
 using namespace TMath;
 using namespace ParticleConstants;
 
+/********************************************************
+/*[03-02-15]
++ h10 --> Proc --> output
+	+ Input=h10-vars
+	+ While processing: 
+		+ ekin-vars=f(h10-vars)
+		+ DataElastic=f(h10-vars)
+			+ elastic-evt-cut-vars=f(h10-vars)
+			+ elastic-evt-yield-vars=f(h10-vars)
+			+ other-relevant-vars=f(h10-vars)
+	+ Output (output dir 'mon' and 'cut' created if run in 'mon' or 'mononly' mode):
+		+ Hists for ekin-vars
+		+ Hists for elastic-evt-cut-vars (NOT FOR Thrown EVENTS)
+		+ Hists for elastic-evt-yield-vars
+		+ TTree (ONLY IN 'mon' or 'mononly' MODE) containing other-relevant-vars 
+********************************************************/
+
 class ProcDelast : public EpProcessor {
 
 public:
