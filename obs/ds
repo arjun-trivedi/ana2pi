@@ -154,7 +154,7 @@ for seq in ['T','R','A','H']:
 		#print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
 		#	h[seq,par].GetYaxis().GetNbins()))
 		if seq=='A' and par=='mu':
-			h[seq,par].GetZaxis().SetRangeUser(0,0.2)
+			h[seq,par].GetZaxis().SetRangeUser(0,0.5)#0.2)
 		#! Fix z-scale for h['A','sg']
 		if seq=='A' and par=='sg':
 			h[seq,par].GetZaxis().SetRangeUser(0,0.5)

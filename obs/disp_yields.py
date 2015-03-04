@@ -1272,7 +1272,7 @@ class DispYields:
 			os.makedirs(outdir)
 
 		#! 1. Get all q2wbins
-		q2wbinl=self.get_q2wbinlist(q2max=2.25,wmin=1.400,wmax=2.125) #wbins to agree with Isupov
+		q2wbinl=self.get_q2wbinlist(q2max=3.25,wmin=1.400,wmax=2.125) #wbins to agree with Isupov
 		#print q2wbinl
 
 		q2bng=self.get_q2bng(q2wbinl)
