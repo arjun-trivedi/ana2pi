@@ -80,7 +80,7 @@ def disp():
 	      #('EH'):ROOT.gROOT.ProcessLine("kBlack"),
 	      ('ST'):ROOT.gROOT.ProcessLine("kGreen"),
 	      ('SR'):ROOT.gROOT.ProcessLine("kMagenta"),
-	      #('SF'):ROOT.gROOT.ProcessLine("kRed"),#Using SC instead for the moment
+	      #('SF'):ROOT.gROOT.ProcessLine("kRed"),#Using SC instead till Hole Filling 
 	      ('SC'):ROOT.gROOT.ProcessLine("kRed")}
    
 	#! Get all histograms and set up their aesthetics
@@ -91,17 +91,35 @@ def disp():
 			h[seq,var].SetLineColor(coll[seq])
 			h[seq,var].SetMarkerColor(coll[seq])
 			h[seq,var].GetXaxis().SetRangeUser(10,50)
-	c=ROOT.TCanvas()
+	#! Checkout Simulation
+	c_ST_SR_SC=ROOT.TCanvas()
 	#hSTn=h['ST','THETA'].DrawNormalized("",1000)
 	#hSCn=h['SC','THETA'].DrawNormalized("sames",1000)
 	h['ST','THETA'].Draw()#DrawNormalized("",1000)
         h['SC','THETA'].Draw("sames")#DrawNormalized("sames",1000)
+        h['SR','THETA'].Draw("sames")
 	#! Set the minimum and maximum of y coordinate of histograms
 	#maxl=[hSTn.GetMaximum(),hSCn.GetMaximum()]
-	maxl=[h['ST','THETA'].GetMaximum(),h['SC','THETA'].GetMaximum()]
-	maximum=max(maxl)
+	#maxl=[h['ST','THETA'].GetMaximum(),h['SC','THETA'].GetMaximum(),h['SR','THETA'].GetMaximum()]
+	#maximum=max(maxl)
 	#for htmp in [hSTn,hSCn]:
-	for htmp in [h['ST','THETA'],h['SC','THETA']]:
-		htmp.SetMinimum(0.)
-		htmp.SetMaximum(maximum+10)
-	c.SaveAs("%s/basic_checkout.png"%OUTDIR)	
+	#for htmp in [h['ST','THETA'],h['SC','THETA'],h['SR','THETA']]:
+		#htmp.SetMinimum(0.)
+		#htmp.SetMaximum(maximum+10)
+	c_ST_SR_SC.SaveAs("%s/c_ST_SR_SC.png"%OUTDIR)	
+
+	#! Checkout that the distributions for ER and SR match
+	c_ER_SR=ROOT.TCanvas()
+        hERn=h['ER','THETA'].DrawNormalized("",1000)
+        hSRn=h['SR','THETA'].DrawNormalized("sames",1000)
+	#print hSRn.GetMaximum()
+        #! Set the minimum and maximum of y coordinate of histograms
+        maxl=[hERn.GetMaximum(),hSRn.GetMaximum()]
+        maximum=max(maxl)
+	print maxl,maximum
+        for htmp in [hERn,hSRn]:
+                htmp.SetMinimum(0.)
+                htmp.SetMaximum(maximum+10)
+        c_ER_SR.SaveAs("%s/c_ER_SR.png"%OUTDIR)  
+
+	
