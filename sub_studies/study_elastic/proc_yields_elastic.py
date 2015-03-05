@@ -122,4 +122,18 @@ def disp():
                 htmp.SetMaximum(maximum+10)
         c_ER_SR.SaveAs("%s/c_ER_SR.png"%OUTDIR)  
 
+	#! Checkout that the distributions for EC and SC match
+        c_EC_SC=ROOT.TCanvas()
+        hECn=h['EC','THETA'].DrawNormalized("",1000)
+        hSCn=h['SC','THETA'].DrawNormalized("sames",1000)
+        #print hSCn.GetMaximum()
+        #! Set the minimum and maximum of y coordinate of histograms
+        maxl=[hECn.GetMaximum(),hSCn.GetMaximum()]
+        maximum=max(maxl)
+        print maxl,maximum
+        for htmp in [hECn,hSCn]:
+                htmp.SetMinimum(0.)
+                htmp.SetMaximum(maximum+10)
+        c_EC_SC.SaveAs("%s/c_EC_SC.png"%OUTDIR)
+
 	
