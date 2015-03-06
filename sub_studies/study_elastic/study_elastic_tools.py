@@ -93,14 +93,16 @@ def proc_yield():
 				hTHETA.Write()
 				
 def disp_yields():
+	#!get rid of X error bars and y error bar caps
+	ROOT.gStyle.SetErrorX(0.001)
+
         FIN=ROOT.TFile(os.path.join(os.environ['OBSDIR_ELASTIC'],'yield.root'))	
 	OUTDIR=os.path.join(os.environ['OBSDIR_ELASTIC'],'displays')
 	if not os.path.exists(OUTDIR):
 		os.makedirs(OUTDIR)
 	
-	#! "Basic Checkout"
 	#! Set up histogram aesthetics			
-	coll={('ER'):ROOT.gROOT.ProcessLine("kYellow"),
+	cold={('ER'):ROOT.gROOT.ProcessLine("kYellow"),
 	      ('EC'):ROOT.gROOT.ProcessLine("kCyan"),
 	      #('EF'):ROOT.gROOT.ProcessLine("kBlue"),
 	      #('EH'):ROOT.gROOT.ProcessLine("kBlack"),
@@ -108,26 +110,54 @@ def disp_yields():
 	      ('SR'):ROOT.gROOT.ProcessLine("kMagenta"),
 	      #('SF'):ROOT.gROOT.ProcessLine("kRed"),#Using SC instead till Hole Filling 
 	      ('SC'):ROOT.gROOT.ProcessLine("kRed")}
+
+	mrkrd={('ER'):ROOT.gROOT.ProcessLine("kOpenStar"),
+               ('EC'):ROOT.gROOT.ProcessLine("kFullCircle"),
+              #('EF'):ROOT.gROOT.ProcessLine("kBlue"),
+              #('EH'):ROOT.gROOT.ProcessLine("kBlack"),
+              ('ST'):ROOT.gROOT.ProcessLine("kPlus"),
+              ('SR'):ROOT.gROOT.ProcessLine("kOpenStar"),
+              #('SF'):ROOT.gROOT.ProcessLine("kRed"),#Using SC instead till Hole Filling 
+              ('SC'):ROOT.gROOT.ProcessLine("kFullCircle")}
    
 	#! Get all hTHETA in PHI_PROJ_BINS and set up their aesthetics
-	for binnum in PHI_PROJ_BINS:
-		hTHETA={}
-		for seq in ['ST','SR','SC','ER','EC']:	
-                        print "binnum=",binnum
-                        hTHETA[seq]=FIN.Get("%s/phibin%d/hTHETA"%(seq,binnum))
-			hTHETA[seq].SetLineColor(coll[seq])
-			hTHETA[seq].SetMarkerColor(coll[seq])
-			hTHETA[seq].GetXaxis().SetRangeUser(12,50)
-		outdir=os.path.join(OUTDIR,"phibin%d"%binnum)
-        	if not os.path.exists(outdir):
-                	os.makedirs(outdir)
-		#! Checkout Simulation
-		c_ST_SR_SC=ROOT.TCanvas()
+	hTHETA={}
+	for seq in ['ST','SR','SC','ER','EC']:
+		for binnum in PHI_PROJ_BINS:
+                	print "binnum=",binnum
+                        hTHETA[seq,"phibin%d"%binnum]=FIN.Get("%s/phibin%d/hTHETA"%(seq,binnum))
+			hTHETA[seq,"phibin%d"%binnum].SetLineColor(cold[seq])
+			hTHETA[seq,"phibin%d"%binnum].SetMarkerColor(cold[seq])
+			hTHETA[seq,"phibin%d"%binnum].SetMarkerStyle(mrkrd[seq])
+			hTHETA[seq,"phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+	#! Generate theoretical Cross Sections
+        nbins=hTHETA['EC','phibin1'].GetNbinsX()
+        xmin=hTHETA['EC','phibin1'].GetXaxis().GetXmin()
+        xmax=hTHETA['EC','phibin1'].GetXaxis().GetXmax()
+        hThrtcl=ROOT.TH1F("hThrtcl","hThrtcl",nbins,xmin,xmax)
+        hThrtcl.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
+        for ibin in range(nbins):
+        	theta=hThrtcl.GetBinLowEdge(ibin+1)
+                if theta==0: continue
+                #binc=elaslib.elas(5.499,theta)
+                binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
+                print "theta,xsec=",theta,binc
+                hThrtcl.SetBinContent(ibin+1,binc)
+                hThrtcl.SetBinError(ibin+1,0)
+        hThrtcl.GetXaxis().SetRangeUser(12,50)
+
+	#! Now plot hTHETA in PHI_PROJ_BINS
+	
+	#! Checkout Simulation
+	c=ROOT.TCanvas()
+	c.Divide(3,2)
+	for i,binnum in enumerate(PHI_PROJ_BINS):
+		c.cd(i+1)
 		#hSTn=h['ST','THETA'].DrawNormalized("",1000)
 		#hSCn=h['SC','THETA'].DrawNormalized("sames",1000)
-		hTHETA['ST'].Draw()#DrawNormalized("",1000)
-        	hTHETA['SC'].Draw("sames")#DrawNormalized("sames",1000)
-        	hTHETA['SR'].Draw("sames")
+		hTHETA['ST',"phibin%d"%binnum].Draw()#DrawNormalized("",1000)
+        	hTHETA['SC',"phibin%d"%binnum].Draw("sames")#DrawNormalized("sames",1000)
+        	hTHETA['SR',"phibin%d"%binnum].Draw("sames")
 		#! Set the minimum and maximum of y coordinate of histograms
 		#maxl=[hSTn.GetMaximum(),hSCn.GetMaximum()]
 		#maxl=[h['ST','THETA'].GetMaximum(),h['SC','THETA'].GetMaximum(),h['SR','THETA'].GetMaximum()]
@@ -136,12 +166,14 @@ def disp_yields():
 		#for htmp in [h['ST','THETA'],h['SC','THETA'],h['SR','THETA']]:
 			#htmp.SetMinimum(0.)
 			#htmp.SetMaximum(maximum+10)
-		c_ST_SR_SC.SaveAs("%s/c_ST_SR_SC.png"%outdir)	
+	c.SaveAs("%s/c_ST_SR_SC.png"%OUTDIR)	
 
-		#! Checkout that the distributions for ER and SR match
-		c_ER_SR=ROOT.TCanvas()
-        	hERn=hTHETA['ER'].DrawNormalized("",1000)
-        	hSRn=hTHETA['SR'].DrawNormalized("sames",1000)
+	#! Checkout that the distributions for ER and SR match
+	#c=ROOT.TCanvas()
+	for i,binnum in enumerate(PHI_PROJ_BINS):
+		c.cd(i+1)
+        	hERn=hTHETA['ER',"phibin%d"%binnum].DrawNormalized("",1000)
+        	hSRn=hTHETA['SR',"phibin%d"%binnum].DrawNormalized("sames",1000)
 		#print hSRn.GetMaximum()
         	#! Set the minimum and maximum of y coordinate of histograms
         	maxl=[hERn.GetMaximum(),hSRn.GetMaximum()]
@@ -150,12 +182,13 @@ def disp_yields():
         	for htmp in [hERn,hSRn]:
                 	htmp.SetMinimum(0.)
                 	htmp.SetMaximum(maximum+10)
-        	c_ER_SR.SaveAs("%s/c_ER_SR.png"%outdir)  
+       	c.SaveAs("%s/c_ER_SR.png"%OUTDIR)  
 
-		#! Checkout that the distributions for EC and SC match
-        	c_EC_SC=ROOT.TCanvas()
-        	hECn=hTHETA['EC'].DrawNormalized("",1000)
-        	hSCn=hTHETA['SC'].DrawNormalized("sames",1000)
+	#! Checkout that the distributions for EC and SC match
+	for i,binnum in enumerate(PHI_PROJ_BINS):
+		c.cd(i+1)
+        	hECn=hTHETA['EC',"phibin%d"%binnum].DrawNormalized("",1000)
+        	hSCn=hTHETA['SC',"phibin%d"%binnum].DrawNormalized("sames",1000)
         	#print hSCn.GetMaximum()
         	#! Set the minimum and maximum of y coordinate of histograms
         	maxl=[hECn.GetMaximum(),hSCn.GetMaximum()]
@@ -164,31 +197,13 @@ def disp_yields():
         	for htmp in [hECn,hSCn]:
                 	htmp.SetMinimum(0.)
                 	htmp.SetMaximum(maximum+10)
-        	c_EC_SC.SaveAs("%s/c_EC_SC.png"%outdir)
+       	c.SaveAs("%s/c_EC_SC.png"%OUTDIR)
 
-		#! Generate theoretical Cross Sections
-                #c_theoretical=ROOT.TCanvas()
-                nbins=hTHETA['EC'].GetNbinsX()
-                xmin=hTHETA['EC'].GetXaxis().GetXmin()
-                xmax=hTHETA['EC'].GetXaxis().GetXmax()
-                hThrtcl=ROOT.TH1F("hThrtcl","hThrtcl",nbins,xmin,xmax)
-                hThrtcl.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
-                for ibin in range(nbins):
-                        theta=hThrtcl.GetBinLowEdge(ibin+1)
-                        if theta==0: continue
-                        #binc=elaslib.elas(5.499,theta)
-			binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
-                        print "theta,xsec=",theta,binc
-                        hThrtcl.SetBinContent(ibin+1,binc)
-			hThrtcl.SetBinError(ibin+1,0)
-                hThrtcl.GetXaxis().SetRangeUser(12,50)
-		#hThrtcl.SetLineColor()
-                #hThrtcl.Draw()
-                #c_theoretical.SaveAs("%s/c_theoretical.png"%outdir)
-
-		#! Normalize EC to Luminosity
-		c_EC_lumnorm=ROOT.TCanvas()
-		hECln=hTHETA['EC'].Clone()
+	#! Normalize EC to Luminosity and calculate diff between ECln and theoretical yield
+	hdiff={}
+	for i,binnum in enumerate(PHI_PROJ_BINS):
+                c.cd(i+1)
+		hECln=hTHETA['EC',"phibin%d"%binnum]#.Clone() #! Doing Clone() hear breaks things?!
 		hECln.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 		hECln.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 		hECln.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
@@ -204,43 +219,26 @@ def disp_yields():
 			print "norm=",norm
 			hECln.SetBinContent(ibin+1,binc/norm)
 			hECln.SetBinError(ibin+1,binerr/norm)
-		hECln.Draw()
-		hThrtcl.Draw("sames e")
 		maxl=[hECln.GetMaximum(),hThrtcl.GetMaximum()]
                 maximum=max(maxl)
                 for htmp in [hECln,hThrtcl]:
                         htmp.SetMinimum(0.)
                         htmp.SetMaximum(maximum)
-		c_EC_lumnorm.SaveAs("%s/c_EC_lumnorm.png"%outdir)
-
-		#! Calculate difference
-		c_diff_ECln_thrtcl=ROOT.TCanvas()
+		hECln.Draw()
+                hThrtcl.Draw("sames e")
+		#! Calculate difference append from theory
 		hECln.Sumw2()
                 hThrtcl.Sumw2()
-		hdiff=hECln.Clone()
-		#hdiff.Add(hThrtcl,-1)
-		hdiff.Divide(hThrtcl)
-		hdiff.SetMaximum(20)
-		hdiff.GetXaxis().SetRangeUser(12,50)
-		hdiff.SetYTitle("")
-		hdiff.SetTitle("#frac{d\sigma}{d\Omega}(#frac{EC}{Theoretical})")
-		hdiff.Draw()
-		c_diff_ECln_thrtcl.SaveAs("%s/c_diff_ECln_thrtcl.png"%outdir)
+		hdiff["phibin%d"%binnum]=hECln.Clone()
+		hdiff["phibin%d"%binnum].Divide(hThrtcl)
+	c.SaveAs("%s/c_EC_lumnorm.png"%OUTDIR)
 
-		#! Generate theoretical Cross Sections
-		#c_theoretical=ROOT.TCanvas()
-		#nbins=hECln.GetNbinsX()
-		#xmin=hECln.GetXaxis().GetXmin()
-		#xmax=hECln.GetXaxis().GetXmax()
-		#hThrtcl=ROOT.TH1F("hThrtcl","hThrtcl",nbins,xmin,xmax)
-		#hThrtcl.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
-		#for ibin in range(hECln.GetNbinsX()):
-		#	theta=hThrtcl.GetBinLowEdge(ibin+1)
-                #        if theta==0: continue
-		#	binc=elaslib.elas(5.499,theta)
-		#	print "theta,xsec=",theta,binc
-		#	hThrtcl.SetBinContent(ibin+1,binc)
-		#hThrtcl.GetXaxis().SetRangeUser(10,50)
-		#hThrtcl.Draw()
-		#c_theoretical.SaveAs("%s/c_theoretical.png"%outdir)	
-	
+	#! Calculate difference
+	for i,binnum in enumerate(PHI_PROJ_BINS):
+                c.cd(i+1)
+		hdiff["phibin%d"%binnum].SetMaximum(20)
+		hdiff["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+		hdiff["phibin%d"%binnum].SetYTitle("")
+		hdiff["phibin%d"%binnum].SetTitle("#frac{d\sigma}{d\Omega}(#frac{EC}{Theoretical})")
+		hdiff["phibin%d"%binnum].Draw()
+	c.SaveAs("%s/c_diff_ECln_thrtcl.png"%OUTDIR)
