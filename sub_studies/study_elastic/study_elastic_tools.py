@@ -4,6 +4,8 @@ import os
 from collections import OrderedDict
 import ROOT
 
+import elaslib
+
 VARS=['THETA','PHI']
 H2_DIM=OrderedDict([('THETA',0),('PHI',1)])
 
@@ -115,7 +117,7 @@ def disp_yields():
                         hTHETA[seq]=FIN.Get("%s/phibin%d/hTHETA"%(seq,binnum))
 			hTHETA[seq].SetLineColor(coll[seq])
 			hTHETA[seq].SetMarkerColor(coll[seq])
-			hTHETA[seq].GetXaxis().SetRangeUser(10,50)
+			hTHETA[seq].GetXaxis().SetRangeUser(12,50)
 		outdir=os.path.join(OUTDIR,"phibin%d"%binnum)
         	if not os.path.exists(outdir):
                 	os.makedirs(outdir)
@@ -164,13 +166,32 @@ def disp_yields():
                 	htmp.SetMaximum(maximum+10)
         	c_EC_SC.SaveAs("%s/c_EC_SC.png"%outdir)
 
+		#! Generate theoretical Cross Sections
+                #c_theoretical=ROOT.TCanvas()
+                nbins=hTHETA['EC'].GetNbinsX()
+                xmin=hTHETA['EC'].GetXaxis().GetXmin()
+                xmax=hTHETA['EC'].GetXaxis().GetXmax()
+                hThrtcl=ROOT.TH1F("hThrtcl","hThrtcl",nbins,xmin,xmax)
+                hThrtcl.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
+                for ibin in range(nbins):
+                        theta=hThrtcl.GetBinLowEdge(ibin+1)
+                        if theta==0: continue
+                        #binc=elaslib.elas(5.499,theta)
+			binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
+                        print "theta,xsec=",theta,binc
+                        hThrtcl.SetBinContent(ibin+1,binc)
+			hThrtcl.SetBinError(ibin+1,0)
+                hThrtcl.GetXaxis().SetRangeUser(12,50)
+		#hThrtcl.SetLineColor()
+                #hThrtcl.Draw()
+                #c_theoretical.SaveAs("%s/c_theoretical.png"%outdir)
+
 		#! Normalize EC to Luminosity
 		c_EC_lumnorm=ROOT.TCanvas()
 		hECln=hTHETA['EC'].Clone()
-		hECln.Sumw2();
 		hECln.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 		hECln.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-		hECln.SetYTitle("#frac{d\sigma}{d\Omega}")
+		hECln.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
 		for ibin in range(hECln.GetNbinsX()):
 			binc=hECln.GetBinContent(ibin+1)
 			binerr=hECln.GetBinError(ibin+1)
@@ -184,6 +205,42 @@ def disp_yields():
 			hECln.SetBinContent(ibin+1,binc/norm)
 			hECln.SetBinError(ibin+1,binerr/norm)
 		hECln.Draw()
+		hThrtcl.Draw("sames e")
+		maxl=[hECln.GetMaximum(),hThrtcl.GetMaximum()]
+                maximum=max(maxl)
+                for htmp in [hECln,hThrtcl]:
+                        htmp.SetMinimum(0.)
+                        htmp.SetMaximum(maximum)
 		c_EC_lumnorm.SaveAs("%s/c_EC_lumnorm.png"%outdir)
 
+		#! Calculate difference
+		c_diff_ECln_thrtcl=ROOT.TCanvas()
+		hECln.Sumw2()
+                hThrtcl.Sumw2()
+		hdiff=hECln.Clone()
+		#hdiff.Add(hThrtcl,-1)
+		hdiff.Divide(hThrtcl)
+		hdiff.SetMaximum(20)
+		hdiff.GetXaxis().SetRangeUser(12,50)
+		hdiff.SetYTitle("")
+		hdiff.SetTitle("#frac{d\sigma}{d\Omega}(#frac{EC}{Theoretical})")
+		hdiff.Draw()
+		c_diff_ECln_thrtcl.SaveAs("%s/c_diff_ECln_thrtcl.png"%outdir)
+
+		#! Generate theoretical Cross Sections
+		#c_theoretical=ROOT.TCanvas()
+		#nbins=hECln.GetNbinsX()
+		#xmin=hECln.GetXaxis().GetXmin()
+		#xmax=hECln.GetXaxis().GetXmax()
+		#hThrtcl=ROOT.TH1F("hThrtcl","hThrtcl",nbins,xmin,xmax)
+		#hThrtcl.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
+		#for ibin in range(hECln.GetNbinsX()):
+		#	theta=hThrtcl.GetBinLowEdge(ibin+1)
+                #        if theta==0: continue
+		#	binc=elaslib.elas(5.499,theta)
+		#	print "theta,xsec=",theta,binc
+		#	hThrtcl.SetBinContent(ibin+1,binc)
+		#hThrtcl.GetXaxis().SetRangeUser(10,50)
+		#hThrtcl.Draw()
+		#c_theoretical.SaveAs("%s/c_theoretical.png"%outdir)	
 	
