@@ -1,3 +1,4 @@
+from __future__ import division
 import os
 from collections import OrderedDict
 import ROOT
@@ -6,6 +7,11 @@ VARS=['THETA','PHI']
 H2_DIM=OrderedDict([('THETA',0),('PHI',1)])
 
 PHI_PROJ_BINS={1:[358,2],2:[58,62],3:[118,122],4:[178,182],5:[238,242],6:[298,302]}
+
+#! For Luminosity & vgflux
+LUM=19.844 #fb^-1
+LUM_INVFB_TO_INVMICROB=1000000000
+
 def proc_yield():
         #! Get all input delast files
 	FIN={}
@@ -156,5 +162,16 @@ def disp_yields():
                 	htmp.SetMinimum(0.)
                 	htmp.SetMaximum(maximum+10)
         	c_EC_SC.SaveAs("%s/c_EC_SC.png"%outdir)
+
+		#! Normalize EC to Luminosity
+		c_EC_lumnorm=ROOT.TCanvas()
+		hECln=hTHETA['EC'].Clone()
+		hECln.Sumw2();
+		hECln.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+		hECln.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+		norm=LUM*LUM_INVFB_TO_INVMICROB
+		hECln.Scale(1/norm)
+		hECln.Draw()
+		c_EC_lumnorm.SaveAs("%s/c_EC_lumnorm.png"%outdir)
 
 	
