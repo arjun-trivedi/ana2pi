@@ -29,8 +29,8 @@ void epTree_Looper::fill_th_elasYield(double nbins, double xlow, double xhigh){
    //Fill th_theta
    for (int iBin = 0; iBin < nbins; iBin ++){
 	   double theta = xlow + (iBin*binwidth);
-	   double xsec_elas    = diffxsec_elas   (5.479, theta);                  //d[sigma]/d[omega]
-	   double xsec_elasrad = diffxsec_elasrad(5.479, theta, 2.5*0.00577, 1.1);//d[sigma]/d[omega]
+	   double xsec_elas    = diffxsec_elas   (5.499, theta);                  //d[sigma]/d[omega]
+	   double xsec_elasrad = diffxsec_elasrad(5.499, theta, 2.5*0.00577, 1.1);//d[sigma]/d[omega]
 	   xsec_elas    = xsec_elas    * TMath::Sin((TMath::Pi()/180)*theta) * (2*TMath::Pi());//d[sigma]/d[theta]
 	   xsec_elasrad = xsec_elasrad * TMath::Sin((TMath::Pi()/180)*theta) * (2*TMath::Pi());//d[sigma]/d[theta]
 	   unsigned int norad_yield = int((xsec_elas    * binwidth * 6250000) + 0.5);//n(theta)
