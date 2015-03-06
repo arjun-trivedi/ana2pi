@@ -1,4 +1,5 @@
 from __future__ import division
+import math
 import os
 from collections import OrderedDict
 import ROOT
@@ -7,7 +8,7 @@ VARS=['THETA','PHI']
 H2_DIM=OrderedDict([('THETA',0),('PHI',1)])
 
 PHI_PROJ_BINS={1:[358,2],2:[58,62],3:[118,122],4:[178,182],5:[238,242],6:[298,302]}
-
+DPHI=4#degrees
 #! For Luminosity & vgflux
 LUM=19.844 #fb^-1
 LUM_INVFB_TO_INVMICROB=1000000000
@@ -169,8 +170,19 @@ def disp_yields():
 		hECln.Sumw2();
 		hECln.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 		hECln.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-		norm=LUM*LUM_INVFB_TO_INVMICROB
-		hECln.Scale(1/norm)
+		hECln.SetYTitle("#frac{d\sigma}{d\Omega}")
+		for ibin in range(hECln.GetNbinsX()):
+			binc=hECln.GetBinContent(ibin+1)
+			binerr=hECln.GetBinError(ibin+1)
+			theta=hECln.GetBinLowEdge(ibin+1)
+			if theta==0: continue
+			dtheta=hECln.GetBinWidth(ibin+1)
+			dOmega=( math.sin(math.radians(theta)) )*(dtheta*math.pi/180)*(DPHI*math.pi/180)
+			print "theta,dtheta,dphi,dOmega=",theta,dtheta*math.pi/180,DPHI*math.pi/180,dOmega
+			norm=LUM*LUM_INVFB_TO_INVMICROB*dOmega
+			print "norm=",norm
+			hECln.SetBinContent(ibin+1,binc/norm)
+			hECln.SetBinError(ibin+1,binerr/norm)
 		hECln.Draw()
 		c_EC_lumnorm.SaveAs("%s/c_EC_lumnorm.png"%outdir)
 
