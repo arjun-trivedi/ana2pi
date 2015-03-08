@@ -342,9 +342,9 @@ TObjArray* DataAna::makeYieldsElastic()
 	TObjArray* ret=new TObjArray(1);
 	Int_t hdim=2;
 
-	Int_t theta_nbins=40; //2 deg/bin
-	Int_t theta_min=0;
-	Int_t theta_max=80;
+	Int_t theta_nbins=46;// !1deg/bin (make consistent with Gleb) old: 40; //2 deg/bin
+	Int_t theta_min=14;//!efid boundary ~ 13.2 degrees            old: 0;
+	Int_t theta_max=60;//!                                        old: 80 
 
 	Int_t phi_nbins=180; //2 deg/bin
 	Int_t phi_min=0;
