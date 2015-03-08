@@ -7,7 +7,9 @@
 #include "proc_delast.h"
 #include "proc_efid.h"
 #include "proc_pid.h"
+#include "proc_pid_elast.h"
 #include "proc_skim_q.h"
+#include "proc_skim_q_elast.h"
 #include "proc_skim_q2w.h"
 //at-h8 #include "proc_elist_q2w.h"
 #include "proc_mom_cor.h"
@@ -229,6 +231,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("fid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("qskim"))      proc = new ProcSkimQ(mkdir("qskim"),dH10,dAna);
+         else if (str.EqualTo("qskimelast"))      proc = new ProcSkimQElast(mkdir("qskimelast"),dH10,dAna);
          else if (str.EqualTo("q2wskim"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna);
          //at-h8 else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
          //at-h8 else if (str.EqualTo("q2welist"))   proc = new ProcEListQ2W(mkdir("q2welist"),dH10,dAna);
@@ -236,6 +239,9 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("pidelast"))   	  proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna);
+         else if (str.EqualTo("pidelastmon"))     proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("pidelastmononly")) proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("copyh10"))    proc = new ProcCopyH10(mkdir("copyh10"),dH10,dAna);
          else if (str.EqualTo("skimh10"))    proc = new ProcSkimH10(mkdir("skimh10"),dH10,dAna);
          else if (str.EqualTo("lum"))        proc = new ProcLum(mkdir("lum"),dH10,dAna);
