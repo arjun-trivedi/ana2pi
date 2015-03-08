@@ -7,6 +7,8 @@
 #include "particle_constants.h"
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
+#include "proc_eid.h"
+#include "proc_pid_elast.h"
 
 using namespace TMath;
 using namespace ParticleConstants;
@@ -21,11 +23,15 @@ using namespace ParticleConstants;
 			+ elastic-evt-cut-vars=f(h10-vars)
 			+ elastic-evt-yield-vars=f(h10-vars)
 			+ other-relevant-vars=f(h10-vars)
+		+ ONLY IN 'mon' or 'mononly' MODE:
+			+ DataEid=f(h10-vars)
+			+ DataPid=f(h10-vars)
 	+ Output (output dir 'mon' and 'cut' created if run in 'mon' or 'mononly' mode):
 		+ Hists for ekin-vars
 		+ Hists for elastic-evt-cut-vars (NOT FOR Thrown EVENTS)
 		+ Hists for elastic-evt-yield-vars
-		+ ONLY IN 'mon' or 'mononly' MODE: TTree containing DataElastic 
+		+ ONLY IN 'mon' or 'mononly' MODE:
+			+ TTree containing DataElastic,DataEid 
 ********************************************************/
 
 class ProcDelast : public EpProcessor {
@@ -38,6 +44,8 @@ public:
 	void handle();
 	void write();
 protected:
+	ProcEid* _proc_eid;
+	ProcPidElast* _proc_pid_elast;
 	bool _procT,_procR;
 	TDirectory* _dirmon;
 	TDirectory* _dircut;
@@ -64,11 +72,11 @@ protected:
 	static const Int_t NUM_EVTCUTS = 2;
 	enum { EVT_NULL, EVT,EVT_PASS};//, EVT_GPART, EVT_NE, EVT_NP};
 
-	void AddBranches(TTree* t, bool ismc=kFALSE);
+	//void AddBranches(TTree* t, bool ismc=kFALSE);
 
 	void McKin();
 	void UpdateDelast(bool ismc  = kFALSE);
-	void updateEkin(Bool_t useMc = kFALSE);
+	//void updateEkin(Bool_t useMc = kFALSE);
 	
 	void ResetLvs();
 	
@@ -89,6 +97,8 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 					   bool monitor,bool monitorOnly,
 	                   bool procT, bool procR
 	                   ):EpProcessor(td, dataH10, dataAna,monitor,monitorOnly) {
+	_proc_eid=new ProcEid(dataH10,dataAna);
+	_proc_pid_elast=new ProcPidElast(dataH10,dataAna);
 	_procT=procT;
 	_procR=procR;
 	_dirmon=NULL;
@@ -106,7 +116,8 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 ProcDelast::~ProcDelast() {
 	//delete hevtsum;
 	delete _dirmon,_dircut;
-	
+	delete _proc_eid;
+	delete _proc_pid_elast;
 }
 
 void ProcDelast::handle() {
@@ -119,13 +130,13 @@ void ProcDelast::handle() {
 	//! Only if _procT
 	if (_procT){
 		McKin();
-		updateEkin(kTRUE);
+		_proc_eid->updateEkin(kTRUE);
 		UpdateDelast(kTRUE);
 
 		if (mon || mononly){//! If mon or mononly mode
 			if (_t_ST==NULL){
 				_t_ST = new TTree("t_ST","TTree containing data for Elastic events");
-				AddBranches(_t_ST,kTRUE);
+				dAna->addBranches_DataElastic(_t_ST,kTRUE);
 				_hists_ekin_ST=dAna->makeHistsEkin();
 				_yields_ST=dAna->makeYieldsElastic();
 			}
@@ -149,16 +160,21 @@ void ProcDelast::handle() {
 	//! Only if _procR
 	if (_procR){
 		setLabFrmLvs();
-		updateEkin();
+		_proc_eid->updateEkin();
 		UpdateDelast();
 
 		if (mon || mononly){//! If mon or mononly mode
+			_proc_eid->updateEid();
+			_proc_pid_elast->updatePid();
 			if (_t[MONMODE]==NULL){
 				Info("In ProcDelast::handle()","_t[MONMODE]!=NULL\n");
 				_dirmon = dirout->mkdir(TString::Format("monitor"));
 				_dirmon->cd();
 				_t[MONMODE] = new TTree("t","TTree containing data for Elastic events");
-				AddBranches(_t[MONMODE]);
+				//AddBranches(_t[MONMODE]);
+				dAna->addBranches_DataElastic(_t[MONMODE]);
+				dAna->addBranches_DataEid(_t[MONMODE]);
+				dAna->addBranches_DataPidElast(_t[MONMODE]);
 				_hists_ekin[MONMODE]=dAna->makeHistsEkin();
 				_hists_cuts[MONMODE]=dAna->makeHistsMMElastic();
 				_yields[MONMODE]=dAna->makeYieldsElastic();
@@ -179,12 +195,17 @@ void ProcDelast::handle() {
 
 		if (pass) {
 			if (mon){//! If mon mode
+				_proc_eid->updateEid();
+				_proc_pid_elast->updatePid();
 				if (_t[CUTMODE]==NULL){
 					Info("In ProcDelast::handle()","_t[CUTMODE]!=NULL\n");
 					_dircut = dirout->mkdir(TString::Format("cut"));
 					_dircut->cd();
 					_t[CUTMODE] = new TTree("t","TTree containing data for Elastic events");
-					AddBranches(_t[CUTMODE]);
+					//AddBranches(_t[CUTMODE]);
+					dAna->addBranches_DataElastic(_t[CUTMODE]);
+					dAna->addBranches_DataEid(_t[CUTMODE]);
+					dAna->addBranches_DataPidElast(_t[CUTMODE]);
 					_hists_ekin[CUTMODE]=dAna->makeHistsEkin();
 					_hists_cuts[CUTMODE]=dAna->makeHistsMMElastic();
 					_yields[CUTMODE]=dAna->makeYieldsElastic();
@@ -219,8 +240,8 @@ void ProcDelast::ResetLvs(){
 	_lvMMep.SetXYZT(0,0,0,0);
 }
 
-void ProcDelast::AddBranches(TTree* t, bool ismc/*=kFALSE*/){
-	DataElastic *de = &(dAna->dElast);
+/*void ProcDelast::AddBranches(TTree* t, bool ismc/*=kFALSE*///){
+	/*DataElastic *de = &(dAna->dElast);
 	if (ismc) de = &(dAna->dElast_ST);
 
 	//! gpart
@@ -248,7 +269,7 @@ void ProcDelast::AddBranches(TTree* t, bool ismc/*=kFALSE*/){
 	t->Branch("vz_p",&de->vz_p);
 	//! EID
 	t->Branch("nphe",&de->nphe);
-}
+}*/
 
 void ProcDelast::setLabFrmLvs(){
 	DataElastic *de = &(dAna->dElast);
@@ -291,13 +312,16 @@ void ProcDelast::setLabFrmLvs(){
 bool ProcDelast::passEvent(){
 	bool ret=kFALSE;
 	DataElastic *de = &(dAna->dElast);
-	if (dH10->gpart<=4 && 
+	/*if (dH10->gpart<=4 && 
 		_det_e==kTRUE && _det_p==kTRUE && 
 		dH10->dc[_h10idxP]>0 && dH10->sc[_h10idxP]>0 &&
 		de->MMep<0.1 && de->W<1.1)
 		{
 			ret=kTRUE;
-		}
+		}*/
+	if (de->MMep<0.1 && de->W<1.1){
+		ret=kTRUE;
+	}
 	return ret;
 }
 
@@ -344,11 +368,6 @@ void ProcDelast::UpdateDelast(bool ismc /* = kFALSE */){
 			}
 		}
 	}
-	//! EID
-	if (!ismc){
-		de->nphe=dH10->nphe[dH10->cc[_h10idxE]-1];
-	}
-
 }
 
 void ProcDelast::McKin(){
@@ -434,8 +453,8 @@ float ProcDelast::GetPhi(TLorentzVector lv){
 	return phi;
 }
 
-void ProcDelast::updateEkin(Bool_t useMc /*= kFALSE*/) {
-	const TLorentzVector _4vE0 = dH10->lvE0;
+/*void ProcDelast::updateEkin(Bool_t useMc /*= kFALSE*///) {
+/*	const TLorentzVector _4vE0 = dH10->lvE0;
 	const TLorentzVector _4vP0 = dH10->lvP0;
 	TLorentzVector _4vE1;
 		
@@ -477,7 +496,7 @@ void ProcDelast::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	ekin->theta = _4vQ.Theta()*RadToDeg();
 	phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
 	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
-}
+}*/
 
 Float_t ProcDelast::getPhi(TLorentzVector lv) {
 	Float_t retVal = 0;
