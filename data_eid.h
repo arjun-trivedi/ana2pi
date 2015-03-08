@@ -10,8 +10,8 @@ public:
 	virtual ~DataEid();
 	void Clear();
 	Int_t sector;
-        Float_t beta;
-        Float_t betaStrE;
+    Float_t beta;
+    Float_t betaStrE;
 	Float_t dtE;
 	Float_t p;
 	//from EC

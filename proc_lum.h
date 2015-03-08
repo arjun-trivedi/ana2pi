@@ -39,7 +39,7 @@ protected:
 };
 
 ProcLum::ProcLum(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpProcessor(td, dataH10, dataAna) {
-	proc_eid=new ProcEid(td->mkdir("eid"),dataH10,dataAna);
+	proc_eid=new ProcEid(dataH10,dataAna);
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	_hQ=new TH1F("hQ","Total charge",1,0,1);

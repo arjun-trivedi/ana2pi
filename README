@@ -127,6 +127,35 @@ ana2pi Branches
 									+ sub_studies/study_lum/notes/
 
 
+									+ [03-08-15]test_extend_proch10-frmwrk
+										+ proc_delast.h: Changes to this processor was the main reason to create this branch:
+											+ Ability to add to TTree produced in Monitor mode, Branches from DataEid and DataPid (see below)
+											+ Separated qskim and pid into separate Processors (see below)
+										+ proc_eid.h. proc_pid.h:
+											+ Made some member functions public so that other Procs can use them.
+											+ Add another (simpler) Constructor when other Processors need to use these Classes as tools
+										+ ep_processor.h/.cpp: Added another (simpler) Constructor for cases when Processors that are derived from this Base Class are simply used as tools by Processors that are part of the Processor Chain used to process h10
+										+ data_eid.h/.cpp: Removed nphe
+										+ data_ana.h/.cpp:
+											+ Added new data members:
+												+ DataSkimQElast
+												+ DataPidElast
+											+ Added new functions:
+												+ makeHistsPidElast()
+												+ fillHistsPidElast()
+												+ addBranches_DataElastic()
+												+ addBranches_DataEid()
+												+ addBranches_DataPid()
+												+ addBranches_DataPidElast()
+
+										+ 1st time additions to separate cuts made to produce delast
+											+ data_pid_elast.h/cpp
+											+ data_skim_q_elast.h/.cpp
+											+ proc_pid_elast.h
+											+ proc_skim_q_elast.h
+
+
+
 							
 
 
