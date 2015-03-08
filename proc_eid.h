@@ -21,12 +21,16 @@ class ProcEid : public EpProcessor
 public:
 	ProcEid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
 		    Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
+	ProcEid(DataH10* dataH10,DataAna* dataAna);
 	~ProcEid();
 	
 	void handle();
 	//void write();
 	Bool_t goodE();
 	Bool_t goodE_bos();
+	void updateEid();
+	void updateEkin(Bool_t useMc = kFALSE);
+	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 		
 protected:
 	Eid* _eidTool;
@@ -39,9 +43,9 @@ protected:
 	
 	//Bool_t goodE();
 	//Bool_t goodE_bos();
-	void updateEid();
-	void updateEkin(Bool_t useMc = kFALSE);
-	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
+	//void updateEid();
+	//void updateEkin(Bool_t useMc = kFALSE);
+	//Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 };
 
 ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna, 
@@ -79,6 +83,26 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_DCSTAT1,"Time-based");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SF,"SF");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_BOS11,"EVNT.id=11");
+}
+
+ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
+                 :EpProcessor(dataH10, dataAna)
+{
+	TString path;
+  	path=getenv("WORKSPACE");
+  	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
+	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
+	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
+
+    if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
+    }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
+    }else if (dH10->expt=="e16") {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e16. Will use goodE_bos()");; //pars for e1-6 not yet obtained
+    }
 }
 
 ProcEid::~ProcEid(){

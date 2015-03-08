@@ -25,10 +25,12 @@ class ProcPid : public EpProcessor
 public:
 	ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
 		    Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
+	ProcPid(DataH10* dataH10,DataAna* dataAna);
 	~ProcPid();
 
 	void handle();
 	//void write();
+	void updatePid();
 				
 protected:
 	/*Int_t _h10idxP;
@@ -48,7 +50,7 @@ protected:
 	static const Int_t NUM_EVTCUTS=6;
 	enum { EVT_NULL, EVT, EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};   
 	     
-	void updatePid();
+	//void updatePid();
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 };
 
@@ -84,6 +86,12 @@ ProcPid::ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,"p + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX,"#pi^{+} + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
+}
+
+ProcPid::ProcPid(DataH10* dataH10,DataAna* dataAna)
+                 :EpProcessor(dataH10, dataAna)
+{
+	
 }
 
 ProcPid::~ProcPid()
