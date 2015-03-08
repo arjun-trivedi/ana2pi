@@ -46,6 +46,7 @@ public:
 		_next_proc = 0;
 	}
 	EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Bool_t monitor = kFALSE, Bool_t monitorOnly = kFALSE);
+	EpProcessor(DataH10* dataH10, DataAna* dataAna);
 	~EpProcessor();
 		
 	void add(EpProcessor *n);

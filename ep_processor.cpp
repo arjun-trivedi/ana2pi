@@ -36,6 +36,11 @@ EpProcessor::EpProcessor(TDirectory *td, DataH10* dataH10, DataAna* dataAna, Boo
 	_next_proc = 0;
 }
 
+EpProcessor::EpProcessor(DataH10* dataH10, DataAna* dataAna) {
+	dH10 = dataH10;
+	if (dataAna != NULL) dAna = dataAna;
+}
+
 EpProcessor::~EpProcessor(){
 	Info("~EpProcessor()", "");
 	for(Int_t iProcMode=0;iProcMode<NPROCMODES;iProcMode++){
