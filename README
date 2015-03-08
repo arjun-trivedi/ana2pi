@@ -128,9 +128,11 @@ ana2pi Branches
 
 
 									+ [03-08-15]test_extend_proch10-frmwrk
+										+ data_ana.cpp: makeYieldsElastic(): Changed binning in theta from (40,0,80) to (46,14,60)
 										+ proc_delast.h: Changes to this processor was the main reason to create this branch:
 											+ Ability to add to TTree produced in Monitor mode, Branches from DataEid and DataPid (see below)
 											+ Separated qskim and pid into separate Processors (see below)
+										+ proc_h10.cpp: Ability to add ProcPidElast and ProcSkimQElast to Processor chain
 										+ proc_eid.h. proc_pid.h:
 											+ Made some member functions public so that other Procs can use them.
 											+ Add another (simpler) Constructor when other Processors need to use these Classes as tools
