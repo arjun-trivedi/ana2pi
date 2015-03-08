@@ -25,7 +25,7 @@ using namespace ParticleConstants;
 		+ Hists for ekin-vars
 		+ Hists for elastic-evt-cut-vars (NOT FOR Thrown EVENTS)
 		+ Hists for elastic-evt-yield-vars
-		+ ONLY IN 'mon' or 'mononly' MODE: TTree containing other-relevant-vars 
+		+ ONLY IN 'mon' or 'mononly' MODE: TTree containing DataElastic 
 ********************************************************/
 
 class ProcDelast : public EpProcessor {
