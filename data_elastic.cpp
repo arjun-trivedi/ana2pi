@@ -33,6 +33,4 @@ void DataElastic::Clear()
 	vy_p=0;
 	vz_e=0;
 	vz_p=0;
-	//! EID
-	nphe=0;
 }

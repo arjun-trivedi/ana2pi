@@ -36,9 +36,6 @@ public:
 	Float_t vy_p;
 	Float_t vz_e;
 	Float_t vz_p;
-	//! EID
-	UShort_t nphe;
-
 };
 
 #endif // DATAELASTIC_H
