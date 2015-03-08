@@ -5,8 +5,10 @@
 #include "data_eid.h"
 #include "data_efid.h"
 #include "data_skim_q.h"
+#include "data_skim_q_elast.h"
 #include "data_mom.h"
 #include "data_pid.h"
+#include "data_pid_elast.h"
 #include "data_ekin.h"
 #include "data_2pi.h"
 #include "data_h10.h"
@@ -29,7 +31,9 @@ public:
 	DataEid eid;
 	DataEFid efid;
 	DataSkimQ skimq;
+	DataSkimQElast skimq_elast;
 	DataPid pid;
+	DataPidElast pid_elast;
 	DataMom mom;
 	DataEkin eKin;
 	DataEkin eKin_mc;
@@ -48,6 +52,7 @@ public:
 	void makeHistsEFid(TObjArray** hists, TDirectory* dirout);
 	void makeHistsMomCor(TObjArray** hists, TDirectory* dirout);
 	void makeHistsPid(TObjArray** hists, TDirectory* dirout);
+	void makeHistsPidElast(TObjArray** hists, TDirectory* dirout);
 	void makeHistsEkin(TObjArray** hists, TDirectory* dirout);
 	
 	TObjArray* makeHistsEkin();
@@ -65,6 +70,7 @@ public:
     void fillHistsEFid(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsMomCor(TObjArray** hists, Bool_t useMc = kFALSE);
 	void fillHistsPid(TObjArray** hists, Bool_t useMc = kFALSE);
+	void fillHistsPidElast(TObjArray** hists, Bool_t useMc = kFALSE);
 	void fillHistsEkin(TObjArray** hists, Bool_t useMc = kFALSE);
 	
 	void fillHistsEkin(TObjArray* hists, Bool_t useMc = kFALSE);
@@ -73,6 +79,11 @@ public:
 
 	void fillHistsMMElastic(TObjArray *hists, Bool_t useMc = kFALSE);
 	void fillYieldsElastic(TObjArray* hists, Bool_t useMc = kFALSE);
+
+	void addBranches_DataElastic(TTree* t, Bool_t useMc=kFALSE);
+	void addBranches_DataEid(TTree* t);
+	void addBranches_DataPid(TTree* t);
+	void addBranches_DataPidElast(TTree* t);
 };
 
 #endif // DATAANA_H

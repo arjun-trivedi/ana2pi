@@ -31,8 +31,10 @@ void DataAna::Clear()
 	eid.Clear();
 	efid.Clear();
 	skimq.Clear();
+	skimq_elast.Clear();
 	mom.Clear();
 	pid.Clear();
+	pid_elast.Clear();
 	eKin.Clear();
 	eKin_mc.Clear();
 	d2pi.Clear();
@@ -155,6 +157,29 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hPim_sftotVp", TString::Format("SF_{tot} vs. p for idtfd #pi^{-}(sector%d)", iSector), 160, 0, 5, 100, 0, 0.5));
 		hists[iSector]->Add(new TH1F("hPim_nphe", TString::Format("nphe for idtfd #pi^{-}(sector%d)", iSector), 100, 0, 300));
 		hists[iSector]->Add(new TH2F("hPim_CCthetaVCCseg", TString::Format("CC_{#theta} vs. CC_{seg} for idtf #pi^{-}(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
+	}
+	//return ret;
+	return;
+}
+
+void DataAna::makeHistsPidElast(TObjArray** hists, TDirectory* dirout)
+{
+	//TObjArray *ret = new TObjArray(21);
+	TObjArray* ret[7];
+	//TDirectory* dirpid = dirout->mkdir("pid");
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(7);
+	
+		hists[iSector]->Add(new TH2F("hP_betaVp",TString::Format("#beta vs p for idtfd proton(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
+		hists[iSector]->Add(new TH2F("hP_dtVp",TString::Format("#Deltat vs p for idtfd proton(sector%d)", iSector),100, 0, 4, 200, -40, 120));
+		hists[iSector]->Add(new TH2F("hP_eoutVein",TString::Format("#DeltaE_{out} vs. #DeltaE_{in} for idtfd p(sector%d)", iSector),150, 0, 1, 150, 0, 1));
+		hists[iSector]->Add(new TH2F("hP_sfoutVsfin",TString::Format("SF_{out} vs. SF_{in} for idtfd p(sector%d)", iSector),100, 0, 0.5, 100, 0, 0.5));
+		hists[iSector]->Add(new TH2F("hP_sftotVp",TString::Format("SF_{tot} vs. p for idtfd p(sector%d)", iSector), 160, 0, 5, 100, 0, 0.5));
+		hists[iSector]->Add(new TH1F("hP_nphe", TString::Format("nphe for idtfd p(sector%d)", iSector), 100, 0, 300));
+		hists[iSector]->Add(new TH2F("hP_CCthetaVCCseg",TString::Format("CC_{#theta} vs. CC_{seg} for idtf p(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
 	}
 	//return ret;
 	return;
@@ -526,6 +551,34 @@ void DataAna::fillHistsPid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	}
 }
 
+void DataAna::fillHistsPidElast(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	Int_t hIdx = 0;
+	if(pid_elast.h10IdxP > 0){
+		hIdx = 0;
+		for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+				if ( (iSector == 0) || (iSector == pid_elast.sectorP) ) {
+			
+				TH2* h1 = (TH2*)hists[iSector]->At(hIdx);
+				h1->Fill(pid_elast.pP, pid_elast.betaP);
+				TH2* h2 = (TH2*)hists[iSector]->At(hIdx+1);
+				h2->Fill(pid_elast.pP, pid_elast.dtP);
+		
+				TH2* h3 = (TH2*)hists[iSector]->At(hIdx+2);
+				h3->Fill(pid_elast.P_ec_ei, pid_elast.P_ec_eo);
+				TH2* h4 = (TH2*)hists[iSector]->At(hIdx+3);
+				h4->Fill(pid_elast.P_ec_ei/pid_elast.pP, pid_elast.P_ec_eo/pid_elast.pP);
+				TH2* h5 = (TH2*)hists[iSector]->At(hIdx+4);
+				h5->Fill(pid_elast.pP, pid_elast.P_etot/pid_elast.pP);
+				TH1* h6 = (TH1*)hists[iSector]->At(hIdx+5);
+				h6->Fill(pid_elast.P_nphe);
+				TH2* h7 = (TH2*)hists[iSector]->At(hIdx+6);
+				h7->Fill(pid_elast.P_cc_segm, pid_elast.P_cc_theta);
+			}
+		}
+	}
+}
+
 void DataAna::fillHistsEkin(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
 	DataEkin *ekin = &eKin;
@@ -696,4 +749,106 @@ void DataAna::fillYieldsElastic(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	THnSparse* h2 = (THnSparse*)hists->At(0);
 	Double_t coord[] = {de->theta_e,de->phi_e};
 	h2->Fill(coord);
+}
+
+void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){
+	DataElastic* de=&dElast;
+	if (useMc) de=&dElast_ST;
+	//! gpart
+	t->Branch("gpart",&de->gpart);
+	//! Q2, W
+	t->Branch("Q2",&de->Q2);
+	t->Branch("W", &de->W);
+	//! MMs for Event Selection
+	t->Branch("MMep",  &de->MMep);
+	t->Branch("MM2ep", &de->MM2ep);
+	//! Reconstructed Kinematics 
+	//! for e',p',p,pip,pim at e' vertex
+	t->Branch("p_e",&de->p_e);
+	t->Branch("p_p",&de->p_p);
+	t->Branch("theta_e",&de->theta_e);
+	t->Branch("theta_p",&de->theta_p);
+	t->Branch("phi_e",&de->phi_e);
+	t->Branch("phi_p",&de->phi_p);
+	//! Reconstructed e' Vertex
+	t->Branch("vx_e",&de->vx_e);
+	t->Branch("vx_p",&de->vx_p);
+	t->Branch("vy_e",&de->vy_e);
+	t->Branch("vy_p",&de->vy_p);
+	t->Branch("vz_e",&de->vz_e);
+	t->Branch("vz_p",&de->vz_p);
+	//! EID
+	//t->Branch("nphe",&de->nphe);
+}
+
+void DataAna::addBranches_DataEid(TTree* t){
+	t->Branch("sector_e",&eid.sector);
+    t->Branch("beta_e",&eid.beta);
+    t->Branch("betaStr_e",&eid.betaStrE);
+	t->Branch("dt_e",&eid.dtE);
+	t->Branch("p_e_eid",&eid.p); //so that it does not coflict with p_e from DataElast 
+	//from EC
+	t->Branch("ec_ei",&eid.ec_ei);
+	t->Branch("ec_eo",&eid.ec_eo);
+	t->Branch("etot",&eid.etot);
+	//from CC
+	t->Branch("nphe",&eid.nphe);
+	t->Branch("cc_segm",&eid.cc_segm);
+	t->Branch("cc_theta",&eid.cc_theta);
+}
+
+void DataAna::addBranches_DataPid(TTree* t){
+	t->Branch("sector_p",&pid.sectorP);
+    t->Branch("sector_pip",&pid.sectorPip);
+    t->Branch("sector_pim",&pid.sectorPim);
+    t->Branch("beta_p",&pid.betaP);
+    t->Branch("beta_pip",&pid.betaPip);
+    t->Branch("beta_pim",&pid.betaPim);
+    t->Branch("betaStr_p",&pid.betaStrP);
+    t->Branch("betaStr_pip",&pid.betaStrPip);
+    t->Branch("betaStr_pim",&pid.betaStrPim);
+    t->Branch("dt_p",&pid.dtP);
+    t->Branch("dt_pip",&pid.dtPip);
+    t->Branch("dt_pim",&pid.dtPim);
+    t->Branch("p_p_pid",&pid.pP);
+    t->Branch("p_pip_pid",&pid.pPip);
+    t->Branch("p_pim_pid",&pid.pPim);
+    /*CC, EC signature*/
+    //from EC
+    t->Branch("ec_ei_p",&pid.P_ec_ei);
+    t->Branch("ec_ei_pip",&pid.Pip_ec_ei);
+    t->Branch("ec_ei_pim",&pid.Pim_ec_ei);
+    t->Branch("ec_eo_p",&pid.P_ec_eo);
+    t->Branch("ec_eo_pip",&pid.Pip_ec_eo);
+    t->Branch("ec_eo_pim",&pid.Pim_ec_eo);
+    t->Branch("etot_p",&pid.P_etot);
+    t->Branch("etot_pip",&pid.Pip_etot);
+    t->Branch("etot_pim",&pid.Pim_etot);
+    //from CC
+    t->Branch("nphe_p",&pid.P_nphe);
+    t->Branch("nphe_pip",&pid.Pip_nphe);
+    t->Branch("nphe_pim",&pid.Pim_nphe);
+    t->Branch("cc_segm_p",&pid.P_cc_segm);
+    t->Branch("cc_segm_pip",&pid.Pip_cc_segm);
+    t->Branch("cc_segm_pim",&pid.Pim_cc_segm);
+    t->Branch("cc_theta_p",&pid.P_cc_theta);
+    t->Branch("cc_theta_pip",&pid.Pip_cc_theta);
+    t->Branch("cc_theta_pim",&pid.Pim_cc_theta);
+}
+
+void DataAna::addBranches_DataPidElast(TTree* t){
+	t->Branch("sector_p",&pid_elast.sectorP);
+    t->Branch("beta_p",&pid_elast.betaP);
+    t->Branch("betaStr_p",&pid_elast.betaStrP);
+    t->Branch("dt_p",&pid_elast.dtP);
+    t->Branch("p_p_pid",&pid_elast.pP);
+    /*CC, EC signature*/
+    //from EC
+    t->Branch("ec_ei_p",&pid_elast.P_ec_ei);
+    t->Branch("ec_eo_p",&pid_elast.P_ec_eo);
+    t->Branch("etot_p",&pid_elast.P_etot);
+    //from CC
+    t->Branch("nphe_p",&pid_elast.P_nphe);
+    t->Branch("cc_segm_p",&pid_elast.P_cc_segm);
+    t->Branch("cc_theta_p",&pid_elast.P_cc_theta);
 }
