@@ -193,22 +193,25 @@ Bool_t ProcEid::goodE(){
 							hevtsum->Fill(EVT_EC1);
 							//if (dH10->cc[0]>0 || dH10->dtyp=="sim") {
 								hevtsum->Fill(EVT_CC1);
-								if (dH10->dc_stat[dH10->dc[0]-1]>0) {
-									hevtsum->Fill(EVT_DCSTAT1);
-									if (_eidTool->PassThreshold(dH10->p[0])) {
-										hevtsum->Fill(EVT_ECLOW1);
-										Int_t sector = dH10->sc_sect[dH10->sc[0]-1];
-										Float_t mom = dH10->p[0];
-										Float_t sf = dH10->etot[dH10->ec[0]-1]/dH10->p[0];
-										if (_eidTool->PassSF(sector,mom,sf)) {
-											hevtsum->Fill(EVT_SF);
-											if (!_eidTool->Pass(sector,mom,sf)) {
-												hevtsum->Fill(NUM_EVTCUTS+1);
+								//if(dH10->nphe[dH10->cc[0]-1]>20 || dH10->dtyp=="sim"){
+									//hevtsum->Fill(EVT_NPHE20);
+									if (dH10->dc_stat[dH10->dc[0]-1]>0) {
+										hevtsum->Fill(EVT_DCSTAT1);
+										if (_eidTool->PassThreshold(dH10->p[0])) {
+											hevtsum->Fill(EVT_ECLOW1);
+											Int_t sector = dH10->sc_sect[dH10->sc[0]-1];
+											Float_t mom = dH10->p[0];
+											Float_t sf = dH10->etot[dH10->ec[0]-1]/dH10->p[0];
+											if (_eidTool->PassSF(sector,mom,sf)) {
+												hevtsum->Fill(EVT_SF);
+												if (!_eidTool->Pass(sector,mom,sf)) {
+													hevtsum->Fill(NUM_EVTCUTS+1);
+												}
+												retval = kTRUE;
 											}
-											retval = kTRUE;
 										}
 									}
-								}
+								//}
 							//}
 						}
 					}
