@@ -182,14 +182,28 @@ class StudyElasticTools:
 		print "nrows,ncols",nrows,ncols
 		c.Divide(ncols,nrows)
 
-		#! Checkout Simulation
+		#! Checkout ST comparison with Theory
+		outdir=os.path.join(OUTDIR,"ST_Theory")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy()
+				hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
+				hThrtcl.DrawNormalized("sames",1000)
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+
+		#! Checkout Simulation: ST,SR and SC
 		outdir=os.path.join(OUTDIR,"ST_SR_SC")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				c.cd(iphibinnum+1)
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy(0)
 				hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()#DrawNormalized("",1000)
 				hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")#DrawNormalized("sames",1000)
 				hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")
