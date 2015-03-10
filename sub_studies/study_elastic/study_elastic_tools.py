@@ -26,6 +26,10 @@ DTHETA=1
 LUM=19.844 #fb^-1
 LUM_INVFB_TO_INVMICROB=1000000000
 
+#! For TCanvas
+CANVAS_W=1000
+CANVAS_H=800
+
 class StudyElasticTools:
 	def __init__(self,theta_min):
 		self.THETA_MIN=theta_min
@@ -171,7 +175,7 @@ class StudyElasticTools:
 		
 		#! First create a TCanvas
 		#! NOTE, that this TCanvas is reused
-		c=ROOT.TCanvas()
+		c=ROOT.TCanvas("c","c",CANVAS_W,CANVAS_H)
 		num_phibins=len(self.PHI_PROJ_BINS[1])
 		nrows=2
 		ncols=int(num_phibins/nrows)
@@ -200,92 +204,123 @@ class StudyElasticTools:
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 	
 		# #! Checkout that the distributions for ER and SR match
-		# #c=ROOT.TCanvas()
-		# for i,binnum in enumerate(PHI_PROJ_BINS):
-		# 	c.cd(i+1)
-		# 		hERn=hTHETA['ER',"phibin%d"%binnum].DrawNormalized("",1000)
-		# 		hSRn=hTHETA['SR',"phibin%d"%binnum].DrawNormalized("sames",1000)
-		# 	#print hSRn.GetMaximum()
-		# 		#! Set the minimum and maximum of y coordinate of histograms
-		# 		maxl=[hERn.GetMaximum(),hSRn.GetMaximum()]
-		# 		maximum=max(maxl)
-		# 	#print maxl,maximum
-		# 		for htmp in [hERn,hSRn]:
-		# 				htmp.SetMinimum(0.)
-		# 				htmp.SetMaximum(maximum+10)
-		# 	c.SaveAs("%s/c_ER_SR.png"%OUTDIR)  
+		outdir=os.path.join(OUTDIR,"ER_SR")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				c.cd(iphibinnum+1)
+				hERn=hTHETA['ER',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
+				hSRn=hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("sames",1000)
+				#print hSRn.GetMaximum()
+				#! Set the minimum and maximum of y coordinate of histograms
+				maxl=[hERn.GetMaximum(),hSRn.GetMaximum()]
+				maximum=max(maxl)
+				#print maxl,maximum
+				for htmp in [hERn,hSRn]:
+						htmp.SetMinimum(0.)
+						htmp.SetMaximum(maximum+10)
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))  
 	
 		# #! Checkout that the distributions for EC and SC match
-		# hrto_EC_SC={}
-		# for i,binnum in enumerate(PHI_PROJ_BINS):
-		# 	c.cd(i+1)
-		# 		hECn=hTHETA['EC',"phibin%d"%binnum].DrawNormalized("",1000)
-		# 		hSCn=hTHETA['SC',"phibin%d"%binnum].DrawNormalized("sames",1000)
-		# 		#print hSCn.GetMaximum()
-		# 		#! Set the minimum and maximum of y coordinate of histograms
-		# 		maxl=[hECn.GetMaximum(),hSCn.GetMaximum()]
-		# 		maximum=max(maxl)
-		# 		#print maxl,maximum
-		# 		for htmp in [hECn,hSCn]:
-		# 				htmp.SetMinimum(0.)
-		# 				htmp.SetMaximum(maximum+10)
-		# 	#! Calculate difference
-		# 			hECn.Sumw2()
-		# 			hSCn.Sumw2()
-		# 			hrto_EC_SC["phibin%d"%binnum]=hECn.Clone()
-		# 			hrto_EC_SC["phibin%d"%binnum].Divide(hSCn)
-		# 	c.SaveAs("%s/c_EC_SC.png"%OUTDIR)
-		# 	#! Plot difference
-		# 	for i,binnum in enumerate(PHI_PROJ_BINS):
-		# 			c.cd(i+1)
-		# 	hrto_EC_SC["phibin%d"%binnum].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-		# 	hrto_EC_SC["phibin%d"%binnum].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-		# 			hrto_EC_SC["phibin%d"%binnum].SetMaximum(6)
-		# 			#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-		# 			hrto_EC_SC["phibin%d"%binnum].SetYTitle("")
-		# 			hrto_EC_SC["phibin%d"%binnum].SetTitle("#frac{EC}{SC}")
-		# 			hrto_EC_SC["phibin%d"%binnum].Draw()
-		# 	c.SaveAs("%s/c_rto_EC_SC.png"%OUTDIR)
+		hrto_EC_SC={}
+		outdir=os.path.join(OUTDIR,"EC_SC")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				c.cd(iphibinnum+1)
+				hECn=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
+				hSCn=hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("sames",1000)
+				#print hSCn.GetMaximum()
+				#! Set the minimum and maximum of y coordinate of histograms
+				maxl=[hECn.GetMaximum(),hSCn.GetMaximum()]
+				maximum=max(maxl)
+				#print maxl,maximum
+				for htmp in [hECn,hSCn]:
+						htmp.SetMinimum(0.)
+						htmp.SetMaximum(maximum+10)
+				#! Calculate difference
+				hECn.Sumw2()
+				hSCn.Sumw2()
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hECn.Clone()
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hSCn)
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
+		#! Plot difference
+		outdir=os.path.join(OUTDIR,"rto_EC_SC")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				c.cd(iphibinnum+1)
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{SC} for %s"%old_title)
+				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 	
-		# #! Normalize EC to Luminosity and calculate rto between ECln and theoretical yield
-		# hrto={}
-		# for i,binnum in enumerate(PHI_PROJ_BINS):
-		# 			c.cd(i+1)
-		# 	hECln=hTHETA['EC',"phibin%d"%binnum]#.Clone() #! Doing Clone() hear breaks things?!
-		# 	hECln.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-		# 	hECln.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-		# 	hECln.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
-		# 	for ibin in range(hECln.GetNbinsX()):
-		# 		binc=hECln.GetBinContent(ibin+1)
-		# 		binerr=hECln.GetBinError(ibin+1)
-		# 		theta=hECln.GetBinLowEdge(ibin+1)
-		# 		if theta==0: continue
-		# 		dtheta=hECln.GetBinWidth(ibin+1)
-		# 		dOmega=( math.sin(math.radians(theta)) )*(dtheta*math.pi/180)*(DPHI*math.pi/180)
-		# 		#print "theta,dtheta,dphi,dOmega=",theta,dtheta*math.pi/180,DPHI*math.pi/180,dOmega
-		# 		norm=LUM*LUM_INVFB_TO_INVMICROB*dOmega
-		# 		#print "norm=",norm
-		# 		hECln.SetBinContent(ibin+1,binc/norm)
-		# 		hECln.SetBinError(ibin+1,binerr/norm)
-		# 	maxl=[hECln.GetMaximum(),hThrtcl.GetMaximum()]
-		# 			maximum=max(maxl)
-		# 			for htmp in [hECln,hThrtcl]:
-		# 					htmp.SetMinimum(0.)
-		# 					htmp.SetMaximum(maximum)
-		# 	hECln.Draw()
-		# 			hThrtcl.Draw("sames e")
-		# 	#! Calculate difference append from theory
-		# 	hECln.Sumw2()
-		# 			hThrtcl.Sumw2()
-		# 	hrto["phibin%d"%binnum]=hECln.Clone()
-		# 	hrto["phibin%d"%binnum].Divide(hThrtcl)
-		# c.SaveAs("%s/c_EC_lumnorm.png"%OUTDIR)
-		# #! Plot difference
-		# for i,binnum in enumerate(PHI_PROJ_BINS):
-		# 			c.cd(i+1)
-		# 	hrto["phibin%d"%binnum].SetMaximum(6)
-		# 	#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-		# 	hrto["phibin%d"%binnum].SetYTitle("")
-		# 	hrto["phibin%d"%binnum].SetTitle("#frac{d\sigma}{d\Omega}(#frac{EC}{Theoretical})")
-		# 	hrto["phibin%d"%binnum].Draw()
-		# c.SaveAs("%s/c_rto_ECln_thrtcl.png"%OUTDIR)
+		#! Normalize EC to Luminosity and calculate rto between EClumnorm and theoretical yield
+		hrto_EClumnorm_thrtcl={}
+		outdir=os.path.join(OUTDIR,"EClumnorm_thrtcl")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy(1)
+				hEClumnorm=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]#.Clone() #! Doing Clone() hear breaks things?!
+				hEClumnorm.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hEClumnorm.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hEClumnorm.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
+				old_title=hEClumnorm.GetTitle()
+				hEClumnorm.SetTitle("#frac{d\sigma}{d\Omega} [\mu b] for %s"%old_title)
+				for ibin in range(hEClumnorm.GetNbinsX()):
+					binc=hEClumnorm.GetBinContent(ibin+1)
+					binerr=hEClumnorm.GetBinError(ibin+1)
+					theta=hEClumnorm.GetBinLowEdge(ibin+1)
+					if theta==0: continue
+					dtheta=hEClumnorm.GetBinWidth(ibin+1)
+					dOmega=( math.sin(math.radians(theta)) )*(dtheta*math.pi/180)*(DPHI*math.pi/180)
+					#print "theta,dtheta,dphi,dOmega=",theta,dtheta*math.pi/180,DPHI*math.pi/180,dOmega
+					norm=LUM*LUM_INVFB_TO_INVMICROB*dOmega
+					#print "norm=",norm
+					hEClumnorm.SetBinContent(ibin+1,binc/norm)
+					hEClumnorm.SetBinError(ibin+1,binerr/norm)
+
+				maxl=[hEClumnorm.GetMaximum(),hThrtcl.GetMaximum()]
+				maximum=max(maxl)
+				for htmp in [hEClumnorm,hThrtcl]:
+					htmp.SetMinimum(0.00000001)
+					htmp.SetMaximum(maximum)
+				hEClumnorm.Draw()
+				hThrtcl.Draw("sames e")
+				#! Calculate difference append from theory
+				hEClumnorm.Sumw2()
+				hThrtcl.Sumw2()
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hEClumnorm.Clone()
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hThrtcl)
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
+		#! Plot ratio
+		outdir=os.path.join(OUTDIR,"rto_EClumnorm_thrtcl")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy(0)
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				#hrto_EClumnorm_thrtcl["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{Theoretical} for %s"%old_title)
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
