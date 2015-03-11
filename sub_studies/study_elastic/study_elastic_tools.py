@@ -111,15 +111,16 @@ class StudyElasticTools:
 					hTHETA.SetTitle("#theta projection for #phi=[%d,%d)"%(phi_min,phi_max))
 					hTHETA.Write()
 				
-	def disp_yields(self):
+	def disp_yields(self,thry='wrad'):
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)
-		if self.THETA_MIN==14:
-			FIN=ROOT.TFile(os.path.join(os.environ['OBSDIR_ELASTIC'],'yield.root'))	
-			OUTDIR=os.path.join(os.environ['OBSDIR_ELASTIC'],'displays')
-		elif self.THETA_MIN==25:
-			FIN=ROOT.TFile(os.path.join(os.environ['OBSDIR_ELASTIC_THETA_MIN_25'],'yield.root'))	
-			OUTDIR=os.path.join(os.environ['OBSDIR_ELASTIC_THETA_MIN_25'],'displays')
+		FIN=ROOT.TFile(os.path.join(os.environ['OBSDIR_ELASTIC'],'yield.root'))	
+		if thry=='wrad':
+			OUTDIR=os.path.join(os.environ['OBSDIR_ELASTIC'],'displays_thry_%s'%thry)
+		elif thry=='nrad':
+			OUTDIR=os.path.join(os.environ['OBSDIR_ELASTIC'],'displays_thry_%s'%thry)
+		else:
+			sys.exit('thry has to be wrad or nrad. Entered value= %s'%thry)
 		if not os.path.exists(OUTDIR):
 			os.makedirs(OUTDIR)
 	
@@ -168,8 +169,10 @@ class StudyElasticTools:
 		for ibin in range(nbins):
 			theta=hTTnorm.GetBinLowEdge(ibin+1)
 			if theta==0: continue
-			#binc=elaslib.elas(5.499,theta)
-			binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
+			if thry=='wrad':
+				binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
+			elif thry=='nrad':
+				binc=elaslib.elas(5.499,theta)
 			#print "theta,xsec=",theta,binc
 			hTTnorm.SetBinContent(ibin+1,binc)
 			hTTnorm.SetBinError(ibin+1,0)
@@ -183,14 +186,18 @@ class StudyElasticTools:
 	
 		#! Now plot hTHETA in PHI_PROJ_BINS
 		
-		#! First create a TCanvas
-		#! NOTE, that this TCanvas is reused
+		#! First create a TCanvas & TLegend
+		#! NOTE, that this TCanvas and TLegend are reused
 		c=ROOT.TCanvas("c","c",CANVAS_W,CANVAS_H)
 		num_phibins=len(self.PHI_PROJ_BINS[1])
 		nrows=2
 		ncols=int(num_phibins/nrows)
 		print "nrows,ncols",nrows,ncols
 		c.Divide(ncols,nrows)
+		l=ROOT.TLegend(0.45,0.6,1.0,0.85)
+		l.SetFillStyle(0)
+		l.SetBorderSize(0)
+		l.SetTextSize(0.03)
 
 		#! 1. Checkout ST comparison with TT
 		hrto_ST_thry={}
@@ -203,8 +210,12 @@ class StudyElasticTools:
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy()
 				hSTn=hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-				#hTTnormn=hTTnorm.DrawNormalized("sames",1000)
 				hTTn=hTT.DrawNormalized("sames",1000)
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hSTn,"ST-norm")
+					l.AddEntry(hTTn,"d\sigma_{thry-%s}-norm"%thry)
+					l.Draw()
 				#! Calculate ratio
 				hSTn.Sumw2()
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSTn.Clone()
@@ -220,7 +231,7 @@ class StudyElasticTools:
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy(0)
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
-				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(30.)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(8.)
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				#hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
@@ -229,6 +240,10 @@ class StudyElasticTools:
 				old_title=hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{ST}{TT} for %s"%old_title)
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{ST-norm}{d\sigma_{thry-%s}-norm}"%thry)
+					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 
 		#! 2. Checkout Simulation: ST,SR and SC
@@ -243,14 +258,12 @@ class StudyElasticTools:
 				hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()#DrawNormalized("",1000)
 				hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")#DrawNormalized("sames",1000)
 				hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")
-				#! Set the minimum and maximum of y coordinate of histograms
-				#maxl=[hSTn.GetMaximum(),hSCn.GetMaximum()]
-				#maxl=[h['ST','THETA'].GetMaximum(),h['SC','THETA'].GetMaximum(),h['SR','THETA'].GetMaximum()]
-				#maximum=max(maxl)
-				#for htmp in [hSTn,hSCn]:
-				#for htmp in [h['ST','THETA'],h['SC','THETA'],h['SR','THETA']]:
-					#htmp.SetMinimum(0.)
-					#htmp.SetMaximum(maximum+10)
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"ST")
+					l.AddEntry(hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"SC")
+					l.AddEntry(hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"SR")
+					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 	
 		#! 3. Checkout that the distributions for ER and SR match
@@ -272,6 +285,11 @@ class StudyElasticTools:
 				for htmp in [hERn,hSRn]:
 						htmp.SetMinimum(0.01)
 						htmp.SetMaximum(maximum+10)
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hERn,"ER-norm")
+					l.AddEntry(hSRn,"SR-norm")
+					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))  
 	
 		#! 4. Checkout that the distributions for EC and SC match
@@ -294,6 +312,11 @@ class StudyElasticTools:
 				for htmp in [hECn,hSCn]:
 						htmp.SetMinimum(0.01)
 						htmp.SetMaximum(maximum+10)
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hECn,"EC-norm")
+					l.AddEntry(hSCn,"SC-norm")
+					l.Draw()
 				#! Calculate difference
 				hECn.Sumw2()
 				hSCn.Sumw2()
@@ -316,11 +339,15 @@ class StudyElasticTools:
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
 				old_title=hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{SC} for %s"%old_title)
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{EC-norm}{SC-norm}")
+					l.Draw()
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 
 		#! 5. Checkout EC comparison with TT
-		hrto_EC_thry={}
+		hrto_EC_TT={}
 		outdir=os.path.join(OUTDIR,"EC_TT")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
@@ -334,8 +361,13 @@ class StudyElasticTools:
 				hTTn=hTT.DrawNormalized("sames",1000)
 				#! Calculate ratio
 				hECn.Sumw2()
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hECn.Clone()
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTn)
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hECn.Clone()
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTn)
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hECn,"EC-norm")
+					l.AddEntry(hTTn,"d\sigma_{thry-%s}-norm"%thry)
+					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 		#! Plot ratio
 		outdir=os.path.join(OUTDIR,"rto_EC_TT")
@@ -346,20 +378,24 @@ class StudyElasticTools:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy(0)
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(30.)
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-				#hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(8.)
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				#hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
 				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-				old_title=hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{TT} for %s"%old_title)
-				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{TT} for %s"%old_title)
+				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{EC-norm}{d\sigma_{thry-%s}-norm}"%thry)
+					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 	
 		#! 6. Normalize EC to Luminosity and calculate rto between EClumnorm and TTnorm
-		hrto_EClumnorm_thrtcl={}
+		hrto_EClumnorm_TTnorm={}
 		outdir=os.path.join(OUTDIR,"EClumnorm_TTnorm")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
@@ -394,11 +430,16 @@ class StudyElasticTools:
 					htmp.SetMaximum(maximum)
 				hEClumnorm.Draw()
 				hTTnorm.Draw("sames e")
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hEClumnorm,"#frac{d\sigma}{d\Omega}^{EC}")
+					l.AddEntry(hTTnorm,"#frac{d\sigma_{thry-%s}}{d\Omega}"%thry)
+					l.Draw()
 				#! Calculate difference append from theory
 				hEClumnorm.Sumw2()
 				hTTnorm.Sumw2()
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hEClumnorm.Clone()
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTnorm)
+				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hEClumnorm.Clone()
+				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTnorm)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 		#! Plot ratio
 		outdir=os.path.join(OUTDIR,"rto_EClumnorm_TTnorm")
@@ -409,10 +450,14 @@ class StudyElasticTools:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy(0)
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
-				#hrto_EClumnorm_thrtcl["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-				old_title=hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EClumnorm}{TTnorm} for %s"%old_title)
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				#hrto_EClumnorm_TTnorm["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{#frac{d\sigma}{d\Omega}^{EC}}{#frac{d\sigma_{thry-%s}}{d\Omega}} for %s"%(thry,old_title))
+				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+				if (iphibinnum+1)==1: #then draw TLegend
+					l.Clear()
+					l.AddEntry(hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{#frac{d\sigma}{d\Omega}^{EC}}{#frac{d\sigma_{thry-%s}}{d\Omega}}"%thry)
+					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
