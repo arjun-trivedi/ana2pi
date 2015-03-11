@@ -182,7 +182,8 @@ class StudyElasticTools:
 		print "nrows,ncols",nrows,ncols
 		c.Divide(ncols,nrows)
 
-		#! Checkout ST comparison with Theory
+		#! 1. Checkout ST comparison with Theory
+		hrto_ST_thry={}
 		outdir=os.path.join(OUTDIR,"ST_Theory")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
@@ -191,11 +192,33 @@ class StudyElasticTools:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy()
-				hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-				hThrtcl.DrawNormalized("sames",1000)
+				hSTn=hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
+				hThrtcln=hThrtcl.DrawNormalized("sames",1000)
+				#! Calculate ratio
+				hSTn.Sumw2()
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSTn.Clone()
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hThrtcln)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+		#! Plot ratio
+		outdir=os.path.join(OUTDIR,"rto_ST_thry")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy(0)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				#hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{ST}{Theory} for %s"%old_title)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 
-		#! Checkout Simulation: ST,SR and SC
+		#! 2. Checkout Simulation: ST,SR and SC
 		outdir=os.path.join(OUTDIR,"ST_SR_SC")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
@@ -217,7 +240,7 @@ class StudyElasticTools:
 					#htmp.SetMaximum(maximum+10)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 	
-		# #! Checkout that the distributions for ER and SR match
+		#! 3. Checkout that the distributions for ER and SR match
 		outdir=os.path.join(OUTDIR,"ER_SR")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
@@ -237,7 +260,7 @@ class StudyElasticTools:
 						htmp.SetMaximum(maximum+10)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))  
 	
-		# #! Checkout that the distributions for EC and SC match
+		#! 4. Checkout that the distributions for EC and SC match
 		hrto_EC_SC={}
 		outdir=os.path.join(OUTDIR,"EC_SC")
 		if not os.path.exists(outdir):
@@ -280,9 +303,9 @@ class StudyElasticTools:
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 	
-		#! Normalize EC to Luminosity and calculate rto between EClumnorm and theoretical yield
+		#! 5. Normalize EC to Luminosity and calculate rto between EClumnorm and theoretical yield
 		hrto_EClumnorm_thrtcl={}
-		outdir=os.path.join(OUTDIR,"EClumnorm_thrtcl")
+		outdir=os.path.join(OUTDIR,"EClumnorm_thry")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
@@ -323,7 +346,7 @@ class StudyElasticTools:
 				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hThrtcl)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 		#! Plot ratio
-		outdir=os.path.join(OUTDIR,"rto_EClumnorm_thrtcl")
+		outdir=os.path.join(OUTDIR,"rto_EClumnorm_thry")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
