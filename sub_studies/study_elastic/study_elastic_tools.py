@@ -156,20 +156,30 @@ class StudyElasticTools:
 					hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
 	
 		#! Generate theoretical Cross Sections
+		#! hTTnorm=dsigma/dOmega
+		#! hTT=sigma; this histogram is helpful in direct comparison with Yields
 		nbins=hTHETA['EC','sector1','phibinnum1'].GetNbinsX()
 		xmin= hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmin()
 		xmax= hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmax()
-		hThrtcl=ROOT.TH1F("hThrtcl","hThrtcl",nbins,xmin,xmax)
-		hThrtcl.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
+		hTTnorm=ROOT.TH1F("hTTnorm","hTTnorm",nbins,xmin,xmax)
+		hTTnorm.SetYTitle("d\sigma [#frac{\mu b}{sr}]")
+		hTT=ROOT.TH1F("hTT","hTT",nbins,xmin,xmax)
+		hTT.SetYTitle("#d\sigma} [\mu b]")
 		for ibin in range(nbins):
-			theta=hThrtcl.GetBinLowEdge(ibin+1)
+			theta=hTTnorm.GetBinLowEdge(ibin+1)
 			if theta==0: continue
 			#binc=elaslib.elas(5.499,theta)
 			binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
 			#print "theta,xsec=",theta,binc
-			hThrtcl.SetBinContent(ibin+1,binc)
-			hThrtcl.SetBinError(ibin+1,0)
-			#hThrtcl.GetXaxis().SetRangeUser(12,50)
+			hTTnorm.SetBinContent(ibin+1,binc)
+			hTTnorm.SetBinError(ibin+1,0)
+			#hTTnorm.GetXaxis().SetRangeUser(12,50)
+			theta=hTTnorm.GetBinLowEdge(ibin+1)
+			if theta==0: continue
+			dtheta=hTTnorm.GetBinWidth(ibin+1)
+			dOmega=( math.sin(math.radians(theta)) )*(dtheta*math.pi/180)*(DPHI*math.pi/180)
+			hTT.SetBinContent(ibin+1,binc*dOmega)
+			hTT.SetBinError(ibin+1,0)
 	
 		#! Now plot hTHETA in PHI_PROJ_BINS
 		
@@ -182,9 +192,9 @@ class StudyElasticTools:
 		print "nrows,ncols",nrows,ncols
 		c.Divide(ncols,nrows)
 
-		#! 1. Checkout ST comparison with Theory
+		#! 1. Checkout ST comparison with TT
 		hrto_ST_thry={}
-		outdir=os.path.join(OUTDIR,"ST_Theory")
+		outdir=os.path.join(OUTDIR,"ST_TT")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
@@ -193,14 +203,15 @@ class StudyElasticTools:
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy()
 				hSTn=hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-				hThrtcln=hThrtcl.DrawNormalized("sames",1000)
+				#hTTnormn=hTTnorm.DrawNormalized("sames",1000)
+				hTTn=hTT.DrawNormalized("sames",1000)
 				#! Calculate ratio
 				hSTn.Sumw2()
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSTn.Clone()
-				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hThrtcln)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTn)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 		#! Plot ratio
-		outdir=os.path.join(OUTDIR,"rto_ST_thry")
+		outdir=os.path.join(OUTDIR,"rto_ST_TT")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
@@ -208,13 +219,15 @@ class StudyElasticTools:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy(0)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(30.)
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				#hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
 				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
 				old_title=hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{ST}{Theory} for %s"%old_title)
+				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{ST}{TT} for %s"%old_title)
 				hrto_ST_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 
@@ -226,7 +239,7 @@ class StudyElasticTools:
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
-				pad.SetLogy(0)
+				pad.SetLogy()
 				hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()#DrawNormalized("",1000)
 				hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")#DrawNormalized("sames",1000)
 				hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")
@@ -247,7 +260,8 @@ class StudyElasticTools:
 		print "outdir=",outdir
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				c.cd(iphibinnum+1)
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy()
 				hERn=hTHETA['ER',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
 				hSRn=hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("sames",1000)
 				#print hSRn.GetMaximum()
@@ -256,7 +270,7 @@ class StudyElasticTools:
 				maximum=max(maxl)
 				#print maxl,maximum
 				for htmp in [hERn,hSRn]:
-						htmp.SetMinimum(0.)
+						htmp.SetMinimum(0.01)
 						htmp.SetMaximum(maximum+10)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))  
 	
@@ -268,7 +282,8 @@ class StudyElasticTools:
 		print "outdir=",outdir
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				c.cd(iphibinnum+1)
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy()
 				hECn=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
 				hSCn=hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("sames",1000)
 				#print hSCn.GetMaximum()
@@ -277,7 +292,7 @@ class StudyElasticTools:
 				maximum=max(maxl)
 				#print maxl,maximum
 				for htmp in [hECn,hSCn]:
-						htmp.SetMinimum(0.)
+						htmp.SetMinimum(0.01)
 						htmp.SetMaximum(maximum+10)
 				#! Calculate difference
 				hECn.Sumw2()
@@ -292,7 +307,8 @@ class StudyElasticTools:
 		print "outdir=",outdir
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				c.cd(iphibinnum+1)
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy(0)
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
@@ -302,10 +318,49 @@ class StudyElasticTools:
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{SC} for %s"%old_title)
 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
+
+		#! 5. Checkout EC comparison with TT
+		hrto_EC_thry={}
+		outdir=os.path.join(OUTDIR,"EC_TT")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy()
+				hECn=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
+				#hTTnormn=hTTnorm.DrawNormalized("sames",1000)
+				hTTn=hTT.DrawNormalized("sames",1000)
+				#! Calculate ratio
+				hECn.Sumw2()
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hECn.Clone()
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTn)
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+		#! Plot ratio
+		outdir=os.path.join(OUTDIR,"rto_EC_TT")
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		print "outdir=",outdir
+		for sector in self.PHI_PROJ_BINS:
+			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+				pad=c.cd(iphibinnum+1)
+				pad.SetLogy(0)
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(30.)
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				#hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{TT} for %s"%old_title)
+				hrto_EC_thry["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
 	
-		#! 5. Normalize EC to Luminosity and calculate rto between EClumnorm and theoretical yield
+		#! 6. Normalize EC to Luminosity and calculate rto between EClumnorm and TTnorm
 		hrto_EClumnorm_thrtcl={}
-		outdir=os.path.join(OUTDIR,"EClumnorm_thry")
+		outdir=os.path.join(OUTDIR,"EClumnorm_TTnorm")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
@@ -316,9 +371,9 @@ class StudyElasticTools:
 				hEClumnorm=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]#.Clone() #! Doing Clone() hear breaks things?!
 				hEClumnorm.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hEClumnorm.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-				hEClumnorm.SetYTitle("#frac{d\sigma}{d\Omega} [\mu b]")
+				hEClumnorm.SetYTitle("#frac{d\sigma}{d\Omega} [#frac{\mu b}{sr}]")
 				old_title=hEClumnorm.GetTitle()
-				hEClumnorm.SetTitle("#frac{d\sigma}{d\Omega} [\mu b] for %s"%old_title)
+				hEClumnorm.SetTitle("Differential Cross Section for %s"%old_title)
 				for ibin in range(hEClumnorm.GetNbinsX()):
 					binc=hEClumnorm.GetBinContent(ibin+1)
 					binerr=hEClumnorm.GetBinError(ibin+1)
@@ -332,21 +387,21 @@ class StudyElasticTools:
 					hEClumnorm.SetBinContent(ibin+1,binc/norm)
 					hEClumnorm.SetBinError(ibin+1,binerr/norm)
 
-				maxl=[hEClumnorm.GetMaximum(),hThrtcl.GetMaximum()]
+				maxl=[hEClumnorm.GetMaximum(),hTTnorm.GetMaximum()]
 				maximum=max(maxl)
-				for htmp in [hEClumnorm,hThrtcl]:
+				for htmp in [hEClumnorm,hTTnorm]:
 					htmp.SetMinimum(0.00000001)
 					htmp.SetMaximum(maximum)
 				hEClumnorm.Draw()
-				hThrtcl.Draw("sames e")
+				hTTnorm.Draw("sames e")
 				#! Calculate difference append from theory
 				hEClumnorm.Sumw2()
-				hThrtcl.Sumw2()
+				hTTnorm.Sumw2()
 				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hEClumnorm.Clone()
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hThrtcl)
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTnorm)
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
 		#! Plot ratio
-		outdir=os.path.join(OUTDIR,"rto_EClumnorm_thry")
+		outdir=os.path.join(OUTDIR,"rto_EClumnorm_TTnorm")
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		print "outdir=",outdir
@@ -358,6 +413,6 @@ class StudyElasticTools:
 				#hrto_EClumnorm_thrtcl["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
 				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
 				old_title=hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{Theoretical} for %s"%old_title)
+				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EClumnorm}{TTnorm} for %s"%old_title)
 				hrto_EClumnorm_thrtcl["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
