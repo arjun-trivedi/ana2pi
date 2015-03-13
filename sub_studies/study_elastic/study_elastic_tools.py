@@ -159,6 +159,7 @@ class StudyElasticTools:
 		#! Generate theoretical Cross Sections
 		#! hTTnorm=dsigma/dOmega
 		#! hTT=sigma; this histogram is helpful in direct comparison with Yields
+		E1F_TARGET_RAD_LENGTH=0.00562 #! see nb_play_elaslib
 		nbins=hTHETA['EC','sector1','phibinnum1'].GetNbinsX()
 		xmin= hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmin()
 		xmax= hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmax()
@@ -170,7 +171,7 @@ class StudyElasticTools:
 			theta=hTTnorm.GetBinLowEdge(ibin+1)
 			if theta==0: continue
 			if thry=='wrad':
-				binc=elaslib.elasrad(5.499,theta,2.5*0.00577,1.1)
+				binc=elaslib.elasrad(5.499,theta,E1F_TARGET_RAD_LENGTH,1.1)
 			elif thry=='nrad':
 				binc=elaslib.elas(5.499,theta)
 			#print "theta,xsec=",theta,binc
