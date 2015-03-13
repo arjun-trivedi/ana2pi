@@ -1,5 +1,6 @@
 {
   //gStyle->SetOptStat(0);
+  TFile* _file0= new TFile(gSystem->ExpandPathName("$DELASTDIR_EXP/mon/delastRmon.root"));
   _file0->cd("delast/cut");
   TCanvas c_betavp;
   c_betavp.Divide(3,2);

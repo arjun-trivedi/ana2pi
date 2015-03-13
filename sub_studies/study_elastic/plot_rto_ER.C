@@ -1,4 +1,5 @@
 {
+  TFile* _file0= new TFile(gSystem->ExpandPathName("$OBSDIR_ELASTIC/yield.root"));
   TH1F* h[6];
   for (int i=0;i<6;i++){
 	h[i]=(TH1F*)_file0->Get(TString::Format("/ER/sector%d/phibinnum3/hTHETA",i+1));
