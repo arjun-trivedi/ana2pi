@@ -5,6 +5,7 @@
 #include "data_h10.h"
 #include "particle_constants.h"
 #include <TH1.h>
+#include "proc_eid.h"
 
 using namespace ParticleConstants;
 
@@ -20,6 +21,7 @@ class ProcSkimQ2W : public EpProcessor
 
 public:
 	ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
+				bool procT, bool procR,
 				Float_t q2min=1.25,Float_t q2max=5.25,Float_t wmin=1.300,Float_t wmax=2.125);
 	~ProcSkimQ2W();
 	
@@ -28,17 +30,25 @@ public:
 	Float_t _q2min,_q2max,_wmin,_wmax;
 	
 protected:
+	ProcEid* _proc_eid;
+
+	bool _procT,_procR;
+
 	static const Int_t NUM_EVTCUTS = 2;
 	enum { EVT_NULL, EVT, EVT_PASS };
 	
-	void updateEkin(Bool_t useMc = kFALSE);
+	//void updateEkin(Bool_t useMc = kFALSE);
 	bool _useMc;
 };
 
 ProcSkimQ2W::ProcSkimQ2W(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
+						 bool procT, bool procR,
 						Float_t q2min/*=1.20*/,Float_t q2max/*=5.20*/,Float_t wmin/*=1.12*/,Float_t wmax/*=2.23*/)
 						 : EpProcessor(td, dataH10, dataAna)
 {
+	_proc_eid=new ProcEid(dataH10,dataAna);
+	_procT=procT;
+	_procR=procR;
 	_q2min=q2min;
 	_q2max=q2max;
 	_wmin=wmin;
@@ -55,6 +65,7 @@ ProcSkimQ2W::~ProcSkimQ2W()
 	delete hevtsum;
 	delete hists;
 	//delete _hists_ekin;
+	delete _proc_eid;
 }
 
 void ProcSkimQ2W::handle()
@@ -74,22 +85,39 @@ void ProcSkimQ2W::handle()
 	}
 	
 	
-	updateEkin();
-		
-	if (dAna->d2pi.top == 0) { //i.e inclusive event
-		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC],_useMc);
-	}else{ //i.e 2pi event
-		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1],_useMc);
+	//updateEkin();
+	if (_procT){
+		_proc_eid->updateEkin(kTRUE);
+		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC],kTRUE);
 	}
-	
+	if (_procR){
+		_proc_eid->updateEkin();
+		if (dAna->d2pi.top == 0) { //i.e inclusive event
+			dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
+		}else{ //i.e 2pi event
+			dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1]);
+		}
+	}
+		
+		
 	DataEkin *ekin = &dAna->eKin;
-	if (_useMc) ekin = &dAna->eKin_mc;
+	if (_procT) ekin = &dAna->eKin_mc;
 	if ( (ekin->Q2>=_q2min && ekin->Q2<_q2max && ekin->W>=_wmin && ekin->W<_wmax) ) { //!q2w range 2; Evgeny Isupov	 
 		if (histsEkin[CUTMODE][EVTINC][SECTOR0]==NULL) {
 			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
 			dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], dircut);
 		}
-		dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],_useMc);
+		if(_procT){
+			dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC],kTRUE);
+		}
+		if(_procR){
+			if (dAna->d2pi.top == 0) { //i.e inclusive event
+				dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC]);
+			}else{ //i.e 2pi event
+				dAna->fillHistsEkin(histsEkin[CUTMODE][dAna->d2pi.top-1]);
+			}
+		}
+
 		
 		hevtsum->Fill(EVT_PASS);
 		pass = kTRUE;
@@ -98,8 +126,8 @@ void ProcSkimQ2W::handle()
 	
 }
 
-void ProcSkimQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
-	const TLorentzVector _4vE0 = dH10->lvE0;
+/*void ProcSkimQ2W::updateEkin(Bool_t useMc /*= kFALSE*///) {
+	/*const TLorentzVector _4vE0 = dH10->lvE0;
 	const TLorentzVector _4vP0 = dH10->lvP0;
 	TLorentzVector _4vE1;
 		
@@ -143,6 +171,6 @@ void ProcSkimQ2W::updateEkin(Bool_t useMc /*= kFALSE*/) {
 	ekin->theta = _4vQ.Theta()*RadToDeg();
 	phitmp = _4vQ.Phi()*RadToDeg(); //phitmp = [-180,180]
 	ekin->phi = phitmp<-30 ? phitmp+360 : phitmp;
-}
+}*/
 
 #endif // PROCSKIMQ2W_H
