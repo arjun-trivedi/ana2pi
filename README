@@ -130,7 +130,7 @@ ana2pi Branches
 									+ [03-08-15]test_extend_proch10-frmwrk
 										+ data_ana.cpp: makeYieldsElastic(): Changed binning in theta from (40,0,80) to (46,14,60)
 
-										+ proc_delast.h: Changes to this processor was the main reason to create this branch. All of the bullets that follow are related to this change:
+										+ proc_delast.h: Changes to this processor was the main reason to create this branch. All of the bullets that follow in this block are related to this change:
 											+ Ability to add to TTree produced in Monitor mode, Branches from DataEid and DataPid 
 											+ Separated qskim and pid for delast into separate Processors
 										+ 1st time additions to separate cuts made to produce delast
