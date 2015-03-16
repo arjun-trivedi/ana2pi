@@ -127,48 +127,49 @@ ana2pi Branches
 									+ sub_studies/study_lum/notes/
 
 
-									+ [03-08-15]test_extend_proch10-frmwrk
-										+ data_ana.cpp: makeYieldsElastic(): Changed binning in theta from (40,0,80) to (46,14,60)
+								+ Following changes were made in branch test_extend_proch10-frmwrk that were merged.
+								+ [03-08-15]test_extend_proch10-frmwrk
+									+ data_ana.cpp: makeYieldsElastic(): Changed binning in theta from (40,0,80) to (46,14,60)
 
-										+ proc_delast.h: Changes to this processor was the main reason to create this branch. All of the bullets that follow in this block are related to this change:
-											+ Ability to add to TTree produced in Monitor mode, Branches from DataEid and DataPid 
-											+ Separated qskim and pid for delast into separate Processors
-										+ 1st time additions to separate cuts made to produce delast
-											+ data_pid_elast.h/cpp
-											+ data_skim_q_elast.h/.cpp
-											+ proc_pid_elast.h
-											+ proc_skim_q_elast.h
-										+ proc_h10.cpp: Ability to add ProcPidElast and ProcSkimQElast to Processor chain
-										+ proc_eid.h. proc_pid.h:
-											+ Made some member functions public so that other Procs can use them.
-											+ Add another (simpler) Constructor when other Processors need to use these Classes as tools
-										+ ep_processor.h/.cpp: Added another (simpler) Constructor for cases when Processors that are derived from this Base Class are simply used as tools by Processors that are part of the Processor Chain used to process h10
-										+ data_eid.h/.cpp: Removed nphe
-										+ data_ana.h/.cpp:
-											+ Added new data members:
-												+ DataSkimQElast
-												+ DataPidElast
-											+ Added new functions:
-												+ makeHistsPidElast()
-												+ fillHistsPidElast()
-												+ addBranches_DataElastic()
-												+ addBranches_DataEid()
-												+ addBranches_DataPid()
-												+ addBranches_DataPidElast()
-										+ sub_studies/study_elastic/submit.h10_2_delastR-exp-byRun and submit.h10_2_delastR-sim: Changes to add ProcSkimQElast and ProcPidElast to Processor chain
+									+ proc_delast.h: Changes to this processor was the main reason to create this branch. All of the bullets that follow in this block are related to this change:
+										+ Ability to add to TTree produced in Monitor mode, Branches from DataEid and DataPid 
+										+ Separated qskim and pid for delast into separate Processors
+									+ 1st time additions to separate cuts made to produce delast
+										+ data_pid_elast.h/cpp
+										+ data_skim_q_elast.h/.cpp
+										+ proc_pid_elast.h
+										+ proc_skim_q_elast.h
+									+ proc_h10.cpp: Ability to add ProcPidElast and ProcSkimQElast to Processor chain
+									+ proc_eid.h. proc_pid.h:
+										+ Made some member functions public so that other Procs can use them.
+										+ Add another (simpler) Constructor when other Processors need to use these Classes as tools
+									+ ep_processor.h/.cpp: Added another (simpler) Constructor for cases when Processors that are derived from this Base Class are simply used as tools by Processors that are part of the Processor Chain used to process h10
+									+ data_eid.h/.cpp: Removed nphe
+									+ data_ana.h/.cpp:
+										+ Added new data members:
+											+ DataSkimQElast
+											+ DataPidElast
+										+ Added new functions:
+											+ makeHistsPidElast()
+											+ fillHistsPidElast()
+											+ addBranches_DataElastic()
+											+ addBranches_DataEid()
+											+ addBranches_DataPid()
+											+ addBranches_DataPidElast()
+									+ sub_studies/study_elastic/submit.h10_2_delastR-exp-byRun and submit.h10_2_delastR-sim: Changes to add ProcSkimQElast and ProcPidElast to Processor chain
 
-										+ proc_d2pi.h: Continuing in the philosophy of proc_delast.h, the following changes were made:
-											+ Ability to add to TTree produced in 'make_tree' mode, Branches from DataEid and DataPid 
-											+ AddBranches() removed and moved to DataAna (see following bullet)
-										+ data_ana.h/.cpp: 
-											+ addBranches_Data2pi(): Method added
+									+ proc_d2pi.h: Continuing in the philosophy of proc_delast.h, the following changes were made:
+										+ Ability to add to TTree produced in 'make_tree' mode, Branches from DataEid and DataPid 
+										+ AddBranches() removed and moved to DataAna (see following bullet)
+									+ data_ana.h/.cpp: 
+										+ addBranches_Data2pi(): Method added
 
-										+ Following added to be able to debug 5D acceptances:
-											+ obs/study_acc_tools.py
-											+ obs/nb_debug_acc_calculation.ipynb
-											+ nb_debug_acc_calculation-play.ipynb
-											+ obs/dev/ds_sim1_per_top
-											+ obs/dev/py_sim1_per_top
+									+ Following added to be able to debug 5D acceptances:
+										+ obs/study_acc_tools.py
+										+ obs/nb_debug_acc_calculation.ipynb
+										+ nb_debug_acc_calculation-play.ipynb
+										+ obs/dev/ds_sim1_per_top
+										+ obs/dev/py_sim1_per_top
 
 										
 
