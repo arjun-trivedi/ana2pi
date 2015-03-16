@@ -9,6 +9,8 @@
 #include <TLorentzRotation.h>
 #include <TRandom.h> //atrivedi[06-13-14]: for _rand: tmp to generate random values for alpha
 #include <math.h>
+#include "proc_eid.h"
+#include "proc_pid.h"
 
 using namespace TMath;
 using namespace ParticleConstants;
@@ -44,7 +46,7 @@ protected:
 	void UpdateD2pi_Q2_W_MM(Bool_t ismc  = kFALSE);
 	void UpdateD2pi(Bool_t ismc = kFALSE);
 
-	void AddBranches(TTree* t, Bool_t ismc=kFALSE);
+	//void AddBranches(TTree* t, Bool_t ismc=kFALSE);
 	
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
@@ -52,6 +54,8 @@ protected:
     Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
     
     TRandom* _rand; //atrivedi[06-13-14]: for _rand
+    ProcEid* _proc_eid;
+	ProcPid* _proc_pid;
     bool _procT,_procR;
     bool _make_tree;
     TObjArray* _hists_ana_MM;    
@@ -92,6 +96,8 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 				   bool procT, bool procR, bool make_tree/*=kFALSE*/)
 				 :EpProcessor(td, dataH10, dataAna) {
 	_rand=new TRandom(); //atrivedi[06-13-14]: for _rand
+	_proc_eid=new ProcEid(dataH10,dataAna);
+	_proc_pid=new ProcPid(dataH10,dataAna);
 	_procT=procT;
 	_procR=procR;
 	_make_tree=make_tree;
@@ -138,7 +144,8 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 				
 		if (_make_tree){
 			_tT = new TTree("tT","Tree containing Thrown data for 2pi events");
-			AddBranches(_tT,kTRUE);
+			//AddBranches(_tT,kTRUE);
+			dAna->addBranches_Data2pi(_tT,kTRUE);
 		}
 	}
 	if (_procR) {
@@ -159,7 +166,10 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		subdir->cd();
 		if (_make_tree){
 			_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
-			AddBranches(_tR);
+			//AddBranches(_tR);
+			dAna->addBranches_Data2pi(_tR);
+			dAna->addBranches_DataEid(_tR);
+			dAna->addBranches_DataPid(_tR);
 		}
 	}
 }
@@ -177,6 +187,8 @@ ProcD2pi::~ProcD2pi() {
 	delete _hists_MM_T;
 	delete _hists_ekin_T;
 	delete _rand; //atrivedi[06-13-14]: for _rand
+	delete _proc_eid;
+	delete _proc_pid;
 }
 
 void ProcD2pi::handle() {
@@ -280,7 +292,10 @@ void ProcD2pi::handle() {
 			//used to study and determine top MM cut
 			UpdateD2pi_Q2_W_MM();
 			dAna->fillHistsMM(_hists_ana_MM); //method "knows" the particular top's MM hist to fill
-			UpdateEkin();
+			//UpdateEkin();
+			_proc_eid->updateEkin();
+			_proc_eid->updateEid();
+			_proc_pid->updatePid();
 						
 			/*Bool_t t1a = gP && gPip && gPim;
 			Bool_t t1b = TMath::Abs(mm2ppippim) < 0.0005;
@@ -411,7 +426,8 @@ void ProcD2pi::McKin() {
 	/*dAna->d2pi_mc.Q2 = -1*(_lvQ.Mag2());
 	dAna->d2pi_mc.W = _lvW.Mag();*/
 	
-	UpdateEkin(kTRUE);
+	//UpdateEkin(kTRUE);
+	_proc_eid->updateEkin(kTRUE);
 	UpdateD2pi_Q2_W_MM(kTRUE);
 	UpdateD2pi(kTRUE);
 }
@@ -570,10 +586,10 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->theta_p=_lvP.Theta()*RadToDeg();
 	tp->theta_pip=_lvPip.Theta()*RadToDeg();
 	tp->theta_pim=_lvPim.Theta()*RadToDeg();
-	tp->phi_e=_lvE.Phi()*RadToDeg();
-	tp->phi_p=_lvP.Phi()*RadToDeg();
-	tp->phi_pip=_lvPip.Phi()*RadToDeg();
-	tp->phi_pim=_lvPim.Phi()*RadToDeg();
+	tp->phi_e=getPhi(_lvE);//_lvE.Phi()*RadToDeg();
+	tp->phi_p=getPhi(_lvP);//_lvP.Phi()*RadToDeg();
+	tp->phi_pip=getPhi(_lvPip);//_lvPip.Phi()*RadToDeg();
+	tp->phi_pim=getPhi(_lvPim);//_lvPim.Phi()*RadToDeg();
 	//! Reconstructed e' Vertex
 	if (!ismc){
 		tp->vx_e=dH10->vx[dAna->h10idxE];
@@ -755,8 +771,8 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->varset3.alpha = 180;*/
 }
 
-void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*/){
-	Data2pi *tp = &(dAna->d2pi);
+/*void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*///){
+	/*Data2pi *tp = &(dAna->d2pi);
 	if (ismc) tp = &(dAna->d2pi_mc);
 
 	//! Initial Beam Energy
@@ -817,7 +833,7 @@ void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*/){
 	t->Branch("alpha_1",&tp->alpha_1);
 	t->Branch("alpha_2",&tp->alpha_2);
 	t->Branch("alpha_3",&tp->alpha_3);
-}
+}*/
 
 Float_t ProcD2pi::getTheta(TLorentzVector lv){
 	Float_t retVal = 0;
