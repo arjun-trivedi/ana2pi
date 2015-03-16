@@ -15,25 +15,28 @@ This file contains relevant binning for making h8s:
 //! 1. Set up Coarse-W binning
 
 //! Use for coarse W bin ranges: [xmin,xmax)
-struct BinRange{
+//! To see study that I did to determine this binning, see:
+//! obs/nb_h8_Coarse-W-bng
+struct Wbng{
+  Int_t nbins;
   Float_t xmin;
   Float_t xmax;
 };
-const Int_t NBINS_WCRS=13;
-const BinRange WCRSBIN[NBINS_WCRS]={
-	{1.300,1.425},
-	{1.425,1.575},
-	{1.575,1.725},
-	{1.725,1.850},
-	{1.850,2.000},
-	{2.000,2.125},
-	{2.125,2.275},
+const Int_t NBINS_WCRS=6;//13;
+const Wbng WCRSBIN[NBINS_WCRS]={
+	{5,1.300,1.425},
+	{6,1.425,1.575},
+	{6,1.575,1.725},
+	{5,1.725,1.850},
+	{6,1.850,2.000},
+	{5,2.000,2.125}
+	/*{2.125,2.275},
 	{2.275,2.425},
 	{2.425,2.550},
 	{2.550,2.700},
 	{2.700,2.825},
 	{2.825,2.950},
-	{2.950,3.000}
+	{2.950,3.000}*/
 };
 
 //! 2. Q2 binning (see nb_h8_Q2-bng)
