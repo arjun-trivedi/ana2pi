@@ -171,6 +171,9 @@ ana2pi Branches
 										+ obs/dev/ds_sim1_per_top
 										+ obs/dev/py_sim1_per_top
 
+									+ obs/submit.h10_2_d2piT-sim & obs/submit.h10_2_d2piR-sim:
+										+ Changed to use new XML format
+										+ date added as suffix to output
 										
 
 
