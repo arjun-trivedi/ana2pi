@@ -751,6 +751,70 @@ void DataAna::fillYieldsElastic(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 	h2->Fill(coord);
 }
 
+void DataAna::addBranches_Data2pi(TTree* t, Bool_t useMc/*=kFALSE*/){
+	Data2pi *tp = &d2pi;
+	if (useMc) tp = &d2pi_mc;
+
+	//! Initial Beam Energy
+	t->Branch("p_e0",&tp->p_e0);
+	//! Reconstructed Kinematics 
+	//! for e',p',p,pip,pim at e' vertex
+	t->Branch("p_e",&tp->p_e);
+	t->Branch("p_p",&tp->p_p);
+	t->Branch("p_pip",&tp->p_pip);
+	t->Branch("p_pim",&tp->p_pim);
+	t->Branch("theta_e",&tp->theta_e);
+	t->Branch("theta_p",&tp->theta_p);
+	t->Branch("theta_pip",&tp->theta_pip);
+	t->Branch("theta_pim",&tp->theta_pim);
+	t->Branch("phi_e",&tp->phi_e);
+	t->Branch("phi_p",&tp->phi_p);
+	t->Branch("phi_pip",&tp->phi_pip);
+	t->Branch("phi_pim",&tp->phi_pim);
+	//! Reconstructed e' Vertex
+	t->Branch("vx_e",&tp->vx_e);
+	t->Branch("vx_p",&tp->vx_p);
+	t->Branch("vx_pip",&tp->vx_pip);
+	t->Branch("vx_pim",&tp->vx_pim);
+	t->Branch("vy_e",&tp->vy_e);
+	t->Branch("vy_p",&tp->vy_p);
+	t->Branch("vy_pip",&tp->vy_pip);
+	t->Branch("vy_pim",&tp->vy_pim);
+	t->Branch("vz_e",&tp->vz_e);
+	t->Branch("vz_p",&tp->vz_p);
+	t->Branch("vz_pip",&tp->vz_pip);
+	t->Branch("vz_pim",&tp->vz_pim);
+	//! Q2, W
+	t->Branch("Q2",&tp->Q2);
+	t->Branch("W",&tp->W);
+	//! Helicity
+	t->Branch("h",&tp->h);
+	//! {MMs}
+	t->Branch("mm2ppippim",&tp->mm2ppippim);
+	t->Branch("mmppippim",&tp->mmppippim);
+	t->Branch("mm2ppip",&tp->mm2ppip);
+	t->Branch("mmppip",&tp->mmppip);
+	t->Branch("mm2ppim",&tp->mm2ppim);
+	t->Branch("mmppim",&tp->mmppim);
+	t->Branch("mm2pippim",&tp->mm2pippim);
+	t->Branch("mmpippim",&tp->mmpippim);
+	//! Topology
+	t->Branch("top",&tp->top);
+	//! Varsets
+	t->Branch("M_ppip",&tp->M_ppip);
+	t->Branch("M_ppim",&tp->M_ppim);
+	t->Branch("M_pippim",&tp->M_pippim);
+	t->Branch("theta_cms_p",&tp->theta_cms_p);
+	t->Branch("theta_cms_pip",&tp->theta_cms_pip);
+	t->Branch("theta_cms_pim",&tp->theta_cms_pim);
+	t->Branch("phi_cms_p",&tp->phi_cms_p);
+	t->Branch("phi_cms_pip",&tp->phi_cms_pip);
+	t->Branch("phi_cms_pim",&tp->phi_cms_pim);
+	t->Branch("alpha_1",&tp->alpha_1);
+	t->Branch("alpha_2",&tp->alpha_2);
+	t->Branch("alpha_3",&tp->alpha_3);
+}
+
 void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){
 	DataElastic* de=&dElast;
 	if (useMc) de=&dElast_ST;

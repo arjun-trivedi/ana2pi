@@ -80,6 +80,7 @@ public:
 	void fillHistsMMElastic(TObjArray *hists, Bool_t useMc = kFALSE);
 	void fillYieldsElastic(TObjArray* hists, Bool_t useMc = kFALSE);
 
+	void addBranches_Data2pi(TTree* t, Bool_t useMc=kFALSE);
 	void addBranches_DataElastic(TTree* t, Bool_t useMc=kFALSE);
 	void addBranches_DataEid(TTree* t);
 	void addBranches_DataPid(TTree* t);
