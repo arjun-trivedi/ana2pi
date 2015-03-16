@@ -273,9 +273,10 @@ TObjArray** DataAna::makeYields()
 	for(int i=0;i<NBINS_WCRS;i++){
 		TObjArray* h8=new TObjArray(NVARSETS);
 	
+		bngW.bins=WCRSBIN[i].nbins;
 		bngW.xmin=WCRSBIN[i].xmin;
 		bngW.xmax=WCRSBIN[i].xmax;
-		bngW.bins=(bngW.xmax-bngW.xmin)/BINW_W;
+		//bngW.bins=(int)((bngW.xmax-bngW.xmin)/BINW_W);
 	
 		bngMppip.bins=NBINS_M;
 		bngMppip.xmin=MASS_P+MASS_PIP;
