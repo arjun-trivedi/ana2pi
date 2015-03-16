@@ -174,6 +174,26 @@ ana2pi Branches
 									+ obs/submit.h10_2_d2piT-sim & obs/submit.h10_2_d2piR-sim:
 										+ Changed to use new XML format
 										+ date added as suffix to output
+
+										+ [03-16-15] fix_h8_W_bng
+											+ The main purpose of this branch is to fix the error found in the W bins of h8 and see its impact on the normalized yields. Files modified to make this change:
+												+ h8_bng.h
+												+ data_ana.cpp: makeYields() modified to use updated structure of Wbng in h8_bng.h
+
+											+ Additionally, h10->d2pi is also modified to process only bins for W<2.125 GeV. Files modified:
+												+ h8_bng.h
+												+ proc_skim_q2w.h: 
+													+ Modifications were needed to be able to run for Thrown and Reconstructed events
+													+ Ability to use ProcEid::updateEkin() (removed its own copy of the same method)
+												+ proc_h10.cpp: Ability to add 'q2wskimT' and 'q2wskimR'
+												+ obs/submit.h10_2_d2piR-exp-byRun, obs/submit.h10_2_d2piR-sim &  obs/submit.h10_2_d2piT-sim: Added q2wskimT/R to '-p' option
+
+
+
+											
+
+
+
 										
 
 
