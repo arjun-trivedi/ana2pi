@@ -157,6 +157,12 @@ ana2pi Branches
 												+ addBranches_DataPidElast()
 										+ sub_studies/study_elastic/submit.h10_2_delastR-exp-byRun and submit.h10_2_delastR-sim: Changes to add ProcSkimQElast and ProcPidElast to Processor chain
 
+										+ proc_d2pi.h: Continuing in the philosophy of proc_delast.h, the following changes were made:
+											+ Ability to add to TTree produced in 'make_tree' mode, Branches from DataEid and DataPid 
+											+ Method AddBranches() removed and moved to DataAna (see following bullet)
+										+ data_ana.h/.cpp: Added method:
+											+ addBranches_Data2pi()
+
 										+ Following added to be able to debug 5D acceptances:
 											+ obs/study_acc_tools.py
 											+ obs/nb_debug_acc_calculation.ipynb
