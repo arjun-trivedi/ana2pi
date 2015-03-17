@@ -38,7 +38,7 @@ for simnum in "${simlist[@]}"; do
     ]]></Command>
 
     <Job>
-      <Input src=\"$DELASTDIR_SIM/$simnum/h10.lst\" dest=\"h10.lst\" />
+      <Input src=\"$OUTDIR/h10.lst\" dest=\"h10.lst\" />
       <Output src=\"d2piR.root\" dest=\"$OUTDIR/d2piR_$date.root\"/>
       <Output src=\"job.out\" dest=\"$OUTDIR/jobR_$date.out\"/>
       <Output src=\"job.err\" dest=\"$OUTDIR/jobR_$date.err\"/>
