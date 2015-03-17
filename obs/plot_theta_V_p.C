@@ -1,6 +1,5 @@
 void plot_theta_V_p(bool logz=kTRUE){
-  //TFile* _file0= new TFile(gSystem->ExpandPathName("$D2PIDIR_EXP/mon_det_ineff/d2piRmon.root"));
-  TFile* _file0= new TFile(gSystem->ExpandPathName("$D2PIDIR_EXP/mon_test/d2piRmon.root"));
+  TFile* _file0= new TFile(gSystem->ExpandPathName("$D2PIDIR_EXP/mon_det_ineff/d2piRmon.root"));
   _file0->cd("d2piR");
 
   gStyle->SetOptStat(0);
@@ -13,8 +12,6 @@ void plot_theta_V_p(bool logz=kTRUE){
 
   Int_t sctr_phi_min[]={0, 30, 90,  150, 210, 270};
   Int_t sctr_phi_max[]={0, 90 ,150, 210, 270, 330};
-  //Int_t sctr_phi_min[]={0, -150, -120, -20, 40, 100};
-  //Int_t sctr_phi_max[]={0, -100,  -60,  20, 80, 140};
 
   Int_t theta_min[]={0, 0, 0,  0};
   Int_t theta_max[]={60,60,120,120};
