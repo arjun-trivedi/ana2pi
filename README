@@ -188,6 +188,9 @@ ana2pi Branches
 												+ proc_h10.cpp: Ability to add 'q2wskimT' and 'q2wskimR'
 												+ obs/submit.h10_2_d2piR-exp-byRun, obs/submit.h10_2_d2piR-sim &  obs/submit.h10_2_d2piT-sim: Added q2wskimT/R to '-p' option
 
+											+ In this branch I also began to study inefficiencies in the detctor:
+												+ sub_studies/study_det_ineff: 1st time addition
+
 
 
 											

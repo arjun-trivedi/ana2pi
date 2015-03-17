@@ -1,4 +1,4 @@
-void plot_theta_V_p(bool exp=kTRUE,int top=1){
+void plot_theta_V_p(int top=1,bool exp=kTRUE){
   cout<<"top="<<top<<endl;
   TFile* fin;
   TFile* fout;
@@ -40,7 +40,7 @@ void plot_theta_V_p(bool exp=kTRUE,int top=1){
       TCut cut_sctr(TString::Format("sector_%s==%d",prtcl[i].Data(),isctr+1));
       c[i]->cd(isctr+1);
       TString hname=TString::Format("hthetaVp_%s_sctr%d",prtcl[i].Data(),isctr+1);
-      TString cmd=TString::Format("theta_%s:p_%s>>%s(100,%d,%d,100,%d,%d)",
+      TString cmd=TString::Format("theta_%s:p_%s>>%s(100,%d,%d,150,%d,%d)",
                                    prtcl[i].Data(),prtcl[i].Data(),hname.Data(),
                                    p_min[i],p_max[i],theta_min[i],theta_max[i]);
       /*TString cmd=TString::Format("theta_%s:p_%s>>hthetaVp_%s_sctr%d(100,%d,%d,100,%d,%d)",
