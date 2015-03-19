@@ -191,6 +191,16 @@ ana2pi Branches
 											+ In this branch I also began to study inefficiencies in the detctor:
 												+ sub_studies/study_det_ineff: 1st time addition
 
+											+ [03-19-15]Created new file structure for storing output files from h10->d2pi->yields->obs (see handwritten notes). The idea is to produce Observables under different "cuts and conditions" and are labelled, for now, according to the date on which they were produced. Therefore all objects are tagged by date. For details see handwritten notes. Affected files:
+												+ obs/ay
+												+ obs/proc_yields.py
+												+ obs/disp_yields.py
+												+ obs/ds
+												+ obs/py
+												+ obs/dy
+												+ obs/dy_integ
+												+ obs/setup.tcshrc
+
 
 
 											
