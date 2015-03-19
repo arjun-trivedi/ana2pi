@@ -56,7 +56,7 @@ class ProcYields:
 		+ if self.USEHEL=true:  h8(VST,SEQ) => h5(VST,SEQ) 
 	
 	"""
-	def __init__(self,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False,q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125):
+	def __init__(self,obsdate,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False,q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125):
 		self.EXP,self.SIM=False,False
 		if dtyp=='sim':self.SIM=True
 		if dtyp=='exp':self.EXP=True
@@ -80,26 +80,24 @@ class ProcYields:
 		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
 		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
 
-
+		self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR'],obsdate))
 		if self.EXP:
-			self.DATADIR=os.environ['D2PIDIR_EXP']
-			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2piR.root'))
-			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
+			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_exp','d2piR.root'))
+			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
 			if not os.path.exists(self.OUTDIR): #! This path should already exist when making yield_exp
 				sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
 			self.FIN_SIMYIELD=ROOT.TFile(os.path.join( self.OUTDIR,"yield_sim_top%s.root"%(''.join(str(t) for t in self.TOPS)) ))
 			if self.USEHEL: self.FOUTNAME="yield_exp_hel_top%s.root"%(''.join(str(t) for t in self.TOPS))
 			else:           self.FOUTNAME="yield_exp_top%s.root"%(''.join(str(t) for t in self.TOPS))
-			print "DATADIR=%s\nOUTDIR=%s\nFIN_R=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s"%(self.DATADIR,self.OUTDIR,self.FIN_R.GetName(),self.FIN_SIMYIELD.GetName(),self.FOUTNAME)
+			print "DATADIR=%s\nOUTDIR=%s\nFIN_R=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s/%s"%(self.DATADIR,self.OUTDIR,self.FIN_R.GetName(),self.FIN_SIMYIELD.GetName(),self.OUTDIR,self.FOUTNAME)
 		if self.SIM:
-			self.DATADIR=os.path.join(os.environ['D2PIDIR_SIM'],self.SIMNUM)
-			self.FIN_T=ROOT.TFile(os.path.join(self.DATADIR,'d2piT.root'))
-			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2piR.root'))
-			self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIMNUM)
+			self.FIN_T=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_sim',self.SIMNUM,'d2piT.root'))
+			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_sim',self.SIMNUM,'d2piR.root'))
+			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR)
 			self.FOUTNAME="yield_sim_top%s.root"%(''.join(str(t) for t in self.TOPS))
-			print "DATADIR=%s\nOUTDIR=%s\nFIN_T=%s\nFIN_R=%s\nFOUT=%s"%(self.DATADIR,self.OUTDIR,self.FIN_T.GetName(),self.FIN_R.GetName(),self.FOUTNAME)
+			print "DATADIR=%s\nOUTDIR=%s\nFIN_T=%s\nFIN_R=%s\nFOUT=%s/%s"%(self.DATADIR,self.OUTDIR,self.FIN_T.GetName(),self.FIN_R.GetName(),self.OUTDIR,self.FOUTNAME)
 
 		self.wmax=None #Used for setM1M2axisrange()
 

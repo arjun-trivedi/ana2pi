@@ -48,13 +48,13 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispYields:
-	def __init__(self,simnum='siml',tops=[1,2,3,4]):
+	def __init__(self,obsdate,simnum='siml',tops=[1,2,3,4]):
 		self.SIM_NUM=simnum
 		self.TOPS=tops
-		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		#self.FEXP_HEL=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_exp_hel_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		self.OUTDIR=os.path.join(os.environ['OBSDIR'],self.SIM_NUM)
+		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		#self.FEXP_HEL=root_open(os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM,'yield_exp_hel_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.OUTDIR=os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM)
 		if not os.path.exists(self.OUTDIR):
 			sys.exit("%s does not exist!"%self.OUTDIR)
 

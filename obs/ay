@@ -1,28 +1,36 @@
 #!/usr/bin/python
 import os,subprocess,glob,sys
 """
->>> ay sim1 sim2 ... simN
+>>> ay date sim1:sim2:...:simN
 On executing this script, the following happens, in $D2PIDIR_SIM:
 1. A list of each individual simulation (simX) is obtained
-    + If user does specify simXs, then by default all of the simXs in $D2PIDIR_SIM are used
+    + If user does not specify simXs, then by default all of the simXs in $D2PIDIR_SIM are used
 2. An output directory to store result of cumulative simulation (cum_sim=simXsimYsimZ)
    created.
-3. Finally the d2pi from each individual simulation is added and put into cum_sim
+3. Finally the d2pi_<date> from each individual simulation is added and put into cum_sim
 """
 
 datadir=os.environ['D2PIDIR_SIM']
 
 #! 1. Get list of all sims
-if len(sys.argv)>=2:
-    siml=[]
-    for i in range(len(sys.argv)):
-        if i==0: continue
-        siml.append(sys.argv[i])
+if len(sys.argv)>1:
+	date=sys.argv[1]
 else:
-    siml=glob.glob(os.path.join(datadir,'sim[0-9]'))
-    siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
-    siml=[os.path.basename(i) for i in siml]
-    siml.sort()
+	sys.exit("Please enter date")
+		
+if len(sys.argv)>2:
+	siml=[]
+	if len(sys.argv[2].split(":"))>0:
+                for sim in sys.argv[2].split(":"):
+                        siml.append(sim)
+        else:
+                sys.exit("Please enter sims as sim1:sim2:simX")
+else:
+	siml=glob.glob(os.path.join(datadir,'sim[0-9]'))
+	siml+=glob.glob(os.path.join(datadir,'sim[0-9][0-9]'))
+	siml=[os.path.basename(i) for i in siml]
+	siml.sort()
+print "date=",date
 print "List of individual simulations=",siml
 
 #! 2. Prepare outdir
@@ -39,7 +47,10 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
 
 #! 3. Finally, do 'hadd targetfile sourcefile1 sourcefile2 ... sourcefileN'
-fl=['d2piT.root','d2piR.root']
+if date=="":
+	fl=['d2piT.root','d2piR.root']
+else:
+	fl=['d2piT_%s.root'%date,'d2piR_%s.root'%date]
 for f in fl:
     tf=os.path.join(outdir,f)
     sfl=[]

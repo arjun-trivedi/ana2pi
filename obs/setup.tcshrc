@@ -24,9 +24,8 @@ else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv D2PIDIR_SIM "${D2PIDIR}/sim"
   setenv D2PIDIR_SIM_MEMTEST "${D2PIDIR}/sim/memtest"
 endif
-##-- dir where where yields and their displays are kept
-setenv OBSDIR "${D2PIDIR}/obs"
-alias obs 'gqview $OBSDIR/siml/ &'
+##-- dir where obs_<date> are kepts (obs_<date> contains yields and their displays)
+setenv OBSDIR "$D2PIDIR"
 alias gleb_obs 'gqview /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/gleb_obs/ &'
 alias isupov_obs 'gqview /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/isupov_obs/ &'
 

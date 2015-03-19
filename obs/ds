@@ -19,7 +19,7 @@ import numpy as np
 
 
 """
-ds [sim=siml] [tops=tops]
+ds [obsdate] [sim=siml] [tops=tops]
 
 + This script displays simstats for user entered simnum (siml by default):
 + The display is saved in $OBSDIR/simnum/simstats
@@ -29,16 +29,21 @@ Issues while running this script:
 division operation (This seems to not be an issue when using CINT).
 	+ To solve this program created divide(h1,h2) method
 """
+#! Get obsdate
+if len(sys.argv)==1:
+	sys.exit("Please enter obsdate")
+else:
+	obsdate=sys.argv[1]
 #! User input simnum, else use siml
-if len(sys.argv)>1:#i.e. simnum entered by user
-	simnum=sys.argv[1]	
+if len(sys.argv)>2:#i.e. simnum entered by user
+	simnum=sys.argv[2]	
 else:
         simnum='siml'
 
-if len(sys.argv)>2:#i.e. tops by user
+if len(sys.argv)>3:#i.e. tops by user
         tops=[]
-        if len(sys.argv[2].split(":"))>0:
-                for top in map(int,sys.argv[2].split(":")):
+        if len(sys.argv[3].split(":"))>0:
+                for top in map(int,sys.argv[3].split(":")):
                         if top!=1 and top!=2 and top!=3 and top!=4:
                                 sys.exit("valid tops are 1,2,3 and 4 only!")
                         tops.append(top)
@@ -148,7 +153,7 @@ def subtract(h1,h2):
 			#print num,den,res
 	return h
 
-outdir=os.path.join(os.environ['OBSDIR'],simnum,'simstats_top%s'%''.join(str(t) for t in tops))
+outdir=os.path.join(os.environ['D2PIDIR'],obsdate,simnum,'simstats_top%s'%''.join(str(t) for t in tops))
 if not os.path.exists(outdir):
         os.makedirs(outdir)
 # outdir=os.path.join('/home/trivedia/ongoing/mem_test/simstats')
@@ -174,7 +179,7 @@ for seq in ['T','R','A','H']:
 h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 
 #! Fill histograms
-dy=DispYields(simnum=simnum,tops=tops)
+dy=DispYields(obsdate,simnum=simnum,tops=tops)
 ss=dy.get_sim_stats()
 for seq in ['T','R','A','H']:
 	for d in ss[seq]:
