@@ -70,6 +70,30 @@ void setup_cuts(){
           cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"22+5*x-1*x*x",0.5,3.0);
         }
       }
+      if (prtcl[i]=="pip"){
+        if (isctr+1==1||isctr+1==4||isctr+1==5||isctr+1==6){//! no cuts
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
+        }else if (isctr+1==2){
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"50+105*x-90*x*x",0.03,0.7);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),0.03,0.7);
+        }else if (isctr+1==3){
+          cut_lw[i][isctr]=new TF1*[4];
+          cut_hg[i][isctr]=new TF1*[4];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"80+37*x-20*x*x",0.0,0.7);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"85+40*x-15*x*x",0.0,0.7);
+          cut_lw[i][isctr][1]=new TF1(TString::Format("%s_%d_lw",name.Data(),2),"64.5+32*x-20*x*x",0.0,0.7);
+          cut_hg[i][isctr][1]=new TF1(TString::Format("%s_%d_hg",name.Data(),2),"68+35*x-18*x*x",0.0,0.7);
+          cut_lw[i][isctr][2]=new TF1(TString::Format("%s_%d_lw",name.Data(),3),"15+30*x-7*x*x",0.1,1.5);
+          cut_hg[i][isctr][2]=new TF1(TString::Format("%s_%d_hg",name.Data(),3),"20.5+30*x-7*x*x",0.1,1.5);
+          cut_lw[i][isctr][3]=new TF1(TString::Format("%s_%d_lw",name.Data(),4),"-13+25*x-5*x*x",0.6,2.5);
+          cut_hg[i][isctr][3]=new TF1(TString::Format("%s_%d_hg",name.Data(),4),"-8.0+25*x-5*x*x",0.6,2.5);
+        }
+      }
     }
   }
 }
@@ -132,6 +156,13 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
         if (prtcl[i]=="e"||prtcl[i]=="p"){
           cut_lw[i][isctr][0]->Draw("same");
           cut_hg[i][isctr][0]->Draw("same");
+        }else if (prtcl[i]=="pip"){
+          Int_t ncuts=1;
+          if (isctr+1==3) ncuts=4;
+          for (int j=0;j<ncuts;j++){
+            cut_lw[i][isctr][j]->Draw("same");
+            cut_hg[i][isctr][j]->Draw("same");
+          }
         }
       }
       TH2F* h=(TH2F*)gDirectory->Get(hname);
@@ -140,6 +171,13 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
         if (prtcl[i]=="e"||prtcl[i]=="p"){
           h->GetListOfFunctions()->Add(cut_lw[i][isctr][0]);
           h->GetListOfFunctions()->Add(cut_hg[i][isctr][0]); 
+        }else if (prtcl[i]=="pip"){
+          Int_t ncuts=1;
+          if (isctr+1==3) ncuts=4;
+          for (int j=0;j<ncuts;j++){
+            h->GetListOfFunctions()->Add(cut_lw[i][isctr][j]);
+            h->GetListOfFunctions()->Add(cut_hg[i][isctr][j]);
+          }
         }
       }
       //! Draw histogram in log scale
@@ -150,6 +188,13 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
         if (prtcl[i]=="e"||prtcl[i]=="p"){
           cut_lw[i][isctr][0]->Draw("same");
           cut_hg[i][isctr][0]->Draw("same");
+        }else if (prtcl[i]=="pip"){
+          Int_t ncuts=1;
+          if (isctr+1==3) ncuts=4;
+          for (int j=0;j<ncuts;j++){
+            cut_lw[i][isctr][j]->Draw("same");
+            cut_hg[i][isctr][j]->Draw("same");
+          }
         }
       }
       //! Write hist to file
