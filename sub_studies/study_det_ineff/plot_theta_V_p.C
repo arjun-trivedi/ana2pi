@@ -18,8 +18,8 @@ Int_t theta_max[]={60,60,120,120};
 Int_t p_min[]={1,0,0,0};
 Int_t p_max[]={5,4,3,3};
 
-TF1* cut_lw[4][6];
-TF1* cut_hg[4][6];
+TF1** cut_lw[4][6];
+TF1** cut_hg[4][6];
 void setup_cuts(){
   for (int i=0;i<4;i++){
     Double_t pmin=p_min[i];
@@ -31,31 +31,43 @@ void setup_cuts(){
       TString name=TString::Format("%s_%d",prtcl[i].Data(),isctr+1).Data();
       if (prtcl[i]=="e"){
         if (isctr+1==1||isctr+1==2||isctr+1==5||isctr+1==6){//! no cuts
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),TString::Format("%d",thetamin),pmin,pmax);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),TString::Format("%d",thetamax),pmin,pmax);
-          //cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"0",0,5);//pmin,pmax);
-          //cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"60",0,5);//pmin,p_max);
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
         }else if (isctr+1==3){
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"30-1*x",2.0,3.5);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"32-1*x",2.0,3.5);        
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];          
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"30-1*x",2.0,3.5);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"32-1*x",2.0,3.5);        
         }else if (isctr+1==4){
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"21.0-1*x",2.0,4.5);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"24.5-1*x",2.0,4.5);
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"21.0-1*x",2.0,4.5);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"24.5-1*x",2.0,4.5);
         }
       }
       if (prtcl[i]=="p"){
         if (isctr+1==1||isctr+1==4||isctr+1==6){//! no cuts
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),TString::Format("%d",thetamin),pmin,pmax);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),TString::Format("%d",thetamax),pmin,pmax);
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
         }else if (isctr+1==2){
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"16+8*x-1*x*x",0.5,3.0);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"19+8*x-1*x*x",0.5,3.0); 
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"16+8*x-1*x*x",0.5,3.0);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"19+8*x-1*x*x",0.5,3.0); 
         }else if (isctr+1==3){
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"5+8*x-1*x*x",0.5,3.5);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"8+8*x-1*x*x",0.5,3.5);
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"5+8*x-1*x*x",0.5,3.5);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"8+8*x-1*x*x",0.5,3.5);
         }else if (isctr+1==5){
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"19+5*x-1*x*x",0.5,3.0);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"22+5*x-1*x*x",0.5,3.0);
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"19+5*x-1*x*x",0.5,3.0);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"22+5*x-1*x*x",0.5,3.0);
         }
       }
     }
@@ -118,15 +130,17 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       t->Draw(cmd,cut_sctr&&cut_top,"colz");
       if (draw_cut){
         if (prtcl[i]=="e"||prtcl[i]=="p"){
-          cut_lw[i][isctr]->Draw("same");
-          cut_hg[i][isctr]->Draw("same");
+          cut_lw[i][isctr][0]->Draw("same");
+          cut_hg[i][isctr][0]->Draw("same");
         }
       }
       TH2F* h=(TH2F*)gDirectory->Get(hname);
       cout<<"h = "<<h->GetName()<<endl;     
       if (draw_cut){
-        h->GetListOfFunctions()->Add(cut_lw[i][isctr]);
-        h->GetListOfFunctions()->Add(cut_hg[i][isctr]); 
+        if (prtcl[i]=="e"||prtcl[i]=="p"){
+          h->GetListOfFunctions()->Add(cut_lw[i][isctr][0]);
+          h->GetListOfFunctions()->Add(cut_hg[i][isctr][0]); 
+        }
       }
       //! Draw histogram in log scale
       TPad* pad=(TPad*)clog[i]->cd(isctr+1);
@@ -134,8 +148,8 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       h->Draw("colz");
       if (draw_cut){
         if (prtcl[i]=="e"||prtcl[i]=="p"){
-          cut_lw[i][isctr]->Draw("same");
-          cut_hg[i][isctr]->Draw("same");
+          cut_lw[i][isctr][0]->Draw("same");
+          cut_hg[i][isctr][0]->Draw("same");
         }
       }
       //! Write hist to file
