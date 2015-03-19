@@ -95,7 +95,11 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
         }
       }
       TH2F* h=(TH2F*)gDirectory->Get(hname);
-      cout<<"h = "<<h->GetName()<<endl;      
+      cout<<"h = "<<h->GetName()<<endl;     
+      if (draw_cut){
+        h->GetListOfFunctions()->Add(cut_lw[i][isctr]);
+        h->GetListOfFunctions()->Add(cut_hg[i][isctr]); 
+      }
       //! Draw histogram in log scale
       TPad* pad=(TPad*)clog[i]->cd(isctr+1);
       pad->SetLogz(); 
