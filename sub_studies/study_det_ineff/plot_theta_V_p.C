@@ -31,10 +31,8 @@ void setup_cuts(){
       TString name=TString::Format("%s_%d",prtcl[i].Data(),isctr+1).Data();
       if (prtcl[i]=="e"){
         if (isctr+1==1||isctr+1==2||isctr+1==5||isctr+1==6){//! no cuts
-          cut_lw[i][isctr]=new TF1*[1];
-          cut_hg[i][isctr]=new TF1*[1];
-          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
-          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
+          cut_lw[i][isctr]=NULL;
+          cut_hg[i][isctr]=NULL;		
         }else if (isctr+1==3){
           cut_lw[i][isctr]=new TF1*[1];
           cut_hg[i][isctr]=new TF1*[1];          
@@ -49,10 +47,8 @@ void setup_cuts(){
       }
       if (prtcl[i]=="p"){
         if (isctr+1==1||isctr+1==4||isctr+1==6){//! no cuts
-          cut_lw[i][isctr]=new TF1*[1];
-          cut_hg[i][isctr]=new TF1*[1];
-          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
-          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
+          cut_lw[i][isctr]=NULL;
+          cut_hg[i][isctr]=NULL;
         }else if (isctr+1==2){
           cut_lw[i][isctr]=new TF1*[1];
           cut_hg[i][isctr]=new TF1*[1];
@@ -72,10 +68,8 @@ void setup_cuts(){
       }
       if (prtcl[i]=="pip"){
         if (isctr+1==1||isctr+1==4||isctr+1==5){//! no cuts
-          cut_lw[i][isctr]=new TF1*[1];
-          cut_hg[i][isctr]=new TF1*[1];
-          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
-          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
+          cut_lw[i][isctr]=NULL;
+          cut_hg[i][isctr]=NULL;
         }else if (isctr+1==2){
           cut_lw[i][isctr]=new TF1*[2];
           cut_hg[i][isctr]=new TF1*[2];
@@ -105,10 +99,8 @@ void setup_cuts(){
       }
       if (prtcl[i]=="pim"){
         if (isctr+1==1||isctr+1==4||isctr+1==5||isctr+1==6){//! no cuts
-          cut_lw[i][isctr]=new TF1*[1];
-          cut_hg[i][isctr]=new TF1*[1];
-          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
-          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
+          cut_lw[i][isctr]=NULL;
+          cut_hg[i][isctr]=NULL;
         }else if (isctr+1==2){
           cut_lw[i][isctr]=new TF1*[1];
           cut_hg[i][isctr]=new TF1*[1];
@@ -181,16 +173,20 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       t->Draw(cmd,cut_sctr&&cut_top,"colz");
       if (draw_cut){
         if (prtcl[i]=="e"||prtcl[i]=="p"||prtcl[i]=="pim"){
-          cut_lw[i][isctr][0]->Draw("same");
-          cut_hg[i][isctr][0]->Draw("same");
+          if (cut_lw[i][isctr]!=NULL && cut_hg[i][isctr]!=NULL){
+            cut_lw[i][isctr][0]->Draw("same");
+            cut_hg[i][isctr][0]->Draw("same");
+          }
         }else if (prtcl[i]=="pip"){
-          Int_t ncuts=1;
-          if (isctr+1==2) ncuts=2;
-          if (isctr+1==3) ncuts=4;
-          if (isctr+1==6) ncuts=2;
-          for (int j=0;j<ncuts;j++){
-            cut_lw[i][isctr][j]->Draw("same");
-            cut_hg[i][isctr][j]->Draw("same");
+          if (cut_lw[i][isctr]!=NULL && cut_hg[i][isctr]!=NULL){
+            Int_t ncuts=1;
+            if (isctr+1==2) ncuts=2;
+            if (isctr+1==3) ncuts=4;
+            if (isctr+1==6) ncuts=2;
+            for (int j=0;j<ncuts;j++){
+              cut_lw[i][isctr][j]->Draw("same");
+              cut_hg[i][isctr][j]->Draw("same");
+            }
           }
         }
       }
@@ -198,16 +194,20 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       cout<<"h = "<<h->GetName()<<endl;     
       if (draw_cut){
         if (prtcl[i]=="e"||prtcl[i]=="p"||prtcl[i]=="pim"){
-          h->GetListOfFunctions()->Add(cut_lw[i][isctr][0]);
-          h->GetListOfFunctions()->Add(cut_hg[i][isctr][0]); 
+          if (cut_lw[i][isctr]!=NULL && cut_hg[i][isctr]!=NULL){
+            h->GetListOfFunctions()->Add(cut_lw[i][isctr][0]);
+            h->GetListOfFunctions()->Add(cut_hg[i][isctr][0]); 
+          }
         }else if (prtcl[i]=="pip"){
-          Int_t ncuts=1;
-          if (isctr+1==2) ncuts=2;
-          if (isctr+1==2) ncuts=2;
-          if (isctr+1==6) ncuts=2;
-          for (int j=0;j<ncuts;j++){
-            h->GetListOfFunctions()->Add(cut_lw[i][isctr][j]);
-            h->GetListOfFunctions()->Add(cut_hg[i][isctr][j]);
+          if (cut_lw[i][isctr]!=NULL && cut_hg[i][isctr]!=NULL){
+            Int_t ncuts=1;
+            if (isctr+1==2) ncuts=2;
+            if (isctr+1==2) ncuts=2;
+            if (isctr+1==6) ncuts=2;
+            for (int j=0;j<ncuts;j++){
+              h->GetListOfFunctions()->Add(cut_lw[i][isctr][j]);
+              h->GetListOfFunctions()->Add(cut_hg[i][isctr][j]);
+            }
           }
         }
       }
@@ -217,16 +217,20 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       h->Draw("colz");
       if (draw_cut){
         if (prtcl[i]=="e"||prtcl[i]=="p"||prtcl[i]=="pim"){
-          cut_lw[i][isctr][0]->Draw("same");
-          cut_hg[i][isctr][0]->Draw("same");
+          if (cut_lw[i][isctr]!=NULL && cut_hg[i][isctr]!=NULL){
+            cut_lw[i][isctr][0]->Draw("same");
+            cut_hg[i][isctr][0]->Draw("same");
+          }
         }else if (prtcl[i]=="pip"){
-          Int_t ncuts=1;
-          if (isctr+1==2) ncuts=2;
-          if (isctr+1==3) ncuts=4;
-          if (isctr+1==6) ncuts=2;
-          for (int j=0;j<ncuts;j++){
-            cut_lw[i][isctr][j]->Draw("same");
-            cut_hg[i][isctr][j]->Draw("same");
+          if (cut_lw[i][isctr]!=NULL && cut_hg[i][isctr]!=NULL){
+            Int_t ncuts=1;
+            if (isctr+1==2) ncuts=2;
+            if (isctr+1==3) ncuts=4;
+            if (isctr+1==6) ncuts=2;
+            for (int j=0;j<ncuts;j++){
+              cut_lw[i][isctr][j]->Draw("same");
+              cut_hg[i][isctr][j]->Draw("same");
+            }
           }
         }
       }
