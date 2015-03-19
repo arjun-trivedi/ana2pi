@@ -12,6 +12,12 @@
 using namespace std;*/
 
 TString prtcl[]={"e","p","pip","pim"};
+
+Int_t theta_min[]={0, 0, 0,  0};
+Int_t theta_max[]={60,60,120,120};
+Int_t p_min[]={1,0,0,0};
+Int_t p_max[]={5,4,3,3};
+
 TF1* cut_lw[4][6];
 TF1* cut_hg[4][6];
 void setup_cuts(){
@@ -20,8 +26,15 @@ void setup_cuts(){
       TString name=TString::Format("%s_%d",prtcl[i].Data(),isctr+1).Data();
       if (prtcl[i]=="e"){
         if (isctr+1==1||isctr+1==2||isctr+1==5||isctr+1==6){//! no cuts
-          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"0", 0,5);
-          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"60",0,5);
+          Double_t pmin=p_min[i];
+          Double_t pmax=p_max[i];
+          Int_t thetamin=theta_min[i];
+          Int_t thetamax=theta_max[i];
+          printf("pmin,pax,thetamin,thetamax=%.1f,%.1f,%d,%d\n",pmin,pmax,thetamin,thetamax);
+          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),TString::Format("%d",thetamin),pmin,pmax);
+          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),TString::Format("%d",thetamax),pmin,pmax);
+          //cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"0",0,5);//pmin,pmax);
+          //cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"60",0,5);//pmin,p_max);
         }else if (isctr+1==3){
           cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"30-1*x",2.0,3.5);
           cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"32-1*x",2.0,3.5);        
@@ -30,6 +43,8 @@ void setup_cuts(){
           cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"24.5-1*x",2.0,4.5);
         }
       }
+      /*if (prtcl[i]=="e"){
+      }*/
     }
   }
 }
@@ -68,10 +83,10 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
   Int_t sctr_phi_min[]={0, 30, 90,  150, 210, 270};
   Int_t sctr_phi_max[]={0, 90 ,150, 210, 270, 330};
 
-  Int_t theta_min[]={0, 0, 0,  0};
+  /*Int_t theta_min[]={0, 0, 0,  0};
   Int_t theta_max[]={60,60,120,120};
   Int_t p_min[]={1,0,0,0};
-  Int_t p_max[]={5,4,3,3};
+  Int_t p_max[]={5,4,3,3};*/
 
   gStyle->SetOptStat(0);
   TCut cut_top(TString::Format("top==%d",top));
