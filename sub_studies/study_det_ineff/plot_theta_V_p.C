@@ -71,7 +71,7 @@ void setup_cuts(){
         }
       }
       if (prtcl[i]=="pip"){
-        if (isctr+1==1||isctr+1==4||isctr+1==5||isctr+1==6){//! no cuts
+        if (isctr+1==1||isctr+1==4||isctr+1==5){//! no cuts
           cut_lw[i][isctr]=new TF1*[1];
           cut_hg[i][isctr]=new TF1*[1];
           cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
@@ -92,6 +92,31 @@ void setup_cuts(){
           cut_hg[i][isctr][2]=new TF1(TString::Format("%s_%d_hg",name.Data(),3),"20.5+30*x-7*x*x",0.1,1.5);
           cut_lw[i][isctr][3]=new TF1(TString::Format("%s_%d_lw",name.Data(),4),"-13+25*x-5*x*x",0.6,2.5);
           cut_hg[i][isctr][3]=new TF1(TString::Format("%s_%d_hg",name.Data(),4),"-8.0+25*x-5*x*x",0.6,2.5);
+        }else if (isctr+1==6){
+          cut_lw[i][isctr]=new TF1*[2];
+          cut_hg[i][isctr]=new TF1*[2];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"64.5+32*x-20*x*x",0.0,0.7);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"68+35*x-18*x*x",0.0,0.7);
+          cut_lw[i][isctr][1]=new TF1(TString::Format("%s_%d_lw",name.Data(),2),"0+30*x-7*x*x",0.1,2.0);
+          cut_hg[i][isctr][1]=new TF1(TString::Format("%s_%d_hg",name.Data(),2),"12+30*x-7*x*x",0.1,2.0);
+        }
+      }
+      if (prtcl[i]=="pim"){
+        if (isctr+1==1||isctr+1==4||isctr+1==5||isctr+1==6){//! no cuts
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
+        }else if (isctr+1==2){
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"55-25*x+5*x*x",0.2,2);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"62-25*x+5*x*x",0.2,2);
+        }else if (isctr+1==3){
+          cut_lw[i][isctr]=new TF1*[1];
+          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"49-25*x+8*x*x",0.2,2);
+          cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),"51.5-25*x+8*x*x",0.2,2);
         }
       }
     }
@@ -153,12 +178,13 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       cout <<"cmd="<<cmd.Data()<<endl;
       t->Draw(cmd,cut_sctr&&cut_top,"colz");
       if (draw_cut){
-        if (prtcl[i]=="e"||prtcl[i]=="p"){
+        if (prtcl[i]=="e"||prtcl[i]=="p"||prtcl[i]=="pim"){
           cut_lw[i][isctr][0]->Draw("same");
           cut_hg[i][isctr][0]->Draw("same");
         }else if (prtcl[i]=="pip"){
           Int_t ncuts=1;
           if (isctr+1==3) ncuts=4;
+          if (isctr+1==6) ncuts=2;
           for (int j=0;j<ncuts;j++){
             cut_lw[i][isctr][j]->Draw("same");
             cut_hg[i][isctr][j]->Draw("same");
@@ -168,12 +194,13 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       TH2F* h=(TH2F*)gDirectory->Get(hname);
       cout<<"h = "<<h->GetName()<<endl;     
       if (draw_cut){
-        if (prtcl[i]=="e"||prtcl[i]=="p"){
+        if (prtcl[i]=="e"||prtcl[i]=="p"||prtcl[i]=="pim"){
           h->GetListOfFunctions()->Add(cut_lw[i][isctr][0]);
           h->GetListOfFunctions()->Add(cut_hg[i][isctr][0]); 
         }else if (prtcl[i]=="pip"){
           Int_t ncuts=1;
           if (isctr+1==3) ncuts=4;
+          if (isctr+1==6) ncuts=2;
           for (int j=0;j<ncuts;j++){
             h->GetListOfFunctions()->Add(cut_lw[i][isctr][j]);
             h->GetListOfFunctions()->Add(cut_hg[i][isctr][j]);
@@ -185,12 +212,13 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       pad->SetLogz(); 
       h->Draw("colz");
       if (draw_cut){
-        if (prtcl[i]=="e"||prtcl[i]=="p"){
+        if (prtcl[i]=="e"||prtcl[i]=="p"||prtcl[i]=="pim"){
           cut_lw[i][isctr][0]->Draw("same");
           cut_hg[i][isctr][0]->Draw("same");
         }else if (prtcl[i]=="pip"){
           Int_t ncuts=1;
           if (isctr+1==3) ncuts=4;
+          if (isctr+1==6) ncuts=2;
           for (int j=0;j<ncuts;j++){
             cut_lw[i][isctr][j]->Draw("same");
             cut_hg[i][isctr][j]->Draw("same");
