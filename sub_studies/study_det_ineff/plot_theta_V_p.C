@@ -22,15 +22,15 @@ TF1* cut_lw[4][6];
 TF1* cut_hg[4][6];
 void setup_cuts(){
   for (int i=0;i<4;i++){
+    Double_t pmin=p_min[i];
+    Double_t pmax=p_max[i];
+    Int_t thetamin=theta_min[i];
+    Int_t thetamax=theta_max[i];
+    printf("pmin,pax,thetamin,thetamax=%.1f,%.1f,%d,%d\n",pmin,pmax,thetamin,thetamax);
     for (int isctr=0;isctr<6;isctr++){
       TString name=TString::Format("%s_%d",prtcl[i].Data(),isctr+1).Data();
       if (prtcl[i]=="e"){
         if (isctr+1==1||isctr+1==2||isctr+1==5||isctr+1==6){//! no cuts
-          Double_t pmin=p_min[i];
-          Double_t pmax=p_max[i];
-          Int_t thetamin=theta_min[i];
-          Int_t thetamax=theta_max[i];
-          printf("pmin,pax,thetamin,thetamax=%.1f,%.1f,%d,%d\n",pmin,pmax,thetamin,thetamax);
           cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),TString::Format("%d",thetamin),pmin,pmax);
           cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),TString::Format("%d",thetamax),pmin,pmax);
           //cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"0",0,5);//pmin,pmax);
@@ -43,8 +43,21 @@ void setup_cuts(){
           cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"24.5-1*x",2.0,4.5);
         }
       }
-      /*if (prtcl[i]=="e"){
-      }*/
+      if (prtcl[i]=="p"){
+        if (isctr+1==1||isctr+1==4||isctr+1==6){//! no cuts
+          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),TString::Format("%d",thetamin),pmin,pmax);
+          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),TString::Format("%d",thetamax),pmin,pmax);
+        }else if (isctr+1==2){
+          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"16+8*x-1*x*x",0.5,3.0);
+          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"19+8*x-1*x*x",0.5,3.0); 
+        }else if (isctr+1==3){
+          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"5+8*x-1*x*x",0.5,3.5);
+          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"8+8*x-1*x*x",0.5,3.5);
+        }else if (isctr+1==5){
+          cut_lw[i][isctr]=new TF1(TString::Format("%s_lw",name.Data()),"19+5*x-1*x*x",0.5,3.0);
+          cut_hg[i][isctr]=new TF1(TString::Format("%s_hg",name.Data()),"22+5*x-1*x*x",0.5,3.0);
+        }
+      }
     }
   }
 }
@@ -104,7 +117,7 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       cout <<"cmd="<<cmd.Data()<<endl;
       t->Draw(cmd,cut_sctr&&cut_top,"colz");
       if (draw_cut){
-        if (prtcl[i]=="e"){
+        if (prtcl[i]=="e"||prtcl[i]=="p"){
           cut_lw[i][isctr]->Draw("same");
           cut_hg[i][isctr]->Draw("same");
         }
@@ -120,7 +133,7 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
       pad->SetLogz(); 
       h->Draw("colz");
       if (draw_cut){
-        if (prtcl[i]=="e"){
+        if (prtcl[i]=="e"||prtcl[i]=="p"){
           cut_lw[i][isctr]->Draw("same");
           cut_hg[i][isctr]->Draw("same");
         }
