@@ -77,10 +77,12 @@ void setup_cuts(){
           cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),TString::Format("%d",thetamin),pmin,pmax);
           cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),pmin,pmax);
         }else if (isctr+1==2){
-          cut_lw[i][isctr]=new TF1*[1];
-          cut_hg[i][isctr]=new TF1*[1];
+          cut_lw[i][isctr]=new TF1*[2];
+          cut_hg[i][isctr]=new TF1*[2];
           cut_lw[i][isctr][0]=new TF1(TString::Format("%s_%d_lw",name.Data(),1),"50+105*x-90*x*x",0.03,0.7);
           cut_hg[i][isctr][0]=new TF1(TString::Format("%s_%d_hg",name.Data(),1),TString::Format("%d",thetamax),0.03,0.7);
+          cut_lw[i][isctr][1]=new TF1(TString::Format("%s_%d_lw",name.Data(),2),"-13+37*x-5*x*x",0.5,2.5);
+          cut_hg[i][isctr][1]=new TF1(TString::Format("%s_%d_hg",name.Data(),2),"-7+38*x-4*x*x",0.4,2.5);
         }else if (isctr+1==3){
           cut_lw[i][isctr]=new TF1*[4];
           cut_hg[i][isctr]=new TF1*[4];
@@ -183,6 +185,7 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
           cut_hg[i][isctr][0]->Draw("same");
         }else if (prtcl[i]=="pip"){
           Int_t ncuts=1;
+          if (isctr+1==2) ncuts=2;
           if (isctr+1==3) ncuts=4;
           if (isctr+1==6) ncuts=2;
           for (int j=0;j<ncuts;j++){
@@ -199,7 +202,8 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
           h->GetListOfFunctions()->Add(cut_hg[i][isctr][0]); 
         }else if (prtcl[i]=="pip"){
           Int_t ncuts=1;
-          if (isctr+1==3) ncuts=4;
+          if (isctr+1==2) ncuts=2;
+          if (isctr+1==2) ncuts=2;
           if (isctr+1==6) ncuts=2;
           for (int j=0;j<ncuts;j++){
             h->GetListOfFunctions()->Add(cut_lw[i][isctr][j]);
@@ -217,6 +221,7 @@ void plot_theta_V_p(int top=1,bool exp=kTRUE,bool draw_cut=kFALSE){
           cut_hg[i][isctr][0]->Draw("same");
         }else if (prtcl[i]=="pip"){
           Int_t ncuts=1;
+          if (isctr+1==2) ncuts=2;
           if (isctr+1==3) ncuts=4;
           if (isctr+1==6) ncuts=2;
           for (int j=0;j<ncuts;j++){
