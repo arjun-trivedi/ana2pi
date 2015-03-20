@@ -201,6 +201,25 @@ ana2pi Branches
 												+ obs/dy_integ
 												+ obs/setup.tcshrc
 
+											+ [03-20-15] Added Processors and code relatedd to applying cuts on inefficient regions in the detector.
+											New files added:
+												+ cut_eff.cpp
+												+ cut_eff.h
+												+ data_eeff.cpp
+												+ data_eeff.h
+												+ data_peff.cpp
+												+ data_peff.h
+												+ proc_eeff.h
+												+ proc_peff.h
+											Files modified:
+												+ data_ana.h/.cpp: Methods and Data added:
+													+ makeHistsEEff(),makeHistsPEff(),fillHistsEEff(),fillHistsPEff()
+													+ DataEEff,DataPEff
+												+ proc_h10.cpp
+												+ Makefile
+
+												
+
 
 
 											
