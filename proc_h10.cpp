@@ -6,7 +6,9 @@
 #include "proc_eid.h"
 #include "proc_delast.h"
 #include "proc_efid.h"
+#include "proc_eeff.h"
 #include "proc_pid.h"
+#include "proc_peff.h"
 #include "proc_pid_elast.h"
 #include "proc_skim_q.h"
 #include "proc_skim_q_elast.h"
@@ -221,6 +223,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("fid"),dH10,dAna);
+         else if (str.EqualTo("eeff"))       proc = new ProcEEff(mkdir("eeff"),dH10,dAna);
          //else if (str.EqualTo("delast"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna);
          else if (str.EqualTo("delastT"))            proc = new ProcDelast(mkdir("delast"),dH10,dAna,kFALSE,kFALSE,kTRUE, kFALSE);
          else if (str.EqualTo("delastTmon"))         proc = new ProcDelast(mkdir("delast"),dH10,dAna,kTRUE, kFALSE,kTRUE, kFALSE);
@@ -240,6 +243,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("peff"))       proc = new ProcPEff(mkdir("peff"),dH10,dAna);
          else if (str.EqualTo("pidelast"))   	  proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna);
          else if (str.EqualTo("pidelastmon"))     proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidelastmononly")) proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE,kTRUE);
