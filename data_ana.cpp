@@ -30,10 +30,12 @@ void DataAna::Clear()
 	top = 0;
 	eid.Clear();
 	efid.Clear();
+	eeff.Clear();
 	skimq.Clear();
 	skimq_elast.Clear();
 	mom.Clear();
 	pid.Clear();
+	peff.Clear();
 	pid_elast.Clear();
 	eKin.Clear();
 	eKin_mc.Clear();
@@ -97,6 +99,74 @@ void DataAna::makeHistsEFid(TObjArray** hists, TDirectory* dirout)
 		if (iSector==6) hists[iSector]->Add(new TH2F("hephiVetheta","#phi(sector 6) vs. #theta", 100, 0, 60, 100, 270, 330));
 		hists[iSector]->Add(new TH2F("hescyVescx", "SCx vs. SCy", 200,0,500,200,-250,250));
 		hists[iSector]->Add(new TH2F("heecyVeecx", "ECx vs. ECy", 200,-500,500,200,-500,500));
+	}
+	//return ret;
+	return;
+}
+
+void DataAna::makeHistsEEff(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(1);
+		
+		if (iSector==0)	hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 0)", 100,1,5,100,0,60));
+		if (iSector==1) hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 1)", 100,1,5,100,0,60));
+		if (iSector==2) hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 2)", 100,1,5,100,0,60));
+		if (iSector==3)	hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 3)", 100,1,5,100,0,60));
+		if (iSector==4) hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 4)", 100,1,5,100,0,60));
+		if (iSector==5) hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 5)", 100,1,5,100,0,60));
+		if (iSector==6) hists[iSector]->Add(new TH2F("h_e_thetaVp","e #theta vs. p(sector 6)", 100,1,5,100,0,60));
+	}
+	//return ret;
+	return;
+}
+
+void DataAna::makeHistsPEff(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(3);
+		
+		if (iSector==0)	{
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 0)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 0)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 0)",100,0,3,100,0,120));
+		}
+		if (iSector==1) {
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 1)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 1)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 1)",100,0,3,100,0,120));
+		}
+		if (iSector==2) {
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 2)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 2)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 2)",100,0,3,100,0,120));
+		}
+		if (iSector==3)	{
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 3)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 3)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 3)",100,0,3,100,0,120));
+		}
+		if (iSector==4) {
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 4)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 4)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 4)",100,0,3,100,0,120));
+		}
+		if (iSector==5) {
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 5)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 5)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 5)",100,0,3,100,0,120));
+		}
+		if (iSector==6) {
+			hists[iSector]->Add(new TH2F("h_p_thetaVp",  "#theta vs. p for p(sector 6)",      100,0,4,100,0,60));
+			hists[iSector]->Add(new TH2F("h_pip_thetaVp","#theta vs. p for #pi^{+}(sector 6)",100,0,3,100,0,120));
+			hists[iSector]->Add(new TH2F("h_pim_thetaVp","#theta vs. p for #pi^{-}(sector 6)",100,0,3,100,0,120));
+		}
 	}
 	//return ret;
 	return;
@@ -451,6 +521,63 @@ void DataAna::fillHistsEFid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 			
 			TH2* h3 = (TH2*)hists[iSector]->At(2);
 			h3->Fill(efid.ech_x, efid.ech_y);
+		}
+	}
+}
+
+void DataAna::fillHistsEEff(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		/*if ( (iSector == 0) || (iSector == eeff.sector) ) {
+		
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			h1->Fill(eeff.p, eeff.theta);
+			
+		}*/
+		if (iSector==0) {
+		
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			h1->Fill(eeff.p, eeff.theta);
+			
+		}
+		if (iSector==eeff.sector) {
+		
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			h1->Fill(eeff.p, eeff.theta);
+			
+		}
+	}
+}
+
+void DataAna::fillHistsPEff(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if (iSector==0) {
+			if (pid.h10IdxP>0){
+				TH2* h1 = (TH2*)hists[iSector]->At(0);
+				h1->Fill(peff.p_p, peff.theta_p);
+			}
+			if (pid.h10IdxPip>0){
+				TH2* h2 = (TH2*)hists[iSector]->At(1);
+				h2->Fill(peff.p_pip, peff.theta_pip);
+				
+			}
+			if (pid.h10IdxPim>0 ){
+				TH2* h3 = (TH2*)hists[iSector]->At(2);
+				h3->Fill(peff.p_pim, peff.theta_pim);
+			}
+		}
+		if (iSector==peff.sector_p && pid.h10IdxP>0){
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			h1->Fill(peff.p_p, peff.theta_p);
+		}
+		if (iSector==peff.sector_pip && pid.h10IdxPip>0){
+			TH2* h2 = (TH2*)hists[iSector]->At(1);
+			h2->Fill(peff.p_pip, peff.theta_pip);
+		}
+		if (iSector==peff.sector_pim && pid.h10IdxPim>0 ){
+			TH2* h3 = (TH2*)hists[iSector]->At(2);
+			h3->Fill(peff.p_pim, peff.theta_pim);
 		}
 	}
 }

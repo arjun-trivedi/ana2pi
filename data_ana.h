@@ -4,10 +4,12 @@
 
 #include "data_eid.h"
 #include "data_efid.h"
+#include "data_eeff.h"
 #include "data_skim_q.h"
 #include "data_skim_q_elast.h"
 #include "data_mom.h"
 #include "data_pid.h"
+#include "data_peff.h"
 #include "data_pid_elast.h"
 #include "data_ekin.h"
 #include "data_2pi.h"
@@ -30,9 +32,11 @@ public:
 	
 	DataEid eid;
 	DataEFid efid;
+	DataEEff eeff;
 	DataSkimQ skimq;
 	DataSkimQElast skimq_elast;
 	DataPid pid;
+	DataPEff peff;
 	DataPidElast pid_elast;
 	DataMom mom;
 	DataEkin eKin;
@@ -50,6 +54,8 @@ public:
 	
 	void makeHistsEid(TObjArray** hists, TDirectory* dirout);
 	void makeHistsEFid(TObjArray** hists, TDirectory* dirout);
+	void makeHistsEEff(TObjArray** hists, TDirectory* dirout);
+	void makeHistsPEff(TObjArray** hists, TDirectory* dirout);
 	void makeHistsMomCor(TObjArray** hists, TDirectory* dirout);
 	void makeHistsPid(TObjArray** hists, TDirectory* dirout);
 	void makeHistsPidElast(TObjArray** hists, TDirectory* dirout);
@@ -68,6 +74,8 @@ public:
 	
 	void fillHistsEid(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsEFid(TObjArray** hists, Bool_t useMc = kFALSE);
+    void fillHistsEEff(TObjArray** hists, Bool_t useMc = kFALSE);
+    void fillHistsPEff(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsMomCor(TObjArray** hists, Bool_t useMc = kFALSE);
 	void fillHistsPid(TObjArray** hists, Bool_t useMc = kFALSE);
 	void fillHistsPidElast(TObjArray** hists, Bool_t useMc = kFALSE);
