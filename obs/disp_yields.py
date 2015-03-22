@@ -1332,7 +1332,8 @@ class DispYields:
 			ax.set_ylim(0,600000)
 			ax.set_ylabel(r'Yield [A.U.]',fontsize='xx-large')
 		else:
-			#ax.set_ylim(0,0.05)
+			ax.grid(1)
+			ax.set_ylim(0,4)
 			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
 		ax.legend()
 		fig.savefig('%s/integ_yield_%s.png'%(outdir,vst))
