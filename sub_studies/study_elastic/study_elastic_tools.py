@@ -3,9 +3,15 @@ import math
 import os
 from collections import OrderedDict
 import ROOT
+from rootpy.plotting import Hist, HistStack, Legend, Canvas
+import rootpy.plotting.root2matplotlib as rplt
+import matplotlib.pyplot as plt
 
 import elaslib
 
+'''
+The following code is to: delast->yields->display
+'''
 VARS=['THETA','PHI']
 H2_DIM=OrderedDict([('THETA',0),('PHI',1)])
 
@@ -462,3 +468,124 @@ class StudyElasticTools:
 					l.AddEntry(hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{#frac{d\sigma}{d\Omega}^{EC}}{#frac{d\sigma_{thry-%s}}{d\Omega}}"%thry)
 					l.Draw()
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+'''
+The following code is used to play with elaslib.f
+'''
+#! Following are parameters for obtain legnth of E1F target in radiation length.
+#! Sources=Rad_length_materials_src1_CERN.pdf, Rad_length_materials_src2_LBNL.pdf
+X0=63.047 #g/cm^2 for atomic hydrogrm
+DENSITY=0.0708 #g/cm^3 for liquid H2
+RAD_LENGTH=890.45 #cm = X0/DENSITY
+E1F_TARGET_RAD_LENGTH=0.00562 # =5cm/RAD_LENGTH 
+def play_elaslib_low_theta(be,nbins,xmin,xmax,wcut,rto_min=None,rto_max=None):
+    h={}
+    cold={'norad':'kRed','wrad':'kBlue'}
+    for radtyp in ['norad','wrad']:
+        h[radtyp]=Hist(nbins,xmin,xmax,title='%s'%radtyp)
+        h[radtyp].SetLineColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+        h[radtyp].SetMarkerColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+    for ibin in range(nbins):
+        theta=h['norad'].GetBinLowEdge(ibin+1)
+        if theta==0: continue
+        binc_norad=elaslib.elas(be,theta)
+        binc_wrad=elaslib.elasrad(be,theta,E1F_TARGET_RAD_LENGTH,wcut)
+        #print "theta,xsec=",theta,binc
+        h['norad'].SetBinContent(ibin+1,binc_norad)
+        h['norad'].SetBinError(ibin+1,0)
+        if math.isnan(binc_wrad):
+                h['wrad'].SetBinContent(ibin+1,0)
+                h['wrad'].SetBinError(ibin+1,0)
+        else:
+                h['wrad'].SetBinContent(ibin+1,binc_wrad)
+                h['wrad'].SetBinError(ibin+1,0)
+
+    hrto=h['wrad'].Clone()
+    hrto.SetTitle('wrad/norad')
+    hrto.Divide(h['norad'])
+    hrto.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+    hrto.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+    return h['norad'],h['wrad'],hrto
+
+def play_elaslib(be,nbins=179,xmin=1,xmax=180,wcut=1.1,rto_min=None,rto_max=None):
+    #outdir="/tmp/elastic_xsec_ana"
+    outdir=os.path.join(os.environ['ANA2PI_STUDY_ELASTIC'],'elaslib_ana')
+    if not os.path.exists(outdir):
+	os.makedirs(outdir)
+    h={}
+    cold={'norad':'kRed','wrad':'kBlue'}
+    for radtyp in ['norad','wrad']:
+        h[radtyp]=Hist(nbins,xmin,xmax,title='%s'%radtyp)
+        h[radtyp].SetLineColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+        h[radtyp].SetMarkerColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+    for ibin in range(nbins):
+        theta=h['norad'].GetBinLowEdge(ibin+1)
+        if theta==0: continue
+        binc_norad=elaslib.elas(be,theta)
+        binc_wrad=elaslib.elasrad(be,theta,E1F_TARGET_RAD_LENGTH,wcut)
+        #print "theta,xsec=",theta,binc
+        h['norad'].SetBinContent(ibin+1,binc_norad)
+        h['norad'].SetBinError(ibin+1,0)
+	if math.isnan(binc_wrad):
+        	h['wrad'].SetBinContent(ibin+1,0)
+        	h['wrad'].SetBinError(ibin+1,0)
+	else:
+		h['wrad'].SetBinContent(ibin+1,binc_wrad)
+                h['wrad'].SetBinError(ibin+1,0)
+        
+    hrto=h['wrad'].Clone()
+    hrto.SetTitle('wrad/norad')
+    hrto.Divide(h['norad'])
+    hrto.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+    hrto.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+   
+    #! Get low theta
+    h['norad_lt'],h['wrad_lt'],hrto_lt=play_elaslib_low_theta(be,nbins=50,xmin=0.00001,xmax=1,wcut=wcut)
+
+    #! In a 4x4 grid plot histograms
+    #! First plot low theta
+    fig=plt.figure(figsize=(10, 6), dpi=100)
+    fig.suptitle("Beam energy=%.3f[GeV]. W cut=%.2f[GeV]"%(be,wcut),fontsize=20)
+    ax=plt.subplot(221)
+    stack = HistStack()
+    stack.Add(h['norad_lt'])
+    stack.Add(h['wrad_lt'])
+    rplt.errorbar(stack, xerr=False, emptybins=True, axes=ax)
+    #rplt.errorbar(hThrtcl['wrad'],xerr=False, emptybins=False, axes=ax)
+    ax.set_title("ep Cross section")
+    ax.set_ylabel(r"$\frac{d\sigma}{d\Omega}[\mu b]$",fontsize=20)
+    ax.set_yscale('log')
+    #ymin=min(elaslib.elas(be,xmax),elaslib.elasrad(be,xmax,E1F_TARGET_RAD_LENGTH,wcut))
+    #ax.set_ylim(ymin)
+    plt.legend()
+    ax=plt.subplot(222)
+    #print "Ratio min:max(low theta)=%.2f,%.2f"%(hrto_lt.GetMinimum(),hrto_lt.GetMaximum())
+    rplt.errorbar(hrto_lt, xerr=False, emptybins=True, axes=ax)
+    ax.set_ylim(hrto_lt.GetMinimum(),hrto_lt.GetMaximum())
+    plt.legend(loc='lower right')
+
+    #! Now plot high theta
+    ax=plt.subplot(223)
+    stack = HistStack()
+    stack.Add(h['norad'])
+    stack.Add(h['wrad'])
+    rplt.errorbar(stack, xerr=False, emptybins=True, axes=ax)
+    #rplt.errorbar(hThrtcl['wrad'],xerr=False, emptybins=False, axes=ax)
+    ax.set_title("ep Cross section")
+    ax.set_ylabel(r"$\frac{d\sigma}{d\Omega}[\mu b]$",fontsize=20)
+    ax.set_yscale('log')
+    ymin=min(elaslib.elas(be,xmax),elaslib.elasrad(be,xmax,E1F_TARGET_RAD_LENGTH,wcut))
+    ax.set_ylim(ymin)
+    plt.legend()
+    ax=plt.subplot(224)
+    #print "Ratio min:max=%.2f,%.2f"%(hrto.GetMinimum(),hrto.GetMaximum())
+    rplt.errorbar(hrto, xerr=False, emptybins=True, axes=ax)
+    if rto_min==None and rto_max==None:
+        if hrto.GetMinimum()<1:
+    		ax.set_ylim(hrto.GetMinimum(),hrto.GetMaximum())
+	else:
+        	ax.set_ylim(0.9,hrto.GetMaximum())
+    else:
+    	ax.set_ylim(rto_min,rto_max)
+    plt.legend(loc='upper left')
+    fig.savefig("%s/be%.3f_wcut%.2f.png"%(outdir,be,wcut))
+    #return hThrtcl['norad'],hThrtcl['wrad'],hrto
