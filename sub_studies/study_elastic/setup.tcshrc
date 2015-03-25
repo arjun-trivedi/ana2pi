@@ -1,6 +1,8 @@
 setenv ANA2PI_STUDY_ELASTIC "${ANA2PI}/sub_studies/study_elastic"
 alias study_elastic 'cd ${ANA2PI_STUDY_ELASTIC}'
 
+setenv STUDY_ELASTIC_DATADIR '/data/trivedia/e1f/study_elastic'
+
 ##- modify PATH
 setenv PATH "${PATH}:${ANA2PI_STUDY_ELASTIC}"
 
