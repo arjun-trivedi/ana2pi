@@ -219,6 +219,16 @@ ana2pi Branches
 												+ Makefile
 												+ obs/submit.h10_2_d2piR-exp-byRun,obs/submit.h10_2_d2piR-sim: Added eeff:peff to Proc. Chain
 
+											+ [03-26-15] Code changes for Elastic Cross Section substudy
+												+ proc_delast.h:
+													+ Modified to cut away ST events with W beyond Elastic-W-rad (mostly in DVCS region)
+												+ proc_eid.h:
+													+ updateEkin(): Modified to take in additional boolean argument McHasPARTBanks to update electron kinematics when h10 has PART banks from Event Generator and this is needed to ST Elastic Events.
+												+ Created new file structure for storing output files from h10->delast->yields->obs. Affected files:
+													+ study_elastic/setup.tcshrc (Also has additional fixes related to normalization factor for Elastic Yields)
+													+ study_elastic/study_elastic_tools.py
+												+ study_elastic/submit.h10_2_h10-delast-skim-exp-byRun: Added to make h10-skim-delast
+
 												
 
 

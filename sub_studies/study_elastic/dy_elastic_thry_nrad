@@ -1,4 +1,4 @@
 #!/usr/bin/python
 from study_elastic_tools import StudyElasticTools
-t=StudyElasticTools(theta_min=14)
+t=StudyElasticTools('obs_030815')
 t.disp_yields(thry='nrad')

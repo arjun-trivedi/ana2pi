@@ -1,3 +1,4 @@
+#--
 setenv ANA2PI_STUDY_ELASTIC "${ANA2PI}/sub_studies/study_elastic"
 alias study_elastic 'cd ${ANA2PI_STUDY_ELASTIC}'
 
@@ -24,6 +25,6 @@ else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv DELASTDIR_SIM "$DELASTDIR/sim"
 endif
 ##-- dir where where yields and their displays are kept
-setenv OBSDIR_ELASTIC "${DELASTDIR}/obs"
-setenv OBSDIR_ELASTIC_THETA_MIN_25 "${DELASTDIR}/obs_theta_min_25"
-alias obs_elast 'gqview $OBSDIR/siml/ &'
+setenv OBSDIR_ELASTIC "$DELASTDIR"
+#setenv OBSDIR_ELASTIC_THETA_MIN_25 "${DELASTDIR}/obs_theta_min_25"
+#alias obs_elast 'gqview $OBSDIR/siml/ &'
