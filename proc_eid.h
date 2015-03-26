@@ -29,7 +29,7 @@ public:
 	Bool_t goodE();
 	Bool_t goodE_bos();
 	void updateEid();
-	void updateEkin(Bool_t useMc = kFALSE);
+	void updateEkin(Bool_t useMc=kFALSE,Bool_t McHasPARTBanks=kFALSE);
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 		
 protected:
@@ -292,7 +292,7 @@ void ProcEid::updateEid(){
 	dAna->eid.cc_theta = getCCtheta(dc_xsc, dc_ysc, dc_zsc, dc_cxsc, dc_cysc, dc_czsc);
 }
 
-void ProcEid::updateEkin(Bool_t useMc /*= kFALSE*/) {
+void ProcEid::updateEkin(Bool_t useMc /*= kFALSE*/,Bool_t McHasPARTBanks/*=kFALSE*/) {
 	const TLorentzVector _4vE0 = dH10->lvE0;
 	const TLorentzVector _4vP0 = dH10->lvP0;
 	TLorentzVector _4vE1;
@@ -310,17 +310,29 @@ void ProcEid::updateEkin(Bool_t useMc /*= kFALSE*/) {
 		py = mom*dH10->cy[0];
 		pz = mom*dH10->cz[0];
 		_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
-	} else{
-		for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
-			Int_t _id = dH10->mcid[idx];
-			if (_id != ELECTRON) continue;
-			mom = dH10->mcp[idx];
-			Float_t _theta = dH10->mctheta[idx]*DegToRad();
-			Float_t _phi = dH10->mcphi[idx]*DegToRad();
-			px = mom*Cos(_phi)*Sin(_theta);
-			py = mom*Sin(_phi)*Sin(_theta);
-			pz = mom*Cos(_theta);
-			_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
+	} else{//! if useMc
+		if (McHasPARTBanks){
+			for (Int_t inprt=0; inprt<dH10->nprt;inprt++)	{
+				if (dH10->pidpart[inprt]==3){
+					Float_t px=dH10->pxpart[inprt];
+					Float_t py=dH10->pypart[inprt];
+					Float_t pz=dH10->pzpart[inprt];
+					Float_t e=dH10->epart[inprt];
+					_4vE1.SetPxPyPzE(px,py,pz,e);
+				}
+			}
+		}else{//!McHasMCTKBans
+			for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
+				Int_t _id = dH10->mcid[idx];
+				if (_id != ELECTRON) continue;
+				mom = dH10->mcp[idx];
+				Float_t _theta = dH10->mctheta[idx]*DegToRad();
+				Float_t _phi = dH10->mcphi[idx]*DegToRad();
+				px = mom*Cos(_phi)*Sin(_theta);
+				py = mom*Sin(_phi)*Sin(_theta);
+				pz = mom*Cos(_theta);
+				_4vE1.SetPxPyPzE(px,py,pz,Sqrt(mom*mom+MASS_E*MASS_E));
+			}
 		}
 	}
 	
