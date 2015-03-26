@@ -9,11 +9,11 @@
 # as separate input files for the job
 ###########################################################
 date=`date +%m%d%y`
-SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_delastR-exp-byRun_$date
+SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_h10-delast-skim-exp-byRun_$date
 if [[ ! -d ${SUBDIR} ]]; then
     mkdir -p $SUBDIR
 fi
-OUTDIR=$DELASTDIR_EXP/byRun_$date
+OUTDIR=$H10DIR_ELAST_EXP/h10-delast-skim/byRun_$date
 if [[ ! -d $OUTDIR ]]; then
     mkdir -p $OUTDIR
 fi
