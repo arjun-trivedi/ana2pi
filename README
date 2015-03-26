@@ -175,6 +175,7 @@ ana2pi Branches
 										+ Changed to use new XML format
 										+ date added as suffix to output
 
+									+ Following changes were made in branch fix_h8_W_bng that were merged.
 										+ [03-16-15] fix_h8_W_bng
 											+ The main purpose of this branch is to fix the error found in the W bins of h8 and see its impact on the normalized yields. Files modified to make this change:
 												+ h8_bng.h
