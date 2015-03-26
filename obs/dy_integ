@@ -35,5 +35,5 @@ print "Displaying integrated yields for obsdate:sim:tops = %s:%s:%s"%(obsdate,si
 dy=DispYields(obsdate,simnum=simnum,tops=tops)
 #dy.disp_integ_yield()
 dy.disp_integ_yield(vst='VST1',norm=True)
-dy.disp_integ_yield(vst='VST2',norm=True)
-dy.disp_integ_yield(vst='VST3',norm=True)
+#dy.disp_integ_yield(vst='VST2',norm=True)
+#dy.disp_integ_yield(vst='VST3',norm=True)
