@@ -1299,6 +1299,8 @@ class DispYields:
 				dw=float(q2wbin.split('_')[1].split('-')[1])-w
 				#wbin=q2wbin.split('_')[1]
 				h5_UNPOL=self.FEXP.Get("%s/%s/%s/h5_UNPOL"%(q2wbin,vst,seq))
+				#! get_yield_per_truePS_bin
+				self.get_yield_per_truePS_bin(h5_UNPOL)
 				y[seq,q2bin][w]=thntool.GetIntegral(h5_UNPOL)
 				if norm==True:
 					q2=float(q2wbin.split('_')[0].split('-')[0])
@@ -1333,7 +1335,7 @@ class DispYields:
 			ax.set_ylabel(r'Yield [A.U.]',fontsize='xx-large')
 		else:
 			ax.grid(1)
-			ax.set_ylim(0,4)
+			ax.set_ylim(0,20)
 			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
 		ax.legend()
 		fig.savefig('%s/integ_yield_%s.png'%(outdir,vst))
@@ -1623,6 +1625,84 @@ class DispYields:
 		#! Do Sumw2() so that errors are correctly propagated
 		hTheta.Sumw2();
 		hTheta.Divide(hDCosTheta)
+
+	def get_yield_per_truePS_bin(self,h5):
+		nbins=h5.GetNbins()
+		for ibin in range(nbins):
+			bincoord=np.zeros(5,'i')
+			binc=h5.GetBinContent(ibin,bincoord) 
+			
+			#print "bincoord for theta dim=",bincoord[H5_DIM['THETA']]
+			theta_bin=int(bincoord[H5_DIM['THETA']])
+			theta_le=h5.GetAxis(H5_DIM['THETA']).GetBinLowEdge(theta_bin)
+			theta_ue=h5.GetAxis(H5_DIM['THETA']).GetBinUpEdge(theta_bin)
+			theta_binw=h5.GetAxis(H5_DIM['THETA']).GetBinWidth(theta_bin)
+			theta_bin_center=theta_le+theta_binw/2
+			#print "theta_le,theta_ue,theta_ue-theta_le=,",theta_le,theta_ue,theta_ue-theta_le
+
+			#print "bincoord for phi dim=",bincoord[H5_DIM['PHI']]
+			phi_bin=int(bincoord[H5_DIM['PHI']])
+			phi_le=h5.GetAxis(H5_DIM['PHI']).GetBinLowEdge(phi_bin)
+			phi_ue=h5.GetAxis(H5_DIM['PHI']).GetBinUpEdge(phi_bin)
+			phi_binw=h5.GetAxis(H5_DIM['PHI']).GetBinWidth(phi_bin)
+			phi_bin_center=phi_le+phi_binw/2
+			#print "phi_le,phi_ue,phi_ue-phi_le=,",phi_le,phi_ue,phi_ue-phi_le
+
+			#print "bincoord for alpha dim=",bincoord[H5_DIM['ALPHA']]
+			alpha_bin=int(bincoord[H5_DIM['ALPHA']])
+			alpha_le=h5.GetAxis(H5_DIM['ALPHA']).GetBinLowEdge(alpha_bin)
+			alpha_ue=h5.GetAxis(H5_DIM['ALPHA']).GetBinUpEdge(alpha_bin)
+			alpha_binw=h5.GetAxis(H5_DIM['ALPHA']).GetBinWidth(alpha_bin)
+			alpha_bin_center=alpha_le+alpha_binw/2
+			#print "alpha_le,alpha_ue,alpha_ue-alpha_le=,",alpha_le,alpha_ue,alpha_ue-alpha_le
+
+			#! Try method 1 (xsec maximum = 6 ub)
+			# tech_norm=(theta_ue-theta_le)*(phi_ue-phi_le)
+			# #! True norm factor calculation
+			# true_norm=math.sin(math.radians(theta_bin_center))*tech_norm
+			# fctr=tech_norm/true_norm
+			# h5.SetBinContent(ibin,binc*fctr)
+
+			#! Try method 2
+			#norm=( math.fabs( math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)) ) )/(math.radians(theta_ue)-math.radians(theta_le))
+			#h5.SetBinContent(ibin,binc/norm)
+
+			#! Try method 3
+			# tech_norm=(theta_ue-theta_le)*(phi_ue-phi_le)
+			# #! True norm factor calculation
+			# DCosTheta=math.fabs(math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)))
+			# DPhi=math.radians(phi_ue)-math.radians(phi_le)
+			# true_norm=DCosTheta*DPhi
+			# fctr=tech_norm/true_norm
+			# h5.SetBinContent(ibin,binc*fctr)
+
+			# #! Try method 3.1 (method 3 extended to include alpha angle)
+			# tech_norm=(theta_ue-theta_le)*(phi_ue-phi_le)*(alpha_ue-alpha_le)
+			# #! True norm factor calculation
+			# DCosTheta=math.fabs(math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)))
+			# DPhi=math.radians(phi_ue)-math.radians(phi_le)
+			# DAlpha=math.radians(alpha_ue)-math.radians(alpha_le)
+			# true_norm=DCosTheta*DPhi*DAlpha
+			# fctr=tech_norm/true_norm
+			# h5.SetBinContent(ibin,binc*fctr)
+
+			# #! Try method 4
+			# tech_norm=(math.radians(theta_ue)-math.radians(theta_le))*(math.radians(phi_ue)-math.radians(phi_le))
+			# #! True norm factor calculation
+			# DCosTheta=math.fabs(math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)))
+			# DPhi=math.radians(phi_ue)-math.radians(phi_le)
+			# true_norm=DCosTheta*DPhi
+			# fctr=tech_norm/true_norm
+			# h5.SetBinContent(ibin,binc*fctr)
+
+			#! Try method 4
+			tech_norm=1#(math.radians(theta_ue)-math.radians(theta_le))
+			#! True norm factor calculation
+			DCosTheta=math.fabs(math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)))
+			true_norm=DCosTheta
+			fctr=tech_norm/true_norm
+			h5.SetBinContent(ibin,binc*fctr)
+
 
 	#! First make sure this bin is "good"
 	def is_bad_q2wbin(self,q2wbin,q2wbinl_bad):
