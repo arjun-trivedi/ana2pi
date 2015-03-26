@@ -75,13 +75,13 @@ protected:
 	//void AddBranches(TTree* t, bool ismc=kFALSE);
 
 	void McKin();
-	void UpdateDelast(bool ismc  = kFALSE);
+	void UpdateDelast(bool ismc=kFALSE);
 	//void updateEkin(Bool_t useMc = kFALSE);
 	
 	void ResetLvs();
 	
 	void setLabFrmLvs();
-	bool passEvent();
+	bool passEvent(bool ismc=kFALSE);
 
 	Float_t getPhi(TLorentzVector lv);
 	Float_t invTan(Float_t y, Float_t x);
@@ -130,31 +130,35 @@ void ProcDelast::handle() {
 	//! Only if _procT
 	if (_procT){
 		McKin();
-		_proc_eid->updateEkin(kTRUE);
+		_proc_eid->updateEkin(kTRUE,kTRUE);//!useMc=kTRUE&&McHasPARTBanks=kTRUE
 		UpdateDelast(kTRUE);
 
-		if (mon || mononly){//! If mon or mononly mode
-			if (_t_ST==NULL){
-				_t_ST = new TTree("t_ST","TTree containing data for Elastic events");
-				dAna->addBranches_DataElastic(_t_ST,kTRUE);
-				_hists_ekin_ST=dAna->makeHistsEkin();
-				_yields_ST=dAna->makeYieldsElastic();
+		pass=passEvent(kTRUE); //! Needed here because not all ST events are Elastic.
+							   //! Some ST events have W in the DVCS region and need to be removed!
+
+		if (pass){
+			if (mon || mononly){//! If mon or mononly mode
+				if (_t_ST==NULL){
+					_t_ST = new TTree("t_ST","TTree containing data for Elastic events");
+					dAna->addBranches_DataElastic(_t_ST,kTRUE);
+					_hists_ekin_ST=dAna->makeHistsEkin();
+					_yields_ST=dAna->makeYieldsElastic();
+				}
+				_t_ST->Fill();
+				dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
+				dAna->fillYieldsElastic(_yields_ST,kTRUE);
+			}else{//! If regular mode
+				if (_hists_ekin_ST==NULL){
+					_hists_ekin_ST=dAna->makeHistsEkin();
+					_yields_ST=dAna->makeYieldsElastic();
+				}
+				dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
+				dAna->fillYieldsElastic(_yields_ST,kTRUE);
 			}
-			_t_ST->Fill();
-			dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
-			dAna->fillYieldsElastic(_yields_ST,kTRUE);
-		}else{//! If regular mode
-			if (_hists_ekin_ST==NULL){
-				_hists_ekin_ST=dAna->makeHistsEkin();
-				_yields_ST=dAna->makeYieldsElastic();
-			}
-			dAna->fillHistsEkin(_hists_ekin_ST,kTRUE);
-			dAna->fillYieldsElastic(_yields_ST,kTRUE);
+			hevtsum->Fill(EVT_PASS);
+			EpProcessor::handle(); 
+			return;
 		}
-		pass=kTRUE;
-		hevtsum->Fill(EVT_PASS);
-		EpProcessor::handle(); 
-		return;
 	}
 
 	//! Only if _procR
@@ -309,18 +313,20 @@ void ProcDelast::setLabFrmLvs(){
 	return;
 }
 
-bool ProcDelast::passEvent(){
+bool ProcDelast::passEvent(bool ismc/*=kFALSE*/){
 	bool ret=kFALSE;
+
 	DataElastic *de = &(dAna->dElast);
-	/*if (dH10->gpart<=4 && 
-		_det_e==kTRUE && _det_p==kTRUE && 
-		dH10->dc[_h10idxP]>0 && dH10->sc[_h10idxP]>0 &&
-		de->MMep<0.1 && de->W<1.1)
-		{
+	if (ismc) de = &(dAna->dElast_ST);
+
+	if (ismc){//! cut away ST events that far exceed W from Elastic-W rad. tail; most of them are in DVCS regions
+		if (de->W<1.05){
 			ret=kTRUE;
-		}*/
-	if (de->MMep<0.1 && de->W<1.1){
-		ret=kTRUE;
+		}
+	}else{
+		if (de->MMep<0.1 && de->W<1.1){
+			ret=kTRUE;
+		}
 	}
 	return ret;
 }
