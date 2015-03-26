@@ -1,0 +1,56 @@
+#!/bin/bash
+
+##########################################################
+# [03-02-15]
+# + Get h10.lst files for all E1F Runs from ${HOME}/ongoing/e1f_allruns_h10lst
+# and submit h10->delastR jobs for each of them.
+# + The h10.lst files contain just the root file names for each Run, therefore
+# this script additionally appends the full /mss path to the files and lists them
+# as separate input files for the job
+###########################################################
+date=`date +%m%d%y`
+SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_delastR-exp-byRun_$date
+if [[ ! -d ${SUBDIR} ]]; then
+    mkdir -p $SUBDIR
+fi
+OUTDIR=$DELASTDIR_EXP/byRun_$date
+if [[ ! -d $OUTDIR ]]; then
+    mkdir -p $OUTDIR
+fi
+
+for h10lst in $(ls  ${HOME}/ongoing/e1f_goldenruns_h10lst/*.lst);
+do
+  runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
+  JSUBFILE=$SUBDIR/$runnum.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo $runnum".sub exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e1f_h10_2_delastR-exp_$runnum\"/>
+    <Project name=\"E1F\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"500\" unit=\"MB\"/>
+    <Memory space=\"500\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"10\"/>
+    <Command><![CDATA[
+      proc_h10 -i h10.lst -t e1f:exp:elast -p eid:efid:qskimelast:pidelast:mom:copyh10 -o delastR.root
+    ]]></Command>
+
+    <Job>
+        <Input src=\"$h10lst\" dest=\"h10.lst\" />
+        `for f in $(cat $h10lst)
+         do
+           echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
+         done`
+        <Output src=\"delastR.root\" dest=\"$OUTDIR/$runnum.root\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
+done
