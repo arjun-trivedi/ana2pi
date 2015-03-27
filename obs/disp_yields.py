@@ -1695,8 +1695,16 @@ class DispYields:
 			# fctr=tech_norm/true_norm
 			# h5.SetBinContent(ibin,binc*fctr)
 
-			#! Try method 4
-			tech_norm=1#(math.radians(theta_ue)-math.radians(theta_le))
+			# #! Try method 5 (upto 17 ub)
+			# tech_norm=1
+			# #! True norm factor calculation
+			# DCosTheta=math.fabs(math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)))
+			# true_norm=DCosTheta
+			# fctr=tech_norm/true_norm
+			# h5.SetBinContent(ibin,binc*fctr)
+
+			#! Try method 5.1
+			tech_norm=(math.radians(theta_ue)-math.radians(theta_le))
 			#! True norm factor calculation
 			DCosTheta=math.fabs(math.cos(math.radians(theta_ue))-math.cos(math.radians(theta_le)))
 			true_norm=DCosTheta
