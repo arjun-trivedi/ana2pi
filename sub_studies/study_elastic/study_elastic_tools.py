@@ -6,6 +6,7 @@ import ROOT
 from rootpy.plotting import Hist, HistStack, Legend, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
+import re
 
 import elaslib
 
@@ -99,12 +100,12 @@ class StudyElasticTools:
 			for sector in self.PHI_PROJ_BINS:
 				sectordir=seqdir.mkdir("sector%d"%sector)
 				sectordir.cd()
-				print self.PHI_PROJ_BINS[sector]
+				#print self.PHI_PROJ_BINS[sector]
 				for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-					print phibin
+					#print phibin
 					phi_min=phibin[0]
 					phi_max=phibin[1]
-					print "sector:phibinnum:phibin:phi_min:phi_max=",sector,iphibinnum+1,phibin,phi_min,phi_max
+					#print "sector:phibinnum:phibin:phi_min:phi_max=",sector,iphibinnum+1,phibin,phi_min,phi_max
 					#phibindir=sectordir.mkdir("%d-%d"%(phi_min,phi_max)).cd()
 					phibindir=sectordir.mkdir("phibinnum%d"%(iphibinnum+1)).cd()
 					bin_min=hN2[seq].GetAxis(H2_DIM['PHI']).FindBin(phi_min+DPHI/2)
@@ -115,551 +116,335 @@ class StudyElasticTools:
 					hTHETA.SetTitle("#theta projection for #phi=[%d,%d)"%(phi_min,phi_max))
 					hTHETA.Write()
 				
-	def disp_yields(self,thry='wrad'):
+	def disp_yields(self,thry='wrad',wcut=1.1):
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)
 		FIN=ROOT.TFile(os.path.join(self.DATADIR,self.SIMNUM,'yield.root'))	
 		if thry=='wrad':
-			OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,'displays_thry_%s'%thry)
+			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,'displays_thry_%s'%thry)
 		elif thry=='nrad':
-			OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,'displays_thry_%s'%thry)
+			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,'displays_thry_%s'%thry)
 		else:
 			sys.exit('thry has to be wrad or nrad. Entered value= %s'%thry)
-		if not os.path.exists(OUTDIR):
-			os.makedirs(OUTDIR)
+		if not os.path.exists(self.OUTDIR):
+			os.makedirs(self.OUTDIR)
 	
 		#! Set up histogram aesthetics			
 		cold={('ER'):ROOT.gROOT.ProcessLine("kYellow"),
 			  ('EC'):ROOT.gROOT.ProcessLine("kCyan"),
-			  #('EF'):ROOT.gROOT.ProcessLine("kBlue"),
-			  #('EH'):ROOT.gROOT.ProcessLine("kBlack"),
 			  ('ST'):ROOT.gROOT.ProcessLine("kGreen"),
 			  ('SR'):ROOT.gROOT.ProcessLine("kMagenta"),
-			  #('SF'):ROOT.gROOT.ProcessLine("kRed"),#Using SC instead till Hole Filling 
 			  ('SC'):ROOT.gROOT.ProcessLine("kRed")}
 
 		mrkrd={('ER'):ROOT.gROOT.ProcessLine("kOpenStar"),
 			   ('EC'):ROOT.gROOT.ProcessLine("kFullCircle"),
-			  #('EF'):ROOT.gROOT.ProcessLine("kBlue"),
-			  #('EH'):ROOT.gROOT.ProcessLine("kBlack"),
-			  ('ST'):ROOT.gROOT.ProcessLine("kPlus"),
-			  ('SR'):ROOT.gROOT.ProcessLine("kOpenStar"),
-			  #('SF'):ROOT.gROOT.ProcessLine("kRed"),#Using SC instead till Hole Filling 
-			  ('SC'):ROOT.gROOT.ProcessLine("kFullCircle")}
+			   ('ST'):ROOT.gROOT.ProcessLine("kPlus"),
+			   ('SR'):ROOT.gROOT.ProcessLine("kOpenStar"),
+			   ('SC'):ROOT.gROOT.ProcessLine("kFullCircle")}
    
 		#! Get all hTHETA in PHI_PROJ_BINS and set up their aesthetics
-		hTHETA={}
+		self.hTHETA={}
 		for seq in ['ST','SR','SC','ER','EC']:
 			for sector in self.PHI_PROJ_BINS:
 				for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 					phi_min=phibin[0]
 					phi_max=phibin[1]
 					#print "seq:sector:phibinnum:phibin:phi_min:phi_max=",seq,sector,iphibinnum+1,phibin,phi_min,phi_max
-					hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=FIN.Get("%s/sector%d/phibinnum%d/hTHETA"%(seq,sector,(iphibinnum+1)))
-					hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(cold[seq])
-					hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
-					hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
+					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=FIN.Get("%s/sector%d/phibinnum%d/hTHETA"%(seq,sector,(iphibinnum+1)))
+					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(cold[seq])
+					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
+					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
 	
 		#! Generate theoretical Cross Sections
-		#! hTTnorm=dsigma/DOmega
-		#! hTT=sigma; this histogram is helpful in direct comparison with Yields
 		E1F_TARGET_RAD_LENGTH=0.00562 #! see nb_play_elaslib
-		nbins=hTHETA['EC','sector1','phibinnum1'].GetNbinsX()
-		xmin= hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmin()
-		xmax= hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmax()
+		nbins=self.hTHETA['EC','sector1','phibinnum1'].GetNbinsX()
+		xmin= self.hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmin()
+		xmax= self.hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmax()
+		self.hTHETA['TTnorm'],self.hTHETA['TT']=self.get_thrtcl_xsec(thry,5.499,E1F_TARGET_RAD_LENGTH,wcut,nbins,xmin,xmax)
+			
+		#! 1. Checkout ST comparison with TT
+		
+
+		#! 1.1 Checkout STnorm comparison with TTnorm
+		self.comp("STnorm","TTnorm",logy=True)
+		
+ 		#! 3. Checkout that the distributions for ER and SR match
+		#self.comp("ERnorm","SRnorm",logy=True)
+	
+ 		#! 4. Checkout that the distributions for EC and SC match
+		#self.comp("ECnorm","SCnorm",logy=True)
+
+ 		#! 5. Checkout EC comparison with TT
+		#self.comp("ECnorm","TTnorm",logy=True)
+	
+ 		#! 6. Normalize EC to Luminosity and calculate rto between EClumnorm and TTnorm
+		self.comp("EClumnorm","TTnorm",logy=True,draw_normalized=False)
+
+	def get_thrtcl_xsec(self,thry,be,trgt_lgth,wcut,nbins,xmin,xmax):
+		'''
+		Generate theoretical Cross Sections
+		+ hTTnorm=dsigma/DOmega
+		+ hTT=dsigma=hTTnorm*dOmega; this histogram is helpful in direct comparison with Yields
+		'''
 		hTTnorm=ROOT.TH1F("hTTnorm","hTTnorm",nbins,xmin,xmax)
 		hTTnorm.SetYTitle("d\sigma [#frac{\mu b}{sr}]")
 		hTT=ROOT.TH1F("hTT","hTT",nbins,xmin,xmax)
 		hTT.SetYTitle("#d\sigma} [\mu b]")
+		
 		for ibin in range(nbins):
-			theta=hTTnorm.GetBinLowEdge(ibin+1)#! + hTTnorm.GetBinWidth(ibin+1)/2 #To get value at center of the bin
+			theta=hTTnorm.GetBinLowEdge(ibin+1)
 			if theta==0: continue
 			if thry=='wrad':
-				binc=elaslib.elasrad(5.499,theta,E1F_TARGET_RAD_LENGTH,1.1)
+				binc=elaslib.elasrad(be,theta,trgt_lgth,wcut)
 			elif thry=='nrad':
-				binc=elaslib.elas(5.499,theta)
+				binc=elaslib.elas(be,theta)
 			#print "theta,xsec=",theta,binc
 			hTTnorm.SetBinContent(ibin+1,binc)
 			hTTnorm.SetBinError(ibin+1,0)
-			#hTTnorm.GetXaxis().SetRangeUser(12,50)
-			#! DOmega pre 032515
-			# theta=hTTnorm.GetBinLowEdge(ibin+1)
-			# if theta==0: continue
-			# dtheta=hTTnorm.GetBinWidth(ibin+1)
-			# DOmega=( math.sin(math.radians(theta)) )*(dtheta*math.pi/180)*(DPHI*math.pi/180)
-			#! New DOmega
-			theta_1=hTTnorm.GetBinLowEdge(ibin+1)
-			theta_2=hTTnorm.GetBinLowEdge(ibin+1) + hTTnorm.GetBinWidth(ibin+1)
-			if theta_1==0: continue
-			DCosTheta=math.fabs(math.cos(math.radians(theta_2))-math.cos(math.radians(theta_1)))
-			DPhi=math.radians(phibin[1])-math.radians(phibin[0])
-			DOmega=DCosTheta*DPhi
+			theta_bin_low=hTTnorm.GetBinLowEdge(ibin+1)
+			theta_bin_max=hTTnorm.GetBinLowEdge(ibin+1)+hTTnorm.GetBinWidth(ibin+1)
+			if theta_bin_low==0: continue
+			DOmega=self.get_DOmega(theta_bin_low,theta_bin_max,self.PHI_PROJ_BINS[1][0][0],self.PHI_PROJ_BINS[1][1][1])
 			hTT.SetBinContent(ibin+1,binc*DOmega)
 			hTT.SetBinError(ibin+1,0)
-	
-		#! Now plot hTHETA in PHI_PROJ_BINS
-		
+
+		return hTTnorm,hTT
+
+	def get_DOmega(self,theta_bin_min,theta_bin_max,phi_bin_min,phi_bin_max):
+			DCosTheta=math.fabs(math.cos(math.radians(theta_bin_max))-math.cos(math.radians(theta_bin_min)))
+			DPhi=math.radians(phi_bin_max)-math.radians(phi_bin_min)
+			DOmega=DCosTheta*DPhi
+			return DOmega
+
+	def norm_hist(self,h,phi_bin_low,phi_bin_max,use_lum=False):
+		for ibin in range(h.GetNbinsX()):
+			binc=h.GetBinContent(ibin+1)
+			binerr=h.GetBinError(ibin+1)
+			theta_bin_min=h.GetBinLowEdge(ibin+1)
+			theta_bin_max=h.GetBinLowEdge(ibin+1) + h.GetBinWidth(ibin+1)
+			if theta_bin_min==0: continue
+			DOmega=self.get_DOmega(theta_bin_min,theta_bin_max,phi_bin_low,phi_bin_max)
+			norm=DOmega
+			if use_lum:
+				norm=DOmega*LUM*LUM_INVFB_TO_INVMICROB
+			#print "norm=",norm
+			h.SetBinContent(ibin+1,binc/norm)
+			h.SetBinError(ibin+1,binerr/norm)
+
+	def comp(self,seqA,seqB,logy=False,draw_normalized=True):#,A_norm=False,A_lumnorm=False,B_norm=False,B_lumnorm=False,logy=False):
+		print "Generating comparison plots for %s and %s"%(seqA,seqB)
 		#! First create a TCanvas & TLegend
-		#! NOTE, that this TCanvas and TLegend are reused
 		c=ROOT.TCanvas("c","c",CANVAS_W,CANVAS_H)
 		num_phibins=len(self.PHI_PROJ_BINS[1])
 		nrows=2
 		ncols=int(num_phibins/nrows)
-		print "nrows,ncols",nrows,ncols
+		#print "nrows,ncols",nrows,ncols
 		c.Divide(ncols,nrows)
 		l=ROOT.TLegend(0.45,0.6,1.0,0.85)
 		l.SetFillStyle(0)
 		l.SetBorderSize(0)
 		l.SetTextSize(0.03)
 
-		#! 1. Checkout ST comparison with TT
-		hrto_ST_TT={}
-		outdir=os.path.join(OUTDIR,"ST_TT")
+		outdir=os.path.join(self.OUTDIR,"%s_%s"%(seqA,seqB))
+		outdir_rto=os.path.join(self.OUTDIR,"rto_%s_%s"%(seqA,seqB))
+		
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
-		print "outdir=",outdir
+		#print "outdir=",outdir
+
+		hrto={}
+		h={}
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
-				pad.SetLogy()
-				hSTn=hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-				hTTn=hTT.DrawNormalized("sames",1000)
+				if logy==True:
+					pad.SetLogy()
+
+				for seq in [seqA,seqB]:
+					if seq.find("TT")<0:#! if not TT, TTnorm histograms
+						if re.match(".{2}norm",seq):#if seq.find("norm")>0:
+							h[seq,sector,iphibinnum]=self.hTHETA["%s"%seq.strip("norm"),"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone("seq_%d"%sector) 
+							self.norm_hist(h[seq,sector,iphibinnum],phibin[0],phibin[1],use_lum=False)
+						if re.match(".{2}lumnorm",seq):#if seq.find("lumnorm")>0:
+							h[seq,sector,iphibinnum]=self.hTHETA["%s"%seq.strip("lumnorm"),"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone("seq_%d"%sector) 
+							self.norm_hist(h[seq,sector,iphibinnum],phibin[0],phibin[1],use_lum=True)
+						if seq=="EClumnorm":
+							h[seq,sector,iphibinnum].SetYTitle("#frac{d\sigma}{d\Omega} [#frac{\mu b}{sr}]")
+						else:
+							h[seq,sector,iphibinnum].SetYTitle("Yield [A.U.]")
+					else:
+						h[seq,sector,iphibinnum]=self.hTHETA[seq].Clone()
+
+				if draw_normalized:
+					hseqAn=h[seqA,sector,iphibinnum].DrawNormalized("",1000)
+					hseqBn=h[seqB,sector,iphibinnum].DrawNormalized("sames",1000)
+				else:
+					h[seqA,sector,iphibinnum].Draw()
+					h[seqB,sector,iphibinnum].Draw("sames")
+
 				if (iphibinnum+1)==1: #then draw TLegend
 					l.Clear()
-					l.AddEntry(hSTn,"ST-norm")
-					l.AddEntry(hTTn,"d\sigma_{thry-%s}-norm"%thry)
+					if draw_normalized:
+						l.AddEntry(hseqAn,seqA)
+						l.AddEntry(hseqBn,seqB)
+					else:
+						l.AddEntry(h[seqA,sector,iphibinnum],seqA)
+						l.AddEntry(h[seqB,sector,iphibinnum],seqB)
 					l.Draw()
+
 				#! Calculate ratio
-				hSTn.Sumw2()
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSTn.Clone()
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTn)
+				if draw_normalized:
+					hseqAn.Sumw2()
+					hseqBn.Sumw2()
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hseqAn.Clone()
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hseqBn)
+				else:
+					h[seqA,sector,iphibinnum].Sumw2()
+					h[seqB,sector,iphibinnum].Sumw2()
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=h[seqA,sector,iphibinnum].Clone()
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(h[seqB,sector,iphibinnum])
 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+
 		#! Plot ratio
-		outdir=os.path.join(OUTDIR,"rto_ST_TT")
-		if not os.path.exists(outdir):
-			os.makedirs(outdir)
-		print "outdir=",outdir
+		if not os.path.exists(outdir_rto):
+			os.makedirs(outdir_rto)
+		#print "outdir_rto=",outdir_rto
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy(0)
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6.)
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-				old_title=hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{ST}{TT} for %s"%old_title)
-				hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
+				old_title=hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{%s}{%s} for %s"%(seqA,seqB,old_title))
+				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 				if (iphibinnum+1)==1: #then draw TLegend
 					l.Clear()
-					l.AddEntry(hrto_ST_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{ST-norm}{d\sigma_{thry-%s}-norm}"%thry)
+					l.AddEntry(hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{%s}{%s}"%(seqA,seqB))
 					l.Draw()
-			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
+			c.SaveAs("%s/c_sector%d.png"%(outdir_rto,sector)) 
 
-		#! 1.1 Checkout STnorm comparison with TTnorm
-		hrto_STnorm_TTnorm={}
-		outdir=os.path.join(OUTDIR,"STnorm_TTnorm")
-		if not os.path.exists(outdir):
-			os.makedirs(outdir)
-		print "outdir=",outdir
-		for sector in self.PHI_PROJ_BINS:
-			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				pad=c.cd(iphibinnum+1)
-				pad.SetLogy()
-				hSTnorm=hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone() #! Cannot Clone here?!
-				for ibin in range(hSTnorm.GetNbinsX()):
-					binc=hSTnorm.GetBinContent(ibin+1)
-					binerr=hSTnorm.GetBinError(ibin+1)
-					theta_1=hSTnorm.GetBinLowEdge(ibin+1)
-					theta_2=hSTnorm.GetBinLowEdge(ibin+1) + hSTnorm.GetBinWidth(ibin+1)
-					if theta_1==0: continue
-					DCosTheta=math.fabs(math.cos(math.radians(theta_2))-math.cos(math.radians(theta_1)))
-					DPhi=math.radians(phibin[1])-math.radians(phibin[0])
-					DOmega=DCosTheta*DPhi
-					print "theta_1,theta_2,Dtheta,Dphi=",theta_1,theta_2,theta_2-theta_1,phibin[1]-phibin[0]
-					print "DCosTheta,Dphi(radians),DOmega=",DCosTheta,DPhi,DOmega
-					norm=DOmega#LUM*LUM_INVFB_TO_INVMICROB*
-					print "norm=",norm
-					hSTnorm.SetBinContent(ibin+1,binc/norm)
-					hSTnorm.SetBinError(ibin+1,binerr/norm)
-				hSTnormn=hSTnorm.DrawNormalized("",1000)
-				hTTnormn=hTTnorm.DrawNormalized("sames",1000)
-				if (iphibinnum+1)==1: #then draw TLegend
-					l.Clear()
-					l.AddEntry(hSTnorm,"#frac{d\sigma}{d\Omega}^{ST}")
-					l.AddEntry(hTTnorm,"#frac{d\sigma}{d\Omega}^{thry-%s}"%thry)
-					l.Draw()
-				#! Calculate ratio
-				hSTnormn.Sumw2()
-				hTTnormn.Sumw2()
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSTnormn.Clone()
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTnormn)
-			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
-		#! Plot ratio
-		outdir=os.path.join(OUTDIR,"rto_STnorm_TTnorm")
-		if not os.path.exists(outdir):
-			os.makedirs(outdir)
-		print "outdir=",outdir
-		for sector in self.PHI_PROJ_BINS:
-			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				pad=c.cd(iphibinnum+1)
-				pad.SetLogy(0)
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-				old_title=hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{#frac{d\sigma}{d\Omega}^{ST}}{#frac{d\sigma}{d\Omega}^{thry-%s}} for %s"%(old_title,thry))
-				hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
-				if (iphibinnum+1)==1: #then draw TLegend
-					l.Clear()
-					l.AddEntry(hrto_STnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{#frac{d\sigma}{d\Omega}^{ST}}{#frac{d\sigma}{d\Omega}^{thry-%s}} for %s"%(old_title,thry))
-					l.Draw()
-			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
+'''
+The following code is used to play with elaslib.f
+'''
+#! Following are parameters for obtain legnth of E1F target in radiation length.
+#! Sources=Rad_length_materials_src1_CERN.pdf, Rad_length_materials_src2_LBNL.pdf
+X0=63.047 #g/cm^2 for atomic hydrogrm
+DENSITY=0.0708 #g/cm^3 for liquid H2
+RAD_LENGTH=890.45 #cm = X0/DENSITY
+E1F_TARGET_RAD_LENGTH=0.00562 # =5cm/RAD_LENGTH 
+def play_elaslib_low_theta(be,nbins,xmin,xmax,wcut,rto_min=None,rto_max=None):
+    h={}
+    cold={'norad':'kRed','wrad':'kBlue'}
+    for radtyp in ['norad','wrad']:
+        h[radtyp]=Hist(nbins,xmin,xmax,title='%s'%radtyp)
+        h[radtyp].SetLineColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+        h[radtyp].SetMarkerColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+    for ibin in range(nbins):
+        theta=h['norad'].GetBinLowEdge(ibin+1)
+        if theta==0: continue
+        binc_norad=elaslib.elas(be,theta)
+        binc_wrad=elaslib.elasrad(be,theta,E1F_TARGET_RAD_LENGTH,wcut)
+        #print "theta,xsec=",theta,binc
+        h['norad'].SetBinContent(ibin+1,binc_norad)
+        h['norad'].SetBinError(ibin+1,0)
+        if math.isnan(binc_wrad):
+                h['wrad'].SetBinContent(ibin+1,0)
+                h['wrad'].SetBinError(ibin+1,0)
+        else:
+                h['wrad'].SetBinContent(ibin+1,binc_wrad)
+                h['wrad'].SetBinError(ibin+1,0)
 
-# 		#! 2. Checkout Simulation: ST,SR and SC
-# 		outdir=os.path.join(OUTDIR,"ST_SR_SC")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy()
-# 				hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()#DrawNormalized("",1000)
-# 				hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")#DrawNormalized("sames",1000)
-# 				hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw("sames")
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"ST")
-# 					l.AddEntry(hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"SC")
-# 					l.AddEntry(hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"SR")
-# 					l.Draw()
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
-	
-# 		#! 3. Checkout that the distributions for ER and SR match
-# 		outdir=os.path.join(OUTDIR,"ER_SR")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy()
-# 				hERn=hTHETA['ER',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-# 				hSRn=hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("sames",1000)
-# 				#print hSRn.GetMaximum()
-# 				#! Set the minimum and maximum of y coordinate of histograms
-# 				maxl=[hERn.GetMaximum(),hSRn.GetMaximum()]
-# 				maximum=max(maxl)
-# 				#print maxl,maximum
-# 				for htmp in [hERn,hSRn]:
-# 						htmp.SetMinimum(0.01)
-# 						htmp.SetMaximum(maximum+10)
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hERn,"ER-norm")
-# 					l.AddEntry(hSRn,"SR-norm")
-# 					l.Draw()
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))  
-	
-# 		#! 4. Checkout that the distributions for EC and SC match
-# 		hrto_EC_SC={}
-# 		outdir=os.path.join(OUTDIR,"EC_SC")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy()
-# 				hECn=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-# 				hSCn=hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("sames",1000)
-# 				#print hSCn.GetMaximum()
-# 				#! Set the minimum and maximum of y coordinate of histograms
-# 				maxl=[hECn.GetMaximum(),hSCn.GetMaximum()]
-# 				maximum=max(maxl)
-# 				#print maxl,maximum
-# 				for htmp in [hECn,hSCn]:
-# 						htmp.SetMinimum(0.01)
-# 						htmp.SetMaximum(maximum+10)
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hECn,"EC-norm")
-# 					l.AddEntry(hSCn,"SC-norm")
-# 					l.Draw()
-# 				#! Calculate difference
-# 				hECn.Sumw2()
-# 				hSCn.Sumw2()
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hECn.Clone()
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hSCn)
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
-# 		#! Plot difference
-# 		outdir=os.path.join(OUTDIR,"rto_EC_SC")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy(0)
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
-# 				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-# 				old_title=hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{SC} for %s"%old_title)
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{EC-norm}{SC-norm}")
-# 					l.Draw()
-# 				hrto_EC_SC["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
+    hrto=h['wrad'].Clone()
+    hrto.SetTitle('wrad/norad')
+    hrto.Divide(h['norad'])
+    hrto.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+    hrto.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+    return h['norad'],h['wrad'],hrto
 
-# 		#! 5. Checkout EC comparison with TT
-# 		hrto_EC_TT={}
-# 		outdir=os.path.join(OUTDIR,"EC_TT")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy()
-# 				hECn=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].DrawNormalized("",1000)
-# 				#hTTnormn=hTTnorm.DrawNormalized("sames",1000)
-# 				hTTn=hTT.DrawNormalized("sames",1000)
-# 				#! Calculate ratio
-# 				hECn.Sumw2()
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hECn.Clone()
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTn)
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hECn,"EC-norm")
-# 					l.AddEntry(hTTn,"d\sigma_{thry-%s}-norm"%thry)
-# 					l.Draw()
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
-# 		#! Plot ratio
-# 		outdir=os.path.join(OUTDIR,"rto_EC_TT")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy(0)
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0.)
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(8.)
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-# 				#hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
-# 				#hrto["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-# 				old_title=hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{EC}{TT} for %s"%old_title)
-# 				hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hrto_EC_TT["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{EC-norm}{d\sigma_{thry-%s}-norm}"%thry)
-# 					l.Draw()
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
-	
-# 		#! 6. Normalize EC to Luminosity and calculate rto between EClumnorm and TTnorm
-# 		hrto_EClumnorm_TTnorm={}
-# 		outdir=os.path.join(OUTDIR,"EClumnorm_TTnorm")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy(1)
-# 				hEClumnorm=hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]#.Clone() #! Doing Clone() hear breaks things?!
-# 				hEClumnorm.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-# 				hEClumnorm.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-# 				hEClumnorm.SetYTitle("#frac{d\sigma}{d\Omega} [#frac{\mu b}{sr}]")
-# 				old_title=hEClumnorm.GetTitle()
-# 				hEClumnorm.SetTitle("Differential Cross Section for %s"%old_title)
-# 				for ibin in range(hEClumnorm.GetNbinsX()):
-# 					binc=hEClumnorm.GetBinContent(ibin+1)
-# 					binerr=hEClumnorm.GetBinError(ibin+1)
-# 					if theta==0: continue
-# 					#!032515: get DOmega
-# 					#theta=hEClumnorm.GetBinLowEdge(ibin+1)
-# 					#Dtheta=hEClumnorm.GetBinWidth(ibin+1)
-# 					#DOmega=( math.sin(math.radians(theta)) )*(Dtheta*math.pi/180)*(DPHI*math.pi/180)
-# 					#!New method to get DOmega
-# 					theta_1=hEClumnorm.GetBinLowEdge(ibin+1)
-# 					theta_2=hEClumnorm.GetBinLowEdge(ibin+1) + hEClumnorm.GetBinWidth(ibin+1)
-# 					DCosTheta=math.fabs(math.cos(math.radians(theta_2))-math.cos(math.radians(theta_1)))
-# 					DPhi=math.radians(phibin[1])-math.radians(phibin[0])
-# 					DOmega=DCosTheta*DPhi
-# 					#print "theta,Dtheta,Dphi,DOmega=",theta,Dtheta*math.pi/180,DPhi,DOmega
-# 					norm=LUM*LUM_INVFB_TO_INVMICROB*DOmega
-# 					#print "norm=",norm
-# 					hEClumnorm.SetBinContent(ibin+1,binc/norm)
-# 					hEClumnorm.SetBinError(ibin+1,binerr/norm)
-
-# 				maxl=[hEClumnorm.GetMaximum(),hTTnorm.GetMaximum()]
-# 				maximum=max(maxl)
-# 				for htmp in [hEClumnorm,hTTnorm]:
-# 					htmp.SetMinimum(0.00000001)
-# 					htmp.SetMaximum(maximum)
-# 				hEClumnorm.Draw()
-# 				hTTnorm.Draw("sames e")
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hEClumnorm,"#frac{d\sigma}{d\Omega}^{EC}")
-# 					l.AddEntry(hTTnorm,"#frac{d\sigma_{thry-%s}}{d\Omega}"%thry)
-# 					l.Draw()
-# 				#! Calculate ratio
-# 				hEClumnorm.Sumw2()
-# 				hTTnorm.Sumw2()
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hEClumnorm.Clone()
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(hTTnorm)
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector)) 
-# 		#! Plot ratio
-# 		outdir=os.path.join(OUTDIR,"rto_EClumnorm_TTnorm")
-# 		if not os.path.exists(outdir):
-# 			os.makedirs(outdir)
-# 		print "outdir=",outdir
-# 		for sector in self.PHI_PROJ_BINS:
-# 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-# 				pad=c.cd(iphibinnum+1)
-# 				pad.SetLogy(0)
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
-# 				#hrto_EClumnorm_TTnorm["phibin%d"%binnum].GetXaxis().SetRangeUser(12,50)
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
-# 				old_title=hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{#frac{d\sigma}{d\Omega}^{EC}}{#frac{d\sigma_{thry-%s}}{d\Omega}} for %s"%(thry,old_title))
-# 				hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
-# 				if (iphibinnum+1)==1: #then draw TLegend
-# 					l.Clear()
-# 					l.AddEntry(hrto_EClumnorm_TTnorm["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{#frac{d\sigma}{d\Omega}^{EC}}{#frac{d\sigma_{thry-%s}}{d\Omega}}"%thry)
-# 					l.Draw()
-# 			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
-# '''
-# The following code is used to play with elaslib.f
-# '''
-# #! Following are parameters for obtain legnth of E1F target in radiation length.
-# #! Sources=Rad_length_materials_src1_CERN.pdf, Rad_length_materials_src2_LBNL.pdf
-# X0=63.047 #g/cm^2 for atomic hydrogrm
-# DENSITY=0.0708 #g/cm^3 for liquid H2
-# RAD_LENGTH=890.45 #cm = X0/DENSITY
-# E1F_TARGET_RAD_LENGTH=0.00562 # =5cm/RAD_LENGTH 
-# def play_elaslib_low_theta(be,nbins,xmin,xmax,wcut,rto_min=None,rto_max=None):
-#     h={}
-#     cold={'norad':'kRed','wrad':'kBlue'}
-#     for radtyp in ['norad','wrad']:
-#         h[radtyp]=Hist(nbins,xmin,xmax,title='%s'%radtyp)
-#         h[radtyp].SetLineColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
-#         h[radtyp].SetMarkerColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
-#     for ibin in range(nbins):
-#         theta=h['norad'].GetBinLowEdge(ibin+1)
-#         if theta==0: continue
-#         binc_norad=elaslib.elas(be,theta)
-#         binc_wrad=elaslib.elasrad(be,theta,E1F_TARGET_RAD_LENGTH,wcut)
-#         #print "theta,xsec=",theta,binc
-#         h['norad'].SetBinContent(ibin+1,binc_norad)
-#         h['norad'].SetBinError(ibin+1,0)
-#         if math.isnan(binc_wrad):
-#                 h['wrad'].SetBinContent(ibin+1,0)
-#                 h['wrad'].SetBinError(ibin+1,0)
-#         else:
-#                 h['wrad'].SetBinContent(ibin+1,binc_wrad)
-#                 h['wrad'].SetBinError(ibin+1,0)
-
-#     hrto=h['wrad'].Clone()
-#     hrto.SetTitle('wrad/norad')
-#     hrto.Divide(h['norad'])
-#     hrto.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-#     hrto.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-#     return h['norad'],h['wrad'],hrto
-
-# def play_elaslib(be,nbins=179,xmin=1,xmax=180,wcut=1.1,rto_min=None,rto_max=None):
-#     #outdir="/tmp/elastic_xsec_ana"
-#     outdir=os.path.join(os.environ['ANA2PI_STUDY_ELASTIC'],'elaslib_ana')
-#     if not os.path.exists(outdir):
-# 	os.makedirs(outdir)
-#     h={}
-#     cold={'norad':'kRed','wrad':'kBlue'}
-#     for radtyp in ['norad','wrad']:
-#         h[radtyp]=Hist(nbins,xmin,xmax,title='%s'%radtyp)
-#         h[radtyp].SetLineColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
-#         h[radtyp].SetMarkerColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
-#     for ibin in range(nbins):
-#         theta=h['norad'].GetBinLowEdge(ibin+1)
-#         if theta==0: continue
-#         binc_norad=elaslib.elas(be,theta)
-#         binc_wrad=elaslib.elasrad(be,theta,E1F_TARGET_RAD_LENGTH,wcut)
-#         #print "theta,xsec=",theta,binc
-#         h['norad'].SetBinContent(ibin+1,binc_norad)
-#         h['norad'].SetBinError(ibin+1,0)
-# 	if math.isnan(binc_wrad):
-#         	h['wrad'].SetBinContent(ibin+1,0)
-#         	h['wrad'].SetBinError(ibin+1,0)
-# 	else:
-# 		h['wrad'].SetBinContent(ibin+1,binc_wrad)
-#                 h['wrad'].SetBinError(ibin+1,0)
+def play_elaslib(be,nbins=179,xmin=1,xmax=180,wcut=1.1,rto_min=None,rto_max=None):
+    #outdir="/tmp/elastic_xsec_ana"
+    outdir=os.path.join(os.environ['ANA2PI_STUDY_ELASTIC'],'elaslib_ana')
+    if not os.path.exists(outdir):
+	os.makedirs(outdir)
+    h={}
+    cold={'norad':'kRed','wrad':'kBlue'}
+    for radtyp in ['norad','wrad']:
+        h[radtyp]=Hist(nbins,xmin,xmax,title='%s'%radtyp)
+        h[radtyp].SetLineColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+        h[radtyp].SetMarkerColor(ROOT.gROOT.ProcessLine(cold[radtyp]))
+    for ibin in range(nbins):
+        theta=h['norad'].GetBinLowEdge(ibin+1)
+        if theta==0: continue
+        binc_norad=elaslib.elas(be,theta)
+        binc_wrad=elaslib.elasrad(be,theta,E1F_TARGET_RAD_LENGTH,wcut)
+        #print "theta,xsec=",theta,binc
+        h['norad'].SetBinContent(ibin+1,binc_norad)
+        h['norad'].SetBinError(ibin+1,0)
+	if math.isnan(binc_wrad):
+        	h['wrad'].SetBinContent(ibin+1,0)
+        	h['wrad'].SetBinError(ibin+1,0)
+	else:
+		h['wrad'].SetBinContent(ibin+1,binc_wrad)
+                h['wrad'].SetBinError(ibin+1,0)
         
-#     hrto=h['wrad'].Clone()
-#     hrto.SetTitle('wrad/norad')
-#     hrto.Divide(h['norad'])
-#     hrto.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-#     hrto.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+    hrto=h['wrad'].Clone()
+    hrto.SetTitle('wrad/norad')
+    hrto.Divide(h['norad'])
+    hrto.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+    hrto.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
    
-#     #! Get low theta
-#     h['norad_lt'],h['wrad_lt'],hrto_lt=play_elaslib_low_theta(be,nbins=50,xmin=0.00001,xmax=1,wcut=wcut)
+    #! Get low theta
+    h['norad_lt'],h['wrad_lt'],hrto_lt=play_elaslib_low_theta(be,nbins=50,xmin=0.00001,xmax=1,wcut=wcut)
 
-#     #! In a 4x4 grid plot histograms
-#     #! First plot low theta
-#     fig=plt.figure(figsize=(10, 6), dpi=100)
-#     fig.suptitle("Beam energy=%.3f[GeV]. W cut=%.2f[GeV]"%(be,wcut),fontsize=20)
-#     ax=plt.subplot(221)
-#     stack = HistStack()
-#     stack.Add(h['norad_lt'])
-#     stack.Add(h['wrad_lt'])
-#     rplt.errorbar(stack, xerr=False, emptybins=True, axes=ax)
-#     #rplt.errorbar(hThrtcl['wrad'],xerr=False, emptybins=False, axes=ax)
-#     ax.set_title("ep Cross section")
-#     ax.set_ylabel(r"$\frac{d\sigma}{d\Omega}[\mu b]$",fontsize=20)
-#     ax.set_yscale('log')
-#     ymin=min(elaslib.elas(be,1),elaslib.elasrad(be,1,E1F_TARGET_RAD_LENGTH,wcut))
-#     ax.set_ylim(ymin)
-#     plt.legend()
-#     ax=plt.subplot(222)
-#     #print "Ratio min:max(low theta)=%.2f,%.2f"%(hrto_lt.GetMinimum(),hrto_lt.GetMaximum())
-#     rplt.errorbar(hrto_lt, xerr=False, emptybins=True, axes=ax)
-#     ax.set_ylim(hrto_lt.GetMinimum(),hrto_lt.GetMaximum())
-#     plt.legend(loc='lower right')
+    #! In a 4x4 grid plot histograms
+    #! First plot low theta
+    fig=plt.figure(figsize=(10, 6), dpi=100)
+    fig.suptitle("Beam energy=%.3f[GeV]. W cut=%.2f[GeV]"%(be,wcut),fontsize=20)
+    ax=plt.subplot(221)
+    stack = HistStack()
+    stack.Add(h['norad_lt'])
+    stack.Add(h['wrad_lt'])
+    rplt.errorbar(stack, xerr=False, emptybins=True, axes=ax)
+    #rplt.errorbar(hThrtcl['wrad'],xerr=False, emptybins=False, axes=ax)
+    ax.set_title("ep Cross section")
+    ax.set_ylabel(r"$\frac{d\sigma}{d\Omega}[\mu b]$",fontsize=20)
+    ax.set_yscale('log')
+    ymin=min(elaslib.elas(be,1),elaslib.elasrad(be,1,E1F_TARGET_RAD_LENGTH,wcut))
+    ax.set_ylim(ymin)
+    plt.legend()
+    ax=plt.subplot(222)
+    #print "Ratio min:max(low theta)=%.2f,%.2f"%(hrto_lt.GetMinimum(),hrto_lt.GetMaximum())
+    rplt.errorbar(hrto_lt, xerr=False, emptybins=True, axes=ax)
+    ax.set_ylim(hrto_lt.GetMinimum(),hrto_lt.GetMaximum())
+    plt.legend(loc='lower right')
 
-#     #! Now plot high theta
-#     ax=plt.subplot(223)
-#     stack = HistStack()
-#     stack.Add(h['norad'])
-#     stack.Add(h['wrad'])
-#     rplt.errorbar(stack, xerr=False, emptybins=True, axes=ax)
-#     #rplt.errorbar(hThrtcl['wrad'],xerr=False, emptybins=False, axes=ax)
-#     ax.set_title("ep Cross section")
-#     ax.set_ylabel(r"$\frac{d\sigma}{d\Omega}[\mu b]$",fontsize=20)
-#     ax.set_yscale('log')
-#     ymin=min(elaslib.elas(be,xmax),elaslib.elasrad(be,xmax,E1F_TARGET_RAD_LENGTH,wcut))
-#     ax.set_ylim(ymin)
-#     plt.legend()
-#     ax=plt.subplot(224)
-#     #print "Ratio min:max=%.2f,%.2f"%(hrto.GetMinimum(),hrto.GetMaximum())
-#     rplt.errorbar(hrto, xerr=False, emptybins=True, axes=ax)
-#     if rto_min==None and rto_max==None:
-#         if hrto.GetMinimum()<1:
-#     		ax.set_ylim(hrto.GetMinimum(),hrto.GetMaximum())
-# 	else:
-#         	ax.set_ylim(0.9,hrto.GetMaximum())
-#     else:
-#     	ax.set_ylim(rto_min,rto_max)
-#     plt.legend(loc='upper left')
-#     fig.savefig("%s/be%.3f_wcut%.2f.png"%(outdir,be,wcut))
-#     #return hThrtcl['norad'],hThrtcl['wrad'],hrto
+    #! Now plot high theta
+    ax=plt.subplot(223)
+    stack = HistStack()
+    stack.Add(h['norad'])
+    stack.Add(h['wrad'])
+    rplt.errorbar(stack, xerr=False, emptybins=True, axes=ax)
+    #rplt.errorbar(hThrtcl['wrad'],xerr=False, emptybins=False, axes=ax)
+    ax.set_title("ep Cross section")
+    ax.set_ylabel(r"$\frac{d\sigma}{d\Omega}[\mu b]$",fontsize=20)
+    ax.set_yscale('log')
+    ymin=min(elaslib.elas(be,xmax),elaslib.elasrad(be,xmax,E1F_TARGET_RAD_LENGTH,wcut))
+    ax.set_ylim(ymin)
+    plt.legend()
+    ax=plt.subplot(224)
+    #print "Ratio min:max=%.2f,%.2f"%(hrto.GetMinimum(),hrto.GetMaximum())
+    rplt.errorbar(hrto, xerr=False, emptybins=True, axes=ax)
+    if rto_min==None and rto_max==None:
+        if hrto.GetMinimum()<1:
+    		ax.set_ylim(hrto.GetMinimum(),hrto.GetMaximum())
+	else:
+        	ax.set_ylim(0.9,hrto.GetMaximum())
+    else:
+    	ax.set_ylim(rto_min,rto_max)
+    plt.legend(loc='upper left')
+    fig.savefig("%s/be%.3f_wcut%.2f.png"%(outdir,be,wcut))
+    #return hThrtcl['norad'],hThrtcl['wrad'],hrto
