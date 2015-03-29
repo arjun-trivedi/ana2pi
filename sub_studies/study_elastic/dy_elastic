@@ -1,0 +1,21 @@
+#!/usr/bin/python
+import sys
+from study_elastic_tools import StudyElasticTools
+
+'''
+dy_elastic [obsdate] [thry=wrad]
+'''
+
+if len(sys.argv)<2:
+	sys.exit("Enter obsdate")
+else:
+	obsdate=sys.argv[1]
+
+if len(sys.argv)>2: #! user entered thry option
+	thry=sys.argv[2]
+else:
+	thry='wrad'
+
+print "Going to display Elastic Cross Sections for obsdate=%s,thry=%s"%(obsdate,thry)
+t=StudyElasticTools(obsdate)
+t.disp_yields(thry)

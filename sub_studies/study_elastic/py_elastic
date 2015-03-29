@@ -1,0 +1,16 @@
+#!/usr/bin/python
+import sys
+from study_elastic_tools import StudyElasticTools
+
+'''
+py_elastic [obsdate]
+'''
+
+if len(sys.argv)<2:
+        sys.exit("Enter obsdate")
+else:
+        obsdate=sys.argv[1]
+
+print "Going to process Elastic yields for obsdate=%s"%(obsdate)
+t=StudyElasticTools(obsdate)
+t.proc_yield()
