@@ -85,9 +85,13 @@ class StudyElasticTools:
 
 		#! 2. Now make projection on to THETA and PHI: Direct and on to THETA for PHI_PROJ_BINS
 		for seq in ['ST','SR','SA','SC','ER','EC']:
-			#! First project out THETA from the appropriate minimum THETA simulated
+			#! First project out appropriate THETA range:
+			#! THETA min: as per minimum THETA simulated (corresponding to E1F fiducial volume)
+			#! THETA max: 45
 			bin_min=hN2[seq].GetAxis(H2_DIM['THETA']).FindBin(self.THETA_MIN+DTHETA/2)
-			hN2[seq].GetAxis(H2_DIM['THETA']).SetRange(bin_min)
+			bin_max=hN2[seq].GetAxis(H2_DIM['THETA']).FindBin(45+DTHETA/2)
+			hN2[seq].GetAxis(H2_DIM['THETA']).SetRange(bin_min,bin_max)
+
 			#! Direct projection on to THETA and PHI 
 			seqdir=FOUT.GetDirectory(seq)
 			seqdir.cd()
@@ -170,7 +174,7 @@ class StudyElasticTools:
 		self.comp("ECnorm","STnorm",logy=True)
 		self.comp("ECnorm","TTnorm",logy=True)
 		self.comp("EClumnorm","TTnorm",logy=True,draw_normalized=False)
-
+		
 	def get_thrtcl_xsec(self,thry,be,trgt_lgth,wcut,nbins,xmin,xmax):
 		'''
 		Generate theoretical Cross Sections
@@ -196,7 +200,7 @@ class StudyElasticTools:
 			theta_bin_max=hTTnorm.GetBinLowEdge(ibin+1)+hTTnorm.GetBinWidth(ibin+1)
 			if theta_bin_low==0: continue
 			DOmega=self.get_DOmega(theta_bin_low,theta_bin_max,self.PHI_PROJ_BINS[1][0][0],self.PHI_PROJ_BINS[1][1][1])
-			hTT.SetBinContent(ibin+1,binc*DOmega)
+			hTT.SetBinContent(ibin+1,binc*DOmega*LUM*LUM_INVFB_TO_INVMICROB)
 			hTT.SetBinError(ibin+1,0)
 
 		return hTTnorm,hTT
@@ -207,14 +211,14 @@ class StudyElasticTools:
 			DOmega=DCosTheta*DPhi
 			return DOmega
 
-	def norm_hist(self,h,phi_bin_low,phi_bin_max,use_lum=False):
+	def norm_hist(self,h,phi_bin_min,phi_bin_max,use_lum=False):
 		for ibin in range(h.GetNbinsX()):
 			binc=h.GetBinContent(ibin+1)
 			binerr=h.GetBinError(ibin+1)
 			theta_bin_min=h.GetBinLowEdge(ibin+1)
 			theta_bin_max=h.GetBinLowEdge(ibin+1) + h.GetBinWidth(ibin+1)
 			if theta_bin_min==0: continue
-			DOmega=self.get_DOmega(theta_bin_min,theta_bin_max,phi_bin_low,phi_bin_max)
+			DOmega=self.get_DOmega(theta_bin_min,theta_bin_max,phi_bin_min,phi_bin_max)
 			norm=DOmega
 			if use_lum:
 				norm=DOmega*LUM*LUM_INVFB_TO_INVMICROB
@@ -252,7 +256,7 @@ class StudyElasticTools:
 					pad.SetLogy()
 
 				for seq in [seqA,seqB]:
-					if seq.find("TT")<0:#! if not TT, TTnorm histograms
+					if seq.find("TT")<0:#! if not TT or TTnorm histograms
 						if re.match(".{2}norm",seq):#if seq.find("norm")>0:
 							h[seq,sector,iphibinnum]=self.hTHETA["%s"%seq.strip("norm"),"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone("seq_%d"%sector) 
 							self.norm_hist(h[seq,sector,iphibinnum],phibin[0],phibin[1],use_lum=False)
@@ -267,8 +271,8 @@ class StudyElasticTools:
 						h[seq,sector,iphibinnum]=self.hTHETA[seq].Clone()
 
 				if draw_normalized:
-					hseqAn=h[seqA,sector,iphibinnum].DrawNormalized("",1000)
-					hseqBn=h[seqB,sector,iphibinnum].DrawNormalized("sames",1000)
+					hseqAn=h[seqA,sector,iphibinnum].DrawNormalized("",1)#000)
+					hseqBn=h[seqB,sector,iphibinnum].DrawNormalized("sames",1)#000)
 				else:
 					h[seqA,sector,iphibinnum].Draw()
 					h[seqB,sector,iphibinnum].Draw("sames")
