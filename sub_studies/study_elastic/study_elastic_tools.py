@@ -164,20 +164,11 @@ class StudyElasticTools:
 			
 		#! 1. Checkout ST comparison with TT
 		
-
-		#! 1.1 Checkout STnorm comparison with TTnorm
 		self.comp("STnorm","TTnorm",logy=True)
-		
- 		#! 3. Checkout that the distributions for ER and SR match
-		#self.comp("ERnorm","SRnorm",logy=True)
-	
- 		#! 4. Checkout that the distributions for EC and SC match
-		#self.comp("ECnorm","SCnorm",logy=True)
-
- 		#! 5. Checkout EC comparison with TT
-		#self.comp("ECnorm","TTnorm",logy=True)
-	
- 		#! 6. Normalize EC to Luminosity and calculate rto between EClumnorm and TTnorm
+		self.comp("ERnorm","SRnorm",logy=True)
+		self.comp("ECnorm","SCnorm",logy=True)
+		self.comp("ECnorm","STnorm",logy=True)
+		self.comp("ECnorm","TTnorm",logy=True)
 		self.comp("EClumnorm","TTnorm",logy=True,draw_normalized=False)
 
 	def get_thrtcl_xsec(self,thry,be,trgt_lgth,wcut,nbins,xmin,xmax):
@@ -252,8 +243,8 @@ class StudyElasticTools:
 			os.makedirs(outdir)
 		#print "outdir=",outdir
 
-		hrto={}
 		h={}
+		hrto={}
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
