@@ -45,6 +45,10 @@ class StudyElasticTools:
 		#! Setup DATADIR
 		self.SIMNUM=simnum
 		self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR_ELASTIC'],obsdate))
+		self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
+		if not os.path.exists(self.OUTDIR):
+			os.makedirs(self.OUTDIR)
+
 		
 	def proc_yield(self):
 		#! Get all input delast files
@@ -53,7 +57,7 @@ class StudyElasticTools:
 		if self.THETA_MIN==14:
 			FIN['SR']=ROOT.TFile(os.path.join(self.DATADIR,'delast_sim',self.SIMNUM,'delastR.root'))
 			FIN['ST']=ROOT.TFile(os.path.join(self.DATADIR,'delast_sim',self.SIMNUM,'delastT.root'))
-			FOUT=ROOT.TFile(os.path.join(self.DATADIR,self.SIMNUM,'yield.root'),"RECREATE")
+			FOUT=ROOT.TFile(os.path.join(self.OUTDIR,'yield.root'),"RECREATE")
 		#print FIN['ER'].GetName()
 	
 		
