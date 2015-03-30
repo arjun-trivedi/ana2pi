@@ -16,6 +16,10 @@ if len(sys.argv)>2: #! user entered thry option
 else:
 	thry='wrad'
 
-print "Going to display Elastic Cross Sections for obsdate=%s,thry=%s"%(obsdate,thry)
+if obsdate=='obs_030815':
+	wcut=1.1
+elif obsdate=='obs_032715':
+	wcut=1.0
+print "Going to display Elastic Cross Sections for obsdate=%s,thry=%s,wcut=%.1f"%(obsdate,thry,wcut)
 t=StudyElasticTools(obsdate)
-t.disp_yields(thry)
+t.disp_yields(thry,wcut)
