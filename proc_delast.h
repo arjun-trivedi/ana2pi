@@ -133,8 +133,20 @@ void ProcDelast::handle() {
 		_proc_eid->updateEkin(kTRUE,kTRUE);//!useMc=kTRUE&&McHasPARTBanks=kTRUE
 		UpdateDelast(kTRUE);
 
-		pass=passEvent(kTRUE); //! Needed here because not all ST events are Elastic.
-							   //! Some ST events have W in the DVCS region and need to be removed!
+		/* [03-31-15]
+		    + The following block implements a cut for W in ST because extracted Elastic
+		    Cross Sections *include Radiative Effects* and therefore ST events also include
+		    Radiative Effects. This is unlike other analysis where *Radiative Effects are corrected* for
+		    Reconstructed events and therefore Acceptance is obtained from ST events that have no Radiative
+		    Effects.
+		    + Since I am applying a cut in W for ST, _procT should be adapted for NPROCMODES as is _procR;
+		    however for now, I will have to remember that _procT is not similar in logic to _procR.
+		*/
+		if (mon||mononly){//! in monitor mode, W cut is not applied
+			pass=kTRUE;
+		}else{
+			pass=passEvent(kTRUE);
+		}
 
 		if (pass){
 			if (mon || mononly){//! If mon or mononly mode
@@ -319,8 +331,8 @@ bool ProcDelast::passEvent(bool ismc/*=kFALSE*/){
 	DataElastic *de = &(dAna->dElast);
 	if (ismc) de = &(dAna->dElast_ST);
 
-	if (ismc){//! cut away ST events that far exceed W from Elastic-W rad. tail; most of them are in DVCS regions
-		if (de->W<1.05){
+	if (ismc){
+		if (de->W<1.0){
 			ret=kTRUE;
 		}
 	}else{
