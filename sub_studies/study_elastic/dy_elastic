@@ -20,6 +20,10 @@ if obsdate=='obs_030815':
 	wcut=1.1
 elif obsdate=='obs_032715':
 	wcut=1.0
+elif obsdate=='obs_033115':
+        wcut=1.0
+else:
+	sys.exit("wcut not known for %s"%obsdate)
 print "Going to display Elastic Cross Sections for obsdate=%s,thry=%s,wcut=%.1f"%(obsdate,thry,wcut)
 t=StudyElasticTools(obsdate)
 t.disp_yields(thry,wcut)

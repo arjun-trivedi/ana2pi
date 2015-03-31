@@ -312,8 +312,12 @@ class StudyElasticTools:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
 				pad=c.cd(iphibinnum+1)
 				pad.SetLogy(0)
-				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
-				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				if "obs_030815" in self.DATADIR:
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
+				else:
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(2)
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
