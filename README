@@ -230,7 +230,10 @@ ana2pi Branches
 												+ study_elastic/study_elastic_tools.py
 												+ study_elastic/submit.h10_2_h10-delast-skim-exp-byRun: Added to make h10-skim-delast
 
-												
+								+ [04-02-15]test_ER-yield-reduction	
+								Created this branch to test how within the proc_h10 framework, ER yields for delast and d2pi, appeared to significantly reduced as compared to SR. This was deduced from reduction of Elastic Cross Sections which at the time (see Elastic Cross Sections notes on [04-01-16]) was hypothesized to be due to reduction of ER yields. It was further hypothesized that reduction of 2pi Cross Sections also could be due to the same reason.
+
+								
 
 
 
