@@ -245,9 +245,13 @@ ana2pi Branches
 									+ proc_skim_q.h
 										+ do not require EVT_LT_8 i.e. gpart<8
 										+ do not require:
-											+ EVT_2POS_EX or EVT_1POS1NEG_EX or EVT_2POS1NEG_EX
+											+ EVT_2POS1NEG_EX or EVT_2POS_EX or EVT_1POS1NEG_EX
 										  instead, require:
-										  	+ EVT_ETGT_2POS or EVT_ETGT_1POS1NEG or EVT_ETGT_2POS1NEG
+										  	+ EVT_ETGT_2POS_ETGT_1NEG or EVT_ETGT_2POS or EVT_ETGT_1POS1NEG
+									+ The following files were changed to accomodate changes in proc_skim_q.h, which are reflected in new variable names:
+										+ data_skim_q.h/.cpp
+										+ proc_pid.h
+										+ proc_peff.h
 
 
 
