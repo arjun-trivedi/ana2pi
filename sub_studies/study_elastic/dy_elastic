@@ -22,7 +22,7 @@ elif obsdate=='obs_032715':
 	wcut=1.0
 elif obsdate=='obs_033115':
         wcut=1.0
-elif obsdate=='obs_040115':
+elif obsdate=='obs_040215':
         wcut=1.0
 elif obsdate=='obs_test':
 	wcut=1.0
