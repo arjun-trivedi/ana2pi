@@ -241,6 +241,14 @@ ana2pi Branches
 										+ data_skim_q_elast.h/.cpp
 										+ proc_pid_elast.h
 
+								+ Loosen gpart and charge skim cuts for 2pi Event selection. Affected files:
+									+ proc_skim_q.h
+										+ do not require EVT_LT_8 i.e. gpart<8
+										+ do not require:
+											+ EVT_2POS_EX or EVT_1POS1NEG_EX or EVT_2POS1NEG_EX
+										  instead, require:
+										  	+ EVT_ETGT_2POS or EVT_ETGT_1POS1NEG or EVT_ETGT_2POS1NEG
+
 
 
 											
