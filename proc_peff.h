@@ -112,7 +112,7 @@ void ProcPEff::handle()
 	
 
 	bool in_eff_rgn=kTRUE;
-	if(dAna->skimq.isEVT_2POS1NEG_EX){
+	if(dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG){
 		if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
 			hevtsum->Fill(EVT_PPIPPIM_EX);
 			bool in_eff_rgn_p=  _cut_eff_tool->InEfficientRegion(PROTON,dAna->peff.sector_p,  dAna->peff.theta_p,  dAna->peff.p_p);
@@ -124,7 +124,7 @@ void ProcPEff::handle()
 			}
 		}
 	}
-	if(dAna->skimq.isEVT_2POS_EX){
+	if(dAna->skimq.isEVT_ETGT_2POS){
 		if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0){
 			hevtsum->Fill(EVT_PPIP_EX);
 			bool in_eff_rgn_p=  _cut_eff_tool->InEfficientRegion(PROTON,dAna->peff.sector_p,  dAna->peff.theta_p,  dAna->peff.p_p);
@@ -135,7 +135,7 @@ void ProcPEff::handle()
 			}
 		}
 	}
-	if(dAna->skimq.isEVT_1POS1NEG_EX){
+	if(dAna->skimq.isEVT_ETGT_1POS_ETGT_1NEG){
 		if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPim>0){
 			hevtsum->Fill(EVT_PPIM_EX);
 			bool in_eff_rgn_p=  _cut_eff_tool->InEfficientRegion(PROTON,dAna->peff.sector_p,  dAna->peff.theta_p,  dAna->peff.p_p);

@@ -12,11 +12,11 @@ using namespace ParticleConstants;
 + Note, ProcPid must follow ProcSkimQ
 + Currently using BOS PID
 + Pass Events only if:
-	+ dAna->skimq.isEVT_2POS1NEG_EX AND proton,pip,pim are identified
+	+ dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG AND proton,pip,pim are identified
 	OR	+ 
-	+ dAna->skimq.isEVT_2POS_EX     AND proton,pip are identified
+	+ dAna->skimq.isEVT_ETGT_2POS     AND proton,pip are identified
 	OR
-	+ dAna->skimq.isEVT_1POS1NEG_EX AND (p,pim identified OR pip,pim identfied)
+	+ dAna->skimq.isEVT_ETGT_1POS_ETGT_1NEG AND (p,pim identified OR pip,pim identfied)
 *******************************************************/
 
 class ProcPid : public EpProcessor
@@ -162,7 +162,7 @@ void ProcPid::handle()
 		}
 		
 	}
-	if(dAna->skimq.isEVT_2POS1NEG_EX){
+	if(dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG){
 	 	if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
 			hevtsum->Fill(EVT_PPIPPIM_EX);
 			pass = kTRUE;
@@ -170,7 +170,7 @@ void ProcPid::handle()
 			hevtsum->Fill(EVT_OTHER);
 		}
 	}
-	if(dAna->skimq.isEVT_2POS_EX){
+	if(dAna->skimq.isEVT_ETGT_2POS){
 		if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0) {
 			hevtsum->Fill(EVT_PPIP_EX);
 			pass = kTRUE;
@@ -178,7 +178,7 @@ void ProcPid::handle()
 			hevtsum->Fill(EVT_OTHER);
 		}
 	}
-	if(dAna->skimq.isEVT_1POS1NEG_EX){
+	if(dAna->skimq.isEVT_ETGT_1POS_ETGT_1NEG){
 		if(dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPim>0) {
 			hevtsum->Fill(EVT_PPIM_EX);
 			pass = kTRUE;

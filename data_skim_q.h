@@ -9,9 +9,9 @@ public:
 	DataSkimQ();
 	virtual ~DataSkimQ();
 	void Clear();
-        Bool_t isEVT_2POS_EX;
-        Bool_t isEVT_1POS1NEG_EX;
-        Bool_t isEVT_2POS1NEG_EX;
+		Bool_t isEVT_ETGT_2POS_ETGT_1NEG;
+        Bool_t isEVT_ETGT_2POS;
+        Bool_t isEVT_ETGT_1POS_ETGT_1NEG;
 };
 
 #endif // DATASKIMQ_H
