@@ -72,7 +72,7 @@ void ProcSkimQ::handle()
 	hevtsum->Fill(EVT);
 	if ( dH10->id[0]==ELECTRON ) {
 		hevtsum->Fill(EVT_1ST_E);
-		if ( dH10->gpart<8) { 
+		//if ( dH10->gpart<8) { 
 		    hevtsum->Fill(EVT_LT8);
 			Int_t numPos=0;
 			Int_t numNeg=0;
@@ -83,15 +83,15 @@ void ProcSkimQ::handle()
 			    else if (dH10->q[i]==0)  num0++;
 			}
 			Int_t binNum = 0;
-			if (numPos==2 && numNeg==0) {	
+			if (numPos>=2) {//if (numPos==2 && numNeg==0) {	
 				binNum=hevtsum->Fill(EVT_2POS_EX);
 				dAna->skimq.isEVT_2POS_EX=kTRUE;
 			}
-			if (numPos==1 && numNeg==1) {
+			if (numPos>=1 && numNeg>=1) {//if (numPos==1 && numNeg==1) {
 				binNum=hevtsum->Fill(EVT_1POS1NEG_EX);
 				dAna->skimq.isEVT_1POS1NEG_EX=kTRUE;
 			}
-			if (numPos==2 && numNeg==1) {	
+			if (numPos>=2 && numNeg>=1) {//if (numPos==2 && numNeg==1) {	
 				binNum=hevtsum->Fill(EVT_2POS1NEG_EX);
 				dAna->skimq.isEVT_2POS1NEG_EX=kTRUE;
 			}
@@ -99,7 +99,7 @@ void ProcSkimQ::handle()
 				pass=kTRUE;
 				EpProcessor::handle();
 			}
-		} 
+		//} 
 	}
 }
 
