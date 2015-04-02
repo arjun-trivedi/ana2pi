@@ -10,5 +10,5 @@ DataSkimQElast::~DataSkimQElast()
 
 void DataSkimQElast::Clear()
 {
-	isEVT_1POS_EX = kFALSE;
+	isEVT_EQGT_1POS = kFALSE;
 }

@@ -9,7 +9,7 @@ public:
 	DataSkimQElast();
 	virtual ~DataSkimQElast();
 	void Clear();
-    Bool_t isEVT_1POS_EX;
+    Bool_t isEVT_EQGT_1POS;
 };
 
 #endif // DATASKIMQELAST_H

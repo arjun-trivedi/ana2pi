@@ -12,7 +12,7 @@ using namespace ParticleConstants;
 + Note, ProcPidElast must follow ProcSkimQElast
 + Currently using BOS PID
 + Pass Events only if:
-	+ dAna->skimq_elast.isEVT_1POS_EX AND proton is identified
+	+ dAna->skimq_elast.isEVT_EQGT_1POS AND proton is identified
 *******************************************************/
 
 class ProcPidElast : public EpProcessor
@@ -99,7 +99,7 @@ void ProcPidElast::handle()
 			}
 		}
 	}
-	if(dAna->skimq_elast.isEVT_1POS_EX){
+	if(dAna->skimq_elast.isEVT_EQGT_1POS){
 	 	if (dAna->pid_elast.h10IdxP>0) {
 			hevtsum->Fill(EVT_P_EX);
 			pass = kTRUE;
