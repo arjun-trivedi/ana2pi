@@ -233,7 +233,13 @@ ana2pi Branches
 								+ [04-02-15]test_ER-yield-reduction	
 								Created this branch to test how within the proc_h10 framework, ER yields for delast and d2pi, appeared to significantly reduced as compared to SR. This was deduced from reduction of Elastic Cross Sections which at the time (see Elastic Cross Sections notes on [04-01-16]) was hypothesized to be due to reduction of ER yields. It was further hypothesized that reduction of 2pi Cross Sections also could be due to the same reason.
 
-								
+								+ Loosen gpart and charge skim cuts for Elastic Event selection. Affected files:
+									+ proc_skim_q_elast.h
+										+ do not require EVT_LT_EQ_4 i.e. gpart <=4
+										+ do not require EVT_1POS_EX i.e. for event to register 1 charged particle *exclusively*; instead require EVT_EQGT_1POS i.e. even to have *atleast* 1 charged particle
+									+ The following files were changed to accomodate changes, which are reflected in new variable names, in proc_skim_q_elast.h:
+										+ data_skim_q_elast.h/.cpp
+										+ proc_pid_elast.h
 
 
 
