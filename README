@@ -230,28 +230,29 @@ ana2pi Branches
 												+ study_elastic/study_elastic_tools.py
 												+ study_elastic/submit.h10_2_h10-delast-skim-exp-byRun: Added to make h10-skim-delast
 
-								+ [04-02-15]test_ER-yield-reduction	
-								Created this branch to test how within the proc_h10 framework, ER yields for delast and d2pi, appeared to significantly reduced as compared to SR. This was deduced from reduction of Elastic Cross Sections which at the time (see Elastic Cross Sections notes on [04-01-16]) was hypothesized to be due to reduction of ER yields. It was further hypothesized that reduction of 2pi Cross Sections also could be due to the same reason.
+								+ Following changes were made in branch test_ER-yield-reduction that were merged on [05-12-15]
+									+ [04-02-15]test_ER-yield-reduction	
+									Created this branch to test how within the proc_h10 framework, ER yields for delast and d2pi, appeared to significantly reduced as compared to SR. This was deduced from reduction of Elastic Cross Sections which at the time (see Elastic Cross Sections notes on [04-01-16]) was hypothesized to be due to reduction of ER yields. It was further hypothesized that reduction of 2pi Cross Sections also could be due to the same reason.
 
-								+ Loosen gpart and charge skim cuts for Elastic Event selection. Affected files:
-									+ proc_skim_q_elast.h
-										+ do not require EVT_LT_EQ_4 i.e. gpart <=4
-										+ do not require EVT_1POS_EX i.e. for event to register 1 charged particle *exclusively*; instead require EVT_EQGT_1POS i.e. even to have *atleast* 1 charged particle
-									+ The following files were changed to accomodate changes in proc_skim_q_elast.h, which are reflected in new variable names:
-										+ data_skim_q_elast.h/.cpp
-										+ proc_pid_elast.h
+									+ Loosen gpart and charge skim cuts for Elastic Event selection. Affected files:
+										+ proc_skim_q_elast.h
+											+ do not require EVT_LT_EQ_4 i.e. gpart <=4
+											+ do not require EVT_1POS_EX i.e. for event to register 1 charged particle *exclusively*; instead require EVT_EQGT_1POS i.e. even to have *atleast* 1 charged particle
+										+ The following files were changed to accomodate changes in proc_skim_q_elast.h, which are reflected in new variable names:
+											+ data_skim_q_elast.h/.cpp
+											+ proc_pid_elast.h
 
-								+ Loosen gpart and charge skim cuts for 2pi Event selection. Affected files:
-									+ proc_skim_q.h
-										+ do not require EVT_LT_8 i.e. gpart<8
-										+ do not require:
-											+ EVT_2POS1NEG_EX or EVT_2POS_EX or EVT_1POS1NEG_EX
-										  instead, require:
-										  	+ EVT_ETGT_2POS_ETGT_1NEG or EVT_ETGT_2POS or EVT_ETGT_1POS1NEG
-									+ The following files were changed to accomodate changes in proc_skim_q.h, which are reflected in new variable names:
-										+ data_skim_q.h/.cpp
-										+ proc_pid.h
-										+ proc_peff.h
+									+ Loosen gpart and charge skim cuts for 2pi Event selection. Affected files:
+										+ proc_skim_q.h
+											+ do not require EVT_LT_8 i.e. gpart<8
+											+ do not require:
+												+ EVT_2POS1NEG_EX or EVT_2POS_EX or EVT_1POS1NEG_EX
+										  	instead, require:
+										  		+ EVT_ETGT_2POS_ETGT_1NEG or EVT_ETGT_2POS or EVT_ETGT_1POS1NEG
+										+ The following files were changed to accomodate changes in proc_skim_q.h, which are reflected in new variable names:
+											+ data_skim_q.h/.cpp
+											+ proc_pid.h
+											+ proc_peff.h
 
 								+ Other noteable changes:
 									+ obs/disp_yields.py: Removed method get_yield_per_truePS_bin()
