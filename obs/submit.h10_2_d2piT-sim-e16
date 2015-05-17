@@ -1,0 +1,51 @@
+#!/bin/bash
+##-----------------------------------------------##
+# Usage submit.h10_2_d2piT-sim-e16 sim1 sim2 ... simX
+##-----------------------------------------------##
+
+##-- Get list of simnum from user
+simlist=("$@")
+echo "Going to submit h10_2_d2piT-sim-e16 for the following"
+for simnum in "${simlist[@]}"; do
+   echo "$simnum"
+done
+
+##-- Now submit jobs for each simnum
+for simnum in "${simlist[@]}"; do
+  SUBDIR=${BSUBDIR}/e16/2pi/sim/h10_2_d2piT-sim-$simnum
+  OUTDIR=$D2PIDIR_SIM_E16/$simnum
+  mkdir -p $SUBDIR
+  mkdir -p $OUTDIR
+
+  date=`date +%m%d%y`
+  JSUBFILE=${SUBDIR}/job_$date.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo "$JSUBFILE exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e16_h10_2_d2piT-sim\"/>
+    <Project name=\"E16\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"5000\" unit=\"MB\"/>
+    <Memory space=\"9500\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"4320\"/>
+    <Command><![CDATA[
+      proc_h10 -i h10.lst -t e16:sim:2pi -p q2wskimT:d2piT -o d2piT.root
+    ]]></Command>
+
+    <Job>
+      <Input src=\"$OUTDIR/h10.lst\" dest=\"h10.lst\" />
+      <Output src=\"d2piT.root\" dest=\"$OUTDIR/d2piT_$date.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR/jobT_$date.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR/jobT_$date.err\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
+done

@@ -4,6 +4,7 @@
 #include "ep_processor.h" // Base class: EpProcessor
 #include "data_h10.h"
 #include "cuts.h"
+#include "wrpr_cut_fid_e16.h"
 #include <TMath.h>
 
 using namespace TMath;
@@ -28,7 +29,15 @@ protected:
 ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
                    Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
                    :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
-{
+{	
+	if (dH10->expt=="e1f") {
+    	Info("ProcEFid::ProcEFid()", "dH10.expt==E16. Will use E1F Fiducial cuts"); 
+    }else if (dH10->expt=="e16") {
+    	Info("ProcEFid::ProcEFid()", "dH10.expt==E16. Will use E16 Fiducial cuts"); 
+    }else{
+    	Info("ProcEFid::ProcEFid()", "Could not determine dH10.expt! Will use E1F Fiducial cuts");
+    }
+
 	td->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
@@ -104,7 +113,15 @@ Bool_t ProcEFid::inFid() {
 		sector = dH10->sc_sect[scidx];
 		paddle = dH10->sc_pd[scidx];
 	}
-	Bool_t inFid = Cuts::Fiducial(id, p, theta, phi, sector, paddle);
+
+	Bool_t inFid=false;
+	if (dH10->expt=="e1f"){
+		inFid = Cuts::Fiducial(id, p, theta, phi, sector, paddle);
+	}else if (dH10->expt=="e16"){
+        inFid = Fiducial_e16(id,p, theta, phi);
+    }else{//! [05-17-15] For now, if expt is not determined, use E1F Fiducial cuts
+    	inFid = Cuts::Fiducial(id, p, theta, phi, sector, paddle);
+    }
 	return inFid;
 }
 

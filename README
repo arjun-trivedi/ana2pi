@@ -254,9 +254,23 @@ ana2pi Branches
 											+ proc_pid.h
 											+ proc_peff.h
 
-								+ Other noteable changes:
-									+ obs/disp_yields.py: Removed method get_yield_per_truePS_bin()
+									+ Other noteable changes:
+										+ obs/disp_yields.py: Removed method get_yield_per_truePS_bin()
 
+								+ Following changes were made in branch test_add_E16_fidcut that were merged on [XX-XX-15]
+									+ [05-15-15]test_add_E16_fidcut
+									Files added:
+										+ cut_fid_e16.f
+										+ wrpr_cut_fid_e16.h
+										+ obs/submit.h10_2_d2piR-sim-e16
+										+ obs/submit.h10_2_d2piT-sim-e16
+										+ sub_studies/study_acc/
+									Files modified:
+										+ Makefile
+										+ proc_efid.h
+
+									Other general modifications (unrelated to test_add_E16_fidcut)
+										+ sub_studies/study_elastic/dy_elastic
 
 
 											
