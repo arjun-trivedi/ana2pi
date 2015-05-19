@@ -19,7 +19,7 @@ import numpy as np
 
 
 """
-ds [obsdate] [sim=siml] [tops=tops]
+ds [obsdate] [sim=siml] [tops=tops] [expt=e1f]
 
 + This script displays simstats for user entered simnum (siml by default):
 + The display is saved in $OBSDIR/simnum/simstats
@@ -52,7 +52,12 @@ if len(sys.argv)>3:#i.e. tops by user
 else:
         tops=[1,2,3,4]
 
-print "Displaying simstats for (simun,tops)=(",simnum,tops,")"
+if len(sys.argv)>4:#i.e. expt entered by user
+        expt=sys.argv[4]
+else:
+        expt='e1f'
+
+print "Displaying simstats for (simun,tops,expt)=(",simnum,tops,expt,")"
 
 
 #! + The following binning should match up with h8_bng.h/q2w_bng.py
@@ -153,7 +158,12 @@ def subtract(h1,h2):
 			#print num,den,res
 	return h
 
-outdir=os.path.join(os.environ['D2PIDIR'],obsdate,simnum,'simstats_top%s'%''.join(str(t) for t in tops))
+if expt=='e1f':
+	outdir=os.path.join(os.environ['D2PIDIR'],obsdate,simnum,'simstats_top%s'%''.join(str(t) for t in tops))
+elif expt=='e16':
+	outdir=os.path.join(os.environ['D2PIDIR_E16'],obsdate,simnum,'simstats_top%s'%''.join(str(t) for t in tops))
+else:
+	sys.exit("ds:expt=%s not recognized! Exiting"%expt)
 if not os.path.exists(outdir):
         os.makedirs(outdir)
 # outdir=os.path.join('/home/trivedia/ongoing/mem_test/simstats')
@@ -179,7 +189,7 @@ for seq in ['T','R','A','H']:
 h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 
 #! Fill histograms
-dy=DispYields(obsdate,simnum=simnum,tops=tops)
+dy=DispYields(obsdate,simnum=simnum,tops=tops,expt=expt)
 ss=dy.get_sim_stats()
 for seq in ['T','R','A','H']:
 	for d in ss[seq]:

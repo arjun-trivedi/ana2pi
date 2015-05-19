@@ -118,7 +118,7 @@ Bool_t ProcEFid::inFid() {
 	if (dH10->expt=="e1f"){
 		inFid = Cuts::Fiducial(id, p, theta, phi, sector, paddle);
 	}else if (dH10->expt=="e16"){
-        inFid = Fiducial_e16(id,p, theta, phi);
+        inFid = Fiducial_e16_elctrn(id,p, theta, phi);
     }else{//! [05-17-15] For now, if expt is not determined, use E1F Fiducial cuts
     	inFid = Cuts::Fiducial(id, p, theta, phi, sector, paddle);
     }

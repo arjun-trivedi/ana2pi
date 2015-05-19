@@ -30,6 +30,7 @@ void DataAna::Clear()
 	top = 0;
 	eid.Clear();
 	efid.Clear();
+	pfid.Clear();
 	eeff.Clear();
 	skimq.Clear();
 	skimq_elast.Clear();
@@ -99,6 +100,54 @@ void DataAna::makeHistsEFid(TObjArray** hists, TDirectory* dirout)
 		if (iSector==6) hists[iSector]->Add(new TH2F("hephiVetheta","#phi(sector 6) vs. #theta", 100, 0, 60, 100, 270, 330));
 		hists[iSector]->Add(new TH2F("hescyVescx", "SCx vs. SCy", 200,0,500,200,-250,250));
 		hists[iSector]->Add(new TH2F("heecyVeecx", "ECx vs. ECy", 200,-500,500,200,-500,500));
+	}
+	//return ret;
+	return;
+}
+
+void DataAna::makeHistsPFid(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(3);
+		
+		if (iSector==0)	{
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 0)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 0)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 0)", 100,0,120,100,0,360));
+		}
+		if (iSector==1) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 1)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 1)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 1)", 100,0,120,100,0,360));
+		}
+		if (iSector==2) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 2)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 2)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 2)", 100,0,120,100,0,360));
+		}
+		if (iSector==3)	{
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 3)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 3)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 3)", 100,0,120,100,0,360));
+		}
+		if (iSector==4) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 4)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 4)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 4)", 100,0,120,100,0,360));
+		}
+		if (iSector==5) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 5)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 5)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 5)", 100,0,120,100,0,360));
+		}
+		if (iSector==6) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 6)",     100,0,60, 100,0,360));
+			hists[iSector]->Add(new TH2F("h_pip_phiVtheta","#phi vs. #theta for pip(sector 6)", 100,0,120,100,0,360));
+			hists[iSector]->Add(new TH2F("h_pim_phiVtheta","#phi vs. #theta for pim(sector 6)", 100,0,120,100,0,360));
+		}
 	}
 	//return ret;
 	return;
@@ -521,6 +570,45 @@ void DataAna::fillHistsEFid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 			
 			TH2* h3 = (TH2*)hists[iSector]->At(2);
 			h3->Fill(efid.ech_x, efid.ech_y);
+		}
+	}
+}
+
+void DataAna::fillHistsPFid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if (iSector==0) {
+			if (pid.h10IdxP>0){
+				TH2* h1 = (TH2*)hists[iSector]->At(0);
+				float phi=pfid.phi_p+180; //as per fid. cuts implemented by Isupov
+				h1->Fill(pfid.theta_p,phi);
+			}
+			if (pid.h10IdxPip>0){
+				TH2* h2 = (TH2*)hists[iSector]->At(1);
+				float phi=pfid.phi_pip+180; //as per fid. cuts implemented by Isupov
+				h2->Fill(pfid.theta_pip,phi);
+				
+			}
+			if (pid.h10IdxPim>0 ){
+				TH2* h3 = (TH2*)hists[iSector]->At(2);
+				float phi=pfid.phi_pim+180; //as per fid. cuts implemented by Isupov
+				h3->Fill(pfid.theta_pim,phi);
+			}
+		}
+		if (iSector==pfid.sector_p && pid.h10IdxP>0){
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			float phi=pfid.phi_p+180; //as per fid. cuts implemented by Isupov
+			h1->Fill(pfid.theta_p,phi);
+		}
+		if (iSector==pfid.sector_pip && pid.h10IdxPip>0){
+			TH2* h2 = (TH2*)hists[iSector]->At(1);
+			float phi=pfid.phi_pip+180; //as per fid. cuts implemented by Isupov
+			h2->Fill(pfid.theta_pip,phi);
+		}
+		if (iSector==pfid.sector_pim && pid.h10IdxPim>0 ){
+			TH2* h3 = (TH2*)hists[iSector]->At(2);
+			float phi=pfid.phi_pim+180; //as per fid. cuts implemented by Isupov
+			h3->Fill(pfid.theta_pim,phi);
 		}
 	}
 }

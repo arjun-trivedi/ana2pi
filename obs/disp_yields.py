@@ -48,15 +48,25 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispYields:
-	def __init__(self,obsdate,simnum='siml',tops=[1,2,3,4]):
+	def __init__(self,obsdate,simnum='siml',tops=[1,2,3,4],expt='e1f'):
 		self.SIM_NUM=simnum
 		self.TOPS=tops
-		self.FEXP=root_open(os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		#self.FEXP_HEL=root_open(os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM,'yield_exp_hel_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		self.FSIM=root_open(os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		self.OUTDIR=os.path.join(os.environ['OBSDIR'],obsdate,self.SIM_NUM)
+		self.EXPT=expt
+
+		if self.EXPT=='e1f':
+			self.DATADIR=os.environ['OBSDIR']
+		elif self.EXPT=='e16':
+			self.DATADIR=os.environ['OBSDIR_E16']
+		else:
+			sys.exit("expt is neither E1F or E16! Exiting")
+
+		self.FEXP=root_open(os.path.join(self.DATADIR,obsdate,self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		#self.FEXP_HEL=root_open(os.path.join(self.DATADIR,obsdate,self.SIM_NUM,'yield_exp_hel_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.FSIM=root_open(os.path.join(self.DATADIR,obsdate,self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.OUTDIR=os.path.join(self.DATADIR,obsdate,self.SIM_NUM)
 		if not os.path.exists(self.OUTDIR):
 			sys.exit("%s does not exist!"%self.OUTDIR)
+		print "DATADIR=%s\nFEXP=%s\nFSIM=%s\nOUTDIR=%s"%(self.DATADIR,self.FEXP,self.FSIM,self.OUTDIR)
 
 		self.VSTS=[1,2,3]
 
@@ -1447,8 +1457,13 @@ class DispYields:
 		q2wbin/vst/seq/hists
 		"""
 		q2wbinl=[]
+		#! File to use to extract q2wbinl
+		f=self.FEXP
+		if self.EXPT=='e16':
+			f=self.FSIM
+		
 		i=0 #! for dbg_bins
-		for path,dirs,files in self.FEXP.walk():
+		for path,dirs,files in f.walk():
 			if path=="":continue #! Avoid root path
 			path_arr=path.split("/")
 			if len(path_arr)==1:

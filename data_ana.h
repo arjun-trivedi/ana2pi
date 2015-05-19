@@ -4,6 +4,7 @@
 
 #include "data_eid.h"
 #include "data_efid.h"
+#include "data_pfid.h"
 #include "data_eeff.h"
 #include "data_skim_q.h"
 #include "data_skim_q_elast.h"
@@ -32,6 +33,7 @@ public:
 	
 	DataEid eid;
 	DataEFid efid;
+	DataPFid pfid;
 	DataEEff eeff;
 	DataSkimQ skimq;
 	DataSkimQElast skimq_elast;
@@ -54,6 +56,7 @@ public:
 	
 	void makeHistsEid(TObjArray** hists, TDirectory* dirout);
 	void makeHistsEFid(TObjArray** hists, TDirectory* dirout);
+	void makeHistsPFid(TObjArray** hists, TDirectory* dirout);
 	void makeHistsEEff(TObjArray** hists, TDirectory* dirout);
 	void makeHistsPEff(TObjArray** hists, TDirectory* dirout);
 	void makeHistsMomCor(TObjArray** hists, TDirectory* dirout);
@@ -74,6 +77,7 @@ public:
 	
 	void fillHistsEid(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsEFid(TObjArray** hists, Bool_t useMc = kFALSE);
+    void fillHistsPFid(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsEEff(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsPEff(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsMomCor(TObjArray** hists, Bool_t useMc = kFALSE);

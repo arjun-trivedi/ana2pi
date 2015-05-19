@@ -56,13 +56,15 @@ class ProcYields:
 		+ if self.USEHEL=true:  h8(VST,SEQ) => h5(VST,SEQ) 
 	
 	"""
-	def __init__(self,obsdate,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False,q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125):
-		self.EXP,self.SIM=False,False
-		if dtyp=='sim':self.SIM=True
-		if dtyp=='exp':self.EXP=True
-		if not(self.EXP or self.SIM):
+	def __init__(self,obsdate,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False,q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125,expt='e1f'):
+		self.DTYP=""
+		if dtyp=='sim':self.DTYP='sim'
+		if dtyp=='exp':self.DTYP='exp'
+		if not(self.DTYP=='exp' or self.DTYP=='sim'):
 			sys.exit("dtyp is neither EXP or SIM! Exiting")
 		print "dtyp=%s"%dtyp
+
+		self.EXPT=expt
 
 		self.SIMNUM=simnum
 
@@ -70,7 +72,7 @@ class ProcYields:
 		self.VSTS=vsts 
 
 		self.USEHEL=False
-		if self.EXP==True:
+		if self.DTYP=='exp':
 			self.USEHEL=usehel
 		print "USEHEL=",self.USEHEL
 
@@ -80,8 +82,14 @@ class ProcYields:
 		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
 		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
 
-		self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR'],obsdate))
-		if self.EXP:
+		if self.EXPT=='e1f':
+			self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR'],obsdate))
+		elif self.EXPT=='e16':
+			self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR_E16'],obsdate))
+		else:
+			sys.exit("expt is neither E1F or E16! Exiting")
+
+		if self.DTYP=='exp':
 			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_exp','d2piR.root'))
 			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
 			if not os.path.exists(self.OUTDIR): #! This path should already exist when making yield_exp
@@ -90,7 +98,7 @@ class ProcYields:
 			if self.USEHEL: self.FOUTNAME="yield_exp_hel_top%s.root"%(''.join(str(t) for t in self.TOPS))
 			else:           self.FOUTNAME="yield_exp_top%s.root"%(''.join(str(t) for t in self.TOPS))
 			print "DATADIR=%s\nOUTDIR=%s\nFIN_R=%s\nFIN_SIMYIELD=%s\nFOUTNAME=%s/%s"%(self.DATADIR,self.OUTDIR,self.FIN_R.GetName(),self.FIN_SIMYIELD.GetName(),self.OUTDIR,self.FOUTNAME)
-		if self.SIM:
+		if self.DTYP=='sim':
 			self.FIN_T=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_sim',self.SIMNUM,'d2piT.root'))
 			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_sim',self.SIMNUM,'d2piR.root'))
 			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
@@ -209,8 +217,8 @@ class ProcYields:
 					vst_name='VST%d'%vst
 					vstdir=q2wbindir.mkdir(vst_name)
 									
-					if self.EXP:seq_h8=['R']
-					if self.SIM:seq_h8=['T','R']
+					if self.DTYP=='exp':seq_h8=['R']
+					if self.DTYP=='sim':seq_h8=['T','R']
 					for seq in seq_h8:
 						#!-- Q2
 						q2bin_le=h8[vst_name,seq].GetAxis(H8_DIM['Q2']).FindBin(self.Q2BNG['BINS_LE'][i]+self.Q2BNG['BINW']/2)
@@ -260,7 +268,7 @@ class ProcYields:
 		for vst in self.VSTS:
 			vst_name='VST%d'%vst
 			#! Fetch h8-T
-			if self.SIM:
+			if self.DTYP=='sim':
 				print "Going to get",'d2piT/h8_%d_%d'%(iw+1,vst),"..."
 				h8[vst_name,'T']=self.FIN_T.Get('d2piT/h8_%d_%d'%(iw+1,vst))
 				print "Done getting",'d2piT/h8_%d_%d'%(iw+1,vst)
@@ -288,8 +296,8 @@ class ProcYields:
 		print "*** Processing h8(VST,SEQ)->h5(VST,SEQ) for %s ***"%q2wbintitle
 
 		#! seq to directly project from h8
-		if self.EXP:seq_h5=['R']
-		if self.SIM:seq_h5=['T','R']
+		if self.DTYP=='exp':seq_h5=['R']
+		if self.DTYP=='sim':seq_h5=['T','R']
 
 		for vst in self.VSTS:
 			vst_name='VST%d'%vst
@@ -314,13 +322,13 @@ class ProcYields:
 			#! 2. Calculate h5-A
 			if vstdir.GetDirectory('A')==None:vstdir.mkdir('A').cd()
 			else:vstdir.cd('A')
-			if self.SIM:
+			if self.DTYP=='sim':
 				h5[vst_name,'A']=h5[vst_name,'R'].Clone()
 				h5[vst_name,'A'].Divide(h5[vst_name,'T'])
 				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'A']);
 				h5[vst_name,'A'].SetName('h5_%s'%HEL_NAME[hel])
 				h5[vst_name,'A'].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,'A',HEL_NAME[hel]))
-			if self.EXP:
+			if self.DTYP=='exp':
 				h5[vst_name,'A']=self.FIN_SIMYIELD.Get('%s/%s/A/h5_UNPOL'%(q2wbin,vst_name))
 			h5[vst_name,'A'].Write()
 
@@ -337,13 +345,13 @@ class ProcYields:
 			#! 4. Calculate h5-H
 			if vstdir.GetDirectory('H')==None:vstdir.mkdir('H').cd()
 			else:vstdir.cd('H')
-			if self.SIM:
+			if self.DTYP=='sim':
 				h5[vst_name,'H']=h5[vst_name,'T'].Clone()
 				h5[vst_name,'H'].Add(h5[vst_name,'C'],-1)
 				thntool.SetUnderOverFLowBinsToZero(h5[vst_name,'H'])
 				h5[vst_name,'H'].SetName('h5_%s'%HEL_NAME[hel])
 				h5[vst_name,'H'].SetTitle('%s_%s_%s_%s'%(q2wbintitle,vst_name,'H',HEL_NAME[hel]))
-			if self.EXP:
+			if self.DTYP=='exp':
 				#!first copy sim-HOLE into exp-HOLE
 				h5[vst_name,'H']=self.FIN_SIMYIELD.Get('%s/%s/H/h5_UNPOL'%(q2wbin,vst_name))
 				#!now get SC for obtaining normalization factor
@@ -378,9 +386,9 @@ class ProcYields:
 		print "*** Processing h5(VST,SEQ)->h1(VST,SEQ) for %s ***"%q2wbintitle
 
 		#! Define SEQ for which h5s are directly projected to h1
-		if self.EXP:
+		if self.DTYP=='exp':
 			seq_h1=['R','C','A','H','F']
-		if self.SIM:
+		if self.DTYP=='sim':
 			seq_h1=['T','R','C','A','H','F']
 
 		for vst in self.VSTS:

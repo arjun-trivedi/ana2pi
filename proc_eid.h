@@ -58,14 +58,17 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
 	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
-	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
+	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6 exp.
 
     if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
     }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
-    }else if (dH10->expt=="e16") {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e16. Will use goodE_bos()");; //pars for e1-6 not yet obtained
+    }else if (dH10->expt=="e16" && _eidTool->eidParFileFound) {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
+    }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
     }
 	
 	td->cd();
@@ -94,14 +97,17 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
 	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
-	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6
+	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6 exp.
 
     if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
     }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
-    }else if (dH10->expt=="e16") {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e16. Will use goodE_bos()");; //pars for e1-6 not yet obtained
+    }else if (dH10->expt=="e16" && _eidTool->eidParFileFound) {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
+    }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
+    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
     }
 }
 
@@ -154,6 +160,7 @@ void ProcEid::handle() {
 
     if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE();
     else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  goodE_bos();
+    else if (dH10->expt=="e16" && _eidTool->eidParFileFound) gE =  goodE();
     else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained
     
 	if (gE) {	

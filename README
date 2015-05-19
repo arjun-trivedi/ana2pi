@@ -262,17 +262,26 @@ ana2pi Branches
 									Files added:
 										+ cut_fid_e16.f
 										+ wrpr_cut_fid_e16.h
+										+ proc_pfid.h
+										+ data_pfid.cpp
+										+ data_pfid.h
+										+ sub_studies/study_acc/nb_integrated-acceptance.ipynb
 										+ obs/submit.h10_2_d2piR-sim-e16
 										+ obs/submit.h10_2_d2piT-sim-e16
 										+ sub_studies/study_acc/
 									Files modified:
 										+ Makefile
 										+ proc_efid.h
+										+ proc_eid.h
+										+ data_ana.h/.cpp 
+										+ proc_h10.cpp
+										+ obs/proc_yields.py
+										+ obs/disp_yields.py
+										+ obs/py
+										+ obs/ds
+										+ obs/study_acc_tools.py
 
-									Other general modifications (unrelated to test_add_E16_fidcut)
-										+ sub_studies/study_elastic/dy_elastic
-
-
+									
 											
 
 

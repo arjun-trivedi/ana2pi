@@ -8,7 +8,7 @@ CXX = g++
 C_FLAGS =
 CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -Wno-deprecated
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
-SRC = epconfig.cpp h10looper.cpp ep_processor.cpp data_h10.cpp data_ana.cpp eid.cpp data_eid.cpp data_ekin.cpp data_efid.cpp data_eeff.cpp data_skim_q.cpp data_skim_q_elast.cpp data_mom.cpp data_pid.cpp data_peff.cpp data_pid_elast.cpp data_2pi.cpp data_elastic.cpp cut_eff.cpp
+SRC = epconfig.cpp h10looper.cpp ep_processor.cpp data_h10.cpp data_ana.cpp eid.cpp data_eid.cpp data_ekin.cpp data_efid.cpp data_pfid.cpp data_eeff.cpp data_skim_q.cpp data_skim_q_elast.cpp data_mom.cpp data_pid.cpp data_peff.cpp data_pid_elast.cpp data_2pi.cpp data_elastic.cpp cut_eff.cpp
 OBJS = $(patsubst %.cpp,obj/%.o,$(SRC)) 
 LIBS =          $(shell root-config --glibs) -lgfortran
 LIBOUT =        $(WORKSPACE)/ana2pi/sobj/lib_proc_h10.so

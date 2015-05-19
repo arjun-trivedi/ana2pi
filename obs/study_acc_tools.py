@@ -8,19 +8,28 @@ from rootpy.interactive import wait
 import matplotlib.pyplot as plt
 import math
 
-def plot_intg_acc(sim,tops,q2binl,vst="VST1"):
+def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
 	'''
 	+ Plot integrated acceptance in Mpippim dimension in W-bins defined in WBINL for various Q2-bins (input by user).
 	+ Starting point are h5T and h5R located in $OBSDIR/simX
 
 	Input paramaters:
-	+ sim=simnum entered as string. Ex. "sim1","siml"
+	+ obsdate="obs_<date>""
+	+ expt="e1f" or "e16" (default="e1f")
+	+ sim=simnum entered as string. Ex. "sim1","siml" (default="siml")
 	+ tops=List of topologies. Ex. [1,2,3,4]
 	+ vst=varset entered as string. Ex: "VST1"
 	+ q2binl=List of q2bins entered as string. Ex: ["1.25-1.75","1.75-2.25"]
 	'''
-	FIN=ROOT.TFile(os.path.join(os.environ['OBSDIR'],sim,'yield_sim_top%s.root'%''.join(str(t) for t in tops)))
-	OUTDIR=os.path.join(os.environ['OBSDIR'],sim,'intg-eff_top%s.root'%''.join(str(t) for t in tops))
+	if expt=='e1f':
+		DATADIR=os.path.join(os.environ['OBSDIR'],obsdate)
+	elif expt=='e16':
+		DATADIR=os.path.join(os.environ['OBSDIR_E16'],obsdate)
+	else:
+		sys.exit("expt is neither E1F or E16! Exiting")
+
+	FIN=ROOT.TFile(os.path.join(DATADIR,sim,'yield_sim_top%s.root'%''.join(str(t) for t in tops)))
+	OUTDIR=os.path.join(DATADIR,sim,'intg-eff_top%s.root'%''.join(str(t) for t in tops))
 	if not os.path.exists(OUTDIR):
     		os.makedirs(OUTDIR)
 	WBINL=["1.575-1.600","1.675-1.700","1.775-1.800","1.875-1.900","1.975-2.000"]
@@ -162,6 +171,77 @@ def plot_acc_q2wbin(sim,top=2,vst=1,q2wbin="1.25-1.75_1.575-1.600",crs_w_bin=3):
 	hR=ROOT.TH1F("hR","hR",60,0,60)
 	hA=ROOT.TH1F("hA","hA",100,0,1)
 	h_relErrA=ROOT.TH1F("hA","hA",100,0,1)
+	#print nbins
+	bincoordT=np.zeros(5,'i')
+	for ibin in range(nbins):
+    		bincT=h5T.GetBinContent(ibin,bincoordT)
+    
+    		binR=h5R.GetBin(bincoordT)
+    		bincR=h5R.GetBinContent(binR)
+       
+    		binA=h5A.GetBin(bincoordT)
+    		bincA=h5A.GetBinContent(binA)
+		if bincA>0:
+			rel_err_A=h5A.GetBinError(binA)/bincA
+			#rel_err_A=get_div_error(bincR,bincT)
+    
+    		if bincA>0 and bincA<1:
+        		hT.Fill(bincT)
+        		hR.Fill(bincR)
+        		hA.Fill(bincA)
+        		h_relErrA.Fill(rel_err_A)
+	c=ROOT.TCanvas()
+	c.Divide(2,2)
+	c.cd(1)
+	hT.Draw()
+	c.cd(2)
+	hR.Draw()
+	c.cd(3)
+	hA.Draw()
+	c.cd(4)
+	h_relErrA.Draw()
+
+	if not ROOT.gROOT.IsBatch():
+    		plt.show()
+    		# wait for you to close the ROOT canvas before exiting
+    		wait(True)
+def plot_acc_q2wbin_5D(obsdate,expt='e1f',sim='siml',q2wbin="1.75-2.25_1.575-1.600",tops=[1,2,3,4],vst=1):
+	'''
+	For a given simX, display acceptance in a given q2-w bin
+
+	Arguments:
+	-obsdate="obs_<date>"
+	-expt="e1f" or "e16" (default='e1f')
+	-sim="simnum" (default='siml')
+	-q2wbin="q2min-q2max_wmin-wmax" (default="1.75-2.25_1.575-1.600")
+	-tops=list of tops (default=[1,2,3,4])
+	-vst=vst number (default=1)
+	'''
+	ROOT.gROOT.ProcessLine(".L THnTool.C+")
+	from ROOT import THnTool
+	# Tools 
+	thntool=THnTool()
+
+	if expt=='e1f':
+		DATADIR=os.path.join(os.environ['OBSDIR'],obsdate)
+	elif expt=='e16':
+		DATADIR=os.path.join(os.environ['OBSDIR_E16'],obsdate)
+	else:
+		sys.exit("expt is neither E1F or E16! Exiting")
+
+	FIN=ROOT.TFile(os.path.join( DATADIR,sim,"yield_sim_top%s.root"%(''.join(str(t) for t in tops)) ))
+	print "FIN=",FIN.GetName()
+
+	#! Get 5D histograms
+	h5T=FIN.Get('%s/VST%d/T/h5_UNPOL'%(q2wbin,vst))
+	h5R=FIN.Get('%s/VST%d/R/h5_UNPOL'%(q2wbin,vst))
+	h5A=FIN.Get('%s/VST%d/A/h5_UNPOL'%(q2wbin,vst))
+	
+	nbins=h5T.GetNbins()
+	hT=ROOT.TH1F("hT","hT",400,0,400)
+	hR=ROOT.TH1F("hR","hR",60,0,60)
+	hA=ROOT.TH1F("hA","hA",100,0,1)
+	h_relErrA=ROOT.TH1F("hA_rel_err","hA_rel_err",100,0,1)
 	#print nbins
 	bincoordT=np.zeros(5,'i')
 	for ibin in range(nbins):
