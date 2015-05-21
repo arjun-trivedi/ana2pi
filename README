@@ -268,7 +268,9 @@ ana2pi Branches
 										+ sub_studies/study_acc/nb_integrated-acceptance.ipynb
 										+ obs/submit.h10_2_d2piR-sim-e16
 										+ obs/submit.h10_2_d2piT-sim-e16
-										+ sub_studies/study_acc/
+										+ sub_studies/study_acc
+										+ obs/nb_integrated-acceptance_E16.ipynb
+										+ obs/make_d2pi_sim_e16
 									Files modified:
 										+ Makefile
 										+ proc_efid.h

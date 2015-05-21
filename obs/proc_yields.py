@@ -56,15 +56,13 @@ class ProcYields:
 		+ if self.USEHEL=true:  h8(VST,SEQ) => h5(VST,SEQ) 
 	
 	"""
-	def __init__(self,obsdate,dtyp,simnum='siml',tops=[1,2,3,4],vsts=[1,2,3],usehel=False,dbg=False,q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125,expt='e1f'):
+	def __init__(self,obsdir,dtyp,simnum='siml',tops=[1,2,3,4],q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125,vsts=[1,2,3],usehel=False,dbg=False):
 		self.DTYP=""
 		if dtyp=='sim':self.DTYP='sim'
 		if dtyp=='exp':self.DTYP='exp'
 		if not(self.DTYP=='exp' or self.DTYP=='sim'):
 			sys.exit("dtyp is neither EXP or SIM! Exiting")
 		print "dtyp=%s"%dtyp
-
-		self.EXPT=expt
 
 		self.SIMNUM=simnum
 
@@ -82,12 +80,18 @@ class ProcYields:
 		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
 		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
 
-		if self.EXPT=='e1f':
-			self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR'],obsdate))
-		elif self.EXPT=='e16':
-			self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR_E16'],obsdate))
+		self.DATADIR=obsdir
+
+		#! Note that self.EXPT is not really used yet
+		self.EXPT=""
+		if "e1f" in self.DATADIR:#.find("e1f"):
+			self.EXPT="e1f"
+		elif "e16" in self.DATADIR:#self.DATADIR.find("e16"):
+			self.EXPT="e16"
+		if not(self.EXPT=='e1f' or self.EXPT=='e16'):
+               		print "expt is neither e1f or e16"
 		else:
-			sys.exit("expt is neither E1F or E16! Exiting")
+			print "EXPT=",self.EXPT
 
 		if self.DTYP=='exp':
 			self.FIN_R=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_exp','d2piR.root'))

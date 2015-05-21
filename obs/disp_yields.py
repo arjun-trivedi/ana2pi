@@ -48,22 +48,29 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispYields:
-	def __init__(self,obsdate,simnum='siml',tops=[1,2,3,4],expt='e1f'):
+	def __init__(self,obsdir,simnum='siml',tops=[1,2,3,4]):
 		self.SIM_NUM=simnum
 		self.TOPS=tops
-		self.EXPT=expt
+		
+		self.DATADIR=obsdir
 
-		if self.EXPT=='e1f':
-			self.DATADIR=os.environ['OBSDIR']
-		elif self.EXPT=='e16':
-			self.DATADIR=os.environ['OBSDIR_E16']
+		#! Note that self.EXPT is used for 
+		#! simstats; for E16, FSIM is used to get
+		#! to get q2wbin list, instead of FEXP
+		self.EXPT=""
+		if "e1f" in self.DATADIR:#.find("e1f"):
+			self.EXPT="e1f"
+		elif "e16" in self.DATADIR:#self.DATADIR.find("e16"):
+			self.EXPT="e16"
+		if not(self.EXPT=='e1f' or self.EXPT=='e16'):
+               		print "expt is neither e1f or e16"
 		else:
-			sys.exit("expt is neither E1F or E16! Exiting")
+			print "EXPT=",self.EXPT
 
-		self.FEXP=root_open(os.path.join(self.DATADIR,obsdate,self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.FEXP=root_open(os.path.join(self.DATADIR,self.SIM_NUM,'yield_exp_top%s.root'%(''.join(str(t) for t in self.TOPS))))
 		#self.FEXP_HEL=root_open(os.path.join(self.DATADIR,obsdate,self.SIM_NUM,'yield_exp_hel_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		self.FSIM=root_open(os.path.join(self.DATADIR,obsdate,self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
-		self.OUTDIR=os.path.join(self.DATADIR,obsdate,self.SIM_NUM)
+		self.FSIM=root_open(os.path.join(self.DATADIR,self.SIM_NUM,'yield_sim_top%s.root'%(''.join(str(t) for t in self.TOPS))))
+		self.OUTDIR=os.path.join(self.DATADIR,self.SIM_NUM)
 		if not os.path.exists(self.OUTDIR):
 			sys.exit("%s does not exist!"%self.OUTDIR)
 		print "DATADIR=%s\nFEXP=%s\nFSIM=%s\nOUTDIR=%s"%(self.DATADIR,self.FEXP,self.FSIM,self.OUTDIR)

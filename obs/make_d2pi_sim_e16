@@ -1,0 +1,45 @@
+#!/bin/bash
+# $1=idtfr (default=full_proc_chain)
+if [ -z "$1" ]; then
+  foutR=d2piR_"$date".root
+  foutT=d2piT_"$date".root
+  idtfr="full_proc_chain"
+  proc_chain="eid:efid:qskim:pid:pfid:q2wskimR:d2piR"
+else
+  idtfr=$1
+  echo "idtfr="$idtfr
+  if [[ "$idtfr" == "full_proc_chain" ]]; then
+    proc_chain="eid:efid:qskim:pid:pfid:q2wskimR:d2piR"
+  elif [[ "$idtfr" == "no_efid" ]]; then
+    proc_chain="eid:qskim:pid:pfid:q2wskimR:d2piR"
+  elif [[ "$idtfr" == "no_pfid" ]]; then
+    proc_chain="eid:efid:qskim:pid:q2wskimR:d2piR"
+  elif [[ "$idtfr" == "no_efid_pfid" ]]; then
+    proc_chain="eid:qskim:pid:q2wskimR:d2piR"
+  else
+    echo "$idtfr not understood! Can only be: full_proc_chain"
+    exit
+  fi
+fi
+
+date=`date +%m%d%y`
+
+foutR=d2piR_"$idtfr"_"$date".root
+foutT=d2piT_"$idtfr"_"$date".root
+
+echo "idtfr="$idtfr
+echo "date="$date
+echo "foutR,foutT="$foutR","$foutT
+
+mkdir -p log
+if [ -e log/$foutR.log ]; then
+  rm log/$foutR.log
+fi
+echo ">>>proc_h10 -i h10.lst -t e16:sim:2pi -p $proc_chain -o $foutR >&" | tee -a log/$foutR.log &
+proc_h10 -i h10.lst -t e16:sim:2pi -p $proc_chain -o $foutR >> log/$foutR.log 2>&1 &
+
+if [ -e log/$foutT.log ]; then
+  rm log/$foutT.log
+fi
+echo ">>>proc_h10 -i h10.lst -t e16:sim:2pi -p q2wskimT:d2piT -o $foutT >&"| tee -a log/$foutT.log& 
+proc_h10 -i h10.lst -t e16:sim:2pi -p q2wskimT:d2piT -o $foutT >> log/$foutT.log 2>&1 &

@@ -4,18 +4,18 @@ from disp_yields import DispYields
 import sys
 
 #! ---------------------
-#  dy [obsdate] [view] [norm=False] [dbg=False] [simnum=siml]
-#  + obsidr
+#  dy [obsdir] [view] [norm=False] [dbg=False] [simnum=siml]
+#  + obsdir
 #  + view = various views defined in display_yields::disp_1D()
 #  + norm = True/False; if yields are to be normalized or not
 #  + dbg  = True/False; if True, then not all q2wbins processed
 #  + simnum = simulation to use to get Acceptance and Hole yields
 #!----------------------
-#! Get obsdate
+#! Get obsdir
 if len(sys.argv)==1:
-        sys.exit("Please enter obsdate")
+        sys.exit("Please enter obsdir")
 else:
-        obsdate=sys.argv[1]
+        obsdir=sys.argv[1]
 
 #! User input view, else ask!
 if len(sys.argv)<3:
@@ -57,12 +57,12 @@ wmin,wmax=1.400,2.125 #3.000
 print "Displaying 1D-Obs: %s,%s"%(view,simnum)
 if view=="all":
   print "Displaying 1D-Obs: %s,%s"%("q2_evltn",simnum)
-  dy=DispYields(obsdate,simnum) 
+  dy=DispYields(obsdir,simnum) 
   dy.disp_1D("q2_evltn",q2min,q2max,wmin,wmax,norm,dbg)
   print "Displaying 1D-Obs: %s,%s"%("full_ana",simnum)
-  dy=DispYields(obsdate,simnum)
+  dy=DispYields(obsdir,simnum)
   dy.disp_1D("full_ana",q2min,q2max,wmin,wmax,norm,dbg)
 else:
   print "Displaying 1D-Obs: %s,%s"%(view,simnum)
-  dy=DispYields(obsdate,simnum)
+  dy=DispYields(obsdir,simnum)
   dy.disp_1D(view,q2min,q2max,wmin,wmax,norm,dbg)

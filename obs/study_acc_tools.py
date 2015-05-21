@@ -29,7 +29,7 @@ def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
 		sys.exit("expt is neither E1F or E16! Exiting")
 
 	FIN=ROOT.TFile(os.path.join(DATADIR,sim,'yield_sim_top%s.root'%''.join(str(t) for t in tops)))
-	OUTDIR=os.path.join(DATADIR,sim,'intg-eff_top%s.root'%''.join(str(t) for t in tops))
+	OUTDIR=os.path.join(DATADIR,sim,'intg-eff_top%s'%''.join(str(t) for t in tops))
 	if not os.path.exists(OUTDIR):
     		os.makedirs(OUTDIR)
 	WBINL=["1.575-1.600","1.675-1.700","1.775-1.800","1.875-1.900","1.975-2.000"]
@@ -68,7 +68,7 @@ def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
         		hA[iq2wbin].SetLineColor(coll[iq2wbin])
     		c.cd(1)
     		l.Draw()
-    		c.SaveAs("%s/ceff_%s_%s.png"%(OUTDIR,wbin,vst))
+    		c.SaveAs("%s/ceff_top%s_%s_%s.png"%(OUTDIR,''.join(str(t) for t in tops),wbin,vst))
 
 
 def get_div_error(N,D):

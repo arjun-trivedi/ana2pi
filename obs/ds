@@ -19,45 +19,45 @@ import numpy as np
 
 
 """
-ds [obsdate] [sim=siml] [tops=tops] [expt=e1f]
+ds [obsdir] [sim=siml] [topcmbns=1:2:3:4] 
 
 + This script displays simstats for user entered simnum (siml by default):
-+ The display is saved in $OBSDIR/simnum/simstats
++ The display is saved in obsdir/simnum/simstats
 
 Issues while running this script:
 + [08-14-15]: Variable binning in TH2F is causing core dumps when trying to draw histograms post
 division operation (This seems to not be an issue when using CINT).
 	+ To solve this program created divide(h1,h2) method
 """
-#! Get obsdate
+#! Get obsdir
 if len(sys.argv)==1:
-	sys.exit("Please enter obsdate")
+	sys.exit("Please enter obsdir")
 else:
-	obsdate=sys.argv[1]
+	obsdir=sys.argv[1]
 #! User input simnum, else use siml
 if len(sys.argv)>2:#i.e. simnum entered by user
 	simnum=sys.argv[2]	
 else:
         simnum='siml'
 
-if len(sys.argv)>3:#i.e. tops by user
-        tops=[]
-        if len(sys.argv[3].split(":"))>0:
-                for top in map(int,sys.argv[3].split(":")):
-                        if top!=1 and top!=2 and top!=3 and top!=4:
-                                sys.exit("valid tops are 1,2,3 and 4 only!")
-                        tops.append(top)
-        else:
-                sys.exit("Please enter tops as 1:2:3:4")
+topcmbnl=[]
+if len(sys.argv)>3:#i.e. topcmbns by user
+	topcmbns=sys.argv[3].split("_")
+	if len(topcmbns)>0:
+		for topcmbn in topcmbns:
+			topcmbn=topcmbn.split(':')
+			topcmbn=map(int,topcmbn)
+			#print "top=",top
+			for top in topcmbn:
+				if top!=1 and top!=2 and top!=3 and top!=4:
+					sys.exit("Please enter each top as 1:2 or 2 or 1:2:3:4 etc")
+			topcmbnl.append(topcmbn)
+	else:
+		sys.exit("Please enter topcmbns as 1:2;2;1:2:3:4")
 else:
-        tops=[1,2,3,4]
+	topcmbnl.append([1,2,3,4])
 
-if len(sys.argv)>4:#i.e. expt entered by user
-        expt=sys.argv[4]
-else:
-        expt='e1f'
-
-print "Displaying simstats for (simun,tops,expt)=(",simnum,tops,expt,")"
+print "Displaying simstats for (obsdir,simnun,topcmbns)=(",obsdir,simnum,topcmbnl,")"
 
 
 #! + The following binning should match up with h8_bng.h/q2w_bng.py
@@ -71,37 +71,12 @@ def make_h_nbins_vs_Q2W():
 	"""
 	This function returns a histrogram with theoretically calculate number of PS-bins vs. Q2,W (for VST1)
 	"""
-	# Mpi=0.139
-	# Mp=0.938
-	# Mppip_th=1.1
-	# Mpippim_th=0.2780
-
-	# w=[WMIN+(i*WBINW) for i in np.arange(NWBINS)]
-	# nbins_Mppip=[((x-Mpi)-Mppip_th)/0.025 for x in w]
-	# nbins_Mpippim=[((x-Mp)-Mpippim_th)/0.025 for x in w]
-	# nbins=[M1*M2*10*10*10 for M1,M2 in zip(nbins_Mppip,nbins_Mpippim)]
-	
-	# #! Create nbins_vs_w
-	# nbins_vs_w=zip(w,nbins)
-	#print nbins_vs_w
-
 	#! Create histogram
 	h=ROOT.TH2F("h_nbins","nbins(Q2,W)",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	#print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
 
-	#! Fill h
-	# for q2 in Q2_VARBINS:
-	# 	for id,d in enumerate(nbins_vs_w):
-	# 		w=nbins_vs_w[id][0]
-	# 		nbins=nbins_vs_w[id][1]
-	# 		#print q2,w,nbins
-	# 		binx=h.GetXaxis().FindBin(w+(0.025/2));
-	# 		biny=h.GetYaxis().FindBin(q2);
-	# 		bin=h.GetBin(binx,biny)
-	# 		h.SetBinContent(bin,nbins)
 	nbins=14*14*10*10*10
 	#print "nbins=",nbins
 	for ixbin in range(h.GetXaxis().GetNbins()):
@@ -118,7 +93,6 @@ def divide(h1,h2):
 	Returns h
 	"""
 	h=ROOT.TH2F("h_div","h_div",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	num_wbins=h.GetXaxis().GetNbins()
@@ -143,7 +117,6 @@ def subtract(h1,h2):
 	Returns h
 	"""
 	h=ROOT.TH2F("h_diff","h_diff",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-	#h.GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	num_wbins=h.GetXaxis().GetNbins()
@@ -158,24 +131,11 @@ def subtract(h1,h2):
 			#print num,den,res
 	return h
 
-if expt=='e1f':
-	outdir=os.path.join(os.environ['D2PIDIR'],obsdate,simnum,'simstats_top%s'%''.join(str(t) for t in tops))
-elif expt=='e16':
-	outdir=os.path.join(os.environ['D2PIDIR_E16'],obsdate,simnum,'simstats_top%s'%''.join(str(t) for t in tops))
-else:
-	sys.exit("ds:expt=%s not recognized! Exiting"%expt)
-if not os.path.exists(outdir):
-        os.makedirs(outdir)
-# outdir=os.path.join('/home/trivedia/ongoing/mem_test/simstats')
-# if not os.path.exists(outdir):
-#       os.makedirs(outdir)
-
 #! Create histograms to display simstats(Q2,W)
 h={}
 for seq in ['T','R','A','H']:
 	for par in ['nbins','N','mu','sg']:
 		h[seq,par]=ROOT.TH2F("h_%s_%s"%(par,seq),"%s_%s(Q2,W)"%(par,seq),NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
-		#h[seq,par].GetYaxis().Set(len(Q2_VARBINS)-1,Q2_VARBINS)
 		h[seq,par].SetXTitle("W [GeV]")
 		h[seq,par].SetYTitle("Q^2 [GeV^2]")
 		#print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
@@ -189,97 +149,101 @@ for seq in ['T','R','A','H']:
 h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 
 #! Fill histograms
-dy=DispYields(obsdate,simnum=simnum,tops=tops,expt=expt)
-ss=dy.get_sim_stats()
-for seq in ['T','R','A','H']:
-	for d in ss[seq]:
-		q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
-		binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
-		biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
-		print "w,q2,binw,binq2=",w,q2,binx,biny
-		bin=h[seq,'nbins'].GetBin(binx,biny)
-		h[seq,'nbins'].SetBinContent(bin,nbins)
-		h[seq,'N'].SetBinContent(bin,N)
-		h[seq,'mu'].SetBinContent(bin,mu)
-		h[seq,'sg'].SetBinContent(bin,sg)			
+for topcmbn in topcmbnl:
+	outdir=os.path.join(obsdir,simnum,'simstats_top%s'%''.join(str(t) for t in topcmbn))
+	if not os.path.exists(outdir):
+		os.makedirs(outdir)
+	dy=DispYields(obsdir,simnum=simnum,tops=topcmbn)
+	ss=dy.get_sim_stats()
+	for seq in ['T','R','A','H']:
+		for d in ss[seq]:
+			q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
+			binx=h[seq,'nbins'].GetXaxis().FindBin(w+(0.025/2));
+			biny=h[seq,'nbins'].GetYaxis().FindBin(q2);
+			print "w,q2,binw,binq2=",w,q2,binx,biny
+			bin=h[seq,'nbins'].GetBin(binx,biny)
+			h[seq,'nbins'].SetBinContent(bin,nbins)
+			h[seq,'N'].SetBinContent(bin,N)
+			h[seq,'mu'].SetBinContent(bin,mu)
+			h[seq,'sg'].SetBinContent(bin,sg)			
 			
-#! Display "directly interesting" histograms to monitor simstats
-ROOT.gStyle.SetOptStat(0)
-c_pars=ROOT.TCanvas("cpars","cpars",1000,1000)
-c_pars.Divide(2,2)
-c_pars.cd(1)
-h_rtio_nbinsT_nbins=divide(h['T','nbins'],h_nbins_vs_Q2W)
-#h_rtio_nbinsT_nbins.SetTitle("nbins_T(Q2,W)/nbins(Q2,W))")
-h_rtio_nbinsT_nbins.SetTitle("Fraction of max. possible PS-bins that are ST filled(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-#h_rtio_nbinsT_nbins.GetZaxis().SetRangeUser(0,1)
-h_rtio_nbinsT_nbins.Draw("colz")
-c_pars.cd(2)
-h_rtio_nbinsH_nbinsT=divide(h['H','nbins'],h['T','nbins'])
-h_rtio_nbinsH_nbinsT.GetZaxis().SetRangeUser(0,1)
-#h_rtio_nbinsH_nbinsT.SetTitle("nbins_H(Q2,W)/nbins_T(Q2,W))")
-h_rtio_nbinsH_nbinsT.SetTitle("Fraction of T PS-bins that are Holes (Q^{2},W)for top %s"%''.join(str(t) for t in tops))
-h_rtio_nbinsH_nbinsT.Draw("colz")
-c_pars.cd(3)
-h['A','mu'].SetTitle("#LTA/bin#GT(Q^{2},W) for top=%s"%''.join(str(t) for t in tops))
-h['A','mu'].Draw("colz")
-if ''.join(str(t) for t in tops)=="1234":
-	h['A','mu'].GetZaxis().SetRangeUser(0,0.3)
-else:
-	h['A','mu'].GetZaxis().SetRangeUser(0,0.1)
-c_pars.cd(4)
-h['A','sg'].SetTitle("RMS_{A/bin}(Q^{2},W) for top=%s"%''.join(str(t) for t in tops))
-h['A','sg'].Draw("colz")
-if ''.join(str(t) for t in tops)=="1234":
-	h['A','sg'].GetZaxis().SetRangeUser(0,0.3)
-else:
-	h['A','sg'].GetZaxis().SetRangeUser(0,0.1)
-# h_rtio_sgA_muA=divide(h['A','sg'],h['A','mu'])
-# h_rtio_sgA_muA.GetZaxis().SetRangeUser(0,2)
-# h_rtio_sgA_muA.SetTitle("#frac{RMS_{A}}{#LTA#GT}(Q^{2},W)")
-# h_rtio_sgA_muA.Draw("colz")
-c_pars.SaveAs("%s/pars1.png"%outdir)
+	#! Display "directly interesting" histograms to monitor simstats
+	ROOT.gStyle.SetOptStat(0)
+	c_pars=ROOT.TCanvas("cpars","cpars",1000,1000)
+	c_pars.Divide(2,2)
+	c_pars.cd(1)
+	h_rtio_nbinsT_nbins=divide(h['T','nbins'],h_nbins_vs_Q2W)
+	#h_rtio_nbinsT_nbins.SetTitle("nbins_T(Q2,W)/nbins(Q2,W))")
+	h_rtio_nbinsT_nbins.SetTitle("Fraction of max. possible PS-bins that are ST filled(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	#h_rtio_nbinsT_nbins.GetZaxis().SetRangeUser(0,1)
+	h_rtio_nbinsT_nbins.Draw("colz")
+	c_pars.cd(2)
+	h_rtio_nbinsH_nbinsT=divide(h['H','nbins'],h['T','nbins'])
+	h_rtio_nbinsH_nbinsT.GetZaxis().SetRangeUser(0,1)
+	#h_rtio_nbinsH_nbinsT.SetTitle("nbins_H(Q2,W)/nbins_T(Q2,W))")
+	h_rtio_nbinsH_nbinsT.SetTitle("Fraction of T PS-bins that are Holes (Q^{2},W)for top %s"%''.join(str(t) for t in topcmbn))
+	h_rtio_nbinsH_nbinsT.Draw("colz")
+	c_pars.cd(3)
+	h['A','mu'].SetTitle("#LTA/bin#GT(Q^{2},W) for top=%s"%''.join(str(t) for t in topcmbn))
+	h['A','mu'].Draw("colz")
+	if ''.join(str(t) for t in topcmbn)=="1234":
+		h['A','mu'].GetZaxis().SetRangeUser(0,0.3)
+	else:
+		h['A','mu'].GetZaxis().SetRangeUser(0,0.1)
+	c_pars.cd(4)
+	h['A','sg'].SetTitle("RMS_{A/bin}(Q^{2},W) for top=%s"%''.join(str(t) for t in topcmbn))
+	h['A','sg'].Draw("colz")
+	if ''.join(str(t) for t in topcmbn)=="1234":
+		h['A','sg'].GetZaxis().SetRangeUser(0,0.3)
+	else:
+		h['A','sg'].GetZaxis().SetRangeUser(0,0.1)
+	# h_rtio_sgA_muA=divide(h['A','sg'],h['A','mu'])
+	# h_rtio_sgA_muA.GetZaxis().SetRangeUser(0,2)
+	# h_rtio_sgA_muA.SetTitle("#frac{RMS_{A}}{#LTA#GT}(Q^{2},W)")
+	# h_rtio_sgA_muA.Draw("colz")
+	c_pars.SaveAs("%s/pars1.png"%outdir)
 
-c_pars2=ROOT.TCanvas("cpars2","cpars2",1000,1000)
-c_pars2.Divide(2,2)
-c_pars2.cd(1)
-h['T','mu'].SetTitle("#LTT/bin#GT(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-h['T','mu'].Draw("colz")
-c_pars2.cd(2)
-h_rtio_sgT_muT=divide(h['T','sg'],h['T','mu'])
-h_rtio_sgT_muT.GetZaxis().SetRangeUser(0,2)
-h_rtio_sgT_muT.SetTitle("#frac{RMS_{T/bin}}{#LTT/bin#GT}(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-h_rtio_sgT_muT.Draw("colz")
-c_pars2.cd(3)
-h['R','mu'].SetTitle("#LTR/bin#GT(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-h['R','mu'].Draw("colz")
-c_pars2.cd(4)
-h_rtio_sgR_muR=divide(h['R','sg'],h['R','mu'])
-h_rtio_sgR_muR.GetZaxis().SetRangeUser(0,2)
-h_rtio_sgR_muR.SetTitle("#frac{RMS_{R/bin}}{#LTR/bin#GT}(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-h_rtio_sgR_muR.Draw("colz")
-c_pars2.SaveAs("%s/pars2.png"%outdir)
+	c_pars2=ROOT.TCanvas("cpars2","cpars2",1000,1000)
+	c_pars2.Divide(2,2)
+	c_pars2.cd(1)
+	h['T','mu'].SetTitle("#LTT/bin#GT(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	h['T','mu'].Draw("colz")
+	c_pars2.cd(2)
+	h_rtio_sgT_muT=divide(h['T','sg'],h['T','mu'])
+	h_rtio_sgT_muT.GetZaxis().SetRangeUser(0,2)
+	h_rtio_sgT_muT.SetTitle("#frac{RMS_{T/bin}}{#LTT/bin#GT}(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	h_rtio_sgT_muT.Draw("colz")
+	c_pars2.cd(3)
+	h['R','mu'].SetTitle("#LTR/bin#GT(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	h['R','mu'].Draw("colz")
+	c_pars2.cd(4)
+	h_rtio_sgR_muR=divide(h['R','sg'],h['R','mu'])
+	h_rtio_sgR_muR.GetZaxis().SetRangeUser(0,2)
+	h_rtio_sgR_muR.SetTitle("#frac{RMS_{R/bin}}{#LTR/bin#GT}(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	h_rtio_sgR_muR.Draw("colz")
+	c_pars2.SaveAs("%s/pars2.png"%outdir)
 
-c_pars3=ROOT.TCanvas("cpars3","cpars3",1000,1000)
-c_pars3.Divide(2,1)
-c_pars3.cd(1)
-h['T','N'].SetTitle("N-ST(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-h['T','N'].Draw("colz")
-c_pars3.cd(2)
-h['R','N'].SetTitle("N-SR(Q^{2},W) for top %s"%''.join(str(t) for t in tops))
-h['R','N'].Draw("colz")
-c_pars3.SaveAs("%s/pars3.png"%outdir)
+	c_pars3=ROOT.TCanvas("cpars3","cpars3",1000,1000)
+	c_pars3.Divide(2,1)
+	c_pars3.cd(1)
+	h['T','N'].SetTitle("N-ST(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	h['T','N'].Draw("colz")
+	c_pars3.cd(2)
+	h['R','N'].SetTitle("N-SR(Q^{2},W) for top %s"%''.join(str(t) for t in topcmbn))
+	h['R','N'].Draw("colz")
+	c_pars3.SaveAs("%s/pars3.png"%outdir)
 
 
 
-#! Save all the histograms to file
-f=ROOT.TFile("%s/simstats_top%s.root"%(outdir,''.join(str(t) for t in tops)),"RECREATE")
-for seq in ['T','R','A','H']:
-	for par in ['nbins','N','mu','sg']:
-		h[seq,par].Write()
-h_nbins_vs_Q2W.Write()
-h_rtio_nbinsT_nbins.Write()
-h_rtio_nbinsH_nbinsT.Write()
-#h_rtio_sgA_muA.Write()
-h_rtio_sgT_muT.Write()
-h_rtio_sgR_muR.Write()
-f.Close()
+	#! Save all the histograms to file
+	f=ROOT.TFile("%s/simstats_top%s.root"%(outdir,''.join(str(t) for t in topcmbn)),"RECREATE")
+	for seq in ['T','R','A','H']:
+		for par in ['nbins','N','mu','sg']:
+			h[seq,par].Write()
+	h_nbins_vs_Q2W.Write()
+	h_rtio_nbinsT_nbins.Write()
+	h_rtio_nbinsH_nbinsT.Write()
+	#h_rtio_sgA_muA.Write()
+	h_rtio_sgT_muT.Write()
+	h_rtio_sgR_muR.Write()
+	f.Close()

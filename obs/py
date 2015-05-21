@@ -4,30 +4,40 @@ from disp_yields import DispYields
 import sys,time
 
 """
-py [obsdate] [dtyp] [simnum=siml] [tops=tops] [usehel=False] [dbg=False] [q2min=1.25] [q2min=1.75] [expt=e1f]
+py [obsdir] [dtyps] [simnum=siml] [topcmbns=1:2:3:4] [q2min=1.25] [q2min=3.25] [usehel=False] [dbg=False] 
 """
 if len(sys.argv)<3:
-	sys.exit("Not all parameters entered. obsdate and dtyp are required")
+	sys.exit("Not all parameters entered. obsdir and dtyps are required")
 
-obsdate=sys.argv[1]
-dtyp=sys.argv[2]
+obsdir=sys.argv[1]
+
+dtypl=[]
+for dtyp in sys.argv[2].split(":"):
+	if dtyp!="sim" and dtyp!="exp":
+		sys.exit("valid dtyps are sim and exp only!")
+	dtypl.append(dtyp)
 
 if len(sys.argv)>3:#i.e. simnum entered by user
 	simnum=sys.argv[3]
 else:
 	simnum='siml'
 
-if len(sys.argv)>4:#i.e. tops by user
-	tops=[]
-        if len(sys.argv[4].split(":"))>0:
-		for top in map(int,sys.argv[4].split(":")):
-			if top!=1 and top!=2 and top!=3 and top!=4:
-				sys.exit("valid tops are 1,2,3 and 4 only!")
-			tops.append(top)
+topcmbnl=[]
+if len(sys.argv)>4:#i.e. topcmbns by user
+	topcmbns=sys.argv[4].split("_")
+	if len(topcmbns)>0:
+		for topcmbn in topcmbns:
+			topcmbn=topcmbn.split(':')
+			topcmbn=map(int,topcmbn)
+			#print "top=",top
+			for top in topcmbn:
+				if top!=1 and top!=2 and top!=3 and top!=4:
+					sys.exit("Please enter each top as 1:2 or 2 or 1:2:3:4 etc")
+			topcmbnl.append(topcmbn)
 	else:
-		sys.exit("Please enter tops as 1:2:3:4")
+		sys.exit("Please enter topcmbn as 1:2;2;1:2:3:4")
 else:
-        tops=[1,2,3,4]
+	topcmbnl.append([1,2,3,4])
 
 if len(sys.argv)>5:#i.e. usehel entered by user
         if   sys.argv[5]=='True':  usehel=True
@@ -52,14 +62,11 @@ else:
 if len(sys.argv)>8:#i.e. q2max entered by user
         q2max=float(sys.argv[8])
 else:
-        expt=1.75
+        q2max=3.25
 
-if len(sys.argv)>9:#i.e. expt entered by user
-        expt=sys.argv[9]
-else:
-        expt='e1f'
-
-print "py: Going to process yields for (obsdate dtyp simmnum tops usehel dbg q2min q2max expt)=(", obsdate, dtyp,simnum,tops,usehel,dbg,q2min,q2max,expt,")"
+print "py: Going to process yields for (obsdir dtyps simmnum topcmbns q2min q2max usehel debug)=(", obsdir,dtypl,simnum,topcmbnl,q2min,q2max,usehel,dbg,")"
 time.sleep(3)
-py=ProcYields(obsdate,dtyp,simnum=simnum,tops=tops,usehel=usehel,dbg=dbg,q2min=q2min,q2max=q2max,expt=expt)#,wmin=1.725)
-py.execute()
+for dtyp in dtypl:
+	for topcmbn in topcmbnl:
+		py=ProcYields(obsdir,dtyp,simnum=simnum,tops=topcmbn,q2min=q2min,q2max=q2max,usehel=usehel,dbg=dbg)#,wmin=1.725)
+		py.execute()

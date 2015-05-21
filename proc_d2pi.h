@@ -65,7 +65,7 @@ protected:
 	TObjArray** _h8T;
 	TObjArray* _hists_MM_T;
 	TObjArray* _hists_ekin_T;
-	TLorentzVector _lvE0_ST;
+	//TLorentzVector _lvE0_ST;
 	TLorentzVector _lvE0;
 	TLorentzVector _lvP0;
 	TLorentzVector _lvQ;
@@ -101,7 +101,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	_procT=procT;
 	_procR=procR;
 	_make_tree=make_tree;
-	_lvE0_ST.SetPxPyPzE(0,0,5.499,TMath::Sqrt(5.499*5.499+MASS_E*MASS_E));
+	//_lvE0_ST.SetPxPyPzE(0,0,5.499,TMath::Sqrt(5.499*5.499+MASS_E*MASS_E));
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 		
@@ -373,10 +373,10 @@ void ProcD2pi::handle() {
 }
 
 void ProcD2pi::McKin() {
-	/*const TLorentzVector lvE0 = dH10->lvE0;
-	const TLorentzVector lvP0 = dH10->lvP0;*/
-	TLorentzVector lvE0 = _lvE0_ST;
-	TLorentzVector lvP0 = _lvP0;
+	const TLorentzVector lvE0 = dH10->lvE0;
+	const TLorentzVector lvP0 = dH10->lvP0;
+	/*TLorentzVector lvE0 = _lvE0_ST;
+	TLorentzVector lvP0 = _lvP0;*/
 	
 	//printf("num mc = %i\n",dAna->h10.mcnentr);
 	for (Int_t idx = 0; idx < dH10->mcnentr; idx++) {
@@ -437,7 +437,7 @@ void ProcD2pi::UpdateEkin(Bool_t useMc /*= kFALSE*/) {
 	const TLorentzVector lvP0 = dH10->lvP0;*/
 	TLorentzVector lvE0;
 	lvE0=_lvE0;
-	if (useMc) lvE0 =_lvE0_ST;
+	//if (useMc) lvE0 =_lvE0_ST;
 	TLorentzVector lvP0 = _lvP0;
 	TLorentzVector lvE1;
 		
@@ -567,7 +567,7 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	// const TLorentzVector lvP0 = dH10->lvP0;
 	TLorentzVector lvE0;
 	lvE0=_lvE0;
-	if (ismc) lvE0 = _lvE0_ST;
+	//if (ismc) lvE0 = _lvE0_ST;
 	TLorentzVector lvP0 = _lvP0;
 	
 	Data2pi *tp = &(dAna->d2pi);
