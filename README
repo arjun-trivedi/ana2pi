@@ -265,7 +265,6 @@ ana2pi Branches
 										+ proc_pfid.h
 										+ data_pfid.cpp
 										+ data_pfid.h
-										+ sub_studies/study_acc/nb_integrated-acceptance.ipynb
 										+ obs/submit.h10_2_d2piR-sim-e16
 										+ obs/submit.h10_2_d2piT-sim-e16
 										+ sub_studies/study_acc
@@ -282,6 +281,7 @@ ana2pi Branches
 										+ obs/py
 										+ obs/ds
 										+ obs/study_acc_tools.py
+										+ proc_d2pi.h: Removed _lvE0_ST
 
 									
 											
