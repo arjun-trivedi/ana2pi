@@ -257,8 +257,7 @@ ana2pi Branches
 									+ Other noteable changes:
 										+ obs/disp_yields.py: Removed method get_yield_per_truePS_bin()
 
-								+ Following changes were made in branch test_add_E16_fidcut that were merged on [XX-XX-15]
-									+ [05-15-15]test_add_E16_fidcut
+								+ [05-15-15]test_add_E16_fidcut
 									Files added:
 										+ cut_fid_e16.f
 										+ wrpr_cut_fid_e16.h
