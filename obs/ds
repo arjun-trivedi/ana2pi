@@ -189,7 +189,7 @@ for topcmbn in topcmbnl:
 	if ''.join(str(t) for t in topcmbn)=="1234":
 		h['A','mu'].GetZaxis().SetRangeUser(0,0.3)
 	else:
-		h['A','mu'].GetZaxis().SetRangeUser(0,0.1)
+		h['A','mu'].GetZaxis().SetRangeUser(0,0.2)#0.1
 	c_pars.cd(4)
 	h['A','sg'].SetTitle("RMS_{A/bin}(Q^{2},W) for top=%s"%''.join(str(t) for t in topcmbn))
 	h['A','sg'].Draw("colz")

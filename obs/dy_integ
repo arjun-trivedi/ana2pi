@@ -4,13 +4,13 @@ from disp_yields import DispYields
 import sys
 
 '''
-dy_integ [obsdate] [simnum=siml] [tops=tops]
+dy_integ [obsdir] [simnum=siml] [topcmbns=1:2:3:4]
 '''
-#! Get obsdate
+#! Get obsdir
 if len(sys.argv)==1:
-        sys.exit("Please enter obsdate")
+        sys.exit("Please enter obsdir")
 else:
-        obsdate=sys.argv[1]
+        obsdir=sys.argv[1]
 
 #! User input simnum, else use siml
 if len(sys.argv)>2:
@@ -18,22 +18,28 @@ if len(sys.argv)>2:
 else:
 	simnum='siml'
 
-if len(sys.argv)>3:#i.e. tops by user
-        tops=[]
-        if len(sys.argv[3].split(":"))>0:
-                for top in map(int,sys.argv[3].split(":")):
-                        if top!=1 and top!=2 and top!=3 and top!=4:
-                                sys.exit("valid tops are 1,2,3 and 4 only!")
-                        tops.append(top)
+topcmbnl=[]
+if len(sys.argv)>3:#i.e. topcmbns by user
+        topcmbns=sys.argv[3].split("_")
+        if len(topcmbns)>0:
+                for topcmbn in topcmbns:
+                        topcmbn=topcmbn.split(':')
+                        topcmbn=map(int,topcmbn)
+                        #print "top=",top
+                        for top in topcmbn:
+                                if top!=1 and top!=2 and top!=3 and top!=4:
+                                        sys.exit("Please enter each top as 1:2 or 2 or 1:2:3:4 etc")
+                        topcmbnl.append(topcmbn)
         else:
-                sys.exit("Please enter tops as 1:2:3:4")
+                sys.exit("Please enter topcmbns as 1:2;2;1:2:3:4")
 else:
-        tops=[1,2,3,4]
+        topcmbnl.append([1,2,3,4])
 
-print "Displaying integrated yields for obsdate:sim:tops = %s:%s:%s"%(obsdate,simnum,tops)
+print "Displaying integrated yields for obsdir:sim:topcmbns = %s:%s:%s"%(obsdir,simnum,topcmbnl)
 
-dy=DispYields(obsdate,simnum=simnum,tops=tops)
-#dy.disp_integ_yield()
-dy.disp_integ_yield(vst='VST1',norm=True)
-#dy.disp_integ_yield(vst='VST2',norm=True)
-#dy.disp_integ_yield(vst='VST3',norm=True)
+for topcmbn in topcmbnl:
+        dy=DispYields(obsdir,simnum=simnum,tops=topcmbn)
+        #dy.disp_integ_yield()
+        dy.disp_integ_yield(vst='VST1',norm=True)
+        #dy.disp_integ_yield(vst='VST2',norm=True)
+        #dy.disp_integ_yield(vst='VST3',norm=True)

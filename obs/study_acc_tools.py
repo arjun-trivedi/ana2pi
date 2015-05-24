@@ -39,7 +39,7 @@ def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
 			q2wbinl.append("%s_%s"%(q2bin,wbin))
     		c=ROOT.TCanvas("c","c",800,700)
     		c.Divide(2,2)
-    		coll=[ROOT.gROOT.ProcessLine("kBlue"),ROOT.gROOT.ProcessLine("kRed")]
+    		coll=[ROOT.gROOT.ProcessLine("kBlue"),ROOT.gROOT.ProcessLine("kGreen"),ROOT.gROOT.ProcessLine("kRed"),ROOT.gROOT.ProcessLine("kBlack")]
     		l=ROOT.TLegend(0.85,0.5,1.0,0.65)
 		hT,hR,hA=[],[],[]
     		for iq2wbin,q2wbin in enumerate(q2wbinl):
@@ -51,8 +51,8 @@ def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
         		hA.append(hR[iq2wbin].Clone("hA%d"%iq2wbin))
         		hA[iq2wbin].Divide(hT[iq2wbin])
         		dopt=""
-        		if iq2wbin==1:
-				dopt="sames"
+        		if iq2wbin>=1:
+					dopt="sames"
         		c.cd(1)
         		hT[iq2wbin].Draw(dopt)
         		hT[iq2wbin].SetLineColor(coll[iq2wbin])
