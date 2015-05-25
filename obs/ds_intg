@@ -1,0 +1,64 @@
+#!/usr/bin/python
+from __future__ import division
+import ROOT
+
+import study_acc_tools as tl
+
+import collections
+from array import *
+import os,sys
+import glob
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+
+"""
+ds_integ [obsdir] [sim=siml] [topcmbns=1:2:3:4] [q2binl]
+
++ This script displays simstats for user entered simnum (siml by default):
++ The display is saved in obsdir/simnum/simstats
+
+"""
+#! Get obsdir
+if len(sys.argv)==1:
+	sys.exit("Please enter obsdir")
+else:
+	obsdir=sys.argv[1]
+
+#! User input simnum, else use siml
+if len(sys.argv)>2:#i.e. simnum entered by user
+	simnum=sys.argv[2]	
+else:
+        simnum='siml'
+
+topcmbnl=[]
+if len(sys.argv)>3:#i.e. topcmbns by user
+	topcmbns=sys.argv[3].split("_")
+	if len(topcmbns)>0:
+		for topcmbn in topcmbns:
+			topcmbn=topcmbn.split(':')
+			topcmbn=map(int,topcmbn)
+			#print "top=",top
+			for top in topcmbn:
+				if top!=1 and top!=2 and top!=3 and top!=4:
+					sys.exit("Please enter each top as 1:2 or 2 or 1:2:3:4 etc")
+			topcmbnl.append(topcmbn)
+	else:
+		sys.exit("Please enter topcmbns as 1:2;2;1:2:3:4")
+else:
+	topcmbnl.append([1,2,3,4])
+
+if len(sys.argv)>4:#i.e. simnum entered by user
+        q2wbinl=sys.argv[4]
+else:
+	if "e1f" in obsdir:
+        	q2wbinl=["1.25-1.75","1.75-2.25","2.25-2.75"]
+	elif "e16" in obsdir:
+		q2wbinl=["2.25-2.75"]
+
+print "Displaying  integrated simstats for (obsdir,simnun,topcmbns,q2wbinl)=(",obsdir,simnum,topcmbnl,q2wbinl")"
+
+for topcmbn in topcmbnl:
+	tl.plot_intg_acc(obsdir,simnum,topcmbn,["2.25-2.75"])

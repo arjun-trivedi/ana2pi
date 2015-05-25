@@ -1,0 +1,2 @@
+proc_h10 -i h10R.lst -t e1f:sim:2pi  -p qskim:pid:eeff:peff:d2piR -o d2piR.root
+proc_h10 -i h10T.lst -t e1f:sim:2pi  -p d2piT -o d2piT.root

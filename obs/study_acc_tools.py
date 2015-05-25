@@ -8,28 +8,22 @@ from rootpy.interactive import wait
 import matplotlib.pyplot as plt
 import math
 
-def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
+def plot_intg_acc(obsdir,simnum,tops,q2binl,vst="VST1"):
 	'''
 	+ Plot integrated acceptance in Mpippim dimension in W-bins defined in WBINL for various Q2-bins (input by user).
 	+ Starting point are h5T and h5R located in $OBSDIR/simX
 
 	Input paramaters:
-	+ obsdate="obs_<date>""
-	+ expt="e1f" or "e16" (default="e1f")
-	+ sim=simnum entered as string. Ex. "sim1","siml" (default="siml")
+	+ obsdir
+	+ simnum=simnum entered as string. Ex. "sim1","siml" (default="siml")
 	+ tops=List of topologies. Ex. [1,2,3,4]
 	+ vst=varset entered as string. Ex: "VST1"
 	+ q2binl=List of q2bins entered as string. Ex: ["1.25-1.75","1.75-2.25"]
 	'''
-	if expt=='e1f':
-		DATADIR=os.path.join(os.environ['OBSDIR'],obsdate)
-	elif expt=='e16':
-		DATADIR=os.path.join(os.environ['OBSDIR_E16'],obsdate)
-	else:
-		sys.exit("expt is neither E1F or E16! Exiting")
-
-	FIN=ROOT.TFile(os.path.join(DATADIR,sim,'yield_sim_top%s.root'%''.join(str(t) for t in tops)))
-	OUTDIR=os.path.join(DATADIR,sim,'intg-eff_top%s'%''.join(str(t) for t in tops))
+	DATADIR=obsdir
+	
+	FIN=ROOT.TFile(os.path.join(DATADIR,simnum,'yield_sim_top%s.root'%''.join(str(t) for t in tops)))
+	OUTDIR=os.path.join(DATADIR,simnum,'intg-eff_top%s'%''.join(str(t) for t in tops))
 	if not os.path.exists(OUTDIR):
     		os.makedirs(OUTDIR)
 	WBINL=["1.575-1.600","1.675-1.700","1.775-1.800","1.875-1.900","1.975-2.000"]
@@ -49,6 +43,7 @@ def plot_intg_acc(obsdate,expt,sim,tops,q2binl,vst="VST1"):
         		hT.append(h5T.Projection(1,"E"))
         		hR.append(h5R.Projection(1,"E"))
         		hA.append(hR[iq2wbin].Clone("hA%d"%iq2wbin))
+        		hA[iq2wbin].Sumw2()
         		hA[iq2wbin].Divide(hT[iq2wbin])
         		dopt=""
         		if iq2wbin>=1:
@@ -205,14 +200,13 @@ def plot_acc_q2wbin(sim,top=2,vst=1,q2wbin="1.25-1.75_1.575-1.600",crs_w_bin=3):
     		plt.show()
     		# wait for you to close the ROOT canvas before exiting
     		wait(True)
-def plot_acc_q2wbin_5D(obsdate,expt='e1f',sim='siml',q2wbin="1.75-2.25_1.575-1.600",tops=[1,2,3,4],vst=1):
+def plot_acc_q2wbin_5D(obsdir,q2wbin="1.75-2.25_1.575-1.600",simnum='siml',tops=[1,2,3,4],vst=1):
 	'''
 	For a given simX, display acceptance in a given q2-w bin
 
 	Arguments:
-	-obsdate="obs_<date>"
-	-expt="e1f" or "e16" (default='e1f')
-	-sim="simnum" (default='siml')
+	-obsdir
+	-simnum="simnum" (default='siml')
 	-q2wbin="q2min-q2max_wmin-wmax" (default="1.75-2.25_1.575-1.600")
 	-tops=list of tops (default=[1,2,3,4])
 	-vst=vst number (default=1)
@@ -222,14 +216,9 @@ def plot_acc_q2wbin_5D(obsdate,expt='e1f',sim='siml',q2wbin="1.75-2.25_1.575-1.6
 	# Tools 
 	thntool=THnTool()
 
-	if expt=='e1f':
-		DATADIR=os.path.join(os.environ['OBSDIR'],obsdate)
-	elif expt=='e16':
-		DATADIR=os.path.join(os.environ['OBSDIR_E16'],obsdate)
-	else:
-		sys.exit("expt is neither E1F or E16! Exiting")
-
-	FIN=ROOT.TFile(os.path.join( DATADIR,sim,"yield_sim_top%s.root"%(''.join(str(t) for t in tops)) ))
+	DATADIR=obsdir
+	
+	FIN=ROOT.TFile(os.path.join( DATADIR,simnum,"yield_sim_top%s.root"%(''.join(str(t) for t in tops)) ))
 	print "FIN=",FIN.GetName()
 
 	#! Get 5D histograms

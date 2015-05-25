@@ -238,6 +238,8 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("qskimelast"))      proc = new ProcSkimQElast(mkdir("qskimelast"),dH10,dAna);
          else if (str.EqualTo("q2wskimT"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,kTRUE,kFALSE);
          else if (str.EqualTo("q2wskimR"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,kFALSE,kTRUE);
+         else if (str.EqualTo("q2wskimT_A"))    proc = new ProcSkimQ2W(mkdir("q2wskimA"),dH10,dAna,kTRUE,kFALSE,1.25,1.75,1.4,1.6);
+         else if (str.EqualTo("q2wskimR_A"))    proc = new ProcSkimQ2W(mkdir("q2wskimA"),dH10,dAna,kFALSE,kTRUE,1.25,1.75,1.4,1.6);
          //at-h8 else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);
          //at-h8 else if (str.EqualTo("q2welist"))   proc = new ProcEListQ2W(mkdir("q2welist"),dH10,dAna);
          else if (str.EqualTo("mom"))        proc = new ProcMomCor(mkdir("mom"),dH10,dAna);

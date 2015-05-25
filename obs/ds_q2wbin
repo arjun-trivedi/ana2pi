@@ -1,0 +1,62 @@
+#!/usr/bin/python
+from __future__ import division
+import ROOT
+
+import study_acc_tools as tl
+
+import collections
+from array import *
+import os,sys
+import glob
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+
+"""
+ds_q2wbin [obsdir] [q2wbin] [sim=siml] [topcmbns=1:2:3:4]
+
++ This script displays simstats for user entered simnum (siml by default):
+
+"""
+#! Get obsdir
+if len(sys.argv)==1:
+	sys.exit("Please enter obsdir")
+else:
+	obsdir=sys.argv[1]
+
+#! Get obsdir
+if len(sys.argv)==2:
+        sys.exit("Please enter q2wbin")
+else:
+        q2wbin=sys.argv[2]
+
+#! User input simnum, else use siml
+if len(sys.argv)>3:#i.e. simnum entered by user
+	simnum=sys.argv[3]	
+else:
+        simnum='siml'
+
+topcmbnl=[]
+if len(sys.argv)>4:#i.e. topcmbns by user
+	topcmbns=sys.argv[4].split("_")
+	if len(topcmbns)>0:
+		for topcmbn in topcmbns:
+			topcmbn=topcmbn.split(':')
+			topcmbn=map(int,topcmbn)
+			#print "top=",top
+			for top in topcmbn:
+				if top!=1 and top!=2 and top!=3 and top!=4:
+					sys.exit("Please enter each top as 1:2 or 2 or 1:2:3:4 etc")
+			topcmbnl.append(topcmbn)
+	else:
+		sys.exit("Please enter topcmbns as 1:2;2;1:2:3:4")
+else:
+	topcmbnl.append([1,2,3,4])
+
+
+print "Displaying  simstats-q2wbin for (obsdir,q2wbin,simnun,topcmbns)=(",obsdir,q2wbin,simnum,topcmbnl,")"
+
+for topcmbn in topcmbnl:
+	tl.plot_acc_q2wbin_5D(obsdir,q2wbin,simnum,topcmbn)

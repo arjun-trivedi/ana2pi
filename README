@@ -282,6 +282,18 @@ ana2pi Branches
 										+ obs/study_acc_tools.py
 										+ proc_d2pi.h: Removed _lvE0_ST
 
+
+									General additions:
+										+ ds_intg
+										+ ds_q2wbin
+										+ make_d2piA__frm__h10-q2wA-eskim-exp
+										+ make_d2piA__frm__h10-q2wA-eskim-sim
+										+ submit.h10_2_h10-q2wA-eskim-exp-byRun
+										+ submit.h10_2_h10-q2wA-eskimR-sim
+										+ submit.h10_2_h10-q2wA-eskimT-sim
+
+									General modifications:
+
 									
 											
 
