@@ -60,6 +60,6 @@ for simnum in "${simlist[@]}"; do
     </Request>
     " > $JSUBFILE 
     echo "jsub -xml $JSUBFILE"
-    #jsub -xml $JSUBFILE
+    jsub -xml $JSUBFILE
   done
 done

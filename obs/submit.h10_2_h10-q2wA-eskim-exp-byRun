@@ -52,5 +52,5 @@ do
   </Request>
   " > $JSUBFILE 
   echo "jsub -xml $JSUBFILE"
-  #jsub -xml $JSUBFILE
+  jsub -xml $JSUBFILE
 done
