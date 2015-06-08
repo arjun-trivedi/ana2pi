@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#######################################################
+# [06-05-15]
+# This script is used to keep only .root files that are
+# common to h10-T.lst and h10-R.lst
+#######################################################
+
+h10lstl=( "h10-T.lst" "h10-R.lst")
+
+# 1. Make list of files common to h10-T.lst and h10-R.lst 
+for h10lst in "${h10lstl[@]}"
+do
+  for h10 in `cat $h10lst`
+  do
+    echo $h10 | xargs basename >> "$h10lst.basename"
+  done
+done
+
+comm -1 -2 h10-T.lst.basename h10-R.lst.basename > h10-comm
+
+# 2. Now remove files not common between from h10-T and h10-R.lst
+for h10lst in "${h10lstl[@]}"
+do
+  echo $h10lst
+  cp $h10lst "$h10lst.orig"
+  for h10 in `cat $h10lst`
+  do
+    h10_basename=$(echo $h10 | xargs basename)
+    #echo "Checking for match for $t_tmp"
+    del=true
+    for comm in `cat h10-comm`
+    do
+      #echo "File to be deleted: $d"
+      if [[ $h10_basename == $comm ]];then
+        del=false
+        break
+      fi   
+    done
+
+    if [[ $del == false ]]; then
+      echo "going to keep file $h10"
+      echo $h10 >> "$h10lst.new" 
+    fi
+
+  done
+
+  rm $h10lst
+  cp "$h10lst.new" $h10lst
+  rm "$h10lst.new"
+
+  i+=1
+done
