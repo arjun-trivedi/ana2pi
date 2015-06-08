@@ -188,6 +188,8 @@ for topcmbn in topcmbnl:
 	h['A','mu'].Draw("colz")
 	if ''.join(str(t) for t in topcmbn)=="1234":
 		h['A','mu'].GetZaxis().SetRangeUser(0,0.3)
+	elif ''.join(str(t) for t in topcmbn)=="1":
+		h['A','mu'].GetZaxis().SetRangeUser(0,0.06)
 	else:
 		h['A','mu'].GetZaxis().SetRangeUser(0,0.2)#0.1
 	c_pars.cd(4)
