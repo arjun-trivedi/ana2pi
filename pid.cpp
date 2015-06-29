@@ -39,7 +39,8 @@ Pid::Pid(TString dtyp)
     }
     
 	//! Get cut parameters	
-	TString fpath=TString::Format("/home/trivedia/CLAS/workspace/ana2pi/sub_studies/study_pid/dtVp_cuts/%s",_dtyp.Data());
+	TString work_space=getenv("WORKSPACE");
+	TString fpath=TString::Format("%s/ana2pi/sub_studies/study_pid/dtVp_cuts/%s",work_space.Data(),_dtyp.Data());
 	Info("Pid::Pid()", "cut file path=%s",fpath.Data());
 
 	for (int i=0;i<3;i++){
