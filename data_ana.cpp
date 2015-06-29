@@ -31,13 +31,16 @@ void DataAna::Clear()
 	eid.Clear();
 	efid.Clear();
 	pfid.Clear();
+	pfid_elast.Clear();
 	eeff.Clear();
 	skimq.Clear();
 	skimq_elast.Clear();
 	mom.Clear();
 	pid.Clear();
+	pidnew.Clear();
 	peff.Clear();
 	pid_elast.Clear();
+	pid_elastnew.Clear();
 	eKin.Clear();
 	eKin_mc.Clear();
 	d2pi.Clear();
@@ -153,6 +156,40 @@ void DataAna::makeHistsPFid(TObjArray** hists, TDirectory* dirout)
 	return;
 }
 
+void DataAna::makeHistsPFidElast(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(1);
+		
+		if (iSector==0)	{
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 0)",     100,0,60, 100,0,360));
+		}
+		if (iSector==1) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 1)",     100,0,60, 100,0,360));
+		}
+		if (iSector==2) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 2)",     100,0,60, 100,0,360));
+		}
+		if (iSector==3)	{
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 3)",     100,0,60, 100,0,360));
+		}
+		if (iSector==4) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 4)",     100,0,60, 100,0,360));
+		}
+		if (iSector==5) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 5)",     100,0,60, 100,0,360));
+		}
+		if (iSector==6) {
+			hists[iSector]->Add(new TH2F("h_p_phiVtheta","#phi vs. #theta for p(sector 6)",     100,0,60, 100,0,360));
+		}
+	}
+	//return ret;
+	return;
+}
+
 void DataAna::makeHistsEEff(TObjArray** hists, TDirectory* dirout)
 {
 	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
@@ -254,7 +291,7 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector] = new TObjArray(21);
 	
 		hists[iSector]->Add(new TH2F("hP_betaVp",TString::Format("#beta vs p for idtfd proton(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
-		hists[iSector]->Add(new TH2F("hP_dtVp",TString::Format("#Deltat vs p for idtfd proton(sector%d)", iSector),100, 0, 4, 200, -40, 120));
+		hists[iSector]->Add(new TH2F("hP_dtVp",TString::Format("#Deltat vs p for idtfd proton(sector%d)", iSector),100,0,5,100,-2,2));
 		hists[iSector]->Add(new TH2F("hP_eoutVein",TString::Format("#DeltaE_{out} vs. #DeltaE_{in} for idtfd p(sector%d)", iSector),150, 0, 1, 150, 0, 1));
 		hists[iSector]->Add(new TH2F("hP_sfoutVsfin",TString::Format("SF_{out} vs. SF_{in} for idtfd p(sector%d)", iSector),100, 0, 0.5, 100, 0, 0.5));
 		hists[iSector]->Add(new TH2F("hP_sftotVp",TString::Format("SF_{tot} vs. p for idtfd p(sector%d)", iSector), 160, 0, 5, 100, 0, 0.5));
@@ -262,7 +299,7 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hP_CCthetaVCCseg",TString::Format("CC_{#theta} vs. CC_{seg} for idtf p(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
 		
 		hists[iSector]->Add(new TH2F("hPip_betaVp", TString::Format("#beta vs p for idtfd #pi^{+}(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
-		hists[iSector]->Add(new TH2F("hPip_dtVp", TString::Format("#Deltat vs p for idtfd #pi^{+}(sector%d)", iSector),100, 0, 4, 200, -40, 120));
+		hists[iSector]->Add(new TH2F("hPip_dtVp", TString::Format("#Deltat vs p for idtfd #pi^{+}(sector%d)", iSector),100,0,5,100,-2,2));
 		hists[iSector]->Add(new TH2F("hPip_eoutVein", TString::Format("#DeltaE_{out} vs. #DeltaE_{in} for idtfd #pi^{+}(sector%d)", iSector),150, 0, 1, 150, 0, 1));
 		hists[iSector]->Add(new TH2F("hPip_sfoutVsfin", TString::Format("SF_{out} vs. SF_{in} for idtfd #pi^{+}(sector%d)", iSector),100, 0, 0.5, 100, 0, 0.5));
 		hists[iSector]->Add(new TH2F("hPip_sftotVp", TString::Format("SF_{tot} vs. p for idtfd #pi^{+}(sector%d)", iSector), 160, 0, 5, 100, 0, 0.5));
@@ -270,7 +307,7 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hPip_CCthetaVCCseg", TString::Format("CC_{#theta} vs. CC_{seg} for idtf #pi^{+}(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
 		
 		hists[iSector]->Add(new TH2F("hPim_betaVp", TString::Format("#beta vs p for idtfd #pi^{-}(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
-		hists[iSector]->Add(new TH2F("hPim_dtVp", TString::Format("#Deltat vs p for idtfd #pi^{-}(sector%d)", iSector),100, 0, 4, 200, -40, 120));
+		hists[iSector]->Add(new TH2F("hPim_dtVp", TString::Format("#Deltat vs p for idtfd #pi^{-}(sector%d)", iSector),100,0,5,100,-2,2));
 		hists[iSector]->Add(new TH2F("hPim_eoutVein", TString::Format("#DeltaE_{out} vs. #DeltaE_{in} for idtfd #pi^{-}(sector%d)", iSector),150, 0, 1, 150, 0, 1));
 		hists[iSector]->Add(new TH2F("hPim_sfoutVsfin", TString::Format("SF_{out} vs. SF_{in} for idtfd #pi^{-}(sector%d)", iSector),100, 0, 0.5, 100, 0, 0.5));
 		hists[iSector]->Add(new TH2F("hPim_sftotVp", TString::Format("SF_{tot} vs. p for idtfd #pi^{-}(sector%d)", iSector), 160, 0, 5, 100, 0, 0.5));
@@ -278,6 +315,46 @@ void DataAna::makeHistsPid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hPim_CCthetaVCCseg", TString::Format("CC_{#theta} vs. CC_{seg} for idtf #pi^{-}(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
 	}
 	//return ret;
+	return;
+}
+
+void DataAna::makeHistsPidMon(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(5);
+	
+		hists[iSector]->Add(new TH2F("h_betaVp_pos",TString::Format("#beta v. p for +ve particles (sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_pos_p",TString::Format("#Deltat v. p for +ve particles under p hyp.(sector%d)", iSector),100,0,5,250,-5,5));
+		hists[iSector]->Add(new TH2F("h_dtVp_pos_pip",TString::Format("#Deltat v. p for +ve particles under #pi^{+} hyp.(sector%d)", iSector),100,0,5,250,-5,5));
+				
+		hists[iSector]->Add(new TH2F("h_betaVp_neg",TString::Format("#beta v. p for -ve(sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_neg_pim",TString::Format("#Deltat v. p for -ve particles under #pi^{-} hyp.(sector%d)", iSector),100,0,5,250,-5,5));
+		
+	}
+	return;
+}
+
+void DataAna::makeHistsPidCut(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(6);
+	
+		hists[iSector]->Add(new TH2F("h_betaVp_p",TString::Format("#beta v. p for +ve particles idtfd as p (sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_p",TString::Format("#Deltat v. p for +ve particles idtfd as p (sector%d)", iSector),100,0,5,250,-5,5));
+
+		hists[iSector]->Add(new TH2F("h_betaVp_pip",TString::Format("#beta v. p for +ve particles idtfd as #pi^{+} (sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_pip",TString::Format("#Deltat v. p for +ve particles idtfd as #pi^{+} (sector%d)", iSector),100,0,5,250,-5,5));
+				
+		hists[iSector]->Add(new TH2F("h_betaVp_pim",TString::Format("#beta v. p for -ve particles idtfd as #pi^{-}(sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_pim",TString::Format("#Deltat v. p for -ve particles idtfd as #pi^{-} (sector%d)", iSector),100,0,5,250,-5,5));
+		
+	}
 	return;
 }
 
@@ -293,7 +370,7 @@ void DataAna::makeHistsPidElast(TObjArray** hists, TDirectory* dirout)
 		hists[iSector] = new TObjArray(7);
 	
 		hists[iSector]->Add(new TH2F("hP_betaVp",TString::Format("#beta vs p for idtfd proton(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
-		hists[iSector]->Add(new TH2F("hP_dtVp",TString::Format("#Deltat vs p for idtfd proton(sector%d)", iSector),100, 0, 4, 200, -40, 120));
+		hists[iSector]->Add(new TH2F("hP_dtVp",TString::Format("#Deltat vs p for idtfd proton(sector%d)", iSector),100,0,5,100,-2,2));
 		hists[iSector]->Add(new TH2F("hP_eoutVein",TString::Format("#DeltaE_{out} vs. #DeltaE_{in} for idtfd p(sector%d)", iSector),150, 0, 1, 150, 0, 1));
 		hists[iSector]->Add(new TH2F("hP_sfoutVsfin",TString::Format("SF_{out} vs. SF_{in} for idtfd p(sector%d)", iSector),100, 0, 0.5, 100, 0, 0.5));
 		hists[iSector]->Add(new TH2F("hP_sftotVp",TString::Format("SF_{tot} vs. p for idtfd p(sector%d)", iSector), 160, 0, 5, 100, 0, 0.5));
@@ -301,6 +378,35 @@ void DataAna::makeHistsPidElast(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hP_CCthetaVCCseg",TString::Format("CC_{#theta} vs. CC_{seg} for idtf p(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
 	}
 	//return ret;
+	return;
+}
+
+void DataAna::makeHistsPidElastMon(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(3);
+	
+		hists[iSector]->Add(new TH2F("h_betaVp_pos",TString::Format("#beta v. p for +ve particles (sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_pos_p",TString::Format("#Deltat v. p for +ve particles under p hyp.(sector%d)", iSector),100,0,5,250,-5,5));
+		hists[iSector]->Add(new TH2F("h_dtVp_pos_pip",TString::Format("#Deltat v. p for +ve particles under #pi^{+} hyp.(sector%d)", iSector),100,0,5,250,-5,5));
+	}
+	return;
+}
+
+void DataAna::makeHistsPidElastCut(TObjArray** hists, TDirectory* dirout)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+			
+		hists[iSector] = new TObjArray(2);
+	
+		hists[iSector]->Add(new TH2F("h_betaVp_p",TString::Format("#beta v. p for +ve particles idtfd as p (sector%d)", iSector),100,0,5,100,0,1.2));
+		hists[iSector]->Add(new TH2F("h_dtVp_p",TString::Format("#Deltat v. p for +ve particles idtfd as p (sector%d)", iSector),100,0,5,250,-5,5));
+	}
 	return;
 }
 
@@ -613,6 +719,63 @@ void DataAna::fillHistsPFid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	}
 }
 
+void DataAna::fillHistsPFidElast(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if (iSector==0) {
+			if (pid_elastnew.h10IdxP>0){
+				TH2* h1 = (TH2*)hists[iSector]->At(0);
+				float phi=pfid_elast.phi_p+180; //as per fid. cuts implemented by Isupov
+				h1->Fill(pfid_elast.theta_p,phi);
+			}
+		}
+		if (iSector==pfid_elast.sector_p && pid_elastnew.h10IdxP>0){
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			float phi=pfid_elast.phi_p+180; //as per fid. cuts implemented by Isupov
+			h1->Fill(pfid_elast.theta_p,phi);
+		}
+	}
+}
+
+void DataAna::fillHistsPFidNew(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if (iSector==0) {
+			if (pidnew.h10IdxP>0){
+				TH2* h1 = (TH2*)hists[iSector]->At(0);
+				float phi=pfid.phi_p+180; //as per fid. cuts implemented by Isupov
+				h1->Fill(pfid.theta_p,phi);
+			}
+			if (pidnew.h10IdxPip>0){
+				TH2* h2 = (TH2*)hists[iSector]->At(1);
+				float phi=pfid.phi_pip+180; //as per fid. cuts implemented by Isupov
+				h2->Fill(pfid.theta_pip,phi);
+				
+			}
+			if (pidnew.h10IdxPim>0 ){
+				TH2* h3 = (TH2*)hists[iSector]->At(2);
+				float phi=pfid.phi_pim+180; //as per fid. cuts implemented by Isupov
+				h3->Fill(pfid.theta_pim,phi);
+			}
+		}
+		if (iSector==pfid.sector_p && pidnew.h10IdxP>0){
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			float phi=pfid.phi_p+180; //as per fid. cuts implemented by Isupov
+			h1->Fill(pfid.theta_p,phi);
+		}
+		if (iSector==pfid.sector_pip && pidnew.h10IdxPip>0){
+			TH2* h2 = (TH2*)hists[iSector]->At(1);
+			float phi=pfid.phi_pip+180; //as per fid. cuts implemented by Isupov
+			h2->Fill(pfid.theta_pip,phi);
+		}
+		if (iSector==pfid.sector_pim && pidnew.h10IdxPim>0 ){
+			TH2* h3 = (TH2*)hists[iSector]->At(2);
+			float phi=pfid.phi_pim+180; //as per fid. cuts implemented by Isupov
+			h3->Fill(pfid.theta_pim,phi);
+		}
+	}
+}
+
 void DataAna::fillHistsEEff(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
 	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
@@ -664,6 +827,39 @@ void DataAna::fillHistsPEff(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 			h2->Fill(peff.p_pip, peff.theta_pip);
 		}
 		if (iSector==peff.sector_pim && pid.h10IdxPim>0 ){
+			TH2* h3 = (TH2*)hists[iSector]->At(2);
+			h3->Fill(peff.p_pim, peff.theta_pim);
+		}
+	}
+}
+
+void DataAna::fillHistsPEffNew(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if (iSector==0) {
+			if (pidnew.h10IdxP>0){
+				TH2* h1 = (TH2*)hists[iSector]->At(0);
+				h1->Fill(peff.p_p, peff.theta_p);
+			}
+			if (pidnew.h10IdxPip>0){
+				TH2* h2 = (TH2*)hists[iSector]->At(1);
+				h2->Fill(peff.p_pip, peff.theta_pip);
+				
+			}
+			if (pidnew.h10IdxPim>0 ){
+				TH2* h3 = (TH2*)hists[iSector]->At(2);
+				h3->Fill(peff.p_pim, peff.theta_pim);
+			}
+		}
+		if (iSector==peff.sector_p && pidnew.h10IdxP>0){
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			h1->Fill(peff.p_p, peff.theta_p);
+		}
+		if (iSector==peff.sector_pip && pidnew.h10IdxPip>0){
+			TH2* h2 = (TH2*)hists[iSector]->At(1);
+			h2->Fill(peff.p_pip, peff.theta_pip);
+		}
+		if (iSector==peff.sector_pim && pidnew.h10IdxPim>0 ){
 			TH2* h3 = (TH2*)hists[iSector]->At(2);
 			h3->Fill(peff.p_pim, peff.theta_pim);
 		}
@@ -767,6 +963,95 @@ void DataAna::fillHistsPid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	}
 }
 
+void DataAna::fillHistsPidMon(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for (int itrk=0;itrk<pidnew.ntrk;itrk++){//! loop over ntrk in the event
+		int hIdx=-1;
+		//! First fill PID hists for +ve trks
+		if (pidnew.q[itrk]==1){//! Select +ve trks
+			hIdx=0;
+			for (int isctr=0;isctr<NSECTORS;isctr++){//! Loop over all sectors
+				if ( (isctr == 0) || (isctr == pidnew.sector[itrk]-1) ) {//! Select appropriate sectors
+					// Fill Beta v. p for all +ve trks
+					TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+					h1->Fill(pidnew.p[itrk], pidnew.b[itrk]);
+					//! Fill dt v.p historam under proton hypothesis
+					TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+					h2->Fill(pidnew.p[itrk], pidnew.dt_p[itrk]);
+					//! Now fill dt v.p historam under proton hypothesis
+					TH2* h3 = (TH2*)hists[isctr]->At(hIdx+2);
+					h3->Fill(pidnew.p[itrk], pidnew.dt_pip[itrk]);
+				}
+			}
+
+		}
+		//! NOw fill PID hists for -ve trks
+		if (pidnew.q[itrk]==-1){//! Select -ve trks
+			hIdx=3;
+			for (int isctr=0;isctr<NSECTORS;isctr++){//! Loop over all sectors
+				if ( (isctr == 0) || (isctr == pidnew.sector[itrk]-1) ) {//! Select appropriate sectors
+					// Fill Beta v. p for all +ve trks
+					TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+					h1->Fill(pidnew.p[itrk], pidnew.b[itrk]);
+					//! Fill dt v.p historam under pim hypothesis
+					TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+					h2->Fill(pidnew.p[itrk], pidnew.dt_pim[itrk]);
+				}
+			}
+
+		}
+	}
+}
+
+void DataAna::fillHistsPidCut(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for (int itrk=0;itrk<pidnew.ntrk;itrk++){//! loop over ntrk in the event
+		int hIdx=-1;
+		//! First fill PID hists for +ve trks
+		if (pidnew.q[itrk]==1){//! Select +ve trks
+			for (int isctr=0;isctr<NSECTORS;isctr++){//! Loop over all sectors
+				if ( (isctr == 0) || (isctr == pidnew.sector[itrk]-1) ) {//! Select appropriate sectors
+					// Fill PID hists for idtfd p
+					if (pidnew.id[itrk]==PROTON && pidnew.h10IdxP>0){
+						hIdx=0;
+						TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+						h1->Fill(pidnew.p[itrk], pidnew.b[itrk]);
+						//! Fill dt v.p historam under proton hypothesis
+						TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+						h2->Fill(pidnew.p[itrk], pidnew.dt_p[itrk]);
+					}
+					// Fill PID hists for idtfd pip
+					if (pidnew.id[itrk]==PIP && pidnew.h10IdxPip>0){
+						hIdx=2;
+						TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+						h1->Fill(pidnew.p[itrk], pidnew.b[itrk]);
+						//! Fill dt v.p historam under proton hypothesis
+						TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+						h2->Fill(pidnew.p[itrk], pidnew.dt_pip[itrk]);
+					}
+				}
+			}
+		}
+		//! NOw fill PID hists for -ve trks
+		if (pidnew.q[itrk]==-1){//! Select -ve trks
+			hIdx=3;
+			for (int isctr=0;isctr<NSECTORS;isctr++){//! Loop over all sectors
+				if ( (isctr == 0) || (isctr == pidnew.sector[itrk]-1) ) {//! Select appropriate sectors
+					// Fill PID hists for idtfd pim
+					if (pidnew.id[itrk]==PIM && pidnew.h10IdxPim>0){
+						hIdx=4;
+						TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+						h1->Fill(pidnew.p[itrk], pidnew.b[itrk]);
+						//! Fill dt v.p historam under proton hypothesis
+						TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+						h2->Fill(pidnew.p[itrk], pidnew.dt_pim[itrk]);
+					}
+				}
+			}
+		}
+	}
+}
+
 void DataAna::fillHistsPidElast(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
 	Int_t hIdx = 0;
@@ -790,6 +1075,54 @@ void DataAna::fillHistsPidElast(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 				h6->Fill(pid_elast.P_nphe);
 				TH2* h7 = (TH2*)hists[iSector]->At(hIdx+6);
 				h7->Fill(pid_elast.P_cc_segm, pid_elast.P_cc_theta);
+			}
+		}
+	}
+}
+
+void DataAna::fillHistsPidElastMon(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for (int itrk=0;itrk<pid_elastnew.ntrk;itrk++){//! loop over ntrk in the event
+		int hIdx=-1;
+		//! Fill PID hists for +ve trks (there should only be +ve tracks!)
+		if (pid_elastnew.q[itrk]==1){//! Select +ve trks (there should only be +ve tracks!)
+			hIdx=0;
+			for (int isctr=0;isctr<NSECTORS;isctr++){//! Loop over all sectors
+				if ( (isctr == 0) || (isctr == pid_elastnew.sector[itrk]-1) ) {//! Select appropriate sectors
+					// Fill Beta v. p for all +ve trks
+					TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+					h1->Fill(pid_elastnew.p[itrk], pid_elastnew.b[itrk]);
+					//! Fill dt v.p historam under proton hypothesis
+					TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+					h2->Fill(pid_elastnew.p[itrk], pid_elastnew.dt_p[itrk]);
+					//! Now fill dt v.p historam under proton hypothesis
+					TH2* h3 = (TH2*)hists[isctr]->At(hIdx+2);
+					h3->Fill(pid_elastnew.p[itrk], pid_elastnew.dt_pip[itrk]);
+				}
+			}
+
+		}
+	}
+}
+
+void DataAna::fillHistsPidElastCut(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for (int itrk=0;itrk<pid_elastnew.ntrk;itrk++){//! loop over ntrk in the event
+		int hIdx=-1;
+		//! First fill PID hists for +ve trks
+		if (pid_elastnew.q[itrk]==1){//! Select +ve trks
+			for (int isctr=0;isctr<NSECTORS;isctr++){//! Loop over all sectors
+				if ( (isctr == 0) || (isctr == pid_elastnew.sector[itrk]-1) ) {//! Select appropriate sectors
+					// Fill PID hists for idtfd p
+					if (pid_elastnew.id[itrk]==PROTON && pid_elastnew.h10IdxP>0){
+						hIdx=0;
+						TH2* h1 = (TH2*)hists[isctr]->At(hIdx);
+						h1->Fill(pid_elastnew.p[itrk], pid_elastnew.b[itrk]);
+						//! Fill dt v.p historam under proton hypothesis
+						TH2* h2 = (TH2*)hists[isctr]->At(hIdx+1);
+						h2->Fill(pid_elastnew.p[itrk], pid_elastnew.dt_p[itrk]);
+					}
+				}
 			}
 		}
 	}
@@ -1114,6 +1447,30 @@ void DataAna::addBranches_DataPid(TTree* t){
     t->Branch("cc_theta_p",&pid.P_cc_theta);
     t->Branch("cc_theta_pip",&pid.Pip_cc_theta);
     t->Branch("cc_theta_pim",&pid.Pim_cc_theta);
+}
+
+void DataAna::addBranches_DataPidNew(TTree* t){
+	t->Branch("l_e",&pidnew.l_e,"l_e/F");
+	t->Branch("t_e",&pidnew.t_e,"t_e/F");
+	t->Branch("t_off",&pidnew.t_off,"t_off/F");
+	t->Branch("ntrk",&pidnew.ntrk,"ntrk/I");
+	t->Branch("q",pidnew.q,"q[ntrk]/I");
+	t->Branch("dc",pidnew.dc,"dc[ntrk]/I");
+	t->Branch("sc",pidnew.sc,"sc[ntrk]/I");
+	t->Branch("q",pidnew.q,"q[ntrk]/I");
+	t->Branch("p",pidnew.p,"p[ntrk]/F");
+	t->Branch("l",pidnew.l,"l[ntrk]/F");
+	t->Branch("t",pidnew.t,"t[ntrk]/F");
+	t->Branch("b",pidnew.b,"b[ntrk]/F");
+	t->Branch("id",pidnew.id,"id[ntrk]/I");
+	t->Branch("sector",pidnew.sector,"sector[ntrk]/I");
+	t->Branch("h10_idx",pidnew.h10_idx,"h10_idx[ntrk]/I");
+	t->Branch("b_p",pidnew.b_p,"b_p[ntrk]/F");
+	t->Branch("b_pip",pidnew.b_pip,"b_pip[ntrk]/F");
+	t->Branch("b_pim",pidnew.b_pim,"b_pim[ntrk]/F");
+	t->Branch("dt_p",pidnew.dt_p,"dt_p[ntrk]/F");
+	t->Branch("dt_pip",pidnew.dt_pip,"dt_pip[ntrk]/F");
+	t->Branch("dt_pim",pidnew.dt_pim,"dt_pim[ntrk]/F");
 }
 
 void DataAna::addBranches_DataPidElast(TTree* t){

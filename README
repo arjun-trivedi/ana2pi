@@ -294,6 +294,38 @@ ana2pi Branches
 
 									General modifications:
 
+									+[06-08-15] test_code-affect_high-acceptance
+									Created this branch to look deeply into code and see if I can find anything there they may be affecting my acceptance calculations.
+
+										+General modifications (pertaining to code read-ability and does with no affect on functionality):
+											+ proc_d2pi.h
+											+ proc_efid.h
+											+ data_pfid.cpp
+
+										+ Addition of New PID: This was the main change added in this branch
+											+ Additions related to new PID 
+												+ sub_studies/study_pid/
+												+ pid.h/cpp
+												+ proc_pid_new.h
+												+ proc_pid_elast_new.h
+												+ data_pid_new.h/cpp
+												+ data_pid_elast_new.h/cpp
+												+ proc_peff_new.h
+												+ proc_pfid_new.h
+												+ proc_pfid_elast_new.h
+												+ data_pfid_elast.h/cpp
+											+ New modular-functionality additions to support new PID:
+												+ data_ana.h/cpp
+												+ proc_h10.cpp	
+												+ sub_studies/study_elastic/submit.h10_2_delastR-exp-byRun
+												+ sub_studies/study_elastic/submit.h10_2_delastR-sim
+
+											+ Addition of code to study d2pi kinematics
+												+ sub_studies/study_d2pi_kinematics/					
+
+
+
+
 									
 											
 

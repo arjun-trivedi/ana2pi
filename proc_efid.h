@@ -31,7 +31,7 @@ ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
                    :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
 {	
 	if (dH10->expt=="e1f") {
-    	Info("ProcEFid::ProcEFid()", "dH10.expt==E16. Will use E1F Fiducial cuts"); 
+    	Info("ProcEFid::ProcEFid()", "dH10.expt==E1F. Will use E1F Fiducial cuts"); 
     }else if (dH10->expt=="e16") {
     	Info("ProcEFid::ProcEFid()", "dH10.expt==E16. Will use E16 Fiducial cuts"); 
     }else{

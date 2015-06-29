@@ -83,11 +83,6 @@ protected:
 	TTree* _tT;
 	TTree* _tR;
 protected:
-	/*static const Int_t NUM_EVTCUTS = 16;
-	enum { EVT_NULL,  EVT,       EVT_GPART0,  EVT_GPARTEQ1, EVT_GPARTEQ2, EVT_GPARTEQ3, EVT_GPARTEQ4, EVT_GPART4,
-	       EVT_GOODE, EVT_GOODP, EVT_GOODPIP, EVT_GOODPIM,
-	       EVT_T1,    EVT_T2,    EVT_T3,      EVT_T4,       EVT_OTHER
-	     };*/
 	static const Int_t NUM_EVTCUTS=6;
 	enum { EVT_NULL, EVT, EVT_T1, EVT_T2, EVT_T3, EVT_T4, EVT_OTHER };
 };
@@ -101,30 +96,11 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	_procT=procT;
 	_procR=procR;
 	_make_tree=make_tree;
-	//_lvE0_ST.SetPxPyPzE(0,0,5.499,TMath::Sqrt(5.499*5.499+MASS_E*MASS_E));
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 		
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
-	/*hevtsum->SetMinimum(0);
-	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPART0,"gpart > 0");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPARTEQ1,"gpart = 1");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPARTEQ2,"gpart = 2");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPARTEQ3,"gpart = 3");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPARTEQ4,"gpart = 4");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPART4,"gpart > 4");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GOODE,"good e");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GOODP,"good p");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GOODPIP,"good pi^{+}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GOODPIM,"good pi^{-}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T1,"Type1(p#pi^{+}#pi^{-})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T2,"Type2(p#pi^{+})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T3,"Type3(p#pi^{-})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T4,"Type4(#pi^{+}#pi^{-})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");*/
-
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T1,"T1(p#pi^{+}#pi^{-})");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_T2,"T2(p#pi^{+})");
@@ -216,46 +192,30 @@ void ProcD2pi::handle() {
 		EpProcessor::handle(); 
 		return;
 	}
-	/*if(!_procR){
-		EpProcessor::handle(); 
-		return;
-	}*/
-
+	
 	//! ResetLvs() before _procR
 	//! (In case of _procT, Lvs will have been set to Thrown values)
 	ResetLvs(); 
 
 	Bool_t gE, gP, gPip, gPim;
-	gE = gP = gPip = gPim = kFALSE;
-	for (Int_t i = 0; i < dH10->gpart; i++) {
+	gE=gP=gPip=gPim=kFALSE;
+	for (int i=0;i<dH10->gpart;i++) {
 		switch (dH10->id[i]) {
 		case ELECTRON:
-			//if (i == 0){
-				dAna->h10idxE = i;
-				gE = kTRUE;
-				//hevtsum->Fill(EVT_GOODE); 
-			//}
+			dAna->h10idxE = i;
+			gE = kTRUE;
 			break;
 		case PROTON:
-			//if (i > 0 && dH10->q[i] == 1 && dH10->dc[i] > 0 && dH10->sc[i] > 0) {
-				dAna->h10idxP = i;
-				gP = kTRUE;
-				//hevtsum->Fill(EVT_GOODP); 
-			//}
+			dAna->h10idxP = i;
+			gP = kTRUE;
 			break;
 		case PIP:
-			//if (i > 0 && dH10->q[i] == 1) {
-				dAna->h10idxPip = i;
-				gPip = kTRUE;
-				//hevtsum->Fill(EVT_GOODPIP);
-			//}
+			dAna->h10idxPip = i;
+			gPip = kTRUE;
 			break;
 		case PIM:
-		    //if (i > 0 && dH10->q[i] == -1) {
-				dAna->h10idxPim = i;
-				gPim = kTRUE;
-				//hevtsum->Fill(EVT_GOODPIM);
-			//}
+		    dAna->h10idxPim = i;
+			gPim = kTRUE;
 			break;
 		default:
 			break;
@@ -263,10 +223,10 @@ void ProcD2pi::handle() {
 	}
 	if (gE) { 
 		//! Determine if identified particles match requirement of tops
-		Bool_t t1a = gP   && gPip &&  gPim;
-		Bool_t t2a = gP   && gPip && !gPim;
-		Bool_t t3a = gP   && gPim && !gPip;
-		Bool_t t4a = gPip && gPim && !gP;
+		Bool_t t1a=gP&&gPip&&gPim;
+		Bool_t t2a=gP&&gPip&&!gPim;
+		Bool_t t3a=gP&&gPim&&!gPip;
+		Bool_t t4a=gPip&&gPim&&!gP;
 		if ( t1a || t2a || t3a || t4a ) { //top:particle selection
 			/* *** Q2, W *** */
 			Double_t mom = dH10->p[dAna->h10idxE];
@@ -297,20 +257,6 @@ void ProcD2pi::handle() {
 			_proc_eid->updateEid();
 			_proc_pid->updatePid();
 						
-			/*Bool_t t1a = gP && gPip && gPim;
-			Bool_t t1b = TMath::Abs(mm2ppippim) < 0.0005;
-			Bool_t t2a = gP && gPip && !gPim;
-			Bool_t t2b = mm2ppip>0 && mm2ppip<0.04;//0.16
-			Bool_t t3a = gP && gPim && !gPip;
-			Bool_t t3b = mm2ppim>0 && mm2ppim<0.04;//0.16;
-			Bool_t t4a = gPip && gPim && !gP;
-			Bool_t t4b = mm2pippim>0.8 && mm2pippim<1.00;//mm2pippim>0.0 && mm2pippim<1.25;
-			
-			Bool_t t1 = t1a && t1b;
-			Bool_t t2 = t2a && t2b;
-			Bool_t t3 = t3a && t3b;
-			Bool_t t4 = t4a && t4b;*/
-
 			//! Make final top selection cut
 			Bool_t t1b=TMath::Abs(mm2ppippim) < 0.0005;
 			Bool_t t2b=mm2ppip>0 && mm2ppip<0.04;//0.16
@@ -322,11 +268,6 @@ void ProcD2pi::handle() {
 			Bool_t t3=t3a && t3b;
 			Bool_t t4=t4a && t4b;
 			
-			/*if (t1a || t2a || t3a || t4a) { //used to determine top MM cut
-				UpdateD2pi_Q2_W_MM();
-				dAna->fillHistsMM(_hists_ana_MM);
-				UpdateEkin();
-			}*/
 			if ( t1 || t2 || t3 || t4) { //top:particle selection + MM cut
 				pass = kTRUE;
 				

@@ -8,9 +8,14 @@
 #include "proc_efid.h"
 #include "proc_eeff.h"
 #include "proc_pid.h"
+#include "proc_pid_new.h"
 #include "proc_pfid.h"
+#include "proc_pfid_new.h"
+#include "proc_pfid_elast_new.h"
 #include "proc_peff.h"
+#include "proc_peff_new.h"
 #include "proc_pid_elast.h"
+#include "proc_pid_elast_new.h"
 #include "proc_skim_q.h"
 #include "proc_skim_q_elast.h"
 #include "proc_skim_q2w.h"
@@ -246,11 +251,22 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pid"))        proc = new ProcPid(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("pidnew"))         proc = new ProcPidNew(mkdir("pid"),dH10,dAna);
+         else if (str.EqualTo("pidnewmon"))      proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("pidnewmononly"))  proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("pidnewtree"))  proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kFALSE,kFALSE,kTRUE);
+         else if (str.EqualTo("pidnew"))     proc = new ProcPidNew(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pfid"))       proc = new ProcPFid(mkdir("pfid"),dH10,dAna);
+         else if (str.EqualTo("pfidnew"))       proc = new ProcPFidNew(mkdir("pfid"),dH10,dAna);
+         else if (str.EqualTo("pfidelastnew"))       proc = new ProcPFidElastNew(mkdir("pfidelast"),dH10,dAna);
          else if (str.EqualTo("peff"))       proc = new ProcPEff(mkdir("peff"),dH10,dAna);
+         else if (str.EqualTo("peffnew"))       proc = new ProcPEffNew(mkdir("peff"),dH10,dAna);
          else if (str.EqualTo("pidelast"))   	  proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna);
          else if (str.EqualTo("pidelastmon"))     proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidelastmononly")) proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("pidelastnew"))   	  proc = new ProcPidElastNew(mkdir("pidelast"),dH10,dAna);
+         else if (str.EqualTo("pidelastnewmon"))     proc = new ProcPidElastNew(mkdir("pidelast"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("pidelastnewmononly")) proc = new ProcPidElastNew(mkdir("pidelast"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("copyh10"))    proc = new ProcCopyH10(mkdir("copyh10"),dH10,dAna);
          else if (str.EqualTo("skimh10"))    proc = new ProcSkimH10(mkdir("skimh10"),dH10,dAna);
          else if (str.EqualTo("lum"))        proc = new ProcLum(mkdir("lum"),dH10,dAna);
