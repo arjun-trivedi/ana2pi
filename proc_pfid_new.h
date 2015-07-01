@@ -11,6 +11,9 @@ using namespace TMath;
 /*
  [05-19-15]
  + Processor must follow ProcSkimQ:ProcPidNew
+ 	+ Note that "new" here is with respect to this processor now following
+ 	ProcPidNew instead of ProcPid and therefore, using DataPidNew instead of DataPid. 
+ 	Everything else should remain the same.
 
  + Pass Events only if:
 	+ dAna->pidnew.h10IdxP>0 && dAna->pidnew.h10IdxPip>0 && dAna->pidnew.h10IdxPim>0 && each of p,pip,pim 
