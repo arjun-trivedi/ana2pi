@@ -336,7 +336,8 @@ bool ProcDelast::passEvent(bool ismc/*=kFALSE*/){
 			ret=kTRUE;
 		}
 	}else{
-		if (de->MMep<0.1 && de->W<1.0){//! tried W values:1.1
+		//if (de->MMep<0.1 && de->W<1.0){//! tried W values:1.1
+		if (de->W<1.0){
 			ret=kTRUE;
 		}
 	}

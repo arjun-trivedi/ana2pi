@@ -1,1 +1,6 @@
 +[06-30-15] Jul_15
+	+[07-01-15] test_elast_xsec_070115
+	Test effect on Elastic yields after following changes:
+		* gpart>0 in ProcEid
+		* Removing requirement of detecting proton i.e. removing qskimelast:pidelast:pfidelast from proc chain
+			* As a result cut on MMep was removed from ProcDElast

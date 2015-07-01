@@ -186,7 +186,7 @@ Bool_t ProcEid::goodE(){
 	if (dH10->dtyp!="sim") { //atrivedi 020313 till _eidTool is fixed to use eid.mc.out
 		if (dH10->id[0]==ELECTRON) hevtsum->Fill(EVT_BOS11);
 	}
-	if (dH10->gpart>1) {
+	if (dH10->gpart>0) {
 		hevtsum->Fill(EVT_GPART1);
 		if (dH10->stat[0]>0) {
 			hevtsum->Fill(EVT_STAT1);
