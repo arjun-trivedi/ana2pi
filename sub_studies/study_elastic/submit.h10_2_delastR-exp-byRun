@@ -35,7 +35,7 @@ do
     <DiskSpace space=\"500\" unit=\"MB\"/>
     <Memory space=\"500\" unit=\"MB\"/>
     <Track name=\"analysis\"/>
-    <TimeLimit unit=\"minutes\" time=\"300\"/>
+    <TimeLimit unit=\"minutes\" time=\"600\"/>
     <Command><![CDATA[
       proc_h10 -i h10.lst -t e1f:exp:elast -p eid:efid:mom:delastR -o delastR.root
     ]]></Command>
