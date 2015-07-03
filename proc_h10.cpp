@@ -11,6 +11,7 @@
 #include "proc_pid_new.h"
 #include "proc_pfid.h"
 #include "proc_pfid_new.h"
+#include "proc_pfid_elast.h"
 #include "proc_pfid_elast_new.h"
 #include "proc_peff.h"
 #include "proc_peff_new.h"
@@ -258,6 +259,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pidnew"))     proc = new ProcPidNew(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pfid"))       proc = new ProcPFid(mkdir("pfid"),dH10,dAna);
          else if (str.EqualTo("pfidnew"))       proc = new ProcPFidNew(mkdir("pfid"),dH10,dAna);
+         else if (str.EqualTo("pfidelast"))       proc = new ProcPFidElast(mkdir("pfidelast"),dH10,dAna);
          else if (str.EqualTo("pfidelastnew"))       proc = new ProcPFidElastNew(mkdir("pfidelast"),dH10,dAna);
          else if (str.EqualTo("peff"))       proc = new ProcPEff(mkdir("peff"),dH10,dAna);
          else if (str.EqualTo("peffnew"))       proc = new ProcPEffNew(mkdir("peff"),dH10,dAna);

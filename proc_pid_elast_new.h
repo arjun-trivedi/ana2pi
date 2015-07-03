@@ -99,24 +99,24 @@ void ProcPidElastNew::handle()
 	DataPidElastNew* dpid = &dAna->pid_elastnew;
 	for (int itrk=0;itrk<dpid->ntrk;itrk++){//! loop over ntrk in the event
 		if (dpid->q[itrk]==1){//! Select +ve trks
-			if (_pid_tool->is_proton(dpid->dt_p[itrk],dpid->p[itrk])){
+			//if (_pid_tool->is_proton(dpid->dt_p[itrk],dpid->p[itrk])){
 				dpid->id[itrk]=PROTON;
 				dpid->h10IdxP=dpid->h10_idx[itrk];
 				dH10->id[dpid->h10_idx[itrk]]==PROTON;
-			}
+			//}
 		}
 	}
 
 	//! 3. Finally decide if event passes selection criterion based on qskim and PID 
-	if(dAna->skimq_elast.isEVT_EQGT_1POS){
+	//if(dAna->skimq_elast.isEVT_EQGT_1POS){
 	 	if (dpid->h10IdxP>0) {
 			hevtsum->Fill(EVT_P_EX);
 			pass = kTRUE;
 		}else{
 			hevtsum->Fill(EVT_OTHER);
 		}
-	}
-	
+	//}
+	pass=kTRUE;
 	if (pass) {
 		if (mon)
 		{

@@ -723,6 +723,24 @@ void DataAna::fillHistsPFidElast(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 {
 	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if (iSector==0) {
+			if (pid_elast.h10IdxP>0){
+				TH2* h1 = (TH2*)hists[iSector]->At(0);
+				float phi=pfid_elast.phi_p+180; //as per fid. cuts implemented by Isupov
+				h1->Fill(pfid_elast.theta_p,phi);
+			}
+		}
+		if (iSector==pfid_elast.sector_p && pid_elast.h10IdxP>0){
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			float phi=pfid_elast.phi_p+180; //as per fid. cuts implemented by Isupov
+			h1->Fill(pfid_elast.theta_p,phi);
+		}
+	}
+}
+
+void DataAna::fillHistsPFidElastNew(TObjArray** hists, Bool_t useMc /* = kFALSE */)
+{
+	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
+		if (iSector==0) {
 			if (pid_elastnew.h10IdxP>0){
 				TH2* h1 = (TH2*)hists[iSector]->At(0);
 				float phi=pfid_elast.phi_p+180; //as per fid. cuts implemented by Isupov

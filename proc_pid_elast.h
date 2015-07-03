@@ -89,25 +89,25 @@ void ProcPidElast::handle()
 	dAna->pid_elast.h10IdxP=0; //atrivedi 041713: First reset indices set in monitoring mode; better soln?
 	for (Int_t i = 1; i < dH10->gpart; i++) {
 		if(dH10->q[i]==1){
-			if (dH10->dc[i]>0) {
-				if (dH10->sc[i]>0) {
-					if (dH10->id[i]==PROTON){
+			//if (dH10->dc[i]>0) {
+				//if (dH10->sc[i]>0) {
+					//if (dH10->id[i]==PROTON){
 						dH10->id[i]=PROTON;
 						dAna->pid_elast.h10IdxP=i;
-					}
-				}
-			}
+					//}
+				//}
+			//}
 		}
 	}
-	if(dAna->skimq_elast.isEVT_EQGT_1POS){
+	//if(dAna->skimq_elast.isEVT_EQGT_1POS){
 	 	if (dAna->pid_elast.h10IdxP>0) {
 			hevtsum->Fill(EVT_P_EX);
 			pass = kTRUE;
 		}else{
 			hevtsum->Fill(EVT_OTHER);
 		}
-	}
-		
+	//}
+	pass=kTRUE;
 	if (pass) {
 		if (mon)
 		{

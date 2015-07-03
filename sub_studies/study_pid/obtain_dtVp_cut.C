@@ -83,8 +83,8 @@
         Float_t constant=fitf->GetParameter(0);
         float mean=fitf->GetParameter(1);
         float sigma=fitf->GetParameter(2);
-        float mean_plus_3sigma=mean+3*sigma;
-        float mean_minus_3sigma=mean-3*sigma;
+        float mean_plus_3sigma=mean+5*sigma;
+        float mean_minus_3sigma=mean-5*sigma;
         //Fill hmean,hsigma3
         float pavg=(pmin[j][ibin]+pmax[j][ibin])/2;
         int bavg=hmean->GetXaxis()->FindBin(pavg);

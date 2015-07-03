@@ -89,8 +89,9 @@ public:
 	void fillHistsEid(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsEFid(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsPFid(TObjArray** hists, Bool_t useMc = kFALSE);
-    void fillHistsPFidElast(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsPFidNew(TObjArray** hists, Bool_t useMc = kFALSE);
+    void fillHistsPFidElast(TObjArray** hists, Bool_t useMc = kFALSE);
+    void fillHistsPFidElastNew(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsEEff(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsPEff(TObjArray** hists, Bool_t useMc = kFALSE);
     void fillHistsPEffNew(TObjArray** hists, Bool_t useMc = kFALSE);
