@@ -75,7 +75,7 @@ void ProcPFidElastNew::handle()
 	
 
 	bool in_fid_rgn=kTRUE;
-	/*if(dAna->skimq_elast.isEVT_EQGT_1POS){
+	if(dAna->skimq_elast.isEVT_EQGT_1POS){
 		if (dAna->pid_elastnew.h10IdxP>0) {
 			hevtsum->Fill(EVT_P_EX);
 			bool in_fid_rgn_p=  Fiducial_e16_hdrn(dAna->pfid_elast.theta_p,  dAna->pfid_elast.phi_p,  dAna->pfid_elast.sector_p);
@@ -84,7 +84,7 @@ void ProcPFidElastNew::handle()
 				hevtsum->Fill(EVT_P_EX_PASS);
 			}
 		}
-	}*/
+	}
 	
 	if (in_fid_rgn)
 	{
