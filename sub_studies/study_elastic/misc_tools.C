@@ -1,11 +1,13 @@
 TCanvas *c[100];
-void comp(char* f1name, char* f2name, bool phi_proj=kFALSE,bool dbg=kFALSE){
+void comp(char* f1name, char* f2name, bool phi_proj=kFALSE,bool dbg=kFALSE,bool use_fullrun=kFALSE){
 
   TFile* f1=TFile::Open(f1name);
-  y1=(THnSparse*)f1->Get("delast/cut/yield");
+  THnSparse* y1;
+  if (use_fullrun) y1=(THnSparse*)f1->Get("delast/yield");
+  else             y1=(THnSparse*)f1->Get("delast/cut/yield");
   if (phi_proj){
-   int phi_bin_min=y1->GetAxis(1)->FindBin(116+1);
-   int phi_bin_max=y1->GetAxis(1)->FindBin(118-1);
+   int phi_bin_min=y1->GetAxis(1)->FindBin(354+1);
+   int phi_bin_max=y1->GetAxis(1)->FindBin(356-1);
    y1->GetAxis(1)->SetRange(phi_bin_min,phi_bin_max);
   }
   TH1F* htheta1=(TH1F*)y1->Projection(0,"E");
@@ -19,10 +21,12 @@ void comp(char* f1name, char* f2name, bool phi_proj=kFALSE,bool dbg=kFALSE){
   }
 
   TFile* f2=TFile::Open(f2name);
-  y2=(THnSparse*)f2->Get("delast/cut/yield");
+  THnSparse* y2;
+  if (use_fullrun) y2=(THnSparse*)f2->Get("delast/yield");
+  else             y2=(THnSparse*)f2->Get("delast/cut/yield");
   if (phi_proj){
-   int phi_bin_min=y2->GetAxis(1)->FindBin(116+1);
-   int phi_bin_max=y2->GetAxis(1)->FindBin(118-1);
+   int phi_bin_min=y2->GetAxis(1)->FindBin(354+1);
+   int phi_bin_max=y2->GetAxis(1)->FindBin(356-1);
    y2->GetAxis(1)->SetRange(phi_bin_min,phi_bin_max);
   }
   TH1F* htheta2=(TH1F*)y2->Projection(0,"E");

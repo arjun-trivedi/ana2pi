@@ -108,14 +108,14 @@ void ProcPidElastNew::handle()
 	}
 
 	//! 3. Finally decide if event passes selection criterion based on qskim and PID 
-	//if(dAna->skimq_elast.isEVT_EQGT_1POS){
+	if(dAna->skimq_elast.isEVT_EQGT_1POS){
 	 	if (dpid->h10IdxP>0) {
 			hevtsum->Fill(EVT_P_EX);
 			pass = kTRUE;
 		}else{
 			hevtsum->Fill(EVT_OTHER);
 		}
-	//}
+	}
 	
 	if (pass) {
 		if (mon)

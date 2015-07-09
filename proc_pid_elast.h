@@ -99,15 +99,15 @@ void ProcPidElast::handle()
 			}
 		}
 	}
-	//if(dAna->skimq_elast.isEVT_EQGT_1POS){
+	if(dAna->skimq_elast.isEVT_EQGT_1POS){
 	 	if (dAna->pid_elast.h10IdxP>0) {
 			hevtsum->Fill(EVT_P_EX);
 			pass = kTRUE;
 		}else{
 			hevtsum->Fill(EVT_OTHER);
 		}
-	//}
-	
+	}
+		
 	if (pass) {
 		if (mon)
 		{
