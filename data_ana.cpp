@@ -635,10 +635,10 @@ void DataAna::fillHistsEid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 			h5->Fill(eid.cc_segm, eid.cc_theta);
 	
 			TH2* h6 = (TH2*)hists[iSector]->At(5);
-			h6->Fill(eid.p, eid.beta);
+			h6->Fill(eid.p, eid.b);
 	
 			TH2* h7 = (TH2*)hists[iSector]->At(6);
-			h7->Fill(eid.p, eid.dtE);
+			h7->Fill(eid.p, eid.dt_e);
 		}
 	}
 	/*TH2* h1 = (TH2*)hists->At(0);
@@ -1413,19 +1413,39 @@ void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){
 }
 
 void DataAna::addBranches_DataEid(TTree* t){
-	t->Branch("sector_e",&eid.sector);
-    t->Branch("beta_e",&eid.beta);
-    t->Branch("betaStr_e",&eid.betaStrE);
-	t->Branch("dt_e",&eid.dtE);
-	t->Branch("p_e_eid",&eid.p); //so that it does not coflict with p_e from DataElast 
-	//from EC
+	t->Branch("p",&eid.p);  
+	t->Branch("sector",&eid.sector);
+    t->Branch("b",&eid.b);
+    t->Branch("b_e",&eid.b_e);
+	t->Branch("dt_e",&eid.dt_e);
 	t->Branch("ec_ei",&eid.ec_ei);
 	t->Branch("ec_eo",&eid.ec_eo);
 	t->Branch("etot",&eid.etot);
-	//from CC
+	t->Branch("ech_x",&eid.ech_x);
+	t->Branch("ech_y",&eid.ech_y);
+	t->Branch("ech_z",&eid.ech_z);
+	t->Branch("ecU",&eid.ecU);
+	t->Branch("ecV",&eid.ecV);
+	t->Branch("ecW",&eid.ecW);
 	t->Branch("nphe",&eid.nphe);
 	t->Branch("cc_segm",&eid.cc_segm);
 	t->Branch("cc_theta",&eid.cc_theta);
+}
+
+void DataAna::addBranches_DataEkin(TTree* t){
+	//t->Branch("sector",&eKin.sector); //! Should be added already from DataEid
+	t->Branch("W",&eKin.W);  
+	t->Branch("Q2",&eKin.Q2);
+    t->Branch("nu",&eKin.nu);
+    t->Branch("xb",&eKin.xb);
+	t->Branch("E1",&eKin.E1);
+	t->Branch("theta1",&eKin.theta1);
+	t->Branch("phi1",&eKin.phi1);
+	t->Branch("theta",&eKin.theta);
+	t->Branch("phi",&eKin.phi);
+	t->Branch("vx",&eKin.vx);
+	t->Branch("vy",&eKin.vy);
+	t->Branch("vz",&eKin.vz);
 }
 
 void DataAna::addBranches_DataPid(TTree* t){

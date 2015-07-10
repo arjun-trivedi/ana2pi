@@ -177,8 +177,9 @@ class StudyElasticTools:
 		self.comp("ECnorm","SCnorm",logy=True)
 		self.comp("ECnorm","STnorm",logy=True)
 		self.comp("ECnorm","TTnorm",logy=True)
+		self.comp("SCnorm","STnorm",logy=True) #! Should be equal to 1, but plot to verify
 		self.comp("EClumnorm","TTnorm",logy=True,draw_normalized=False)
-		
+
 	def get_thrtcl_xsec(self,thry,be,trgt_lgth,wcut,nbins,xmin,xmax):
 		'''
 		Generate theoretical Cross Sections

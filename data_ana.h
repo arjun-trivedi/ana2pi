@@ -114,6 +114,7 @@ public:
 	void addBranches_Data2pi(TTree* t, Bool_t useMc=kFALSE);
 	void addBranches_DataElastic(TTree* t, Bool_t useMc=kFALSE);
 	void addBranches_DataEid(TTree* t);
+	void addBranches_DataEkin(TTree* t);
 	void addBranches_DataPid(TTree* t);
 	void addBranches_DataPidNew(TTree* t);
 	void addBranches_DataPidElast(TTree* t);

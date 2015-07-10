@@ -189,8 +189,8 @@ void ProcDelast::handle() {
 				_t[MONMODE] = new TTree("t","TTree containing data for Elastic events");
 				//AddBranches(_t[MONMODE]);
 				dAna->addBranches_DataElastic(_t[MONMODE]);
-				dAna->addBranches_DataEid(_t[MONMODE]);
-				dAna->addBranches_DataPidElast(_t[MONMODE]);
+				/*dAna->addBranches_DataEid(_t[MONMODE]);
+				dAna->addBranches_DataPidElast(_t[MONMODE]);*/
 				_hists_ekin[MONMODE]=dAna->makeHistsEkin();
 				_hists_cuts[MONMODE]=dAna->makeHistsMMElastic();
 				_yields[MONMODE]=dAna->makeYieldsElastic();
@@ -220,8 +220,8 @@ void ProcDelast::handle() {
 					_t[CUTMODE] = new TTree("t","TTree containing data for Elastic events");
 					//AddBranches(_t[CUTMODE]);
 					dAna->addBranches_DataElastic(_t[CUTMODE]);
-					dAna->addBranches_DataEid(_t[CUTMODE]);
-					dAna->addBranches_DataPidElast(_t[CUTMODE]);
+					/*dAna->addBranches_DataEid(_t[CUTMODE]);
+					dAna->addBranches_DataPidElast(_t[CUTMODE]);*/
 					_hists_ekin[CUTMODE]=dAna->makeHistsEkin();
 					_hists_cuts[CUTMODE]=dAna->makeHistsMMElastic();
 					_yields[CUTMODE]=dAna->makeYieldsElastic();

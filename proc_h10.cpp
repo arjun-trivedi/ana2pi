@@ -227,8 +227,9 @@ EpProcessor* SetupProcs(){
          EpProcessor *proc;
          TString str = obj_str->GetString();
          if (str.EqualTo("eid"))             proc = new ProcEid(mkdir("eid"),dH10,dAna);
-         else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("eid_tree")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
+         /*else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("efid"),dH10,dAna);
          else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE,kTRUE);
