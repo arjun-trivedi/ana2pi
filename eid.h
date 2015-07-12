@@ -27,8 +27,10 @@ public:
 	TF1* Mean(Int_t sector) { return (TF1*)_fpol3Mean[sector-1]->Clone(); }
 	TF1* Low(Int_t sector) { return (TF1*)_fpol3Low[sector-1]->Clone(); }
 	TF1* High(Int_t sector) { return (TF1*)_fpol3High[sector-1]->Clone(); }
+
+	void DrawSFcuts(int sector);
    
-        Bool_t eidParFileFound;
+    Bool_t eidParFileFound;
 
 private:
 	string _fname;

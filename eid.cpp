@@ -1,5 +1,6 @@
 #include "eid.h"
 #include <TString.h>
+#include <TCanvas.h>
 
 Eid* Eid::ms_instance = 0;
 
@@ -139,4 +140,16 @@ TObjArray* Eid::getFuncsCuts()
 		ret->Add(_fpol3High[iSector]);
 	}
 	return ret;
+}
+
+void Eid::DrawSFcuts(int sector){
+	int isctr=sector-1;
+	/*TCanvas* cSF=new TCanvas("cSF","cSF");
+	cSF->cd();
+	cout<<_fpol3Mean[1]->Eval(1)<<endl;*/
+	//_fpol3Mean[isctr]->SetMinimum(0);
+	//_fpol3Mean[isctr]->SetMaximum(1);
+	_fpol3Mean[isctr]->Draw("sames");
+	_fpol3Low[isctr]->Draw("sames");
+	_fpol3High[isctr]->Draw("sames");
 }
