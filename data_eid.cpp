@@ -10,6 +10,7 @@ DataEid::~DataEid()
 
 void DataEid::Clear()
 {
+	id=0;
 	p=0;
 	sector=0;
 	b=0;
@@ -24,6 +25,7 @@ void DataEid::Clear()
 	ecU=0;
 	ecV=0;
 	ecW=0;
+	cc=0;
 	nphe=0;
 	cc_segm=0;
 	cc_theta=0;

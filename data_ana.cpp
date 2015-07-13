@@ -1413,6 +1413,7 @@ void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){
 }
 
 void DataAna::addBranches_DataEid(TTree* t){
+	t->Branch("id",&eid.id);
 	t->Branch("p",&eid.p);  
 	t->Branch("sector",&eid.sector);
     t->Branch("b",&eid.b);
@@ -1427,6 +1428,7 @@ void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("ecU",&eid.ecU);
 	t->Branch("ecV",&eid.ecV);
 	t->Branch("ecW",&eid.ecW);
+	t->Branch("cc",&eid.cc);
 	t->Branch("nphe",&eid.nphe);
 	t->Branch("cc_segm",&eid.cc_segm);
 	t->Branch("cc_theta",&eid.cc_theta);

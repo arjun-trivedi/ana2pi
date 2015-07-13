@@ -231,8 +231,8 @@ EpProcessor* SetupProcs(){
          /*else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("efid"),dH10,dAna);
-         else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE,kTRUE);
+         /*else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("eeff"))       proc = new ProcEEff(mkdir("eeff"),dH10,dAna);
          //else if (str.EqualTo("delast"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna);
          else if (str.EqualTo("delastT"))            proc = new ProcDelast(mkdir("delast"),dH10,dAna,kFALSE,kFALSE,kTRUE, kFALSE);

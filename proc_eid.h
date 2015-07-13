@@ -291,6 +291,8 @@ Bool_t ProcEid::goodE_bos(){
 
 void ProcEid::updateEid(){
 		
+	//! From cooking
+	dAna->eid.id = dH10->id[0];
 	//! From DC
 	dAna->eid.p = dH10->p[0];
 	//! From SC
@@ -326,6 +328,7 @@ void ProcEid::updateEid(){
 	dAna->eid.ecV=uvw[1];
 	dAna->eid.ecW=uvw[2];
 	//from CC
+	dAna->eid.cc      = dH10->cc[0];
 	dAna->eid.nphe    = dH10->nphe[dH10->cc[0]-1];
 	dAna->eid.cc_segm = (dH10->cc_segm[dH10->cc[0]-1]%1000)/10;
 	//calculate cc_theta

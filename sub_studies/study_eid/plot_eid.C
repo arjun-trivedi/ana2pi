@@ -1,35 +1,83 @@
-void plot_eid(TString slctn,int nentries=1000000){
-  TCut slctn_cut;
-  if      (slctn=="ep_enrchmnt") slctn_cut="nphe>30 && ec_ei>0.06";//removed etot>0.16
-  else if (slctn=="ana2pi")      slctn_cut="W<2.125";
-  else if (slctn=="elastic")     slctn_cut="W<1";
-  else{
-    cout <<"slctn not recognized. Going to Exit"<<endl;
-  }
-  printf("%s=%s\n",slctn.Data(),slctn_cut.GetTitle());
+TH2F* norm(TH2F* h2){
+  TH2F* h2c=h2->Clone(TString::Format("%s_norm",h2->GetName()));
+  int nxbins=h2c->GetNbinsX();
+  int nybins=h2c->GetNbinsY();
 
+  for (int ixbin=0;ixbin<nxbins;ixbin++){
+    TH1F* hy=(TH1F*)h2c->ProjectionY("_py",ixbin+1,ixbin+1);
+    float max=hy->GetMaximum();
+    if (max==0) continue;
+    //! Now normalize h2 for this projection
+    for (int iybin=0;iybin<nybins;iybin++){
+      float binc=h2c->GetBinContent(ixbin+1,iybin+1);
+      binc=binc/max;
+      h2c->SetBinContent(ixbin+1,iybin+1,binc);
+    }
+  }
+  return h2c;
+}
+
+void plot_eid(TString slctn,TString seq,int nentries=1000000){
   const int NDTYP=2;
   enum {EXP,SIM};
   TFile* f[NDTYP];// 0=Exp,1=Sim
   TString dtyp_name[]={"Exp","Sim"};
-  //f[EXP]=TFile::Open("$D2PIDIR_EXP/data_eid_070915/deid.root");
-  //f[SIM]=TFile::Open("$D2PIDIR_SIM/data_eid_070915/deid.root");
-  f[EXP]=TFile::Open("$D2PIDIR_EXP/data_eid_070915/elastic/deid.root");
-  f[SIM]=TFile::Open("$D2PIDIR_SIM/data_eid_070915/elastic/deid.root");
 
-  const int NHST=7;//removed "hsfoutVsfin","hetotVp"
-  TString hst_name[]={"heoutVein","hsftotVp",             "hU","hV","hW","hnphe","hCCthetaVCCseg"};
-  TString hst_title[]={"#E_{out} vs. #E_{in}","hsftotVp", "hU","hV","hW","hnphe","hCCthetaVCCseg"};
+  TCut slctn_cut;
+  if(slctn=="all"){
+    slctn_cut="";
+    f[EXP]=TFile::Open("$D2PIDIR_EXP/data_eid_070915/deid.root");
+    f[SIM]=TFile::Open("$D2PIDIR_SIM/data_eid_070915/deid.root");
+  }else if (slctn=="ana2pi"){
+    slctn_cut="W<2.125";
+    f[EXP]=TFile::Open("$D2PIDIR_EXP/data_eid_070915/deid.root");
+    f[SIM]=TFile::Open("$D2PIDIR_SIM/data_eid_070915/deid.root");
+  }
+  else if (slctn=="elastic"){
+    slctn_cut="W<1";
+    f[EXP]=TFile::Open("$D2PIDIR_EXP/data_eid_070915/elastic/deid.root");
+    f[SIM]=TFile::Open("$D2PIDIR_SIM/data_eid_070915/elastic/deid.root");
+  }
+  else{
+    cout <<"slctn not recognized. Going to Exit"<<endl;
+  }
+  printf("%s=%s\n",slctn.Data(),slctn_cut.GetTitle());
+  
+  TTree* t[NDTYP];
+  if (seq=="mon"){
+    t[EXP]=(TTree*)f[EXP]->Get("eid/monitor/t");
+    t[SIM]=(TTree*)f[SIM]->Get("eid/monitor/t");
+  }else if (seq=="cut"){
+    t[EXP]=(TTree*)f[EXP]->Get("eid/cut/t");
+    t[SIM]=(TTree*)f[SIM]->Get("eid/cut/t");
+  }else if (seq=="evtsel"){
+    t[EXP]=(TTree*)f[EXP]->Get("eid2/cut/t");
+    t[SIM]=(TTree*)f[SIM]->Get("eid2/cut/t");
+  }else{
+    cout <<"seq not recognized. Going to Exit"<<endl;
+  }
+  printf("%s=%s\n",seq.Data(),t[EXP]->GetTitle());
+
+  TString wspace=getenv("WORKSPACE");
+  gROOT->ProcessLine(".L ${WORKSPACE}/ana2pi/epconfig.cpp++");
+  gROOT->ProcessLine(".L ${WORKSPACE}/ana2pi/eid.cpp++");
+  Eid* eid_tool[NDTYP];
+  eid_tool[EXP]=new Eid(TString::Format("%s/ana2pi/eid/eid.exp.out",wspace.Data()).Data());
+  eid_tool[SIM]=new Eid(TString::Format("%s/ana2pi/eid/eid.mc.out",wspace.Data()).Data());
+
+  const int NHST=4;//removed "hsfoutVsfin","hetotVp","ecU","ecV","ecW"
+  TString hst_name[]={"heoutVein","hsftotVp",             "hnphe","hCCthetaVCCseg"};
+  TString hst_title[]={"#E_{out} vs. #E_{in}","hsftotVp", "hnphe","hCCthetaVCCseg"};
   TString hst_drw_cmd[]={
                          TString::Format("ec_eo:ec_ei>>%s(150,0,1,150,0,1)",        hst_name[0].Data()),
                          //TString::Format("ec_eo/p:ec_ei/p>>%s(150,0,0.5,150,0,0.5)",hst_name[1].Data()),
                          TString::Format("etot/p:p>>%s(160,0,5,150,0,0.5)",         hst_name[1].Data()),
                          //TString::Format("etot:p>>%s(160,0,5,150,0,2)",             hst_name[3].Data()),
-                         TString::Format("ecU>>%s(100,0,450)",                        hst_name[2].Data()), 
-                         TString::Format("ecV>>%s(100,0,450)",                        hst_name[3].Data()),
-                         TString::Format("ecW>>%s(100,0,450)",                        hst_name[4].Data()),
-                         TString::Format("nphe>>%s(100,0,450)",                     hst_name[5].Data()),
-                         TString::Format("cc_theta:cc_segm>>%s(20,0,20,100,0,50)",   hst_name[6].Data())
+                         //TString::Format("ecU>>%s(100,0,450)",                        hst_name[2].Data()), 
+                         //TString::Format("ecV>>%s(100,0,450)",                        hst_name[3].Data()),
+                         //TString::Format("ecW>>%s(100,0,450)",                        hst_name[4].Data()),
+                         TString::Format("nphe>>%s(100,0,300)",                     hst_name[2].Data()),
+                         TString::Format("cc_theta:cc_segm>>%s(20,0,20,100,0,50)",   hst_name[3].Data())
                          };
   
   const int NSCTR=6;
@@ -37,37 +85,23 @@ void plot_eid(TString slctn,int nentries=1000000){
   TH2F* h[NDTYP][NHST][NSCTR];
   TCanvas* c[NDTYP][NHST];
 
-  TString wspace=getenv("WORKSPACE");
-  gROOT->ProcessLine(".L ${WORKSPACE}/ana2pi/epconfig.cpp++");
-  gROOT->ProcessLine(".L ${WORKSPACE}/ana2pi/eid.cpp++");
-  Eid* eid_tool[NDTYP];
-
   //! Start making plots indexed by dtyp,hst,sctr
   TCut pre_cut("etot>0.001 && ec_ei>0.001 && ec_eo>0.001");
   TCanvas *c1=new TCanvas("c1","c1");//default canvas
   for (int idtyp=0;idtyp<NDTYP;idtyp++){ //begin dtyp loop
     //if (idtyp>0)continue;
     cout<<dtyp_name[idtyp]<<endl;
-    //! Prepare eid_tool
-    TString cut_file_name;
-    if      (strcmp(dtyp_name[idtyp].Data(),"Exp")==0) cut_file_name="eid.exp.out";
-    else if (strcmp(dtyp_name[idtyp].Data(),"Sim")==0) cut_file_name="eid.mc.out";
-    eid_tool[idtyp]=new Eid(TString::Format("%s/ana2pi/eid/%s",wspace.Data(),cut_file_name.Data()).Data());
-    //! Get hists from Tree
-    //TTree* t=(TTree*)f[idtyp]->Get("eid/monitor/t");
-    TTree* t=(TTree*)f[idtyp]->Get("eid2/monitor/t");
     for (int ihst=0;ihst<NHST;ihst++){// begin nhst loop
-      //if (ihst>2)continue;
+      //if (ihst>1)continue;
       for (int isctr=0;isctr<NSCTR;isctr++){ //begin sctr loop
         c1->cd();
-        //TString sctr_cut=TString::Format("sector==%d");// && W<2.125 && 60<ecU && ecU<400 && ecV<360 && ecW <395",isctr+1);
         TCut sctr_cut=TString::Format("sector==%d",isctr+1);
         TCut cut=pre_cut&&sctr_cut&&slctn_cut;
         cout<<hst_drw_cmd[ihst]<<endl;
-        t->Draw(hst_drw_cmd[ihst],cut,"colz",nentries);
+        t[idtyp]->Draw(hst_drw_cmd[ihst],cut,"colz",nentries);
    
         gStyle->SetOptStat("ne");//mri"); 
-        if (ihst<=1||ihst==6){//! i.e. 2D hists
+        if (ihst<=1||ihst==3){//! i.e. 2D hists
           TH2F* h2tmp=(TH2F*)gDirectory->Get(hst_name[ihst]);
           h[idtyp][ihst][isctr]=(TH2F*)h2tmp->Clone();
         }else{//! i.e. 1D hists
@@ -75,34 +109,24 @@ void plot_eid(TString slctn,int nentries=1000000){
           h[idtyp][ihst][isctr]=(TH2F*)h1tmp->Clone();
         }
         h[idtyp][ihst][isctr]->SetName(TString::Format("%s_%s_s%d",       hst_name[ihst].Data(),dtyp_name[idtyp].Data(),isctr+1));
-        //h[idtyp][ihst][isctr]->SetTitle(TString::Format("%s(%s,s%d)[%s]", hst_name[ihst].Data(),dtyp_name[idtyp].Data(),isctr+1,cut.GetTitle()));
         h[idtyp][ihst][isctr]->SetTitle(TString::Format("%s_%s", pre_cut.GetTitle(),slctn.Data()));
       }//end sctr loop
-      //! Now plot hists
-      /*TString cname=TString::Format("c_%s_%s",hst_name[ihst].Data(),dtyp_name[idtyp].Data());
-      c[idtyp][ihst]=new TCanvas(cname,cname);
-      c[idtyp][ihst]->Divide(3,2);
-      for (int isctr=0;isctr<NSCTR;isctr++){
-        c[idtyp][ihst]->cd(isctr+1);
-        h[idtyp][ihst][isctr]->Draw("colz");
-        if (ihst==2)eid_tool[idtyp]->DrawSFcuts(isctr+1);
-      }*/
     }// end nhst loop
   }//end dtyp loop
-  cout<<"here"<<endl;
+
   //! Now plot hists
   //! Seperate canvases for each dtyp for 2D
   for (int idtyp=0;idtyp<NDTYP;idtyp++){
     for (int ihst=0;ihst<NHST;ihst++){
-      if (ihst>1&&ihst!=6) continue;
+      //if (ihst>1) continue;
+      if (ihst>1&&ihst!=3) continue;
       cout<<hst_name[ihst]<<endl;
       TString cname=TString::Format("c_%s_%s",dtyp_name[idtyp].Data(),hst_name[ihst].Data());
-      cout<<"cname="<<cname<<endl;
       c[idtyp][ihst]=new TCanvas(cname,cname);
-      cout<<"here2"<<endl;
       c[idtyp][ihst]->Divide(3,2);
       for (int isctr=0;isctr<NSCTR;isctr++){
         c[idtyp][ihst]->cd(isctr+1);
+        //h[idtyp][ihst][isctr]=norm(h[idtyp][ihst][isctr]);
         h[idtyp][ihst][isctr]->Draw("colz");
         if (ihst==1)eid_tool[idtyp]->DrawSFcuts(isctr+1);
       }
@@ -111,7 +135,7 @@ void plot_eid(TString slctn,int nentries=1000000){
 
   //! Same canvas for each for 1D
   for (int ihst=0;ihst<NHST;ihst++){
-    if (ihst<=1||ihst==6) continue;
+    if (ihst<=1||ihst==3) continue;
     TString cname=TString::Format("c_%s",hst_name[ihst].Data());
     c[EXP][ihst]=new TCanvas(cname,cname);
     c[EXP][ihst]->Divide(3,2);

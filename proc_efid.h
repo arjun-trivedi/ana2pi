@@ -12,8 +12,7 @@ using namespace TMath;
 class ProcEFid : public EpProcessor {
 
 public:
-	ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-		     Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE);
+	ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna);
 	~ProcEFid();
 	
 	void handle();
@@ -26,9 +25,8 @@ protected:
 	enum { EVT_NULL, EVT, EVT_PASS};
 };
 
-ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-                   Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/)
-                   :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
+ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
+                   :EpProcessor(td, dataH10, dataAna)
 {	
 	if (dH10->expt=="e1f") {
     	Info("ProcEFid::ProcEFid()", "dH10.expt==E1F. Will use E1F Fiducial cuts"); 
@@ -55,46 +53,36 @@ void ProcEFid::handle()
 	pass = kFALSE;
 	hevtsum->Fill(EVT);
 	
-	if (mon||mononly)
-	{
-		if (dAna->d2pi.top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
-			dAna->makeHistsEFid(hists[MONMODE][EVTINC], dirmon);
-		}else if(dAna->d2pi.top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
-			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-				TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
-				dAna->makeHistsEFid(hists[MONMODE][iTop], dirmon);
-			}
+	
+	//! Monitoring mode
+	if (dAna->d2pi.top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
+		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
+		dAna->makeHistsEFid(hists[MONMODE][EVTINC], dirmon);
+	}else if(dAna->d2pi.top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
+		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
+			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
+			dAna->makeHistsEFid(hists[MONMODE][iTop], dirmon);
 		}
+	}
 
-		updateEFid();
-		if (dAna->d2pi.top == 0) { //i.e inclusive event
-			dAna->fillHistsEFid(hists[MONMODE][EVTINC]);
-		}else { //i.e 2pi event
-			dAna->fillHistsEFid(hists[MONMODE][dAna->d2pi.top-1]);
-		}
+	updateEFid();
+	if (dAna->d2pi.top == 0) { //i.e inclusive event
+		dAna->fillHistsEFid(hists[MONMODE][EVTINC]);
+	}else { //i.e 2pi event
+		dAna->fillHistsEFid(hists[MONMODE][dAna->d2pi.top-1]);
 	}
 	
-		
-	if (mononly){
-		pass = kTRUE;
-		EpProcessor::handle();
-		return;
-	}
-	
+	//! Cut mode
 	dAna->efid.fidE = inFid();
 	if (dAna->efid.fidE)
 	{
 		hevtsum->Fill(EVT_PASS);
-		if (mon)
-		{
-			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
-				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-				dAna->makeHistsEFid(hists[CUTMODE][EVTINC], dircut);
-			}
-			dAna->fillHistsEFid(hists[CUTMODE][EVTINC]);/* code */
+		if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
+			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
+			dAna->makeHistsEFid(hists[CUTMODE][EVTINC], dircut);
 		}
-
+		dAna->fillHistsEFid(hists[CUTMODE][EVTINC]);/* code */
+		
 		pass = kTRUE;
 		EpProcessor::handle();
 	}

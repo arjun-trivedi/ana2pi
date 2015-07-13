@@ -9,6 +9,8 @@ public:
 	DataEid();
 	virtual ~DataEid();
 	void Clear();
+	//! From cooking
+	Int_t id;
 	//! From DC
 	Float_t p;
 	//! From SC
@@ -27,6 +29,7 @@ public:
 	Float_t ecV;
 	Float_t ecW;
 	//from CC
+	Int_t cc;
 	Int_t nphe;
 	Int_t cc_segm;
 	Float_t cc_theta;
