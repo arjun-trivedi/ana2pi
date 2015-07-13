@@ -94,8 +94,8 @@ void plot_eid(TString slctn,TString seq,int nentries=1000000000){
     for (int ihst=0;ihst<NHST;ihst++){// begin nhst loop
       //if (ihst>1)continue;
       for (int isctr=0;isctr<NSCTR;isctr++){ //begin sctr loop
-        TString outdir=TString::Format("%s/ana2pi/sub_studies/study_eid/hists/%s/%s/%s/%s",wspace.Data(),slctn.Data(),seq.Data(),dtyp_name[idtyp].Data(),hst_name[ihst].Data());
-        gSystem->mkdir(outdir,1);
+        //TString outdir=TString::Format("%s/ana2pi/sub_studies/study_eid/hists/%s/%s/%s/%s",wspace.Data(),slctn.Data(),seq.Data(),dtyp_name[idtyp].Data(),hst_name[ihst].Data());
+        //gSystem->mkdir(outdir,1);
         c1->cd();
         TCut sctr_cut=TString::Format("sector==%d",isctr+1);
         TCut cut=pre_cut&&sctr_cut&&slctn_cut;
@@ -112,13 +112,13 @@ void plot_eid(TString slctn,TString seq,int nentries=1000000000){
         }
         h[idtyp][ihst][isctr]->SetName(TString::Format("%s_%s_s%d",       hst_name[ihst].Data(),dtyp_name[idtyp].Data(),isctr+1));
         h[idtyp][ihst][isctr]->SetTitle(TString::Format("%s_%s", pre_cut.GetTitle(),slctn.Data()));
-        if (ihst<=2||ihst==4){//! i.e. 2D hists
+        /*if (ihst<=2||ihst==4){//! i.e. 2D hists
           h[idtyp][ihst][isctr]->Draw("colz");
         }else{//! i.e. 1D hists
           h[idtyp][ihst][isctr]->Draw();
         }
         if (ihst==2)eid_tool[idtyp]->DrawSFcuts(isctr+1);
-        c1->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),h[idtyp][ihst][isctr]->GetName()));
+        c1->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),h[idtyp][ihst][isctr]->GetName()));*/
       }//end sctr loop
     }// end nhst loop
   }//end dtyp loop
@@ -127,6 +127,8 @@ void plot_eid(TString slctn,TString seq,int nentries=1000000000){
   //! Seperate canvases for each dtyp for 2D
   for (int idtyp=0;idtyp<NDTYP;idtyp++){
     for (int ihst=0;ihst<NHST;ihst++){
+      TString outdir=TString::Format("%s/ana2pi/sub_studies/study_eid/hists/%s/%s/%s/%s",wspace.Data(),slctn.Data(),seq.Data(),dtyp_name[idtyp].Data(),hst_name[ihst].Data());
+      gSystem->mkdir(outdir,1);
       //if (ihst>1) continue;
       if (ihst>2&&ihst!=4) continue;
       cout<<hst_name[ihst]<<endl;
@@ -139,11 +141,14 @@ void plot_eid(TString slctn,TString seq,int nentries=1000000000){
         h[idtyp][ihst][isctr]->Draw("colz");
         if (ihst==2)eid_tool[idtyp]->DrawSFcuts(isctr+1);
       }
+      c[idtyp][ihst]->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),cname.Data()));
     }
   }
 
   //! Same canvas for each for 1D
   for (int ihst=0;ihst<NHST;ihst++){
+    TString outdir=TString::Format("%s/ana2pi/sub_studies/study_eid/hists/%s/%s/Exp/%s",wspace.Data(),slctn.Data(),seq.Data(),hst_name[ihst].Data());
+    gSystem->mkdir(outdir,1);
     if (ihst<=2||ihst==4) continue;
     TString cname=TString::Format("c_%s",hst_name[ihst].Data());
     c[EXP][ihst]=new TCanvas(cname,cname);
@@ -156,5 +161,6 @@ void plot_eid(TString slctn,TString seq,int nentries=1000000000){
       h[EXP][ihst][isctr]->DrawNormalized("",1000);
       h[SIM][ihst][isctr]->DrawNormalized("sames",1000);*/
     }
+    c[EXP][ihst]->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),cname.Data()));
   }
 }
