@@ -22,8 +22,15 @@ TCut MIP_noH("ec_ei<0.06&&ec_eo<0.1");
 TCut MIP1("ec_ei<0.03");
 TCut MIP1_noH("ec_ei<0.03&&ec_eo<0.1");
 
-TCut Wlt2("W<2");
-TCut Wgt2("W>2");
+//TCut Wlt2("W<2");
+//TCut Wgt2("W>2");
+
+TCut Wlt2("p>2.5");
+TCut Wgt2("p<2.5");
+
+TCut cut_ecU("ecU>60 && ecU<400");
+TCut cut_ecV("ecV<360");
+TCut cut_ecW("ecW<395");
 
 TString eoVei="ec_eo:ec_ei>>heoVei(150,0,1,150,0,1)";
 TString etotVp="etot:p>>hetotVp(160,0,6,150,0,2)";

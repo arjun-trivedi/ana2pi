@@ -1,0 +1,5 @@
+root -b -q 'plot_efid.C("2pi","monitor")'
+root -b -q 'plot_efid.C("2pi","cut")'
+
+#root -b -q 'plot_efid.C("elastic","monitor")'
+#root -b -q 'plot_efid.C("elastic","cut")'
