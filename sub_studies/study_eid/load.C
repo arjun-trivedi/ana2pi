@@ -1,5 +1,5 @@
 {
-TTree* t=(TTree*)_file0->Get("eid/monitor/t");
+//TTree* t=(TTree*)_file0->Get("eid/monitor/t");
 
 gStyle->SetOptStat("neiou");
 
@@ -28,9 +28,9 @@ TCut MIP1_noH("ec_ei<0.03&&ec_eo<0.1");
 TCut Wlt2("p>2.5");
 TCut Wgt2("p<2.5");
 
-TCut cut_ecU("ecU>60 && ecU<400");
-TCut cut_ecV("ecV<360");
-TCut cut_ecW("ecW<395");
+TCut cut_ecU("ecU>70 && ecU<400");
+TCut cut_ecV("ecV<0  && ecV<360");
+TCut cut_ecW("evW>0  && ecW<395");
 
 TString eoVei="ec_eo:ec_ei>>heoVei(150,0,1,150,0,1)";
 TString etotVp="etot:p>>hetotVp(160,0,6,150,0,2)";
@@ -41,9 +41,9 @@ TString sfVU="etot/p:ecU>>hsfVU(160,0,450,150,0,0.5)";
 TString sfVV="etot/p:ecV>>hsfVV(160,0,450,150,0,0.5)";
 TString sfVW="etot/p:ecW>>hsfVW(160,0,450,150,0,0.5)";
 
-TCanvas ceoVei;
+/*TCanvas ceoVei;
 t->Draw(eoVei,pre_cut,"colz",1000000);
 
 TCanvas csfVp;
-t->Draw(sfVp,pre_cut,"colz",1000000);
+t->Draw(sfVp,pre_cut,"colz",1000000);*/
 }

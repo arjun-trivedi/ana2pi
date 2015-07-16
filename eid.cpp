@@ -27,9 +27,9 @@ Bool_t Eid::PassThreshold(Float_t p)
 
 Bool_t Eid::PassECFid(float uvw[3]){
 	enum { U, V, W };
-	bool passU= uvw[U]>=_Umin && uvw[U]<=_Umax;
-	bool passV= uvw[V]>=_Vmin && uvw[V]<=_Vmax;
-	bool passW= uvw[W]>=_Wmin && uvw[W]<=_Wmax;
+	bool passU= uvw[U]>_Umin && uvw[U]<_Umax;
+	bool passV= uvw[V]>_Vmin && uvw[V]<_Vmax;
+	bool passW= uvw[W]>_Wmin && uvw[W]<_Wmax;
 	return passU && passV && passW;
 }
 
@@ -89,12 +89,13 @@ Eid::Eid(char* eidParFileName)
 	_f.close();
 
 	//! Eid cut parameters directly entered
-	_Umin=60; //MG:20,EI:40,YT:40
+	//! [07-16-15] UVW cut parms. obtained from study_eid/hists/Wlt1/evtsel
+	_Umin=70; //MG:20,EI:40,YT:40,EP:20
 	_Umax=400;
 	_Vmin=0;
-	_Vmax=360;//MG:375,EI:360,YT:370
+	_Vmax=360;//MG:375,EI:360,YT:370,EP:375
 	_Wmin=0,
-	_Wmax=395;//MG:410,EI:390,YT:405
+	_Wmax=390;//MG:410,EI:390,YT:405,EP:410
 }
 
 Eid::~Eid()

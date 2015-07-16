@@ -5,8 +5,7 @@ void plot_efid(TString slctn,TString cutlvl){
   TString dtyp_name[]={"Exp","Sim"};
 
   if(slctn=="2pi"){
-    //f[EXP]=TFile::Open("$D2PIDIR_EXP/data_eid_070915/deid.root");
-    //f[SIM]=TFile::Open("$D2PIDIR_SIM/data_eid_070915/deid.root");
+    //f[EXP]=TFile::Open("$D2PIDIR_EXP/data_efid_071415/defid_after_d2piR.root");
     f[EXP]=TFile::Open("$D2PIDIR_EXP/data_efid_071415/defid.root");
     f[SIM]=TFile::Open("$D2PIDIR_SIM/data_efid_071415/defid.root");
   }else if (slctn=="elastic"){

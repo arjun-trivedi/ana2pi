@@ -109,6 +109,7 @@ void plot_eid(TString slctn,TString cutlvl,int nentries=1000000000){
     cout<<dtyp_name[idtyp]<<endl;
     for (int ihst=0;ihst<NHST;ihst++){// begin nhst loop
       //if (ihst>1)continue;
+      if (ihst<=3) continue;//! i.e. not make 2D hists, but for ccthetaVccsegm
       for (int isctr=0;isctr<NSCTR;isctr++){ //begin sctr loop
         c1->cd();
         TCut sctr_cut=TString::Format("sector==%d",isctr+1);
@@ -135,12 +136,11 @@ void plot_eid(TString slctn,TString cutlvl,int nentries=1000000000){
   for (int idtyp=0;idtyp<NDTYP;idtyp++){
     fout[idtyp]->cd(); 
     for (int ihst=0;ihst<NHST;ihst++){
-      //TString outdir=TString::Format("%s/ana2pi/sub_studies/study_eid/hists/%s/%s/%s/%s",wspace.Data(),slctn.Data(),cutlvl.Data(),dtyp_name[idtyp].Data(),hst_name[ihst].Data());
+      if (ihst>3&&ihst!=8) continue; //! select on 2D hists to plot
+      if (ihst<=3) continue;//! i.e. not plot 2D hists, but for ccthetaVccsegm
+      cout<<hst_name[ihst]<<endl;
       TString outdir=TString::Format("%s/%s/%s",OUTDIR.Data(),dtyp_name[idtyp].Data(),hst_name[ihst].Data());
       gSystem->mkdir(outdir,1);
-      //if (ihst>1) continue;
-      if (ihst>3&&ihst!=8) continue;
-      cout<<hst_name[ihst]<<endl;
       TString cname=TString::Format("c_%s_%s",dtyp_name[idtyp].Data(),hst_name[ihst].Data());
       c[idtyp][ihst]=new TCanvas(cname,cname);
       c[idtyp][ihst]->Divide(3,2);
@@ -166,8 +166,7 @@ void plot_eid(TString slctn,TString cutlvl,int nentries=1000000000){
     c[EXP][ihst]=new TCanvas(cname,cname);
     c[EXP][ihst]->Divide(3,2);
     for (int isctr=0;isctr<NSCTR;isctr++){
-      /*c[EXP][ihst]->cd(isctr+1);
-      h[EXP][ihst][isctr]->Draw();*/
+      c[EXP][ihst]->cd(isctr+1);
       h[EXP][ihst][isctr]->SetLineColor(kBlue);
       h[SIM][ihst][isctr]->SetLineColor(kRed);
       h[EXP][ihst][isctr]->DrawNormalized("",1000);

@@ -14,3 +14,27 @@ setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI}/scripts/python"
 alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT&'
 alias notes 'pnb {$ANA2PI}/notes&'
 alias ana2pi_tech-notes 'cd ${ANA2PI}/notes/tech'
+
+##--Setup env for ana2pi observables
+source ${ANA2PI}/obs/setup.tcshrc
+
+##--Setup env for ana2pi-sub_studies
+#-- setup_sim_CentOS6
+source ${ANA2PI}/sub_studies/setup_sim_CentOS6/setup.tcshrc
+source ${ANA2PI}/sub_studies/setup_sim_CentOS6/study_ST-Q2W-range/setup.tcshrc
+#-- study_vars
+#source ${WORKSPACE}/ana2pi/sub_studies/study_MMs/setup.tcshrc
+source ${ANA2PI}/sub_studies/study_vars/setup.tcshrc
+#-- study_mem 
+source ${ANA2PI}/sub_studies/study_mem/setup.tcshrc
+#-- study_lum
+source ${ANA2PI}/sub_studies/study_lum/setup.tcshrc
+#-- study_elastic
+source ${ANA2PI}/sub_studies/study_elastic/setup.tcshrc
+#-- study_acc
+source ${ANA2PI}/sub_studies/study_acc/setup.tcshrc
+#-- study_eid
+source ${ANA2PI}/sub_studies/study_eid/setup.tcshrc
+#-- study_efid
+source ${ANA2PI}/sub_studies/study_efid/setup.tcshrc
+
