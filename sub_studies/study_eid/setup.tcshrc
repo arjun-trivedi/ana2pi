@@ -1,0 +1,9 @@
+#--
+setenv STUDY_EID "${ANA2PI}/sub_studies/study_eid"
+alias study_eid 'cd ${STUDY_EID}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${ANA2PI_STUDY_EID}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_EID}"
