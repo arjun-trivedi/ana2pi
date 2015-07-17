@@ -23,6 +23,9 @@ protected:
 	void updateEFid();
 	static const Int_t NUM_EVTCUTS = 2;
 	enum { EVT_NULL, EVT, EVT_PASS};
+
+	TDirectory* _dirmon;
+	TDirectory* _dircut;
 };
 
 ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
@@ -40,11 +43,20 @@ ProcEFid::ProcEFid(TDirectory *td,DataH10* dataH10,DataAna* dataAna)
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PASS,"pass");
+
+	//! Monitor output objects
+	_dirmon = dirout->mkdir(TString::Format("monitor"));
+	dAna->makeHistsEFid(hists[MONMODE][EVTINC], _dirmon);
+
+	//! Cut output objects
+	_dircut = dirout->mkdir(TString::Format("cut"));
+	dAna->makeHistsEFid(hists[CUTMODE][EVTINC], _dircut);
 }
 
 ProcEFid::~ProcEFid()
 {
-	
+	delete _dirmon;
+	delete _dircut;
 }
 
 void ProcEFid::handle()
@@ -55,32 +67,14 @@ void ProcEFid::handle()
 	
 	
 	//! Monitoring mode
-	if (dAna->d2pi.top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-		TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
-		dAna->makeHistsEFid(hists[MONMODE][EVTINC], dirmon);
-	}else if(dAna->d2pi.top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
-		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
-			dAna->makeHistsEFid(hists[MONMODE][iTop], dirmon);
-		}
-	}
-
 	updateEFid();
-	if (dAna->d2pi.top == 0) { //i.e inclusive event
-		dAna->fillHistsEFid(hists[MONMODE][EVTINC]);
-	}else { //i.e 2pi event
-		dAna->fillHistsEFid(hists[MONMODE][dAna->d2pi.top-1]);
-	}
-	
+	dAna->fillHistsEFid(hists[MONMODE][EVTINC]);
+		
 	//! Cut mode
 	dAna->efid.fidE = inFid();
 	if (dAna->efid.fidE)
 	{
 		hevtsum->Fill(EVT_PASS);
-		if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
-			TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-			dAna->makeHistsEFid(hists[CUTMODE][EVTINC], dircut);
-		}
 		dAna->fillHistsEFid(hists[CUTMODE][EVTINC]);/* code */
 		
 		pass = kTRUE;

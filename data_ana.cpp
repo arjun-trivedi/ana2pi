@@ -46,7 +46,7 @@ void DataAna::Clear()
 	d2pi.Clear();
 	d2pi_mc.Clear();
 	dElast.Clear();
-	dElast_ST.Clear();
+	dElastT.Clear();
 }
 
 void DataAna::makeHistsEid(TObjArray** hists, TDirectory* dirout)
@@ -1266,7 +1266,7 @@ void DataAna::fillHistsMM(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 void DataAna::fillHistsMMElastic(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 {
 	DataElastic *de = &dElast;
-	if (useMc) de = &dElast_ST;
+	if (useMc) de = &dElastT;
 		
 	TH2* h1 = (TH2*)hists->At(0);
 	h1->Fill(de->W,de->MMep);
@@ -1311,7 +1311,7 @@ void DataAna::fillYields(TObjArray **hists, Float_t w, Bool_t useMc /* = kFALSE 
 void DataAna::fillYieldsElastic(TObjArray *hists, Bool_t useMc /* = kFALSE */)
 {
 	DataElastic *de = &dElast;
-	if (useMc) de = &dElast_ST;
+	if (useMc) de = &dElastT;
 
 	THnSparse* h2 = (THnSparse*)hists->At(0);
 	Double_t coord[] = {de->theta_e,de->phi_e};
@@ -1384,7 +1384,7 @@ void DataAna::addBranches_Data2pi(TTree* t, Bool_t useMc/*=kFALSE*/){
 
 void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){
 	DataElastic* de=&dElast;
-	if (useMc) de=&dElast_ST;
+	if (useMc) de=&dElastT;
 	//! gpart
 	t->Branch("gpart",&de->gpart);
 	//! Q2, W
@@ -1434,20 +1434,22 @@ void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("cc_theta",&eid.cc_theta);
 }
 
-void DataAna::addBranches_DataEkin(TTree* t){
+void DataAna::addBranches_DataEkin(TTree* t,Bool_t useMc/*=kFALSE*/){
+	DataEkin*  dekin=&eKin;
+	if (useMc) dekin=&eKin_mc;
 	//t->Branch("sector",&eKin.sector); //! Should be added already from DataEid
-	t->Branch("W",&eKin.W);  
-	t->Branch("Q2",&eKin.Q2);
-    t->Branch("nu",&eKin.nu);
-    t->Branch("xb",&eKin.xb);
-	t->Branch("E1",&eKin.E1);
-	t->Branch("theta1",&eKin.theta1);
-	t->Branch("phi1",&eKin.phi1);
-	t->Branch("theta",&eKin.theta);
-	t->Branch("phi",&eKin.phi);
-	t->Branch("vx",&eKin.vx);
-	t->Branch("vy",&eKin.vy);
-	t->Branch("vz",&eKin.vz);
+	t->Branch("W",&dekin->W);  
+	t->Branch("Q2",&dekin->Q2);
+    t->Branch("nu",&dekin->nu);
+    t->Branch("xb",&dekin->xb);
+	t->Branch("E1",&dekin->E1);
+	t->Branch("theta1",&dekin->theta1);
+	t->Branch("phi1",&dekin->phi1);
+	t->Branch("theta",&dekin->theta);
+	t->Branch("phi",&dekin->phi);
+	t->Branch("vx",&dekin->vx);
+	t->Branch("vy",&dekin->vy);
+	t->Branch("vz",&dekin->vz);
 }
 
 void DataAna::addBranches_DataPid(TTree* t){

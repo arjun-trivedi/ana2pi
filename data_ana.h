@@ -52,7 +52,7 @@ public:
 	Data2pi d2pi;
 	Data2pi d2pi_mc;
 	DataElastic dElast;
-	DataElastic dElast_ST;
+	DataElastic dElastT;
 	
 	struct h8Dbng{
 		Int_t bins;
@@ -114,7 +114,7 @@ public:
 	void addBranches_Data2pi(TTree* t, Bool_t useMc=kFALSE);
 	void addBranches_DataElastic(TTree* t, Bool_t useMc=kFALSE);
 	void addBranches_DataEid(TTree* t);
-	void addBranches_DataEkin(TTree* t);
+	void addBranches_DataEkin(TTree* t,Bool_t useMc=kFALSE);
 	void addBranches_DataPid(TTree* t);
 	void addBranches_DataPidNew(TTree* t);
 	void addBranches_DataPidElast(TTree* t);

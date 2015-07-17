@@ -90,6 +90,30 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECFID,"EC Fid.");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SF,"SF");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_BOS11,"EVNT.id=11");
+
+	//! Make monitor output objects
+	_dirmon = dirout->mkdir(TString::Format("monitor"));
+	dAna->makeHistsEid(hists[MONMODE][EVTINC], _dirmon);
+	dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], _dirmon);
+	
+	if (_make_tree){
+		_dirmon->cd();
+		_t[MONMODE] = new TTree("t","TTree containing data from ProdEid");
+		dAna->addBranches_DataEkin(_t[MONMODE]);
+		dAna->addBranches_DataEid(_t[MONMODE]);
+	}
+
+	//! Make cut output objects
+	_dircut = dirout->mkdir(TString::Format("cut"));
+	dAna->makeHistsEid(hists[CUTMODE][EVTINC], _dircut);
+	dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], _dircut);
+	
+	if (_make_tree){
+		_dircut->cd();
+		_t[CUTMODE] = new TTree("t","TTree containing data from ProdEid");
+		dAna->addBranches_DataEkin(_t[CUTMODE]);
+		dAna->addBranches_DataEid(_t[CUTMODE]);
+	}
 }
 
 ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
@@ -131,38 +155,9 @@ void ProcEid::handle() {
 	//! Monitor
 	updateEid();
 	updateEkin();
-
-	//! If mon hists are not created, then create them
-	if (dAna->d2pi.top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-		_dirmon = dirout->mkdir(TString::Format("monitor"));
-		dAna->makeHistsEid(hists[MONMODE][EVTINC], _dirmon);
-		dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], _dirmon);
-	}else if(dAna->d2pi.top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
-		for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-			_dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
-			dAna->makeHistsEid(hists[MONMODE][iTop], _dirmon);
-			dAna->makeHistsEkin(histsEkin[MONMODE][iTop], _dirmon);
-		}
-	}
-
-	//! Fill mon hists
-	if (dAna->d2pi.top == 0) { //i.e inclusive event
-		dAna->fillHistsEid(hists[MONMODE][EVTINC]);
-		dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
-	}else { //i.e 2pi event
-		dAna->fillHistsEid(hists[MONMODE][dAna->d2pi.top-1]);
-		dAna->fillHistsEkin(histsEkin[MONMODE][dAna->d2pi.top-1]);
-	}
-
+	dAna->fillHistsEid(hists[MONMODE][EVTINC]);
+	dAna->fillHistsEkin(histsEkin[MONMODE][EVTINC]);
 	if (_make_tree){
-		if (_t[MONMODE]==NULL){
-			Info("In ProcEid::handle()","_t[MONMODE]!=NULL\n");
-			_dirmon->cd();
-			if (_dirmon==NULL) Info("In ProcEid::handle()","_dirmon==NULL\n");
-			else _t[MONMODE] = new TTree("t","TTree containing data from ProdEid");
-			dAna->addBranches_DataEkin(_t[MONMODE]);
-			dAna->addBranches_DataEid(_t[MONMODE]);
-		}
 		_t[MONMODE]->Fill();
 	}
 		
@@ -175,22 +170,10 @@ void ProcEid::handle() {
     else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained
     
 	if (gE) {	
-		if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
-			_dircut = dirout->mkdir(TString::Format("cut"));
-			dAna->makeHistsEid(hists[CUTMODE][EVTINC], _dircut);
-			dAna->makeHistsEkin(histsEkin[CUTMODE][EVTINC], _dircut);
-		}
 		dAna->fillHistsEid(hists[CUTMODE][EVTINC]);
 		dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC]);
 
 		if (_make_tree){
-			if (_t[CUTMODE]==NULL){
-				Info("In ProcEid::handle()","_t[CUTMODE]!=NULL\n");
-				_dircut->cd();
-				_t[CUTMODE] = new TTree("t","TTree containing data from ProdEid");
-				dAna->addBranches_DataEkin(_t[CUTMODE]);
-				dAna->addBranches_DataEid(_t[CUTMODE]);
-			}
 			_t[CUTMODE]->Fill();
 		}
 		

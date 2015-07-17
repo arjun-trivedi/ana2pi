@@ -16,7 +16,13 @@ using namespace TMath;
 using namespace ParticleConstants;
 
 /******************************************************
-[02-24-15]
+[07-07-15]
+
++ Note that this processor assumes that eid:efid:pid have been called
+  already and that therefore, DataEid, DataEkin,DataPid are filled. If not, 
+  then this proc will still work, but output objects that rely on DataEid, DataEkin,DataPidElast
+  will be empty.
+
 + Note
 	+ For Reconstructed data, ProcD2pi must follow a "chain of processors" (set up in scripts)
 	+ For Thrown data, it is directly called (setup in scripts)
@@ -143,9 +149,10 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		if (_make_tree){
 			_tR = new TTree("tR","TTree containing Reconstructed data for 2pi events");
 			//AddBranches(_tR);
-			dAna->addBranches_Data2pi(_tR);
 			dAna->addBranches_DataEid(_tR);
+			dAna->addBranches_DataEkin(_tR);
 			dAna->addBranches_DataPid(_tR);
+			dAna->addBranches_Data2pi(_tR);
 		}
 	}
 }
@@ -252,10 +259,11 @@ void ProcD2pi::handle() {
 			//used to study and determine top MM cut
 			UpdateD2pi_Q2_W_MM();
 			dAna->fillHistsMM(_hists_ana_MM); //method "knows" the particular top's MM hist to fill
-			//UpdateEkin();
-			_proc_eid->updateEkin();
+			//! [07-17-15] The following should have already been called 
+			//! by the previous processors: ProcEid,ProcPidElast 
+			/*_proc_eid->updateEkin();
 			_proc_eid->updateEid();
-			_proc_pid->updatePid();
+			_proc_pid->updatePid();*/
 						
 			//! Make final top selection cut
 			Bool_t t1b=TMath::Abs(mm2ppippim) < 0.0005;
