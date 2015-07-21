@@ -109,7 +109,7 @@ void plot_eid(TString slctn,TString cutlvl,int nentries=1000000000){
     cout<<dtyp_name[idtyp]<<endl;
     for (int ihst=0;ihst<NHST;ihst++){// begin nhst loop
       //if (ihst>1)continue;
-      if (ihst<=3) continue;//! i.e. not make 2D hists, but for ccthetaVccsegm
+      //if (ihst<=3) continue;//! i.e. not make 2D hists, but for ccthetaVccsegm
       for (int isctr=0;isctr<NSCTR;isctr++){ //begin sctr loop
         c1->cd();
         TCut sctr_cut=TString::Format("sector==%d",isctr+1);
@@ -137,7 +137,7 @@ void plot_eid(TString slctn,TString cutlvl,int nentries=1000000000){
     fout[idtyp]->cd(); 
     for (int ihst=0;ihst<NHST;ihst++){
       if (ihst>3&&ihst!=8) continue; //! select on 2D hists to plot
-      if (ihst<=3) continue;//! i.e. not plot 2D hists, but for ccthetaVccsegm
+      //if (ihst<=3) continue;//! i.e. not plot 2D hists, but for ccthetaVccsegm
       cout<<hst_name[ihst]<<endl;
       TString outdir=TString::Format("%s/%s/%s",OUTDIR.Data(),dtyp_name[idtyp].Data(),hst_name[ihst].Data());
       gSystem->mkdir(outdir,1);
