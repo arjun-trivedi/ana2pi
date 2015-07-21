@@ -1,0 +1,39 @@
+#!/bin/bash
+##########################################################
+# [07-21-15]
+# + usage h10_2_defidR-exp-byRun rctn, where rctn=2pi or elast 
+###########################################################
+
+##- get user entered RCTN
+RCTN=$1
+if [[ ! "$RCTN" == "2pi" && ! "$RCTN" == "elast" ]]; then 
+    echo "usage: submit.h10_2_defidR-exp-byRun rctn, where rctn=2pi or elast "
+    exit 
+fi
+
+##1 Setup PROCLIST,SUBDIR and OUTDIR as per RCTN
+date=`date +%m%d%y`
+if [[ "$RCTN" == "2pi" ]]; then
+  PROCLIST="eid:mom:q2wskimR:d2piR_tree"
+  H10DIR="$H10DIR_SIM/sim1/recon"
+  DATADIR=$STUDY_EFID_2PI_DATADIR_SIM
+elif [[ "$RCTN" == "elast" ]]; then
+  PROCLIST="eid:mom:delastR_tree"
+  H10DIR="$H10DIR_ELAST_SIM/sim1.1/recon"
+  DATADIR=$STUDY_EFID_ELAST_DATADIR_SIM
+fi
+echo "RCTN=$RCTN"
+echo "PROCLIST=$PROCLIST"
+echo "H10DIR=$H10DIR"
+echo "DATADIR=$OUTDIR"
+if [[ ! -d $DATADIR ]]; then
+    mkdir -p $DATADIR
+fi
+
+##- cd in $DATADIR and make efid data
+cd $DATADIR
+##- make h10lst
+if [[! -e h10.lst ]];then
+  make_h10lst $H10DIR
+fi
+proc_h10 -i h10.lst -t e1f:sim:$RCTN  -p $PROCLIST -o defid_$date.root -n 10000000

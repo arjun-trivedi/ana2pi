@@ -1,0 +1,75 @@
+#!/bin/bash
+##########################################################
+# [07-21-15]
+# + usage submit.h10_2_defidR-exp-byRun rctn, where rctn=2pi or elast 
+# + Get h10.lst files for all E1F Runs from ${HOME}/ongoing/e1f_allruns_h10lst
+# and submit h10->dlum jobs for each of them.
+# + The h10.lst files contain just the root file names for each Run, therefore
+# this script additionally appends the full /mss path to the files and lists them
+# as separate input files for the job
+###########################################################
+
+##- get user entered RCTN
+RCTN=$1
+if [[ ! "$RCTN" == "2pi" && ! "$RCTN" == "elast" ]]; then 
+    echo "usage: submit.h10_2_defidR-exp-byRun rctn, where rctn=2pi or elast "
+    exit 
+fi
+
+##1 Setup PROCLIST,SUBDIR and OUTDIR as per RCTN
+date=`date +%m%d%y`
+if [[ "$RCTN" == "2pi" ]]; then
+  PROCLIST="eid:mom:q2wskimR:d2piR_tree"
+  SUBDIR=$BSUBDIR_E1F_2PI_EXP/h10_2_defidR-exp-byRun_$date
+  OUTDIR=$STUDY_EFID_2PI_DATADIR_EXP/byRun_$date
+elif [[ "$RCTN" == "elast" ]]; then
+  PROCLIST="eid:mom:delastR_tree"
+  SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_defidR-exp-byRun_$date
+  OUTDIR=$STUDY_EFID_ELAST_DATADIR_EXP/byRun_$date
+fi
+echo "RCTN=$RCTN"
+echo "SUBDIR=$SUBDIR"
+echo "OUTDIR=$OUTDIR"
+if [[ ! -d ${SUBDIR} ]]; then
+    mkdir -p $SUBDIR
+fi
+if [[ ! -d $OUTDIR ]]; then
+    mkdir -p $OUTDIR
+fi
+
+for h10lst in $(ls  ${HOME}/ongoing/e1f_goldenruns_h10lst/*.lst);
+do
+  runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
+  JSUBFILE=$SUBDIR/$runnum.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo $runnum".sub exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e1f_h10_2_defidR-exp_$runnum\"/>
+    <Project name=\"E1F\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"500\" unit=\"MB\"/>
+    <Memory space=\"500\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"600\"/>
+    <Command><![CDATA[
+      proc_h10 -i h10.lst -t e1f:exp:$RCTN  -p $PROCLIST -o defid.root
+    ]]></Command>
+
+    <Job>
+        <Input src=\"$h10lst\" dest=\"h10.lst\" />
+        `for f in $(cat $h10lst)
+         do
+           echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
+         done`
+        <Output src=\"defid.root\" dest=\"$OUTDIR/$runnum.root\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
+done

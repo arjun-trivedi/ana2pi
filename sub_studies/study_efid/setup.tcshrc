@@ -7,3 +7,16 @@ alias study_efid 'cd ${STUDY_EFID}'
 
 ##- modify PYTHONPATH
 #setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_EFID}"
+
+##- Set up STUDY_EFID_DATADIR for 2pi and elast
+if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
+  setenv STUDY_EFID_2PI_DATADIR "/data/trivedia/e1f/study_efid/2pi"
+  setenv STUDY_EFID_ELAST_DATADIR "/data/trivedia/e1f/study_efid/elast"
+else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
+  setenv STUDY_EFID_2PI_DATADIR "${VOLHOME}/data/e1f/study_efid/2pi"
+  setenv STUDY_EFID_ELAST_DATADIR "${VOLHOME}/data/e1f/study_efid/elast"
+endif
+setenv STUDY_EFID_2PI_DATADIR_EXP "$STUDY_EFID_2PI_DATADIR/exp"
+setenv STUDY_EFID_2PI_DATADIR_SIM "$STUDY_EFID_2PI_DATADIR/sim"
+setenv STUDY_EFID_ELAST_DATADIR_EXP "$STUDY_EFID_ELAST_DATADIR/exp"
+setenv STUDY_EFID_ELAST_DATADIR_SIM "$STUDY_EFID_ELAST_DATADIR/sim"
