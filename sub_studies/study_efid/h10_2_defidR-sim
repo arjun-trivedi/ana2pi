@@ -26,6 +26,7 @@ echo "RCTN=$RCTN"
 echo "PROCLIST=$PROCLIST"
 echo "H10DIR=$H10DIR"
 echo "DATADIR=$OUTDIR"
+sleep 5
 if [[ ! -d $DATADIR ]]; then
     mkdir -p $DATADIR
 fi

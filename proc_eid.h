@@ -212,7 +212,7 @@ Bool_t ProcEid::goodE(){
 										if (_eidTool->PassThreshold(eid->p)) {
 											hevtsum->Fill(EVT_ECLOW1);
 											float uvw[3]={eid->ecU,eid->ecV,eid->ecW};
-											if (_eidTool->PassECFid(uvw)){
+											//if (_eidTool->PassECFid(uvw)){
 												hevtsum->Fill(EVT_ECFID);
 												Int_t sector = eid->sector;
 												Float_t p = eid->p;
@@ -224,7 +224,7 @@ Bool_t ProcEid::goodE(){
 													}
 													retval = kTRUE;
 												}
-											}
+											//}
 										}
 									}
 								//}
