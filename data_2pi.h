@@ -15,6 +15,11 @@ public:
 	
 	//! Initial Beam Energy
 	Float_t p_e0;
+	//! From DC: sector information for detected particles
+	Int_t sector_e;
+	Int_t sector_p;
+	Int_t sector_pip;
+	Int_t sector_pim;
 	//! Reconstructed Kinematics 
 	//! for e',p',p,pip,pim at e' vertex
 	Float_t p_e;

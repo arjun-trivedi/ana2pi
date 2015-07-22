@@ -151,7 +151,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 			//AddBranches(_tR);
 			dAna->addBranches_DataEid(_tR);
 			dAna->addBranches_DataEkin(_tR);
-			dAna->addBranches_DataPid(_tR);
+			//dAna->addBranches_DataPidNew(_tR);
 			dAna->addBranches_Data2pi(_tR);
 		}
 	}
@@ -524,7 +524,13 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 
 	//! Initial Beam Energy
 	tp->p_e0=lvE0.E();
-
+	//! From DC: sector information for detected particles
+	if (!ismc){
+		tp->sector_e=dH10->sc_sect[dH10->sc[dAna->h10idxE]-1];
+		tp->sector_p=dH10->sc_sect[dH10->sc[dAna->h10idxP]-1];
+		tp->sector_pip=dH10->sc_sect[dH10->sc[dAna->h10idxPip]-1];
+		tp->sector_pim=dH10->sc_sect[dH10->sc[dAna->h10idxPim]-1];
+	}
 	//! Reconstructed Kinematics 
 	//! for e',p',p,pip,pim at e' vertex
 	tp->p_e=_lvE.P();

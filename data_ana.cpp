@@ -1324,6 +1324,11 @@ void DataAna::addBranches_Data2pi(TTree* t, Bool_t useMc/*=kFALSE*/){
 
 	//! Initial Beam Energy
 	t->Branch("p_e0",&tp->p_e0);
+	//! From DC: sector information for detected particles
+	t->Branch("sector_e",&tp->sector_e);
+	t->Branch("sector_p",&tp->sector_p);
+	t->Branch("sector_pip",&tp->sector_pip);
+	t->Branch("sector_pim",&tp->sector_pim);
 	//! Reconstructed Kinematics 
 	//! for e',p',p,pip,pim at e' vertex
 	t->Branch("p_e",&tp->p_e);
@@ -1415,6 +1420,9 @@ void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){
 void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("id",&eid.id);
 	t->Branch("p",&eid.p);  
+	t->Branch("dc_xsc",&eid.dc_xsc);
+	t->Branch("dc_ysc",&eid.dc_ysc);
+	t->Branch("dc_zsc",&eid.dc_zsc);
 	t->Branch("sector",&eid.sector);
     t->Branch("b",&eid.b);
     t->Branch("b_e",&eid.b_e);

@@ -278,6 +278,9 @@ void ProcEid::updateEid(){
 	dAna->eid.id = dH10->id[0];
 	//! From DC
 	dAna->eid.p = dH10->p[0];
+	dAna->eid.dc_xsc = dH10->dc_xsc[dH10->dc[0]-1];
+	dAna->eid.dc_ysc = dH10->dc_ysc[dH10->dc[0]-1];
+	dAna->eid.dc_zsc = dH10->dc_zsc[dH10->dc[0]-1];
 	//! From SC
 	dAna->eid.sector = dH10->sc_sect[dH10->sc[0]-1];
 

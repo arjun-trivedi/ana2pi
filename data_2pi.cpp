@@ -14,6 +14,8 @@ void Data2pi::Clear()
 {
 	//! Initial Beam Energy
 	p_e0 = 0;
+	//! From DC: sector information for detected particles
+	sector_e = sector_p = sector_pip = sector_pim=0;
 	//! Reconstructed Kinematics 
 	//! for e',p',p,pip,pim at e' vertex
 	p_e     = p_p     = p_pip     = p_pim     = 0;

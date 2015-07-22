@@ -13,6 +13,9 @@ public:
 	Int_t id;
 	//! From DC
 	Float_t p;
+	Float_t dc_xsc;
+    Float_t dc_ysc;
+    Float_t dc_zsc;
 	//! From SC
 	Int_t sector;
     Float_t b;

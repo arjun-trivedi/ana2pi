@@ -12,6 +12,9 @@ void DataEid::Clear()
 {
 	id=0;
 	p=0;
+	dc_xsc=0;
+	dc_ysc=0;
+	dc_zsc=0;
 	sector=0;
 	b=0;
 	b_e=0;
