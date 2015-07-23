@@ -11,5 +11,5 @@ DataEFid::~DataEFid()
 void DataEFid::Clear()
 {
 	fidE = kFALSE;
-        sector = phi = theta = dc_xsc = dc_ysc = ech_x = ech_y = 0;
+        sector = p = phi = theta = dc_xsc = dc_ysc = ech_x = ech_y = 0;
 }

@@ -16,7 +16,11 @@ else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
   setenv STUDY_EFID_2PI_DATADIR "${VOLHOME}/data/e1f/study_efid/2pi"
   setenv STUDY_EFID_ELAST_DATADIR "${VOLHOME}/data/e1f/study_efid/elast"
 endif
+##- Following to study cuts
 setenv STUDY_EFID_2PI_DATADIR_EXP "$STUDY_EFID_2PI_DATADIR/exp"
 setenv STUDY_EFID_2PI_DATADIR_SIM "$STUDY_EFID_2PI_DATADIR/sim"
 setenv STUDY_EFID_ELAST_DATADIR_EXP "$STUDY_EFID_ELAST_DATADIR/exp"
 setenv STUDY_EFID_ELAST_DATADIR_SIM "$STUDY_EFID_ELAST_DATADIR/sim"
+##- Followint to study application of cuts
+setenv STUDY_EFID_CUT_2PI_DATADIR_EXP "$STUDY_EFID_2PI_DATADIR/study_cut/exp"
+setenv STUDY_EFID_CUT_2PI_DATADIR_SIM "$STUDY_EFID_2PI_DATADIR/study_cut/sim"

@@ -67,9 +67,9 @@ def plot_fid(rctn,nentries=1000000000):
 	#! Get FIN, T and make FOUT	
 	if (rctn=='2pi'):
 		#! Input objects
-		#FIN[EXP]=ROOT.TFile(("%s/defid.root"%os.environ['STUDY_EFID_2PI_DATADIR_EXP']))
+		FIN[EXP]=ROOT.TFile(("%s/defid.root"%os.environ['STUDY_EFID_2PI_DATADIR_EXP']))
 		FIN[SIM]=ROOT.TFile(("%s/defid.root"%os.environ['STUDY_EFID_2PI_DATADIR_SIM']))	
-		#T[EXP]=FIN[EXP].Get("d2piR/tR")
+		T[EXP]=FIN[EXP].Get("d2piR/tR")
 		T[SIM]=FIN[SIM].Get("d2piR/tR")
 		#! Output objects
 		OUTDIR=("%s/hists"%os.environ['STUDY_EFID_2PI_DATADIR'])
@@ -80,9 +80,9 @@ def plot_fid(rctn,nentries=1000000000):
 		
         elif (rctn=='elast'):
 		#! Input objects
-		#FIN[EXP]=ROOT.TFile(("%s/defid.root"%os.environ['STUDY_EFID_ELAST_DATADIR_EXP']))
+		FIN[EXP]=ROOT.TFile(("%s/defid.root"%os.environ['STUDY_EFID_ELAST_DATADIR_EXP']))
                 FIN[SIM]=ROOT.TFile(("%s/defid.root"%os.environ['STUDY_EFID_ELAST_DATADIR_SIM']))
-		#T[EXP]=FIN[EXP]->Get("delast/t");
+		T[EXP]=FIN[EXP].Get("delast/t");
  		T[SIM]=FIN[SIM].Get("delast/t");
 		#! Output objects
                 OUTDIR=("%s/hists"%os.environ['STUDY_EFID_ELAST_DATADIR'])
@@ -97,7 +97,7 @@ def plot_fid(rctn,nentries=1000000000):
 	#! Start making plots H[DTYP][NHST][NPRT][NSCTR]
 	c=ROOT.TCanvas() #! default canvas
 	for idtyp in range(NDTYP):
-		if idtyp==EXP: continue
+		#if idtyp==EXP: continue
 		for ihst in range(NHST):
 			for iprt in range(NPRT):
 				for isctr in range(NSCTR):
@@ -126,7 +126,7 @@ def plot_fid(rctn,nentries=1000000000):
 	#! + Draw plots intereactively
 	#! + Save to .root file and .jpg
 	for idtyp in range(NDTYP):
-		if idtyp==EXP: continue
+		#if idtyp==EXP: continue
 		#! For .jpg output
 		outdir="%s/%s"%(OUTDIR,DTYP_NAME[idtyp])
 		if not os.path.exists(outdir):

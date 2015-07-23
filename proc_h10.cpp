@@ -6,6 +6,7 @@
 #include "proc_eid.h"
 #include "proc_delast.h"
 #include "proc_efid.h"
+#include "proc_efid_new.h"
 #include "proc_eeff.h"
 #include "proc_pid.h"
 #include "proc_pid_new.h"
@@ -234,6 +235,7 @@ EpProcessor* SetupProcs(){
          /*else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("eeff"))       proc = new ProcEEff(mkdir("eeff"),dH10,dAna);
+         else if (str.EqualTo("efidnew"))       proc = new ProcEFidNew(mkdir("efid"),dH10,dAna);
          //else if (str.EqualTo("delast"))     proc = new ProcDelast(mkdir("delast"),dH10,dAna);
          else if (str.EqualTo("delastT"))            proc = new ProcDelast(mkdir("delast"),dH10,dAna,kTRUE, kFALSE);
          else if (str.EqualTo("delastT_tree"))       proc = new ProcDelast(mkdir("delast"),dH10,dAna,kTRUE, kFALSE,kTRUE);

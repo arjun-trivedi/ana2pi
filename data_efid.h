@@ -12,6 +12,7 @@ public:
 	void Clear();
 	Bool_t fidE;
         Int_t sector;
+    Float_t p;
 	Float_t phi;
 	Float_t theta;
         Float_t dc_xsc;

@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################
 # [07-21-15]
-# + usage h10_2_defidR-exp-byRun rctn, where rctn=2pi or elast 
+# + usage h10_2_defidR-sim rctn, where rctn=2pi or elast 
 ###########################################################
 
 ##- get user entered RCTN
@@ -17,11 +17,11 @@ NENTRIES=${2:-1000000000}
 ##1 Setup PROCLIST,SUBDIR and OUTDIR as per RCTN
 date=`date +%m%d%y`
 if [[ "$RCTN" == "2pi" ]]; then
-  PROCLIST="eid:mom:q2wskimR:d2piR_tree"
+  PROCLIST="eid:q2wskimR:d2piR_tree"
   #H10DIR="$H10DIR_SIM/sim1/recon"
   #DATADIR=$STUDY_EFID_2PI_DATADIR_SIM
 elif [[ "$RCTN" == "elast" ]]; then
-  PROCLIST="eid:mom:delastR_tree"
+  PROCLIST="eid:delastR_tree"
   #H10DIR="$H10DIR_ELAST_SIM/sim1.1/recon"
   #DATADIR=$STUDY_EFID_ELAST_DATADIR_SIM
 fi
@@ -40,4 +40,4 @@ sleep 5
 #if [[ ! -e h10.lst ]];then
 #  make_h10lst $H10DIR
 #fi
-proc_h10 -i h10.lst -t e1f:sim:$RCTN  -p $PROCLIST -o defid.root -n $NENTRIES 
+proc_h10 -i h10.lst -t e1f:sim:$RCTN  -p $PROCLIST -o defid_$date.root -n $NENTRIES 
