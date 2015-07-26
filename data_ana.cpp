@@ -1503,8 +1503,14 @@ void DataAna::addBranches_DataPidNew(TTree* t){
 	t->Branch("l_e",&pidnew.l_e,"l_e/F");
 	t->Branch("t_e",&pidnew.t_e,"t_e/F");
 	t->Branch("t_off",&pidnew.t_off,"t_off/F");
+	t->Branch("gpart",&pidnew.gpart,"gpart/I");
+	t->Branch("npos",&pidnew.npos,"npos/I");
+	t->Branch("nneg",&pidnew.nneg,"nneg/I");
+	t->Branch("nzro",&pidnew.nzro,"nzro/I");
 	t->Branch("ntrk",&pidnew.ntrk,"ntrk/I");
-	t->Branch("q",pidnew.q,"q[ntrk]/I");
+	t->Branch("np",&pidnew.np,"np/I");
+	t->Branch("npip",&pidnew.npip,"npip/I");
+	t->Branch("npim",&pidnew.npim,"npim/I");
 	t->Branch("dc",pidnew.dc,"dc[ntrk]/I");
 	t->Branch("sc",pidnew.sc,"sc[ntrk]/I");
 	t->Branch("q",pidnew.q,"q[ntrk]/I");

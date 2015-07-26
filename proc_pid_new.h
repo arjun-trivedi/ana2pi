@@ -30,7 +30,7 @@ class ProcPidNew : public EpProcessor
 
 public:
 	ProcPidNew(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-		    Bool_t monitor=kFALSE,Bool_t monitorOnly=kFALSE, Bool_t make_tree=kFALSE);
+		     Bool_t make_tree=kFALSE);
 	ProcPidNew(DataH10* dataH10,DataAna* dataAna);
 	~ProcPidNew();
 
@@ -42,7 +42,10 @@ protected:
 	Pid* _pid_tool;
 	ProcEid* _proc_eid;
 	
-	TTree* _tree;
+	//TTree* _tree;
+	TDirectory* _dirmon;
+	TDirectory* _dircut;
+	TTree* _t[NPROCMODES];
 
 	static const Int_t NUM_EVTCUTS=6;
 	enum { EVT_NULL, EVT, EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};   
@@ -50,9 +53,8 @@ protected:
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 };
 
-ProcPidNew::ProcPidNew(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-                 Bool_t monitor/* = kFALSE*/,Bool_t monitorOnly /*= kFALSE*/,Bool_t make_tree/*=kFALSE*/)
-                 :EpProcessor(td, dataH10, dataAna, monitor, monitorOnly)
+ProcPidNew::ProcPidNew(TDirectory *td,DataH10* dataH10,DataAna* dataAna,Bool_t make_tree/*=kFALSE*/)
+                 :EpProcessor(td, dataH10, dataAna)
 {
 	td->cd();	
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
@@ -64,14 +66,33 @@ ProcPidNew::ProcPidNew(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
 
 	_make_tree=make_tree;
+	_dirmon=NULL;
+	_dircut=NULL;
 	_pid_tool=new Pid(dH10->dtyp);
 	_proc_eid=new ProcEid(dataH10,dataAna);
-	
+
+	//! Create monitor objects
+	_dirmon = dirout->mkdir(TString::Format("monitor"));
+	dAna->makeHistsPidMon(hists[MONMODE][EVTINC], _dirmon);
+			
 	if(_make_tree){
-		_tree=new TTree("tree","TTree containing data for PID");
+		_dirmon->cd();
+		_t[MONMODE]=new TTree("t","TTree containing data for PID");
 		//! Add PID data as branches to _t
-		dAna->addBranches_DataPidNew(_tree);
-		dAna->addBranches_DataEid(_tree);
+		dAna->addBranches_DataPidNew(_t[MONMODE]);
+		//dAna->addBranches_DataEid(_t[MONMODE]);
+	}
+
+	//! Create cut objects
+	_dircut = dirout->mkdir(TString::Format("cut"));
+	dAna->makeHistsPidMon(hists[CUTMODE][EVTINC], _dircut);
+			
+	if(_make_tree){
+		_dircut->cd();
+		_t[CUTMODE]=new TTree("t","TTree containing data for PID");
+		//! Add PID data as branches to _t
+		dAna->addBranches_DataPidNew(_t[CUTMODE]);
+		//dAna->addBranches_DataEid(_t[CUTMODE]);
 	}
 }
 
@@ -83,7 +104,10 @@ ProcPidNew::ProcPidNew(DataH10* dataH10,DataAna* dataAna)
 
 ProcPidNew::~ProcPidNew()
 {
-	delete _tree;
+	//delete _tree;
+	delete _t;
+	delete _dirmon;
+	delete _dircut;
 	delete _pid_tool;
 	delete _proc_eid;
 }
@@ -94,49 +118,21 @@ void ProcPidNew::handle()
 	pass=kFALSE;
 	hevtsum->Fill(EVT);
 
-	//! 1. Obtain DataPidNew. NOTE, id[ntrk] is untouched!
+	//! Monitor
+	//! 1. Obtain DataPidNew. NOTE, id[ntrk],np,npip,npim are untouched!
 	//! + At this point all the necessary data to perform PID is obtained and id[ntrk] is untouched i.e.
 	//!   it continues to be equal to 0
 	//! + PID is done later and there id[ntrk] & h10IdxP(Pip,Pim) are updated
 	updatePidNew();
 
-	//! If user wants to DataPidNew to study PID params, DataPidNew along with Ekin data is put in a Tree
+	dAna->fillHistsPidMon(hists[MONMODE][EVTINC]);
 	if (_make_tree){
 		_proc_eid->updateEkin();
-		_tree->Fill();
-
-		pass=kTRUE;
-		EpProcessor::handle();
-		return;
-	}
-
-	//! If user want to monitor what PID histograms look like before applying PID cut
-	if (mon||mononly)
-	{
-		if (dAna->d2pi.top==0 && hists[MONMODE][EVTINC][SECTOR0]==NULL) { //i.e. inclusive event
-			TDirectory* dirmon = dirout->mkdir(TString::Format("monitor"));
-			dAna->makeHistsPidMon(hists[MONMODE][EVTINC], dirmon);
-		}else if(dAna->d2pi.top!=0 && hists[MONMODE][TOP1][SECTOR0]==NULL){ //i.e. 2pi event
-			for(Int_t iTop=TOP1;iTop<NTOPS;iTop++){
-				TDirectory* dirmon = dirout->mkdir(TString::Format("monitor%d",iTop));
-				dAna->makeHistsPidMon(hists[MONMODE][iTop], dirmon);
-			}
-		}
-	
-		if (dAna->d2pi.top == 0) { //i.e inclusive event
-			dAna->fillHistsPidMon(hists[MONMODE][EVTINC]);
-		}else { //i.e 2pi event
-			dAna->fillHistsPidMon(hists[MONMODE][dAna->d2pi.top-1]);
-		}
-	}
-	
-	if (mononly){
-		pass = kTRUE;
-		EpProcessor::handle();
-		return;
+		_t[MONMODE]->Fill();
 	}
 
 	
+	//! Cut mode	
 	//! 2. Apply PID cut using DataPidNew
 	//! Here id[ntrk] is set along with h10IdxP(Pip,Pim)
 	//! Additionally, dH10->id[] is also set
@@ -144,10 +140,12 @@ void ProcPidNew::handle()
 	for (int itrk=0;itrk<dpid->ntrk;itrk++){//! loop over ntrk in the event
 		if (dpid->q[itrk]==1){//! Select +ve trks
 			if (_pid_tool->is_proton(dpid->dt_p[itrk],dpid->p[itrk])){
+				dpid->np+=1;
 				dpid->id[itrk]=PROTON;
 				dpid->h10IdxP=dpid->h10_idx[itrk];
 				dH10->id[dpid->h10_idx[itrk]]==PROTON;
 			}else if (_pid_tool->is_pip(dpid->dt_pip[itrk],dpid->p[itrk])){
+				dpid->npip+=1;
 				dpid->id[itrk]=PIP;
 				dpid->h10IdxPip=dpid->h10_idx[itrk];
 				dH10->id[dpid->h10_idx[itrk]]==PIP;
@@ -155,6 +153,7 @@ void ProcPidNew::handle()
 		}
 		if (dpid->q[itrk]==-1){//! Select -ve trks
 			if (_pid_tool->is_pim(dpid->dt_pim[itrk],dpid->p[itrk])){
+				dpid->npim+=1;
 				dpid->id[itrk]=PIM;
 				dpid->h10IdxPim=dpid->h10_idx[itrk];
 				dH10->id[dpid->h10_idx[itrk]]==PIM;
@@ -192,17 +191,13 @@ void ProcPidNew::handle()
 	}
 	
 	//! If event passes, the call next processor
+	pass=kTRUE;
 	if (pass) {
-		//! If in mon mode fill PID cut monitoring histograms
-		if (mon)
-		{
-			if (hists[CUTMODE][EVTINC][SECTOR0]==NULL) {
-				TDirectory* dircut = dirout->mkdir(TString::Format("cut"));
-				dAna->makeHistsPidCut(hists[CUTMODE][EVTINC], dircut);
-			}
-			dAna->fillHistsPidCut(hists[CUTMODE][EVTINC]);
+		dAna->fillHistsPidMon(hists[CUTMODE][EVTINC]);
+		if (_make_tree){
+			_proc_eid->updateEkin();
+			_t[CUTMODE]->Fill();
 		}
-		
 		EpProcessor::handle();
 	}
 }
@@ -220,7 +215,7 @@ void ProcPidNew::updatePidNew()
 	dpid->l_e=l_e;
 	dpid->t_e=t_e;
 	dpid->t_off=t_off;
-	
+	dpid->gpart=dH10->gpart;
 	for (Int_t i=1;i<dH10->gpart;i++) {
 		if (dH10->q[i]==1 || dH10->q[i]==-1){
 			//! Directly measured quantities
@@ -244,6 +239,8 @@ void ProcPidNew::updatePidNew()
 			Float_t dt_pim=l/(b_pim*SOL)+t_off-t;
 
 			//! Copy data into Branch variables
+			if      (dH10->q[i]==1)  dpid->npos+=1;
+			else if (dH10->q[i]==-1) dpid->nneg+=1;
 			dpid->ntrk+=1;
 			dpid->q[dpid->ntrk-1]=q;
 			dpid->dc[dpid->ntrk-1]=dc;
@@ -262,6 +259,8 @@ void ProcPidNew::updatePidNew()
 			dpid->dt_p[dpid->ntrk-1]=dt_p;
 			dpid->dt_pip[dpid->ntrk-1]=dt_pip;
 			dpid->dt_pim[dpid->ntrk-1]=dt_pim;
+		}else{
+			dpid->nzro+=1;
 		}
 	}
 }

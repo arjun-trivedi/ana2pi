@@ -12,6 +12,8 @@ void DataPidNew::Clear()
 {
 	h10IdxP=h10IdxPip=h10IdxPim=0;
 	l_e=t_e=t_off=0;
+	gpart=npos=nneg=nzro=0;
+	np=npip=npim=0;
 	ntrk=0;
 	for (int i=0;i<kMaxTrack;i++){
 		q[i]=dc[i]=sc[i]=p[i]=l[i]=t[i]=b[i]=sector[i]=id[i]=h10_idx[i]=0;

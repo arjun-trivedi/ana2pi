@@ -258,9 +258,9 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pidmon"))     proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidmononly")) proc = new ProcPid(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
          else if (str.EqualTo("pidnew"))         proc = new ProcPidNew(mkdir("pid"),dH10,dAna);
-         else if (str.EqualTo("pidnewmon"))      proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("pidnewmononly"))  proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("pidnewtree"))  proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kFALSE,kFALSE,kTRUE);
+         /*else if (str.EqualTo("pidnewmon"))      proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("pidnewmononly"))  proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE,kTRUE);*/
+         else if (str.EqualTo("pidnewtree"))  proc = new ProcPidNew(mkdir("pid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidnew"))     proc = new ProcPidNew(mkdir("pid"),dH10,dAna);
          else if (str.EqualTo("pfid"))       proc = new ProcPFid(mkdir("pfid"),dH10,dAna);
          else if (str.EqualTo("pfidnew"))       proc = new ProcPFidNew(mkdir("pfid"),dH10,dAna);

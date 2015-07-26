@@ -12,14 +12,25 @@ public:
         Int_t h10IdxP;
         Int_t h10IdxPip;
         Int_t h10IdxPim;
-        //! Following variables can be added as
+        //! Following variables are added as
         //! Branches of Tree for study purpose
-        static const Int_t kMaxTrack=20;
         //! Following are directly measured quantities for e-
         Float_t l_e;
         Float_t t_e;
         Float_t t_off;
+        //! gpart
+        Int_t gpart;
+        //! gpart= npos+nneg+nzro
+        Int_t npos;
+        Int_t nneg;
+        Int_t nzro;
+        //! np,npip,npim
+        Int_t np;
+        Int_t npip;
+        Int_t npim;
+        //! Particles indexed by ntrk(+ve or -ve gpart particles)
         //! ntrk=Number of charged tracks
+        static const Int_t kMaxTrack=20;
         Int_t ntrk;
         //! Following are directly measured quantities for ntrk
         Int_t q[kMaxTrack];
