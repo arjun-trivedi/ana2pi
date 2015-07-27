@@ -85,6 +85,41 @@ TF1* fPhiFid(Double_t p, Int_t sector, Int_t weight = 1,
 	retFunc->SetParameters(p,sector,tightness,t0tightness,weight);
 	return retFunc;
 }
+
+/****************************************************
+[07-27-15] The following two functions
++ dPhiFid_mod
++ fPhiFid_mod
+are modified versions for dPhiFid, fPhiFid that return
+not the default phib=[-30,30], but a phib that is appropriate
+for each sector.
+*****************************************************/
+Double_t dPhiFid_mod(Double_t *x, Double_t *parms) {
+    Double_t theta = x[0];
+    Double_t p = parms[0];
+    Int_t sector = parms[1];
+    Double_t tightness = parms[2];
+    Double_t t0tightness = parms[3];
+    Int_t w = parms[4];
+    Double_t phib = getPhiFid(p, theta, sector, tightness, t0tightness);
+	//! trivedia modified 
+	float offst[]={0,60,120,180,240,300}; //offst to get -[30,30] to values appropriate per sector
+	phib+=offst[sector-1];
+	//
+    return w*phib;
+}
+
+TF1* fPhiFid_mod(Double_t p, Int_t sector, Int_t weight = 1,
+                Double_t tightness = 0, Double_t t0tightness = 0) {
+	//! trivedia modified
+	//TF1 *retFunc = new TF1("fphifid",dPhiFid,0,70,5);
+    TF1 *retFunc = new TF1("fphifid_mod",dPhiFid_mod,0,70,5);
+	//
+    retFunc->SetParameters(p,sector,tightness,t0tightness,weight);
+    return retFunc;
+}
+
+////////////////////////////////////////////////////////////////////////////
 	
 Bool_t inFid(Double_t p, Double_t theta, Double_t phi,
 		Int_t sector, Double_t tightness = 1, Double_t t0tightness = 0) {
