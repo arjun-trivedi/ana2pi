@@ -11,10 +11,14 @@ import numpy as np
 
 #! for getting function norm2D
 ROOT.gROOT.ProcessLine(".L misc-CINT-funcs.C")
-#! for Evan's fiducial cuts
+#! for Evan's e- fiducial cuts
 ROOT.gROOT.ProcessLine(".L fidfuncs.C");
-#1 for old fiducial cuts
+#1 for old e- fiducial cuts
 ROOT.gROOT.ProcessLine(".L cuts_CINT.h");
+#! For Evan's Hadron fiducial cuts
+ROOT.gROOT.ProcessLine(".L fidfuncs_hadrons.C")
+#! For old Hadron fiducial cuts
+ROOT.gROOT.ProcessLine(".L fidfuncs_hadrons_e16.C")
 
 def plot_fid(rctn,nentries=1000000000):
 	NDTYP=2
@@ -28,9 +32,11 @@ def plot_fid(rctn,nentries=1000000000):
 		NPRT=4
 		E,P,PIP,PIM=range(NPRT)
 		PRT_NAME=["e","p","pip","pim"]
+		PRT_ID=[11,2212,211,-211]
 	elif rctn=='elast':
 		NPRT=1
 		E=0
+		PRT_ID[11]
 		PRT_NAME=["e"]
 	else:
 		sys.exit("rctn=%s not recognized"%rctn)
@@ -254,16 +260,74 @@ def plot_fid(rctn,nentries=1000000000):
 							f=ROOT.fPhiFid_mod(p,isctr+1);
 							f_old=ROOT.GetFidF_mod(11,p,isctr+1);
 							f_old.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+							f_h_exp=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"exp",isctr+1,1);
+							f_l_exp=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"exp",isctr+1,1);
+							f_h_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+							f_l_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+							f_h_sim=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"sim",isctr+1,1);
+							f_l_sim=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"sim",isctr+1,1);
+							f_h_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+							f_l_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+							#! t0
+							lt0_exp=ROOT.ROOT.lt0(PRT_ID[iprt],"exp");
+							lt0_sim=ROOT.ROOT.lt0(PRT_ID[iprt],"sim");
+							lt0_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+							lt0_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+							lt0_exp.SetLineWidth(3)
+							lt0_sim.SetLineWidth(3)
+							#! old fid cuts
+							f_old_h=ROOT.fPhiFid_e16_hdrn_h_mod(isctr+1)
+							f_old_l=ROOT.fPhiFid_e16_hdrn_l_mod(isctr+1)
+							f_old_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+							f_old_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+
+
 						C[idtyp][ihst][iprt][ipbin][LIN].cd(isctr+1)
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN].Draw("colz")
 						if PRT_NAME[iprt]=="e":
 							f.Draw("same")
 							f_old.Draw("same")
+						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+							f_h_exp.Draw("same")
+							f_l_exp.Draw("same")
+							f_h_sim.Draw("same")
+							f_l_sim.Draw("same")
+							#! Set Y1 and Y2 for lt0 and draw
+							ymin=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmin()
+							ymax=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmax()
+							lt0_exp.SetY1(ymin)
+							lt0_exp.SetY2(ymax)
+							lt0_sim.SetY1(ymin)
+							lt0_sim.SetY2(ymax)
+							lt0_exp.Draw("same")
+							lt0_sim.Draw("same")
+							#! old cuts
+							f_old_h.Draw("same")
+							f_old_l.Draw("same")
+
 						C[idtyp][ihst][iprt][ipbin][NRM].cd(isctr+1)
 						H[idtyp][ihst][iprt][isctr][ipbin][NRM].Draw("colz")
 						if PRT_NAME[iprt]=="e":
 							f.Draw("same")
 							f_old.Draw("same")
+						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+							f_h_exp.Draw("same")
+							f_l_exp.Draw("same")
+							f_h_sim.Draw("same")
+							f_l_sim.Draw("same")
+							#! Set Y1 and Y2 for lt0 and draw
+							ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
+							ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
+							lt0_exp.SetY1(ymin)
+							lt0_exp.SetY2(ymax)
+							lt0_sim.SetY1(ymin)
+							lt0_sim.SetY2(ymax)
+							lt0_exp.Draw("same")
+							lt0_sim.Draw("same")
+							#! old cuts
+							f_old_h.Draw("same")
+							f_old_l.Draw("same")
 					#! .root file output
 					#FOUT[idtyp].WriteTObject(C[idtyp][ihst][iprt][ipbin][LIN])
 					#FOUT[idtyp].WriteTObject(C[idtyp][ihst][iprt][ipbin][NRM])
