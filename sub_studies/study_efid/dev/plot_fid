@@ -1,0 +1,2 @@
+./plot_fid.py 2pi
+./plot_fid.py elast

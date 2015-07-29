@@ -45,6 +45,9 @@ def plot_fid(rctn,nentries=1000000000):
 	SCTR_PHI_MIN=[-30,30,90, 150,210,270];
 	SCTR_PHI_MAX=[ 30,90,150,210,270,330];
 
+	SCTR_PHI_CTR_MIN=[0,60,120,180,240,300];
+	SCTR_PHI_CTR_MAX=[2,62,122,182,242,302];
+
 	#! Create p bins for NPRT
 	PBIN_MIN=[[] for i in range(NPRT)]
 	PBIN_MAX=[[] for i in range(NPRT)]
@@ -69,8 +72,8 @@ def plot_fid(rctn,nentries=1000000000):
 
 
 	#! Number of different monitoring histograms
-	NHST=1
-	HST_NAME=['phiVtheta']
+	NHST=4
+	HST_NAME=['phiVtheta','ecU','ecV','ecW']
 
 	#! Number of different view for monitoring hists(=LIN and NRM)
 	NVW=2
@@ -112,6 +115,9 @@ def plot_fid(rctn,nentries=1000000000):
 	#! Now fill DRW_CMD
 	for iprt in range(NPRT):
 		DRW_CMD_HST_NAME[0][iprt]=("phi_%sVtheta_%s"%(PRT_NAME[iprt],PRT_NAME[iprt]))
+		DRW_CMD_HST_NAME[1][iprt]=("ecU_%s"%(PRT_NAME[iprt]))
+		DRW_CMD_HST_NAME[2][iprt]=("ecV_%s"%(PRT_NAME[iprt]))
+		DRW_CMD_HST_NAME[3][iprt]=("ecW_%s"%(PRT_NAME[iprt]))
 		for isctr in range(NSCTR):
 			if rctn=="2pi":
 				DRW_CMD[0][iprt][isctr]=("phi_%s:theta_%s>>%s(200,0,70,200,%d,%d)"
@@ -123,7 +129,9 @@ def plot_fid(rctn,nentries=1000000000):
 								     	 %(DRW_CMD_HST_NAME[0][iprt],
 					    	             SCTR_PHI_MIN[isctr],SCTR_PHI_MAX[isctr])
                 	                )
-
+			DRW_CMD[1][iprt][isctr]=("ecU>>%s(100,0,450)"%(DRW_CMD_HST_NAME[1][iprt]))
+			DRW_CMD[2][iprt][isctr]=("ecV>>%s(100,0,450)"%(DRW_CMD_HST_NAME[2][iprt]))
+			DRW_CMD[3][iprt][isctr]=("ecW>>%s(100,0,450)"%(DRW_CMD_HST_NAME[3][iprt]))
 	#! Debug: Print DRW_CMD
 	# for ihst in range(NHST):
 	# 	for iprt in range(NPRT):
@@ -179,15 +187,19 @@ def plot_fid(rctn,nentries=1000000000):
 		for ihst in range(NHST):
 			for iprt in range(NPRT):
 				for isctr in range(NSCTR):
-					# if (iprt==E): sctr_cut=ROOT.TCut("sector==%d"%(isctr+1))
-					# else:         sctr_cut=ROOT.TCut("sector_%s==%d"%(PRT_NAME[iprt],isctr+1))
+					#! sector cut
 					if rctn=='2pi':
 						sctr_cut=ROOT.TCut("sector_%s==%d"%(PRT_NAME[iprt],isctr+1))
 					elif rctn=='elast':
 						sctr_cut=ROOT.TCut("sector==%d"%(isctr+1))
+					#! top cut
 					top_cut=ROOT.TCut("")
 					if rctn=='2pi':
 						if (iprt==P or iprt==PIP or iprt==PIM): top_cut=ROOT.TCut("top==1")
+					#! phi cut: using only for elast:ecU,ecV,ecW
+					phi_cut=""#! 
+					if ihst>0 and rctn=="elast":
+						phi_cut=ROOT.TCut("phi1>=%0.2f && phi1<=%0.2f"%(SCTR_PHI_CTR_MIN[isctr],SCTR_PHI_CTR_MAX[isctr]))
 					for ipbin in range(NPBIN[iprt]):
 						pmin=PBIN_MIN[iprt][ipbin]
 						pmax=PBIN_MAX[iprt][ipbin]
@@ -198,6 +210,7 @@ def plot_fid(rctn,nentries=1000000000):
 						cut=ROOT.TCut(sctr_cut)
 						cut+=top_cut
 						cut+=p_cut
+						cut+=phi_cut
 						print DRW_CMD[ihst][iprt][isctr]
 						T[idtyp].Draw(DRW_CMD[ihst][iprt][isctr],cut,"colz",nentries)
 
@@ -209,7 +222,8 @@ def plot_fid(rctn,nentries=1000000000):
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN]=htmp.Clone()
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetName("%s_s%d_pbin%d"%(DRW_CMD_HST_NAME[ihst][iprt],isctr+1,ipbin+1))
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetTitle("%s"%(cut.GetTitle()))
-						H[idtyp][ihst][iprt][isctr][ipbin][NRM]=ROOT.norm2D(H[idtyp][ihst][iprt][isctr][ipbin][LIN])
+						if ihst==0:
+							H[idtyp][ihst][iprt][isctr][ipbin][NRM]=ROOT.norm2D(H[idtyp][ihst][iprt][isctr][ipbin][LIN])
 
 
 	#! Draw and Save H[DTYP][NHST][NPRT][NSCTR][NPBIN_<PRT>][NVW] 
@@ -238,100 +252,103 @@ def plot_fid(rctn,nentries=1000000000):
 				prt_dir=hst_dir.GetDirectory(PRT_NAME[iprt])
 
 				for ipbin in range(NPBIN[iprt]):
-					#C[idtyp][ihst][iprt][LIN]=ROOT.TCanvas("%s_%s_lin"%(DTYP_NAME[idtyp],DRW_CMD_HST_NAME[ihst][iprt]))
-					#cname="%s_%s_pbin%d_lin"%(DTYP_NAME[idtyp],DRW_CMD_HST_NAME[ihst][iprt],ipbin+1)
 					cname="%s_pbin%02d_lin"%(HST_NAME[ihst],ipbin+1)
 					C[idtyp][ihst][iprt][ipbin][LIN]=ROOT.TCanvas(cname,cname,1300,800)
 					C[idtyp][ihst][iprt][ipbin][LIN].Divide(3,2);
-					#C[idtyp][ihst][iprt][NRM]=ROOT.TCanvas("%s_%s_nrm"%(DTYP_NAME[idtyp],DRW_CMD_HST_NAME[ihst][iprt]))
-					#cname="%s_%s_pbin%d_nrm"%(DTYP_NAME[idtyp],DRW_CMD_HST_NAME[ihst][iprt],ipbin+1)
-					cname="%s_pbin%02d_nrm"%(HST_NAME[ihst],ipbin+1)
-					C[idtyp][ihst][iprt][ipbin][NRM]=ROOT.TCanvas(cname,cname,1300,800)
-					C[idtyp][ihst][iprt][ipbin][NRM].Divide(3,2);
+					if ihst==0:
+						cname="%s_pbin%02d_nrm"%(HST_NAME[ihst],ipbin+1)
+						C[idtyp][ihst][iprt][ipbin][NRM]=ROOT.TCanvas(cname,cname,1300,800)
+						C[idtyp][ihst][iprt][ipbin][NRM].Divide(3,2);
 					for isctr in range(NSCTR):
-						if PRT_NAME[iprt]=="e":
-							p=(PBIN_MIN[iprt][ipbin]+PBIN_MAX[iprt][ipbin])/2
-							f=ROOT.fPhiFid_mod(p,isctr+1);
-							f_old=ROOT.GetFidF_mod(11,p,isctr+1);
-							f_old.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
-							f_h_exp=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"exp",isctr+1,1);
-							f_l_exp=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"exp",isctr+1,1);
-							f_h_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-							f_l_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-							f_h_sim=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"sim",isctr+1,1);
-							f_l_sim=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"sim",isctr+1,1);
-							f_h_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-							f_l_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-							#! t0
-							lt0_exp=ROOT.ROOT.lt0(PRT_ID[iprt],"exp");
-							lt0_sim=ROOT.ROOT.lt0(PRT_ID[iprt],"sim");
-							lt0_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-							lt0_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-							lt0_exp.SetLineWidth(3)
-							lt0_sim.SetLineWidth(3)
-							#! old fid cuts
-							f_old_h=ROOT.fPhiFid_e16_hdrn_h_mod(isctr+1)
-							f_old_l=ROOT.fPhiFid_e16_hdrn_l_mod(isctr+1)
-							f_old_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-							f_old_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-
+						if ihst==0:
+							if PRT_NAME[iprt]=="e":
+								p=(PBIN_MIN[iprt][ipbin]+PBIN_MAX[iprt][ipbin])/2
+								f=ROOT.fPhiFid_mod(p,isctr+1);
+								f_old=ROOT.GetFidF_mod(11,p,isctr+1);
+								f_old.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+							elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+								f_h_exp=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"exp",isctr+1,1);
+								f_l_exp=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"exp",isctr+1,1);
+								f_h_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+								f_l_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+								f_h_sim=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"sim",isctr+1,1);
+								f_l_sim=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"sim",isctr+1,1);
+								f_h_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+								f_l_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+								#! t0
+								lt0_exp=ROOT.ROOT.lt0(PRT_ID[iprt],"exp");
+								lt0_sim=ROOT.ROOT.lt0(PRT_ID[iprt],"sim");
+								lt0_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+								lt0_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+								lt0_exp.SetLineWidth(3)
+								lt0_sim.SetLineWidth(3)
+								#! old fid cuts
+								f_old_h=ROOT.fPhiFid_e16_hdrn_h_mod(isctr+1)
+								f_old_l=ROOT.fPhiFid_e16_hdrn_l_mod(isctr+1)
+								f_old_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+								f_old_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 
 						C[idtyp][ihst][iprt][ipbin][LIN].cd(isctr+1)
-						H[idtyp][ihst][iprt][isctr][ipbin][LIN].Draw("colz")
-						if PRT_NAME[iprt]=="e":
-							f.Draw("same")
-							f_old.Draw("same")
-						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
-							f_h_exp.Draw("same")
-							f_l_exp.Draw("same")
-							f_h_sim.Draw("same")
-							f_l_sim.Draw("same")
-							#! Set Y1 and Y2 for lt0 and draw
-							ymin=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmin()
-							ymax=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmax()
-							lt0_exp.SetY1(ymin)
-							lt0_exp.SetY2(ymax)
-							lt0_sim.SetY1(ymin)
-							lt0_sim.SetY2(ymax)
-							lt0_exp.Draw("same")
-							lt0_sim.Draw("same")
-							#! old cuts
-							f_old_h.Draw("same")
-							f_old_l.Draw("same")
-
-						C[idtyp][ihst][iprt][ipbin][NRM].cd(isctr+1)
-						H[idtyp][ihst][iprt][isctr][ipbin][NRM].Draw("colz")
-						if PRT_NAME[iprt]=="e":
-							f.Draw("same")
-							f_old.Draw("same")
-						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
-							f_h_exp.Draw("same")
-							f_l_exp.Draw("same")
-							f_h_sim.Draw("same")
-							f_l_sim.Draw("same")
-							#! Set Y1 and Y2 for lt0 and draw
-							ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
-							ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
-							lt0_exp.SetY1(ymin)
-							lt0_exp.SetY2(ymax)
-							lt0_sim.SetY1(ymin)
-							lt0_sim.SetY2(ymax)
-							lt0_exp.Draw("same")
-							lt0_sim.Draw("same")
-							#! old cuts
-							f_old_h.Draw("same")
-							f_old_l.Draw("same")
+						if (ihst==0):
+							H[idtyp][ihst][iprt][isctr][ipbin][LIN].Draw("colz")
+							if PRT_NAME[iprt]=="e":
+								f.Draw("same")
+								f_old.Draw("same")
+							elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+								f_h_exp.Draw("same")
+								f_l_exp.Draw("same")
+								f_h_sim.Draw("same")
+								f_l_sim.Draw("same")
+								#! Set Y1 and Y2 for lt0 and draw
+								ymin=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmin()
+								ymax=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmax()
+								lt0_exp.SetY1(ymin)
+								lt0_exp.SetY2(ymax)
+								lt0_sim.SetY1(ymin)
+								lt0_sim.SetY2(ymax)
+								lt0_exp.Draw("same")
+								lt0_sim.Draw("same")
+								#! old cuts
+								f_old_h.Draw("same")
+								f_old_l.Draw("same")
+						else:
+							H[idtyp][ihst][iprt][isctr][ipbin][LIN].Draw()
+						
+						if ihst==0:
+							C[idtyp][ihst][iprt][ipbin][NRM].cd(isctr+1)
+							H[idtyp][ihst][iprt][isctr][ipbin][NRM].Draw("colz")
+							if PRT_NAME[iprt]=="e":
+								f.Draw("same")
+								f_old.Draw("same")
+							elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+								f_h_exp.Draw("same")
+								f_l_exp.Draw("same")
+								f_h_sim.Draw("same")
+								f_l_sim.Draw("same")
+								#! Set Y1 and Y2 for lt0 and draw
+								ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
+								ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
+								lt0_exp.SetY1(ymin)
+								lt0_exp.SetY2(ymax)
+								lt0_sim.SetY1(ymin)
+								lt0_sim.SetY2(ymax)
+								lt0_exp.Draw("same")
+								lt0_sim.Draw("same")
+								#! old cuts
+								f_old_h.Draw("same")
+								f_old_l.Draw("same")
 					#! .root file output
 					#FOUT[idtyp].WriteTObject(C[idtyp][ihst][iprt][ipbin][LIN])
 					#FOUT[idtyp].WriteTObject(C[idtyp][ihst][iprt][ipbin][NRM])
 					prt_dir.WriteTObject(C[idtyp][ihst][iprt][ipbin][LIN])
-					prt_dir.WriteTObject(C[idtyp][ihst][iprt][ipbin][NRM])
+					if ihst==0:
+						prt_dir.WriteTObject(C[idtyp][ihst][iprt][ipbin][NRM])
 					#! .jpg output
 					C[idtyp][ihst][iprt][ipbin][LIN].SaveAs("%s/%s.jpg"%(outdir,C[idtyp][ihst][iprt][ipbin][LIN].GetName()))
-					C[idtyp][ihst][iprt][ipbin][NRM].SaveAs("%s/%s.jpg"%(outdir,C[idtyp][ihst][iprt][ipbin][NRM].GetName()))
 					C[idtyp][ihst][iprt][ipbin][LIN].Close()
-					C[idtyp][ihst][iprt][ipbin][NRM].Close()
+					if ihst==0:
+						C[idtyp][ihst][iprt][ipbin][NRM].SaveAs("%s/%s.jpg"%(outdir,C[idtyp][ihst][iprt][ipbin][NRM].GetName()))
+						C[idtyp][ihst][iprt][ipbin][NRM].Close()
 	
 # 	#! Write FOUT
 # 	#! Commented out because ALL objects are written to file!
