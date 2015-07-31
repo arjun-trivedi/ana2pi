@@ -470,7 +470,7 @@ TObjArray* DataAna::makeHistsMMElastic()
 {
 	TObjArray *ret = new TObjArray(2);
 	ret->Add(new TH2F("hmmepVw","Missing Mass of ep vs. W",150,0,3,100,-0.02,1.00));
-	ret->Add(new TH1F("hW", "W", 150,0,3));
+	ret->Add(new TH1F("hW", "W", 250,0,5));
 	return ret;
 }
 
