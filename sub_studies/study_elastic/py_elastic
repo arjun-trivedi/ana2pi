@@ -3,14 +3,24 @@ import sys
 from study_elastic_tools import StudyElasticTools
 
 '''
-py_elastic [obsdate]
+py_elastic [obsdir] [sctr_bng=central]
 '''
 
 if len(sys.argv)<2:
-        sys.exit("Enter obsdate")
+        sys.exit("Enter obsdir")
 else:
-        obsdate=sys.argv[1]
+        obsdir=sys.argv[1]
 
-print "Going to process Elastic yields for obsdate=%s"%(obsdate)
-t=StudyElasticTools(obsdate)
+if len(sys.argv)>=3: #! i.e. user entered sctr_bng option
+	if (sys.argv[2]=="full"):
+		sctr_bng="full"
+	elif (sys.argv[2]=="central"):
+		sctr_bng="central"
+	else:
+		sys.exit("sctr_bng=%s not recognize"%sys.argv[2])
+else:
+	sctr_bng="central"
+
+print "Going to process Elastic yields for obsdir=%s,sctr_bng=%s"%(obsdir,sctr_bng)
+t=StudyElasticTools(obsdir,sctr_bng)
 t.proc_yield()

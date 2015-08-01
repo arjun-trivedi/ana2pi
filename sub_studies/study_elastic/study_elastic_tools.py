@@ -1,6 +1,6 @@
 from __future__ import division
 import math
-import os
+import os,sys
 from collections import OrderedDict
 import ROOT
 from rootpy.plotting import Hist, HistStack, Legend, Canvas
@@ -18,7 +18,32 @@ H2_DIM=OrderedDict([('THETA',0),('PHI',1)])
 
 SCTRL=[1,2,3,4,5,6]
 
-PHI_PROJ_BINS_THETA_MIN_14={
+#! Note for sector 1, only half of the sector is used
+#! because binning in phi=[0,360] instead of [-30,330]
+# PHI_PROJ_BINS_FULL_SECTOR={
+# 				1:[[0,30]],
+# 				2:[[30,90]],
+# 				3:[[90,150]],
+# 				4:[[150,210]],
+# 				5:[[210,270]],
+# 				6:[[270,330]]
+# }
+
+#! I could not use the actual full sector phi range 
+#! because for each theta projection, phi range differs
+#! and at the time, I was unable to determine phi range=f(theta)
+#! and therefore picked a phi range that would be common to all
+#! theta projections.
+PHI_PROJ_BINS_FULL_SECTOR={
+				1:[[0,6]],
+				2:[[54,66]],
+				3:[[114,126]],
+				4:[[174,186]],
+				5:[[234,246]],
+				6:[[294,306]]
+}
+
+PHI_PROJ_BINS_CENTRAL_SECTOR={
 				1:[[354,356],[356,358],[358,360],[0,2],    [2,4],    [4,6]],
 				2:[[54,56],  [56,58],  [58,60],  [60,62],  [62,64],  [64,66]],
 				3:[[114,116],[116,118],[118,120],[120,122],[122,124],[124,126]],
@@ -33,19 +58,32 @@ DTHETA=1
 LUM=19.844 #fb^-1
 LUM_INVFB_TO_INVMICROB=1000000000
 
-#! For TCanvas
-CANVAS_W=1000
-CANVAS_H=800
-
 class StudyElasticTools:
-	def __init__(self,obsdate,simnum='siml'):
+	def __init__(self,obsdir,sctr_bng="central",simnum='siml'):
 		self.THETA_MIN=14 #! Minimum theta in Simulation
-		#! Acoording to THETA_MIN, set up PHI_PROJ_BINS
-		self.PHI_PROJ_BINS=PHI_PROJ_BINS_THETA_MIN_14
+		if "E16" in obsdir:
+			self.THETA_MIN=18
+			print("Note, processing yields using E16 simulation! THETA_MIN=%d"%self.THETA_MIN)
+		#! Acoording to sctr_bng, set up PHI_PROJ_BINS
+		if sctr_bng=="central":
+			self.SCTR_BNG="central_sector"
+			self.PHI_PROJ_BINS=PHI_PROJ_BINS_CENTRAL_SECTOR
+			self.CANVAS_W=1000
+			self.CANVAS_H=800
+			num_phibins=len(self.PHI_PROJ_BINS[1])
+			self.CANVAS_NROWS=2
+			self.CANVAS_NCOLS=int(num_phibins/self.CANVAS_NROWS)
+		elif sctr_bng=="full":
+			self.SCTR_BNG="full_sector"
+			self.PHI_PROJ_BINS=PHI_PROJ_BINS_FULL_SECTOR
+			self.CANVAS_W=500
+			self.CANVAS_H=500
+			self.CANVAS_NROWS=1
+			self.CANVAS_NCOLS=1
 		#! Setup DATADIR
 		self.SIMNUM=simnum
-		self.DATADIR=os.path.join(os.path.join(os.environ['OBSDIR_ELASTIC'],obsdate))
-		self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
+		self.DATADIR=obsdir
+		self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,self.SCTR_BNG)
 		if not os.path.exists(self.OUTDIR):
 			os.makedirs(self.OUTDIR)
 
@@ -54,10 +92,10 @@ class StudyElasticTools:
 		#! Get all input delast files
 		FIN={}
 		FIN['ER']=ROOT.TFile(os.path.join(self.DATADIR,'delast_exp','delastR.root'))
-		if self.THETA_MIN==14:
-			FIN['SR']=ROOT.TFile(os.path.join(self.DATADIR,'delast_sim',self.SIMNUM,'delastR.root'))
-			FIN['ST']=ROOT.TFile(os.path.join(self.DATADIR,'delast_sim',self.SIMNUM,'delastT.root'))
-			FOUT=ROOT.TFile(os.path.join(self.OUTDIR,'yield.root'),"RECREATE")
+		#if self.THETA_MIN==14:
+		FIN['SR']=ROOT.TFile(os.path.join(self.DATADIR,'delast_sim',self.SIMNUM,'delastR.root'))
+		FIN['ST']=ROOT.TFile(os.path.join(self.DATADIR,'delast_sim',self.SIMNUM,'delastT.root'))
+		FOUT=ROOT.TFile(os.path.join(self.OUTDIR,'yield.root'),"RECREATE")
 		#print FIN['ER'].GetName()
 	
 		
@@ -124,14 +162,12 @@ class StudyElasticTools:
 					hTHETA.SetTitle("#theta projection for #phi=[%d,%d)"%(phi_min,phi_max))
 					hTHETA.Write()
 				
-	def disp_yields(self,thry='wrad',wcut=1.1):
+	def disp_yields(self,mthd=1,thry='wrad',wcut=1.0):
 		#!get rid of X error bars and y error bar caps
 		ROOT.gStyle.SetErrorX(0.001)
-		FIN=ROOT.TFile(os.path.join(self.DATADIR,self.SIMNUM,'yield.root'))	
-		if thry=='wrad':
-			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,'displays_thry_%s'%thry)
-		elif thry=='nrad':
-			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,'displays_thry_%s'%thry)
+		FIN=ROOT.TFile(os.path.join(self.DATADIR,self.SIMNUM,self.SCTR_BNG,'yield.root'))
+		if thry=='wrad' or thry=='nrad':
+			self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM,self.SCTR_BNG,'mthd%d'%mthd,'displays_thry_%s'%thry)
 		else:
 			sys.exit('thry has to be wrad or nrad. Entered value= %s'%thry)
 		if not os.path.exists(self.OUTDIR):
@@ -142,26 +178,76 @@ class StudyElasticTools:
 			  ('EC'):ROOT.gROOT.ProcessLine("kCyan"),
 			  ('ST'):ROOT.gROOT.ProcessLine("kGreen"),
 			  ('SR'):ROOT.gROOT.ProcessLine("kMagenta"),
-			  ('SC'):ROOT.gROOT.ProcessLine("kRed")}
+			  ('SC'):ROOT.gROOT.ProcessLine("kRed"),
+			  ('SA'):ROOT.gROOT.ProcessLine("kBlack")}
 
 		mrkrd={('ER'):ROOT.gROOT.ProcessLine("kOpenStar"),
 			   ('EC'):ROOT.gROOT.ProcessLine("kFullCircle"),
 			   ('ST'):ROOT.gROOT.ProcessLine("kPlus"),
 			   ('SR'):ROOT.gROOT.ProcessLine("kOpenStar"),
-			   ('SC'):ROOT.gROOT.ProcessLine("kFullCircle")}
+			   ('SC'):ROOT.gROOT.ProcessLine("kFullCircle"),
+			   ('SA'):ROOT.gROOT.ProcessLine("kFullCircle")}
    
 		#! Get all hTHETA in PHI_PROJ_BINS and set up their aesthetics
 		self.hTHETA={}
-		for seq in ['ST','SR','SC','ER','EC']:
-			for sector in self.PHI_PROJ_BINS:
-				for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-					phi_min=phibin[0]
-					phi_max=phibin[1]
-					#print "seq:sector:phibinnum:phibin:phi_min:phi_max=",seq,sector,iphibinnum+1,phibin,phi_min,phi_max
-					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=FIN.Get("%s/sector%d/phibinnum%d/hTHETA"%(seq,sector,(iphibinnum+1)))
-					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(cold[seq])
-					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
-					self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
+		if mthd==1:#! then directly get SC and EC histograms obtained in proc_yields
+			for seq in ['ST','SR','SC','ER','EC']:
+				for sector in self.PHI_PROJ_BINS:
+					for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+						phi_min=phibin[0]
+						phi_max=phibin[1]
+						#print "seq:sector:phibinnum:phibin:phi_min:phi_max=",seq,sector,iphibinnum+1,phibin,phi_min,phi_max
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=FIN.Get("%s/sector%d/phibinnum%d/hTHETA"%(seq,sector,(iphibinnum+1)))
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(cold[seq])
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
+		elif mthd==2:
+			#! First get ST,SR and ER hists in each phibin
+			for seq in ['ST','SR','ER']:
+				for sector in self.PHI_PROJ_BINS:
+					for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+						phi_min=phibin[0]
+						phi_max=phibin[1]
+						#print "seq:sector:phibinnum:phibin:phi_min:phi_max=",seq,sector,iphibinnum+1,phibin,phi_min,phi_max
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=FIN.Get("%s/sector%d/phibinnum%d/hTHETA"%(seq,sector,(iphibinnum+1)))
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(cold[seq])
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
+			#! Now calculate SA,SC and EC
+			#! Make directory to store SA
+			outdir_SA=os.path.join(self.OUTDIR,"SA")
+			if not os.path.exists(outdir_SA):
+				os.makedirs(outdir_SA)
+			for seq in ['SA','SC','EC']:
+				for sector in self.PHI_PROJ_BINS:
+					for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
+						phi_min=phibin[0]
+						phi_max=phibin[1]
+						if seq=='SA':
+							hSR=self.hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]
+							hST=self.hTHETA['ST',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]
+							hSA=hSR.Clone()
+							hSA.Divide(hST)
+							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSA
+						elif seq=='SC':
+							hSA=self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone()
+							hSC=self.hTHETA['SR',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone()
+							hSC.Divide(hSA)
+							self.hTHETA['SC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hSC
+						elif seq=='EC':	
+							hSA=self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone()
+							hEC=self.hTHETA['ER',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Clone()
+							hEC.Divide(hSA)
+							self.hTHETA['EC',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=hEC
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(cold[seq])
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
+						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
+						if seq=='SA':#! then save histograms
+							c=ROOT.TCanvas("c","c",self.CANVAS_W,self.CANVAS_H)
+							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
+							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
+							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(1.5)
+							c.SaveAs("%s/c_sector%d.png"%(outdir_SA,sector))
 	
 		#! Generate theoretical Cross Sections
 		E1F_TARGET_RAD_LENGTH=0.00562 #! see nb_play_elaslib
@@ -204,7 +290,7 @@ class StudyElasticTools:
 			theta_bin_low=hTTnorm.GetBinLowEdge(ibin+1)
 			theta_bin_max=hTTnorm.GetBinLowEdge(ibin+1)+hTTnorm.GetBinWidth(ibin+1)
 			if theta_bin_low==0: continue
-			DOmega=self.get_DOmega(theta_bin_low,theta_bin_max,self.PHI_PROJ_BINS[1][0][0],self.PHI_PROJ_BINS[1][1][1])
+			DOmega=self.get_DOmega(theta_bin_low,theta_bin_max,self.PHI_PROJ_BINS[2][0][0],self.PHI_PROJ_BINS[2][0][1])
 			hTT.SetBinContent(ibin+1,binc*DOmega*LUM*LUM_INVFB_TO_INVMICROB)
 			hTT.SetBinError(ibin+1,0)
 
@@ -234,12 +320,12 @@ class StudyElasticTools:
 	def comp(self,seqA,seqB,logy=False,draw_normalized=True):#,A_norm=False,A_lumnorm=False,B_norm=False,B_lumnorm=False,logy=False):
 		print "Generating comparison plots for %s and %s"%(seqA,seqB)
 		#! First create a TCanvas & TLegend
-		c=ROOT.TCanvas("c","c",CANVAS_W,CANVAS_H)
-		num_phibins=len(self.PHI_PROJ_BINS[1])
-		nrows=2
-		ncols=int(num_phibins/nrows)
+		c=ROOT.TCanvas("c","c",self.CANVAS_W,self.CANVAS_H)
+		# num_phibins=len(self.PHI_PROJ_BINS[1])
+		# nrows=2
+		# ncols=int(num_phibins/nrows)
 		#print "nrows,ncols",nrows,ncols
-		c.Divide(ncols,nrows)
+		c.Divide(self.CANVAS_NCOLS,self.CANVAS_NROWS)
 		l=ROOT.TLegend(0.45,0.6,1.0,0.85)
 		l.SetFillStyle(0)
 		l.SetBorderSize(0)
