@@ -1,0 +1,29 @@
+#!/bin/bash
+counter=0
+for simnum in `ls $H10DIR_ELAST_SIM/study_elast_sim`; do
+  #! Following if statement for debugging
+  #if [ $counter -ge 1 ]; then
+  #  break
+  #fi
+  echo "*** Preparing $DELASTDIR_SIM/study_elast_sim/$simnum ***"
+  dir="$DELASTDIR_SIM/study_elast_sim/$simnum"
+  #! make $DELASTDIR_SIM/study_elast_sim/$simnum
+  #echo ">mkdir -p $dir"
+  mkdir -p $dir
+  #! make h10-T.lst and h10-R.lst
+  #echo ">cd $dir"
+  cd $dir
+  #echo $PWD
+  #ls -lrt
+  #echo ">make_h10lst $H10DIR_ELAST_SIM/$simnum/evtgen"
+  make_h10lst $H10DIR_ELAST_SIM/study_elast_sim/$simnum/evtgen
+  #echo ">mv h10.lst h10-T.lst"
+  mv h10.lst h10-T.lst
+  #echo ">make_h10lst $H10DIR_ELAST_SIM/study_elast_sim/$simnum/recon"
+  make_h10lst $H10DIR_ELAST_SIM/study_elast_sim/$simnum/recon 
+  #echo ">mv h10.lst h10-R.lst"
+  mv h10.lst h10-R.lst
+  #echo ">$ANA2PI/sub_studies/study_elastic/finalize_h10lsts"	
+  $ANA2PI/sub_studies/study_elastic/finalize_h10lsts
+  counter+=1
+done

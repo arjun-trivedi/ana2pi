@@ -1,0 +1,12 @@
+#!/bin/bash
+counter=0
+for simnum in `ls $H10DIR_ELAST_SIM/study_elast_sim`; do
+  #! Following if statement for debugging
+  #if [ $counter -ge 1 ]; then
+  #  break
+  #fi
+  #echo "*** Preparing $DELASTDIR_SIM/study_elast_sim/$simnum ***"
+  dir="$DELASTDIR_SIM/study_elast_sim/$simnum"
+  cat $dir/h10-T.lst |wc
+  cat $dir/h10-R.lst |wc
+done

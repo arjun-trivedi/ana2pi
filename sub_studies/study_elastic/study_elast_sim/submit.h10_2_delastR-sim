@@ -4,7 +4,7 @@
 ##-----------------------------------------------##
 
 ##-- Submit jobs for each simnum
-for simnum in "ls $H10DIR_ELAST_SIM/study_elast_sim"; do
+for simnum in `ls $DELASTDIR_SIM/study_elast_sim`; do
   SUBDIR="$BSUBDIR_E1F_ELAST_SIM/h10_2_delastR-sim-$simnum"
   OUTDIR="$DELASTDIR_SIM/study_elast_sim/$simnum"
   mkdir -p $SUBDIR
@@ -25,7 +25,7 @@ for simnum in "ls $H10DIR_ELAST_SIM/study_elast_sim"; do
     <DiskSpace space=\"5000\" unit=\"MB\"/>
     <Memory space=\"5000\" unit=\"MB\"/>
     <Track name=\"analysis\"/>
-    <TimeLimit unit=\"minutes\" time=\"1440\"/>
+    <TimeLimit unit=\"minutes\" time=\"10\"/>
     <Command><![CDATA[
       proc_h10 -i h10.lst -t e1f:sim:elast -p eid:efid:delastR -o delastR.root
     ]]></Command>
