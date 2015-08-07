@@ -42,7 +42,7 @@ echo "\
   <DiskSpace space=\"5000\" unit=\"MB\"/>
   <Memory space=\"5000\" unit=\"MB\"/>
   <Track name=\"analysis\"/>
-  <TimeLimit unit=\"minutes\" time=\"2880\"/>
+  <TimeLimit unit=\"minutes\" time=\"4320\"/>
   <Command><![CDATA[
     proc_h10 -i h10.lst -t e1f:exp:elast  -p eid:efid:mom:delastR -o delastR.root
   ]]></Command>
