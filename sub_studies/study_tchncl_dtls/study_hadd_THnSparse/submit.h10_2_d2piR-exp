@@ -48,7 +48,7 @@ echo "\
   <Track name=\"analysis\"/>
   <TimeLimit unit=\"minutes\" time=\"4320\"/>
   <Command><![CDATA[
-    proc_h10 -i h10.lst -t e1f:exp:elast  -p eid:efid:qskim:pid:mom:q2wskimR:eeff:peff:d2piR -o d2piR.root >& proc_h10_log &
+    proc_h10 -i h10.lst -t e1f:exp:elast  -p eid:efid:qskim:pid:mom:q2wskimR:eeff:peff:d2piR -o d2piR.root 
   ]]></Command>
 
   <Job>
@@ -58,7 +58,8 @@ echo "\
          echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
        done`
       <Output src=\"d2piR.root\" dest=\"$OUTDIR/d2piR.root\"/>
-      <Output src=\"proc_h10_log\" dest=\"$OUTDIR_LOG/proc_h10_log\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job.err\"/>
   </Job>
 
 </Request>
