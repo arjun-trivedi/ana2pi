@@ -53,8 +53,11 @@ TString q2w="";
 TString fname_q2w_el="";
 TFile* f_q2w_el=NULL;
 
+//! + nentries can be specified by user
+//! + default=0, in which case number of entries in TChain is used, as per logic in h10looper.C:
+//!   'nentries==0?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;'
 TString str_nentries="";
-Long64_t nentries=1000000000;
+Long64_t nentries=0;//[08-09-15]used to be 1B, till I cleaned up the "logic"
 
 //objects setup by proc_h10
 //TString h10type;

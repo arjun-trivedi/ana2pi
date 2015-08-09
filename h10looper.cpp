@@ -25,9 +25,11 @@ void H10Looper::Loop(Long64_t nentries)
       nentries_chain=fChain->GetEntries();
    }
    Long64_t nentries_to_proc=0;
-   nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
-   Info("H10Looper::Loop", "Number of entries in Chain =  %d",nentries_chain);
-   Info("H10Looper::Loop", "Number of entries to processess =  %d",nentries_to_proc);
+   //nentries>nentries_chain?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;//! old "logic", pre [08-09-15]
+   nentries==0?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;
+   Info("H10Looper::Loop", "Number of entries in specified by user =  %llu",nentries);
+   Info("H10Looper::Loop", "Number of entries in TChain =  %llu",nentries_chain);
+   Info("H10Looper::Loop", "Number of entries to processess =  %llu",nentries_to_proc);
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries_to_proc;jentry++) {
