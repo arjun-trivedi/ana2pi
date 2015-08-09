@@ -1,0 +1,55 @@
+#!/bin/bash
+
+##########################################################
+# [08-06-15]
+# + h10 -> d2piR on the farm
+###########################################################
+#! Get NFILES from H10LST
+NFILES=`less /home/atrivedi/nfiles_8029_h10.lst|wc -l`
+echo "NFILES=$NFILES"
+sleep 5
+
+date=`date +%m%d%y`
+SUBDIR=$BSUBDIR_E1F_2PI_EXP/h10_2_d2piR-exp_nfiles_$NFILES"_"test_$date
+if [[ ! -d ${SUBDIR} ]]; then
+    mkdir -p $SUBDIR
+fi
+OUTDIR=$D2PIDIR_EXP/nfiles_$NFILES"_"test_$date
+if [[ ! -d $OUTDIR ]]; then
+    mkdir -p $OUTDIR
+fi
+OUTDIR_LOG=$OUTDIR/log
+if [[ ! -d $OUTDIR_LOG ]]; then
+    mkdir -p $OUTDIR_LOG
+fi
+
+JSUBFILE=$SUBDIR/job.sub
+if [ -f "${JSUBFILE}" ]; then
+  echo "job.sub exists. Will delete it before creating new one."
+  rm $JSUBFILE
+fi
+
+echo "\
+<Request>
+  <Name name=\"e1f_h10_2_d2piR-exp_nfiles_$NFILES\"/>
+  <Project name=\"E1F\"/>
+  <OS name=\"centos65\"/>
+  <DiskSpace space=\"5000\" unit=\"MB\"/>
+  <Memory space=\"5000\" unit=\"MB\"/>
+  <Track name=\"analysis\"/>
+  <TimeLimit unit=\"minutes\" time=\"1440\"/>
+  <Command><![CDATA[
+    proc_h10 -i h10.lst -t e1f:exp:elast  -p eid:efid:qskim:pid:mom:q2wskimR:eeff:peff:d2piR -o d2piR.root 
+  ]]></Command>
+
+  <Job>
+      <Input src=\"/home/atrivedi/nfiles_8029_h10.lst\" dest=\"h10.lst\" />
+      <Output src=\"d2piR.root\" dest=\"$OUTDIR/d2piR.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job.err\"/>
+  </Job>
+
+</Request>
+" > $JSUBFILE 
+echo "jsub -xml $JSUBFILE"
+jsub -xml $JSUBFILE
