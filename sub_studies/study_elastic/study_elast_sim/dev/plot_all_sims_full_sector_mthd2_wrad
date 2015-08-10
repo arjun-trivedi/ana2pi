@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ ! -e /tmp/all_sims_full_sector_mthd2_wrad.pdf ];then
+  convert $OBSDIR_ELASTIC/study_elast_sim/obs_delastR_070115/elast_pars_f*/siml/full_sector/mthd2/displays_thry_wrad/rto_EClumnorm_TTnorm/c_sector* /tmp/all_sims_full_sector_mthd2_wrad.pdf
+fi
+acroread /tmp/all_sims_full_sector_mthd2_wrad.pdf&

@@ -10,6 +10,7 @@ from collections import OrderedDict
 import numpy as np
 
 DATADIR=os.path.join(os.environ['DELASTDIR_SIM'],'study_elast_sim')
+OUTDIR=os.path.join(os.environ['STUDY_ELAST_SIM'])
 
 # #! Get simdirl
 # simdirl=glob.glob("%s/*"%DATADIR)
@@ -94,11 +95,14 @@ cnvs=[[] for i in range(nsim)]
 
 #! Obtain ER and Isupov data
 fin_ER=ROOT.TFile("%s/test_elast_sim_073015/delastR.root"%os.environ['DELASTDIR_EXP'])
+fin_ER_W_PID=ROOT.TFile("%s/test_elast_sim_073015/delastR_w_pid.root"%os.environ['DELASTDIR_EXP'])
 fin_SR_E16=ROOT.TFile("%s/test_elast_sim_073015/e16/delastR.root"%os.environ['DELASTDIR_SIM'])
 fin_ST_E16=ROOT.TFile("%s/test_elast_sim_073015/e16/delastT.root"%os.environ['DELASTDIR_SIM'])
 
 hW_ER=fin_ER.Get("delast/monitor/hW")
 helast_ER=fin_ER.Get("delast/monitor/helastic")
+hW_ER_W_PID=fin_ER_W_PID.Get("delast/monitor/hW")
+helast_ER_W_PID=fin_ER_W_PID.Get("delast/monitor/helastic")
 hW_ST_E16=fin_ST_E16.Get("delast/monitor/hW")
 helast_ST_E16=fin_ST_E16.Get("delast/monitor/helastic")
 hW_SR_E16=fin_SR_E16.Get("delast/monitor/hW")
@@ -106,6 +110,9 @@ helast_SR_E16=fin_SR_E16.Get("delast/monitor/helastic")
 
 hW_ER.SetLineColor(ROOT.gROOT.ProcessLine('kBlue'))
 helast_ER.SetLineColor(ROOT.gROOT.ProcessLine('kBlue'))
+
+hW_ER_W_PID.SetLineColor(ROOT.gROOT.ProcessLine('kGreen+4'))
+helast_ER_W_PID.SetLineColor(ROOT.gROOT.ProcessLine('kGreen+4'))
 
 hW_ST_E16.SetLineColor(ROOT.gROOT.ProcessLine('kBlack'))
 helast_ST_E16.SetLineColor(ROOT.gROOT.ProcessLine('kBlack'))
@@ -165,19 +172,29 @@ for isim,simdir in enumerate(simdirl):
         #hW_SR_E16_tmp.Scale(s)
         #hW_SR_E16_tmp.Draw("same")
 
+	l=ROOT.TLegend(0.15,0.7,0.4,0.9)
         cnvs[isim].cd(4)#! elast:SR and ER!
         helast[isim][R].Draw()
 	#! Determine scale factor to scale SR_E16 and ER
         #sSR=helast[isim][R].GetMaximum()/helast_SR_E16.GetMaximum()
 	sER=helast[isim][R].GetMaximum()/helast_ER.GetMaximum()
+	sER_W_PID=helast[isim][R].GetMaximum()/helast_ER_W_PID.GetMaximum()
         #helast_SR_E16_tmp=helast_SR_E16.Clone()
         #helast_SR_E16_tmp.Scale(sSR)
 	helast_ER_tmp=helast_ER.Clone()
         helast_ER_tmp.Scale(sER)
+	helast_ER_W_PID_tmp=helast_ER_W_PID.Clone()
+        helast_ER_W_PID_tmp.Scale(sER_W_PID)
         #helast_SR_E16_tmp.Draw("same")
 	helast_ER_tmp.Draw("same")
+	helast_ER_W_PID_tmp.Draw("same")
+	l.AddEntry(helast[isim][R],"%s"%simname[isim],"l")
+	l.AddEntry(helast_ER_tmp,"ER-n-pid","l")
+	l.AddEntry(helast_ER_W_PID_tmp,"ER-w-pid","l")
+	l.Draw("same")
+
 	#outdir="/tmp/plots/%s"%simname[isim]
-	outdir="/tmp/plots"
+	outdir="%s/direct_comp"%OUTDIR
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 	#cnvs[isim].SaveAs("%s/c.png"%outdir)

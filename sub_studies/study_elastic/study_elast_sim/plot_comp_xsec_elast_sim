@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#! ER data to use
+date_ER=${5:-070115}
+echo "ER data date:"$date_ER
+
+for sim in `ls $DELASTDIR_SIM/study_elast_sim`
+do
+  echo $sim
+  #! Make sure $sim contains delastT/R
+  if [ ! -e $DELASTDIR_SIM/study_elast_sim/$sim/delastT_080415.root ] || [ ! -e $DELASTDIR_SIM/study_elast_sim/$sim/delastR_080415.root ];then
+    continue
+  fi
+
+  #! Make $OBSDIR_ELASTIC/study_elast_sim/$sim
+  obsdir=$OBSDIR_ELASTIC/study_elast_sim/obs_delastR_$date_ER/$sim
+  mkdir -p $obsdir
+
+  #! Create directory structure of Elastic Obs
+  #! 1. delast_exp
+  mkdir -p $obsdir/delast_exp
+  if [ ! -e $obsdir/delast_exp/delastR.root ];then
+    ln -s $DELASTDIR_EXP/delastR_$date_ER.root $obsdir/delast_exp/delastR.root
+  fi
+  #! 2. delast_sim
+  mkdir -p $obsdir/delast_sim/sim1
+  if [ ! -e $obsdir/delast_sim/sim1/delastT.root ];then
+    ln -s $DELASTDIR_SIM/study_elast_sim/$sim/delastT_080415.root $obsdir/delast_sim/sim1/delastT.root
+  fi
+  if [ ! -e $obsdir/delast_sim/sim1/delastR.root ];then
+    ln -s $DELASTDIR_SIM/study_elast_sim/$sim/delastR_080415.root $obsdir/delast_sim/sim1/delastR.root
+  fi
+  #! point siml to sim1
+  if [ ! -e $obsdir/delast_sim/siml ];then
+    ln -s $obsdir/delast_sim/sim1 $obsdir/delast_sim/siml
+  fi
+
+  #! Now obtain xsec
+  echo "Obtaining xsec" 
+  #! Process yields
+  echo ">py_elastic $obsdir central"
+  #py_elastic $obsdir central
+  echo ">py_elastic $obsdir full"
+  #py_elastic $obsdir full
+  #! Display yields; compare wrad theory
+  echo ">dy_elastic $obsdir central 1 wrad"
+  #dy_elastic $obsdir central 1 wrad
+  echo ">dy_elastic $obsdir full 2 wrad" 
+  #dy_elastic $obsdir full 2 wrad
+  #! Display yields; compare nrad theory
+  echo ">dy_elastic $obsdir central 1 nrad"
+  #dy_elastic $obsdir central 1 nrad
+  echo ">dy_elastic $obsdir full 2 nrad" 
+  #dy_elastic $obsdir full 2 nrad
+  
+done

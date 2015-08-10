@@ -34,13 +34,21 @@ SCTRL=[1,2,3,4,5,6]
 #! and at the time, I was unable to determine phi range=f(theta)
 #! and therefore picked a phi range that would be common to all
 #! theta projections.
+# PHI_PROJ_BINS_FULL_SECTOR={
+# 				1:[[0,6]],
+# 				2:[[54,66]],
+# 				3:[[114,126]],
+# 				4:[[174,186]],
+# 				5:[[234,246]],
+# 				6:[[294,306]]
+# }
 PHI_PROJ_BINS_FULL_SECTOR={
-				1:[[0,6]],
-				2:[[54,66]],
-				3:[[114,126]],
-				4:[[174,186]],
-				5:[[234,246]],
-				6:[[294,306]]
+				1:[[0,30]],
+				2:[[30,90]],
+				3:[[90,150]],
+				4:[[150,210]],
+				5:[[210,270]],
+				6:[[270,330]]
 }
 
 PHI_PROJ_BINS_CENTRAL_SECTOR={

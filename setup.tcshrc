@@ -37,4 +37,6 @@ source ${ANA2PI}/sub_studies/study_acc/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_eid/setup.tcshrc
 #-- study_efid
 source ${ANA2PI}/sub_studies/study_efid/setup.tcshrc
+#-- study_elast_sim
+source ${ANA2PI}/sub_studies/study_elastic/study_elast_sim/setup.tcshrc
 
