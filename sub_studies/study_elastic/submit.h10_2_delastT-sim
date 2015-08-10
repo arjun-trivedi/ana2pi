@@ -14,8 +14,10 @@ done
 for simnum in "${simlist[@]}"; do
   SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastT-sim-$simnum
   OUTDIR=$DELASTDIR_SIM/$simnum
+  OUTDIR_LOG=$OUTDIR/log
   mkdir -p $SUBDIR
   mkdir -p $OUTDIR
+  mkdir -p $OUTDIR_LOG
 
   date=`date +%m%d%y`
   JSUBFILE=${SUBDIR}/job_$date.sub
@@ -40,6 +42,8 @@ for simnum in "${simlist[@]}"; do
     <Job>
       <Input src=\"$DELASTDIR_SIM/$simnum/h10-T.lst\" dest=\"h10.lst\" />
       <Output src=\"delastT.root\" dest=\"$OUTDIR/delastT_$date.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job_$date.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job_$date.err\"/>
     </Job>
 
   </Request>

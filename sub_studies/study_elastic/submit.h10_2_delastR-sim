@@ -1,21 +1,54 @@
 #!/bin/bash
 ##-----------------------------------------------##
-# Usage submit.h10_2_delastR-sim sim1 sim2 ... simX
+# Usage submit.h10_2_delastR-sim proc_opt sim1 sim2 ... simX
 ##-----------------------------------------------##
 
-##-- Get list of simnum from user
-simlist=("$@")
-echo "Going to submit h10_2_delastR-sim for the following"
+##-- Get proc_opt and simlist from user specified args
+args=("$@") #! First option is proc_opt, rest are simXs
+simlist=()
+i=0
+for arg in "${args[@]}"; do
+   #echo $arg
+   if [ $i -eq 0 ];then
+     proc_opt=${args[i]}
+   else
+     simlist+=(${args[i]})
+   fi
+   i=$((i+1))
+done
+
+##-- From proc_opt, determine proc_chain
+if [ $proc_opt == "dflt" ];then
+  proc_chain="eid:efid:delastR"
+elif [ $proc_opt == "w_pidold" ];then
+  proc_chain="eid:efid:qskimelast:pidelastmon:delastR"
+elif [ $proc_opt == "w_pidnew" ];then
+  proc_chain="eid:efid:qskimelast:pidelastnewmon:delastR"
+elif [ $proc_opt == "w_efidnew_pidold" ];then
+  proc_chain="eid:efidnew:qskimelast:pidelastmon:delastR"
+elif [ $proc_opt == "w_efidnew_pidnew" ];then
+  proc_chain="eid:efidnew:qskimelast:pidelastnewmon:delastR"
+else
+  echo "proc_opt="$proc_opt" not understood. Exiting"
+  exit
+fi
+
+echo "Going to submit h10_2_delastR-sim for the following:"
+echo "proc_opt="$proc_opt
+echo "proc_chain="$proc_chain
+echo "simXs:"
 for simnum in "${simlist[@]}"; do
    echo "$simnum"
 done
 
 ##-- Now submit jobs for each simnum
 for simnum in "${simlist[@]}"; do
-  SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastR-sim-$simnum
+  SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastR-sim-$proc_opt-$simnum
   OUTDIR=$DELASTDIR_SIM/$simnum
+  OUTDIR_LOG=$OUTDIR/log
   mkdir -p $SUBDIR
   mkdir -p $OUTDIR
+  mkdir -p $OUTDIR_LOG
 
   date=`date +%m%d%y`
   JSUBFILE=${SUBDIR}/job_$date.sub
@@ -26,7 +59,7 @@ for simnum in "${simlist[@]}"; do
 
   echo "\
   <Request>
-    <Name name=\"e1f_h10_2_delastR-sim\"/>
+    <Name name=\"e1f_h10_2_delastR-sim-$proc_opt-$simnum\"/>
     <Project name=\"E1F\"/>
     <OS name=\"centos65\"/>
     <DiskSpace space=\"5000\" unit=\"MB\"/>
@@ -34,12 +67,14 @@ for simnum in "${simlist[@]}"; do
     <Track name=\"analysis\"/>
     <TimeLimit unit=\"minutes\" time=\"1440\"/>
     <Command><![CDATA[
-      proc_h10 -i h10.lst -t e1f:sim:elast -p eid:efid:delastR -o delastR.root
+      proc_h10 -i h10.lst -t e1f:sim:elast -p $proc_chain -o delastR.root
     ]]></Command>
 
     <Job>
       <Input src=\"$DELASTDIR_SIM/$simnum/h10-R.lst\" dest=\"h10.lst\" />
-      <Output src=\"delastR.root\" dest=\"$OUTDIR/delastR_$date.root\"/>
+      <Output src=\"delastR.root\" dest=\"$OUTDIR/delastR_$proc_opt_$date.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job_$proc_opt_$date.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job_$proc_opt_$date.err\"/>
     </Job>
 
   </Request>
