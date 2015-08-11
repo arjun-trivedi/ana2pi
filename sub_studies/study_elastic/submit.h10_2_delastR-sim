@@ -72,9 +72,9 @@ for simnum in "${simlist[@]}"; do
 
     <Job>
       <Input src=\"$DELASTDIR_SIM/$simnum/h10-R.lst\" dest=\"h10.lst\" />
-      <Output src=\"delastR.root\" dest=\"$OUTDIR/delastR_$proc_opt_$date.root\"/>
-      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job_$proc_opt_$date.out\"/>
-      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job_$proc_opt_$date.err\"/>
+      <Output src=\"delastR.root\" dest=\"$OUTDIR/delastR_$proc_opt"_"$date.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job_$proc_opt"_"$date.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job_$proc_opt"_"$date.err\"/>
     </Job>
 
   </Request>
