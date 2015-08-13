@@ -147,8 +147,8 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		if (_make_tree){
 			dirout->cd();
 			_tT = new TTree("tT","TTree containing data for Elastic events");
-			dAna->addBranches_DataEid(_t);
-			dAna->addBranches_DataEkin(_t);
+			dAna->addBranches_DataEkin(_tT,kTRUE);
+			dAna->addBranches_DataElastic(_tT,kTRUE);
 		}
 
 		/*_hists_ekinT=dAna->makeHistsEkin();

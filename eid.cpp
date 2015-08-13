@@ -90,12 +90,12 @@ Eid::Eid(char* eidParFileName)
 
 	//! Eid cut parameters directly entered
 	//! [07-16-15] UVW cut parms. obtained from study_eid/hists/Wlt1/evtsel
-	_Umin=70; //MG:20,EI:40,YT:40,EP:20
+	_Umin=70; //MG:20,EI:40,YT:40,EP:20,RP:60
 	_Umax=400;
 	_Vmin=0;
-	_Vmax=360;//MG:375,EI:360,YT:370,EP:375
+	_Vmax=360;//MG:375,EI:360,YT:370,EP:375,RP:360
 	_Wmin=0,
-	_Wmax=390;//MG:410,EI:390,YT:405,EP:410
+	_Wmax=390;//MG:410,EI:390,YT:405,EP:410,RP:395
 }
 
 Eid::~Eid()

@@ -1,0 +1,3 @@
+convert $OBSDIR_ELASTIC/obs_070115/siml/full_sector/mthd2/displays_thry_wrad/rto_EClumnorm_TTnorm/c.png $OBSDIR_ELASTIC/obs_w_pidnew_081015//siml/full_sector/mthd2/displays_thry_wrad/rto_EClumnorm_TTnorm/c.png $HOME/Dropbox/ForKijun/elastic_xsec/meeting_081215/xsec_full_sector.pdf
+
+convert $OBSDIR_ELASTIC/obs_070115/siml/central_sector/mthd1/displays_thry_wrad/rto_EClumnorm_TTnorm/c*.png $OBSDIR_ELASTIC/obs_w_pidnew_081015//siml/central_sector/mthd1/displays_thry_wrad/rto_EClumnorm_TTnorm/c*.png $HOME/Dropbox/ForKijun/elastic_xsec/meeting_081215/xsec_central_sector.pdf

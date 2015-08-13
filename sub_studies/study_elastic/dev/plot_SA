@@ -1,0 +1,5 @@
+convert $OBSDIR_ELASTIC/obs_070115/siml/full_sector/mthd2/displays_thry_wrad/SA/c.png $OBSDIR_ELASTIC/obs_w_pidold_081015/siml/full_sector/mthd2/displays_thry_wrad/SA/c.png $OBSDIR_ELASTIC/obs_w_pidnew_081015//siml/full_sector/mthd2/displays_thry_wrad/SA/c.png $OBSDIR_ELASTIC/obs_w_efidnew_pidold_081115//siml/full_sector/mthd2/displays_thry_wrad/SA/c.png $OBSDIR_ELASTIC/obs_w_efidnew_pidnew_081015//siml/full_sector/mthd2/displays_thry_wrad/SA/c.png /tmp/SA_full.pdf
+acroread /tmp/SA_full.pdf&
+
+
+

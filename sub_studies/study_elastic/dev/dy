@@ -1,0 +1,11 @@
+dy_elastic $OBSDIR_ELASTIC/obs_070115 full 2
+dy_elastic $OBSDIR_ELASTIC/obs_w_pidold_081015/ full 2
+dy_elastic $OBSDIR_ELASTIC/obs_w_pidnew_081015/ full 2
+dy_elastic $OBSDIR_ELASTIC/obs_w_efidnew_pidold_081115/ full 2
+dy_elastic $OBSDIR_ELASTIC/obs_w_efidnew_pidnew_081015/ full 2
+
+#dy_elastic $OBSDIR_ELASTIC/obs_070115 central 1
+#dy_elastic $OBSDIR_ELASTIC/obs_w_pidold_081015/ central 1
+#dy_elastic $OBSDIR_ELASTIC/obs_w_pidnew_081015/ central 1
+#dy_elastic $OBSDIR_ELASTIC/obs_w_efidnew_pidold_081115/ central 1
+#dy_elastic $OBSDIR_ELASTIC/obs_w_efidnew_pidnew_081015/ central 1

@@ -68,6 +68,10 @@ LUM_INVFB_TO_INVMICROB=1000000000
 
 class StudyElasticTools:
 	def __init__(self,obsdir,sctr_bng="central",simnum='siml'):
+		pos=obsdir.find("obs_")
+		self.OBSNAME=obsdir[pos:]
+		print "OBSNAME=",self.OBSNAME
+
 		self.THETA_MIN=14 #! Minimum theta in Simulation
 		if "E16" in obsdir:
 			self.THETA_MIN=18
@@ -84,10 +88,10 @@ class StudyElasticTools:
 		elif sctr_bng=="full":
 			self.SCTR_BNG="full_sector"
 			self.PHI_PROJ_BINS=PHI_PROJ_BINS_FULL_SECTOR
-			self.CANVAS_W=500
-			self.CANVAS_H=500
-			self.CANVAS_NROWS=1
-			self.CANVAS_NCOLS=1
+			self.CANVAS_W=1500#500
+			self.CANVAS_H=800#500
+			self.CANVAS_NROWS=2#1
+			self.CANVAS_NCOLS=3#1
 		#! Setup DATADIR
 		self.SIMNUM=simnum
 		self.DATADIR=obsdir
@@ -224,6 +228,10 @@ class StudyElasticTools:
 			#! Now calculate SA,SC and EC
 			#! Make directory to store SA
 			outdir_SA=os.path.join(self.OUTDIR,"SA")
+			cSA=ROOT.TCanvas("cSA","cSA",self.CANVAS_W,self.CANVAS_H)
+			cSA.Divide(self.CANVAS_NCOLS,self.CANVAS_NROWS)
+			pt=ROOT.TPaveText(0.15,0.75,0.85,0.90,"brNDC")
+			#pt.SetTextSize(0.10)
 			if not os.path.exists(outdir_SA):
 				os.makedirs(outdir_SA)
 			for seq in ['SA','SC','EC']:
@@ -251,12 +259,16 @@ class StudyElasticTools:
 						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(cold[seq])
 						self.hTHETA[seq,"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerStyle(mrkrd[seq])
 						if seq=='SA':#! then save histograms
-							c=ROOT.TCanvas("c","c",self.CANVAS_W,self.CANVAS_H)
+							#c=ROOT.TCanvas("c","c",self.CANVAS_W,self.CANVAS_H)
+							cSA.cd(sector)
 							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
 							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
-							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(1.5)
-							c.SaveAs("%s/c_sector%d.png"%(outdir_SA,sector))
-	
+							self.hTHETA['SA',"sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(0.8)
+							if sector==1:
+								pt.AddText(self.OBSNAME)
+								pt.Draw()
+							#c.SaveAs("%s/c_sector%d.png"%(outdir_SA,sector))
+			cSA.SaveAs("%s/c.png"%(outdir_SA))
 		#! Generate theoretical Cross Sections
 		E1F_TARGET_RAD_LENGTH=0.00562 #! see nb_play_elaslib
 		nbins=self.hTHETA['EC','sector1','phibinnum1'].GetNbinsX()
@@ -299,15 +311,30 @@ class StudyElasticTools:
 			theta_bin_max=hTTnorm.GetBinLowEdge(ibin+1)+hTTnorm.GetBinWidth(ibin+1)
 			if theta_bin_low==0: continue
 			DOmega=self.get_DOmega(theta_bin_low,theta_bin_max,self.PHI_PROJ_BINS[2][0][0],self.PHI_PROJ_BINS[2][0][1])
+			#DOmega=self.get_DOmega2(theta_bin_low,theta_bin_max,self.PHI_PROJ_BINS[2][0][0],self.PHI_PROJ_BINS[2][0][1])
 			hTT.SetBinContent(ibin+1,binc*DOmega*LUM*LUM_INVFB_TO_INVMICROB)
 			hTT.SetBinError(ibin+1,0)
 
 		return hTTnorm,hTT
 
 	def get_DOmega(self,theta_bin_min,theta_bin_max,phi_bin_min,phi_bin_max):
+			"""
+			Return DOmega=DCosTheta*DPhi
+			+ Note that this is more accurate than using SinThetaDTheta*DPhi implemented in get_DOmega2. 
+			+ get_DOmega2 underestimates DOmega by ~3 percent at theta~15 degrees and by ~1 percent at theta~50
+			"""
 			DCosTheta=math.fabs(math.cos(math.radians(theta_bin_max))-math.cos(math.radians(theta_bin_min)))
 			DPhi=math.radians(phi_bin_max)-math.radians(phi_bin_min)
 			DOmega=DCosTheta*DPhi
+			return DOmega
+
+	def get_DOmega2(self,theta_bin_min,theta_bin_max,phi_bin_min,phi_bin_max):
+			"""
+			Return DOmega=SinThetaDTheta*DPhi
+			"""
+			SinThetaDTheta=math.sin(math.radians(theta_bin_min))*(math.radians(theta_bin_max)-math.radians(theta_bin_min))
+			DPhi=math.radians(phi_bin_max)-math.radians(phi_bin_min)
+			DOmega=SinThetaDTheta*DPhi
 			return DOmega
 
 	def norm_hist(self,h,phi_bin_min,phi_bin_max,use_lum=False):
@@ -318,6 +345,7 @@ class StudyElasticTools:
 			theta_bin_max=h.GetBinLowEdge(ibin+1) + h.GetBinWidth(ibin+1)
 			if theta_bin_min==0: continue
 			DOmega=self.get_DOmega(theta_bin_min,theta_bin_max,phi_bin_min,phi_bin_max)
+			#DOmega=self.get_DOmega2(theta_bin_min,theta_bin_max,phi_bin_min,phi_bin_max)
 			norm=DOmega
 			if use_lum:
 				norm=DOmega*LUM*LUM_INVFB_TO_INVMICROB
@@ -339,6 +367,9 @@ class StudyElasticTools:
 		l.SetBorderSize(0)
 		l.SetTextSize(0.03)
 
+		pt=ROOT.TPaveText(0.15,0.75,0.85,0.90,"brNDC")
+		#pt.SetTextSize(0.10)
+
 		outdir=os.path.join(self.OUTDIR,"%s_%s"%(seqA,seqB))
 		outdir_rto=os.path.join(self.OUTDIR,"rto_%s_%s"%(seqA,seqB))
 		
@@ -350,7 +381,10 @@ class StudyElasticTools:
 		hrto={}
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				pad=c.cd(iphibinnum+1)
+				if self.SCTR_BNG=="central_sector":
+					pad=c.cd(iphibinnum+1)
+				elif self.SCTR_BNG=="full_sector":
+					pad=c.cd(sector)
 				if logy==True:
 					pad.SetLogy()
 
@@ -376,7 +410,8 @@ class StudyElasticTools:
 					h[seqA,sector,iphibinnum].Draw()
 					h[seqB,sector,iphibinnum].Draw("sames")
 
-				if (iphibinnum+1)==1: #then draw TLegend
+				#if (iphibinnum+1)==1: #then draw TLegend
+				if (self.SCTR_BNG=="central_sector" and (iphibinnum+1)==1) or (self.SCTR_BNG=="full_sector" and sector==1):#then draw TLegend and self.OBSNAME in TPaveText
 					l.Clear()
 					if draw_normalized:
 						l.AddEntry(hseqAn,seqA)
@@ -385,6 +420,10 @@ class StudyElasticTools:
 						l.AddEntry(h[seqA,sector,iphibinnum],seqA)
 						l.AddEntry(h[seqB,sector,iphibinnum],seqB)
 					l.Draw()
+					#! TPaveText
+					pt.Clear()
+					pt.AddText(self.OBSNAME)
+					pt.Draw("same")
 
 				#! Calculate ratio
 				if draw_normalized:
@@ -397,33 +436,56 @@ class StudyElasticTools:
 					h[seqB,sector,iphibinnum].Sumw2()
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)]=h[seqA,sector,iphibinnum].Clone()
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Divide(h[seqB,sector,iphibinnum])
-			c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+			if self.SCTR_BNG=="central_sector":		
+				c.SaveAs("%s/c_sector%d.png"%(outdir,sector))
+			elif self.SCTR_BNG=="full_sector":
+				c.SaveAs("%s/c.png"%(outdir))
 
 		#! Plot ratio
 		if not os.path.exists(outdir_rto):
 			os.makedirs(outdir_rto)
 		#print "outdir_rto=",outdir_rto
+		#! line at 1
+		xmin= self.hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmin()
+		xmax= self.hTHETA['EC','sector1','phibinnum1'].GetXaxis().GetXmax()
+		ln=ROOT.TLine(xmin,1,xmax,1)
 		for sector in self.PHI_PROJ_BINS:
 			for iphibinnum,phibin in enumerate(self.PHI_PROJ_BINS[sector]):
-				pad=c.cd(iphibinnum+1)
+				if self.SCTR_BNG=="central_sector":
+					pad=c.cd(iphibinnum+1)
+				elif self.SCTR_BNG=="full_sector":
+					pad=c.cd(sector)
 				pad.SetLogy(0)
 				if "obs_030815" in self.DATADIR:
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
 				else:
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
-					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(2)
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(3)#SetMaximum(2)
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
 				old_title=hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].GetTitle()
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetTitle("#frac{%s}{%s} for %s"%(seqA,seqB,old_title))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].Draw()
-				if (iphibinnum+1)==1: #then draw TLegend
+				#! Draw ln at 1
+				ln.Draw("same")
+				
+				#if (iphibinnum+1)==1: #then draw TLegend
+				if (self.SCTR_BNG=="central_sector" and (iphibinnum+1)==1) or (self.SCTR_BNG=="full_sector" and sector==1):#then draw TLegend and self.OBSNAME in TPaveText
 					l.Clear()
 					l.AddEntry(hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)],"#frac{%s}{%s}"%(seqA,seqB))
 					l.Draw()
-			c.SaveAs("%s/c_sector%d.png"%(outdir_rto,sector)) 
+					#! TPaveText
+					pt.Clear()
+					pt.AddText(self.OBSNAME)
+					pt.Draw("same")
+
+			if self.SCTR_BNG=="central_sector":		
+				c.SaveAs("%s/c_sector%d.png"%(outdir_rto,sector))
+			elif self.SCTR_BNG=="full_sector":
+				c.SaveAs("%s/c.png"%(outdir_rto))
+			#c.SaveAs("%s/c_sector%d.png"%(outdir_rto,sector)) 
 
 '''
 The following code is used to play with elaslib.f

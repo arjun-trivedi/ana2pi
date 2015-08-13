@@ -78,14 +78,14 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	//hevtsum->SetMinimum(0);
 	hevtsum->GetXaxis()->SetBinLabel(EVT_TRIG,"Trigger");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_GPART1,"gpart>1");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_GPART1,"gpart>0");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_STAT1,"stat>0");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_Q1,"q=-1");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_DC1,"DC");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_CC1,"CC");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SC1,"SC");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_EC1,"EC");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_DCSTAT1,"Time-based");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_DCSTAT1,"dc_stat>0");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECLOW1,"EC Threshold");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECFID,"EC Fid.");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SF,"SF");

@@ -38,19 +38,19 @@ do
   #! Now obtain xsec
   echo "Obtaining xsec" 
   #! Process yields
-  echo ">py_elastic $obsdir central"
+  #echo ">py_elastic $obsdir central"
   #py_elastic $obsdir central
-  echo ">py_elastic $obsdir full"
+  #echo ">py_elastic $obsdir full"
   #py_elastic $obsdir full
   #! Display yields; compare wrad theory
   echo ">dy_elastic $obsdir central 1 wrad"
-  #dy_elastic $obsdir central 1 wrad
+  dy_elastic $obsdir central 1 wrad
   echo ">dy_elastic $obsdir full 2 wrad" 
-  #dy_elastic $obsdir full 2 wrad
+  dy_elastic $obsdir full 2 wrad
   #! Display yields; compare nrad theory
-  echo ">dy_elastic $obsdir central 1 nrad"
+  #echo ">dy_elastic $obsdir central 1 nrad"
   #dy_elastic $obsdir central 1 nrad
-  echo ">dy_elastic $obsdir full 2 nrad" 
+  #echo ">dy_elastic $obsdir full 2 nrad" 
   #dy_elastic $obsdir full 2 nrad
   
 done
