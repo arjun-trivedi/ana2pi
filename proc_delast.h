@@ -33,14 +33,14 @@ using namespace ParticleConstants;
 			+ cut-vars=f(h10-vars)
 			+ yield=f(h10-vars)
 			+ other-relevant-vars=f(h10-vars)
-	+ Output objects. Each, except for yield & tree which are created directly under dirout after
+	+ Output objects. Each, except for yields which are created directly under dirout after
 	  applying the cut, created under 'monitor' and 'cut' dirs respectively:
 	  	+ Hists for DataEid
 		+ Hists for DataEkin
 		+ Hists for DataElastic
 			+ cut-vars
 			+ yield (created DIRECTLY under dirout)
-		+ ONLY IN _make_tree MODE (created DIRECTLY under dirout):
+		+ ONLY IN _make_tree MODE:
 			+ TTree containing
 				+ DataEid (Not for ST)
 				+ DataEKin
@@ -66,12 +66,12 @@ protected:
 	//! For Thrown 
 	TObjArray* _hists_ekinT[NPROCMODES];
 	TObjArray* _hists_cutsT[NPROCMODES];
-	TTree* _tT;
+	TTree* _tT[NPROCMODES];
 	TObjArray* _yields_T;
 	//! For Reconstructed
 	TObjArray* _hists_ekin[NPROCMODES];
 	TObjArray* _hists_cuts[NPROCMODES];
-	TTree* _t; // [07-21-15]Not created per MONMODE;
+	TTree* _t[NPROCMODES]; 
 	TObjArray* _yields;// [07-21-15]Not created per MONMODE;
 	bool _det_e,_det_p;
 	int _h10idxE,_h10idxP;
@@ -134,30 +134,26 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		_dirmon->cd();
 		_hists_ekinT[MONMODE]=dAna->makeHistsEkin();
 		_hists_cutsT[MONMODE]=dAna->makeHistsMMElastic();
+		if (_make_tree){
+			_tT[MONMODE]=new TTree("tT","TTree containing data for Elastic events");
+			dAna->addBranches_DataEkin(_tT[MONMODE],kTRUE);
+			dAna->addBranches_DataElastic(_tT[MONMODE],kTRUE);
+		}
 				
 		//! Cut mode output objects
 		_dircut = dirout->mkdir(TString::Format("cut"));
 		_dircut->cd();
 		_hists_ekinT[CUTMODE]=dAna->makeHistsEkin();
 		_hists_cutsT[CUTMODE]=dAna->makeHistsMMElastic();
+		if (_make_tree){
+			_tT[CUTMODE]=new TTree("tT","TTree containing data for Elastic events");
+			dAna->addBranches_DataEkin(_tT[CUTMODE],kTRUE);
+			dAna->addBranches_DataElastic(_tT[CUTMODE],kTRUE);
+		}
 				
-		//! Create yields and tree directly under dirout
+		//! Create yields directly under dirout
 		dirout->cd();
 		_yields_T=dAna->makeYieldsElastic();
-		if (_make_tree){
-			dirout->cd();
-			_tT = new TTree("tT","TTree containing data for Elastic events");
-			dAna->addBranches_DataEkin(_tT,kTRUE);
-			dAna->addBranches_DataElastic(_tT,kTRUE);
-		}
-
-		/*_hists_ekinT=dAna->makeHistsEkin();
-		_yields_T=dAna->makeYieldsElastic();
-		if (_make_tree){
-			_tT = new TTree("tT","TTree containing data for Elastic events");
-			dAna->addBranches_DataEkin(_tT,kTRUE);
-			dAna->addBranches_DataElastic(_tT,kTRUE);
-		}*/
 	}
 
 	//! _procR output objects
@@ -167,26 +163,30 @@ ProcDelast::ProcDelast(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 		_dirmon->cd();
 		_hists_ekin[MONMODE]=dAna->makeHistsEkin();
 		_hists_cuts[MONMODE]=dAna->makeHistsMMElastic();
-		//_yields[MONMODE]=dAna->makeYieldsElastic();
-		
+		if (_make_tree){
+			_t[MONMODE]=new TTree("t","TTree containing data for Elastic events");
+			dAna->addBranches_DataEid(_t[MONMODE]);
+			dAna->addBranches_DataEkin(_t[MONMODE]);
+			dAna->addBranches_DataPidElast(_t[MONMODE]);
+			dAna->addBranches_DataElastic(_t[MONMODE]);
+		}
+				
 		//! Cut mode output objects
 		_dircut = dirout->mkdir(TString::Format("cut"));
 		_dircut->cd();
 		_hists_ekin[CUTMODE]=dAna->makeHistsEkin();
 		_hists_cuts[CUTMODE]=dAna->makeHistsMMElastic();
-		//_yields[CUTMODE]=dAna->makeYieldsElastic();
+		if (_make_tree){
+			_t[CUTMODE]=new TTree("t","TTree containing data for Elastic events");
+			dAna->addBranches_DataEid(_t[CUTMODE]);
+			dAna->addBranches_DataEkin(_t[CUTMODE]);
+			dAna->addBranches_DataPidElast(_t[CUTMODE]);
+			dAna->addBranches_DataElastic(_t[CUTMODE]);
+		}
 		
 		//! Create yields and tree directly under dirout
 		dirout->cd();
 		_yields=dAna->makeYieldsElastic();
-		if (_make_tree){
-			dirout->cd();
-			_t = new TTree("t","TTree containing data for Elastic events");
-			dAna->addBranches_DataEid(_t);
-			dAna->addBranches_DataEkin(_t);
-			dAna->addBranches_DataPidElast(_t);
-			dAna->addBranches_DataElastic(_t);
-		}
 	}
 }
 
@@ -216,6 +216,9 @@ void ProcDelast::handle() {
 
 		dAna->fillHistsEkin(_hists_ekinT[MONMODE],kTRUE);
 		dAna->fillHistsMMElastic(_hists_cutsT[MONMODE],kTRUE);
+		if (_make_tree){
+			_tT[MONMODE]->Fill();
+		}
 		
 		/* [03-31-15]
 		    + The following block implements a cut for W in ST because extracted Elastic
@@ -234,7 +237,7 @@ void ProcDelast::handle() {
 			dAna->fillYieldsElastic(_yields_T,kTRUE);
 
 			if (_make_tree){
-				_tT->Fill();
+				_tT[CUTMODE]->Fill();
 			}
 
 			
@@ -257,6 +260,9 @@ void ProcDelast::handle() {
 		//! Mon mode
 		dAna->fillHistsEkin(_hists_ekin[MONMODE]);
 		dAna->fillHistsMMElastic(_hists_cuts[MONMODE]);
+		if (_make_tree){
+			_t[MONMODE]->Fill();
+		}
 		//dAna->fillYieldsElastic(_yields[MONMODE]);
 
 		//! Cut mode
@@ -269,7 +275,7 @@ void ProcDelast::handle() {
 			dAna->fillYieldsElastic(_yields);
 
 			if (_make_tree){
-				_t->Fill();
+				_t[CUTMODE]->Fill();
 			}
 
 			hevtsum->Fill(EVT_PASS);
