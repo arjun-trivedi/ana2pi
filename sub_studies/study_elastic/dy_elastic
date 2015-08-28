@@ -33,9 +33,11 @@ else:
 
 if 'obs_030815' in obsdir:
 	wcut=1.1
+elif 'obs_082615' in obsdir or 'obs_082715' in obsdir:
+	wcut=1.028
 else:
 	wcut=1.0
 
-print "Going to display Elastic Cross Sections for obsdir=%s,sctr_bng=%s,mthd=%d,thry=%s,wcut=%.1f"%(obsdir,sctr_bng,mthd,thry,wcut)
+print "Going to display Elastic Cross Sections for obsdir=%s,sctr_bng=%s,mthd=%d,thry=%s,wcut=%.3f"%(obsdir,sctr_bng,mthd,thry,wcut)
 t=StudyElasticTools(obsdir,sctr_bng)
 t.disp_yields(mthd,thry,wcut)

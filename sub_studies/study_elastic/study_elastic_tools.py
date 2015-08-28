@@ -461,7 +461,7 @@ class StudyElasticTools:
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(6)
 				else:
 					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMinimum(0)
-					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(3)#SetMaximum(2)
+					hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMaximum(2)#SetMaximum(2)
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hrto["sector%d"%sector,"phibinnum%d"%(iphibinnum+1)].SetYTitle("")
