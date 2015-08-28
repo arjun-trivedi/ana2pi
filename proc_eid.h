@@ -199,7 +199,7 @@ Bool_t ProcEid::goodE(){
 				hevtsum->Fill(EVT_Q1);
 				if (dH10->dc[0]>0) {
 					hevtsum->Fill(EVT_DC1);
-					//if (dH10->cc[0]>0) { //(dH10->cc[0]>0 || dH10->dtyp=="sim") {
+					if (dH10->cc[0]>0) { //(dH10->cc[0]>0 || dH10->dtyp=="sim") {
 						hevtsum->Fill(EVT_CC1);
 						if (dH10->sc[0]>0) {
 							hevtsum->Fill(EVT_SC1);
@@ -230,7 +230,7 @@ Bool_t ProcEid::goodE(){
 								//}
 							}
 						}
-					//}
+					}
 				}
 			}
 		}

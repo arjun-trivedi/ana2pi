@@ -15,16 +15,16 @@
 proc_opt=$1
 
 ##-- From proc_opt, determine proc_chain
-if [ $proc_opt == "dflt" ];then
-  proc_chain="eid:efid:delastR"
+if [[ $proc_opt == *"dflt"* ]];then
+  proc_chain="eid:efid:mom:delastR"
 elif [ $proc_opt == "w_pidold" ];then
-  proc_chain="eid:efid:qskimelast:pidelastmon:delastR"
+  proc_chain="eid:efid:mom:qskimelast:pidelastmon:delastR"
 elif [ $proc_opt == "w_pidnew" ];then
-  proc_chain="eid:efid:qskimelast:pidelastnewmon:delastR"
+  proc_chain="eid:efid:mom:qskimelast:pidelastnewmon:delastR"
 elif [ $proc_opt == "w_efidnew_pidold" ];then
-  proc_chain="eid:efidnew:qskimelast:pidelastmon:delastR"
+  proc_chain="eid:efidnew:mom:qskimelast:pidelastmon:delastR"
 elif [ $proc_opt == "w_efidnew_pidnew" ];then
-  proc_chain="eid:efidnew:qskimelast:pidelastnewmon:delastR"
+  proc_chain="eid:efidnew:mom:qskimelast:pidelastnewmon:delastR"
 else
   echo "proc_opt="$proc_opt" not understood. Exiting"
   exit

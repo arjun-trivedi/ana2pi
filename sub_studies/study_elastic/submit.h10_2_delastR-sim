@@ -18,7 +18,7 @@ for arg in "${args[@]}"; do
 done
 
 ##-- From proc_opt, determine proc_chain
-if [ $proc_opt == "dflt" ];then
+if [[ $proc_opt == *"dflt"* ]];then
   proc_chain="eid:efid:delastR"
 elif [ $proc_opt == "w_pidold" ];then
   proc_chain="eid:efid:qskimelast:pidelastmon:delastR"
@@ -43,7 +43,7 @@ done
 
 ##-- Now submit jobs for each simnum
 for simnum in "${simlist[@]}"; do
-  SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastR-sim-$proc_opt-$simnum
+  SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastR-sim-$simnum
   OUTDIR=$DELASTDIR_SIM/$simnum
   OUTDIR_LOG=$OUTDIR/log
   mkdir -p $SUBDIR
@@ -51,7 +51,7 @@ for simnum in "${simlist[@]}"; do
   mkdir -p $OUTDIR_LOG
 
   date=`date +%m%d%y`
-  JSUBFILE=${SUBDIR}/job_$date.sub
+  JSUBFILE=${SUBDIR}/job_$proc_opt"_"$date.sub
   if [ -f "${JSUBFILE}" ]; then
     echo "$JSUBFILE exists. Will delete it before creating new one."
     rm $JSUBFILE

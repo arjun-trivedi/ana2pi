@@ -369,12 +369,12 @@ bool ProcDelast::passEvent(bool ismc/*=kFALSE*/){
 	if (ismc) de = &(dAna->dElastT);
 
 	if (ismc){
-		if (de->W<1.0){
+		if (de->W<1.028){//de->W>0.848//1.00
 			ret=kTRUE;
 		}
 	}else{
 		//if (de->MMep<0.1 && de->W<1.0){//! tried W values:1.1
-		if (de->W<1.0){
+		if (de->W<1.028){//de->W>0.848//1.00
 			ret=kTRUE;
 		}
 	}
