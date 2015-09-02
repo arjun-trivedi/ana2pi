@@ -1,0 +1,3 @@
+#-- Interface fortran with python:
+#-- http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html
+f2py -c -m elaslib elaslib.f #creates elaslib.so that can be loaded into python using import elaslib 
