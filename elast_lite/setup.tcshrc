@@ -1,0 +1,6 @@
+##--
+setenv ELAST_LITE "${ANA2PI}/elast_lite"
+alias elast_lite 'cd ${ELAST_LITE}'
+
+##-- Modidy $PATH
+setenv PATH "${PATH}:${ELAST_LITE}"

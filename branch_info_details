@@ -4,3 +4,5 @@
 		* gpart>0 in ProcEid
 		* Removing requirement of detecting proton i.e. removing qskimelast:pidelast:pfidelast from proc chain
 			* As a result cut on MMep was removed from ProcDElast
+		+[09-04-15] test_elast_xsec_lite_090415
+		Re-do Elastic cross-section analysis
