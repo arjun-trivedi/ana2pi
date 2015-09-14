@@ -15,6 +15,7 @@
 obj
 sobj
 proc_h10
+proc_h10_lite
 *.o
 *.so
 *.d

@@ -54,7 +54,7 @@ for simnum in "${simlist[@]}"; do
     ]]></Command>
 
     <Job>
-      <Input src=\"$DELASTDIR_SIM/$simnum/h10-T.lst\" dest=\"h10.lst\" />
+      <Input src=\"$DELASTDIR_SIM/$simnum"_"lite/h10-T.lst\" dest=\"h10.lst\" />
       <Output src=\"delastT.root\" dest=\"$OUTDIR/delastT_$proc_opt"_"$date.root\"/>
       <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job_$proc_opt"_"$date.out\"/>
       <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job_$proc_opt"_"$date.err\"/>
