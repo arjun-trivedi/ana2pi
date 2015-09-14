@@ -1,0 +1,67 @@
+#!/bin/bash
+##-----------------------------------------------##
+# Usage submit.h10_2_delastT-sim sim1 sim2 ... simX
+##-----------------------------------------------##
+
+##-- Get proc_opt and simlist from user specified args
+args=("$@") #! First option is proc_opt, rest are simXs
+simlist=()
+i=0
+for arg in "${args[@]}"; do
+   #echo $arg
+   if [ $i -eq 0 ];then
+     proc_opt=${args[i]}
+   else
+     simlist+=(${args[i]})
+   fi
+   i=$((i+1))
+done
+
+echo "Going to submit h10_2_delastT-sim_lte for the following:"
+echo "proc_opt="$proc_opt
+echo "simXs:"
+for simnum in "${simlist[@]}"; do
+   echo "$simnum"
+done
+
+##-- Now submit jobs for each simnum
+for simnum in "${simlist[@]}"; do
+  SUBDIR=$BSUBDIR_E1F_ELAST_SIM/h10_2_delastT-sim-lite_$simnum
+  OUTDIR=$DELASTDIR_SIM/$simnum"_"lite
+  OUTDIR_LOG=$OUTDIR/log
+  mkdir -p $SUBDIR
+  mkdir -p $OUTDIR
+  mkdir -p $OUTDIR_LOG
+
+  date=`date +%m%d%y`
+  JSUBFILE=${SUBDIR}/job_$proc_opt"_"$date.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo "$JSUBFILE exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e1f_h10_2_delastT-sim-lite_$proc_opt-$simnum\"/>
+    <Project name=\"E1F\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"5000\" unit=\"MB\"/>
+    <Memory space=\"5000\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"1440\"/>
+    <Command><![CDATA[
+      proc_h10_lite -i h10.lst -t e1f:sim:thrown -o delastT.root
+    ]]></Command>
+
+    <Job>
+      <Input src=\"$DELASTDIR_SIM/$simnum/h10-T.lst\" dest=\"h10.lst\" />
+      <Output src=\"delastT.root\" dest=\"$OUTDIR/delastT_$proc_opt"_"$date.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR_LOG/job_$proc_opt"_"$date.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR_LOG/job_$proc_opt"_"$date.err\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
+done

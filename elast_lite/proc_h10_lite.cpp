@@ -62,9 +62,8 @@ int main(int argc,  char* const argv[])
 	TFileCollection fc("fileList", "", h10lst.Data());
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 	//! Set up h10looper	
-	h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10chain,h10type,fout_name,nentries);
-	//h10looper.Loop()
-	
+	h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,fout_name,nentries);
+	h10lpr_e1f->Loop();	
 
 	delete h10chain;
 	delete h10lpr_e1f;

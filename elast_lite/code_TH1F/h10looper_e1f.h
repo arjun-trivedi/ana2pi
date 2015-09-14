@@ -54,31 +54,31 @@ public :
    //! Event level
    static const int NUM_EVT_STATS=4;
    enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID, EVT_ELSTC};
-   TH1D* _hevt;
+   TH1F* _hevt;
    //! EID
    static const int NUM_EID_STATS=11;
    enum {EID_NULL, EID_TRG, EID_GPART0, EID_Q, 
          EID_HIT_DC, EID_HIT_CC, EID_HIT_SC, EID_HIT_EC, 
          EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_SF};
-   TH1D* _heid;
+   TH1F* _heid;
    //! EFID
    static const int NUM_EFID_STATS=2;
    enum {EFID_NULL, EFID_TOT, EFID_IN};
-   TH1D* _hefid;
+   TH1F* _hefid;
    //! mom corr
-   TH2D* _hpcorr_dpVp;
-   TH1D* _hpcorr_dcx;
-   TH1D* _hpcorr_dcy;
-   TH1D* _hpcorr_dcz;
-   TH1D* _hpcorr_dp;
+   TH2F* _hpcorr_dpVp;
+   TH1F* _hpcorr_dcx;
+   TH1F* _hpcorr_dcy;
+   TH1F* _hpcorr_dcz;
+   TH1F* _hpcorr_dp;
    //! delast
-   TH1D* _hW;
-   TH1D* _helast;
+   TH1F* _hW;
+   TH1F* _helast;
    static const int _NBINS=32;
    static const float _THETA_MIN=14;
    static const float _THETA_MAX=46;
-   TH1D** _hf;//!full sector
-   TH1D** _hc;//!central sector   
+   TH1F** _hf;//!full sector
+   TH1F** _hc;//!central sector   
 
    //! ekin
    TLorentzVector _lvE0;

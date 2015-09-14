@@ -42,14 +42,14 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 
 	//!output objects
 	//!event level
-	_hevt=new TH1D("hevt","Event statistics",NUM_EVT_STATS,0.5,NUM_EVT_STATS+0.5);
+	_hevt=new TH1F("hevt","Event statistics",NUM_EVT_STATS,0.5,NUM_EVT_STATS+0.5);
 	_hevt->GetXaxis()->SetBinLabel(EVT_TRG,"trgr");
 	_hevt->GetXaxis()->SetBinLabel(EVT_E,"e^{-}");
 	_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
 	_hevt->GetXaxis()->SetBinLabel(EVT_ELSTC,"elstc-inc");
 	if (_seq=="recon"){
 		//! EID
-		_heid=new TH1D("heid","EID statistics",NUM_EID_STATS,0.5,NUM_EID_STATS+0.5);
+		_heid=new TH1F("heid","EID statistics",NUM_EID_STATS,0.5,NUM_EID_STATS+0.5);
 		_heid->GetXaxis()->SetBinLabel(EID_TRG,"trgr");
 		_heid->GetXaxis()->SetBinLabel(EID_GPART0,"gpart>0");
 		_heid->GetXaxis()->SetBinLabel(EID_Q,"q==-1");
@@ -62,35 +62,35 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_heid->GetXaxis()->SetBinLabel(EID_P_MIN_ECTH,"p>p_ecth");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
 		//! EFID
-		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
+		_hefid=new TH1F("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
 		_hefid->GetXaxis()->SetBinLabel(EFID_IN,"infid");
 		//! pcorr
 		if (_dtyp=="exp"){
 			//!pcorr
-			_hpcorr_dpVp=new TH2D("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
-			_hpcorr_dcx=new TH1D("hdcx", "#Deltacx",60,-0.01,0.01);
-			_hpcorr_dcy=new TH1D("hdcy", "#Deltacy",60,-0.01,0.01);
-			_hpcorr_dcz=new TH1D("hdcz", "#Deltacz",60,-0.01,0.01);
-			_hpcorr_dp=new TH1D("hdp", "#Deltap", 160,-0.08,0.08);
+			_hpcorr_dpVp=new TH2F("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
+			_hpcorr_dcx=new TH1F("hdcx", "#Deltacx",60,-0.01,0.01);
+			_hpcorr_dcy=new TH1F("hdcy", "#Deltacy",60,-0.01,0.01);
+			_hpcorr_dcz=new TH1F("hdcz", "#Deltacz",60,-0.01,0.01);
+			_hpcorr_dp=new TH1F("hdp", "#Deltap", 160,-0.08,0.08);
 		}
 	}
 	//! delast
-	_hW=new TH1D("hW","hW",250,0,5);
-	_helast=new TH1D("helast","helast",100,0.7,1.2);
-	_hf=new TH1D*[6];
-	_hc=new TH1D*[6];
+	_hW=new TH1F("hW","hW",250,0,5);
+	_helast=new TH1F("helast","helast",100,0.7,1.2);
+	_hf=new TH1F*[6];
+	_hc=new TH1F*[6];
 	for (int isctr=0;isctr<6;isctr++){
 		TString name;
 		TString title;
 		//! _hf
 		name=TString::Format("hf_s%d",isctr+1);
 		title=TString::Format("#phi=[%d,%d]",PHI_FULL_SECTOR[isctr][0],PHI_FULL_SECTOR[isctr][1]);
-		_hf[isctr]=new TH1D(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
+		_hf[isctr]=new TH1F(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
 		//! _hc
 		name=TString::Format("hc_s%d",isctr+1);
 		title=TString::Format("#phi=[%d,%d]",PHI_CENTRAL_SECTOR[isctr][0],PHI_CENTRAL_SECTOR[isctr][1]);
-		_hc[isctr]=new TH1D(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
+		_hc[isctr]=new TH1F(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
 	}
 	/*printf("debug = %s\n",_hf[-1]->GetName());
 	printf("debug = %s\n",_hf[-5]->GetName());*/

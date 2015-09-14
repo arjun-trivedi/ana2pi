@@ -26,6 +26,26 @@ const Float_t MASS_KM = 0.493677;
 const Float_t MASS_G = 0.0;
 const Float_t MASS_OMEGA = 0.78265; //
 
+//! CLAS sector phi angle coverage
+const Int_t PHI_FULL_SECTOR[6][2]={
+	{-30,30},
+	{30,90},
+	{90,150},
+	{150,210},
+	{210,270},
+	{270,330}
+};
+
+const Int_t PHI_CENTRAL_SECTOR[6][2]={
+	{0,2},
+	{60,62},
+	{120,122},
+	{182,184},
+	{242,244},
+	{302,304}
+};
+
+
 namespace E1F{
 	const Float_t E0_P = 5.499;
 	//! eid-cut pars

@@ -33,7 +33,7 @@ else:
 
 if 'obs_030815' in obsdir:
 	wcut=1.1
-elif 'obs_082615' in obsdir or 'obs_082715' in obsdir:
+elif 'obs_082615' in obsdir or 'obs_082715' or 'lite_vs_old/old/obs_091415' in obsdir:
 	wcut=1.028
 else:
 	wcut=1.0

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cp h10-T.lst h10-T_pre_rm_empty.lst
+cp h10-R.lst h10-R_pre_rm_empty.lst
+
+comm -2 -3 h10-T.lst empty_T.lst > h10-Tn.lst
+mv h10-Tn.lst h10-T.lst
+
+comm -2 -3 h10-R.lst empty_R.lst > h10-Rn.lst
+mv h10-Rn.lst h10-R.lst

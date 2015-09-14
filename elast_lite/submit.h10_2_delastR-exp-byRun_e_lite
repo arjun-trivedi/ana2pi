@@ -14,28 +14,12 @@
 ##-- Get proc_opt and simlist from user specified args
 proc_opt=$1
 
-##-- From proc_opt, determine proc_chain
-if [[ $proc_opt == *"dflt"* ]];then
-  proc_chain="eid:efid:mom:delastR"
-elif [ $proc_opt == "w_pidold" ];then
-  proc_chain="eid:efid:mom:qskimelast:pidelastmon:delastR"
-elif [ $proc_opt == "w_pidnew" ];then
-  proc_chain="eid:efid:mom:qskimelast:pidelastnewmon:delastR"
-elif [ $proc_opt == "w_efidnew_pidold" ];then
-  proc_chain="eid:efidnew:mom:qskimelast:pidelastmon:delastR"
-elif [ $proc_opt == "w_efidnew_pidnew" ];then
-  proc_chain="eid:efidnew:mom:qskimelast:pidelastnewmon:delastR"
-else
-  echo "proc_opt="$proc_opt" not understood. Exiting"
-  exit
-fi
-
 date=`date +%m%d%y`
-SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_delastR-exp-byRun_e_$proc_opt"_"$date
+SUBDIR=$BSUBDIR_E1F_ELAST_EXP/h10_2_delastR-exp-byRun_e_lite_$proc_opt"_"$date
 if [[ ! -d ${SUBDIR} ]]; then
     mkdir -p $SUBDIR
 fi
-OUTDIR=$DELASTDIR_EXP/byRun_$proc_opt"_"$date
+OUTDIR=$DELASTDIR_EXP/byRun_lite_$proc_opt"_"$date
 if [[ ! -d $OUTDIR ]]; then
     mkdir -p $OUTDIR
 fi
@@ -55,7 +39,7 @@ do
 
   echo "\
   <Request>
-    <Name name=\"e1f_h10_2_delastR-exp_$proc_opt"_"$runnum\"/>
+    <Name name=\"e1f_h10_2_delastR-exp_lite_$proc_opt"_"$runnum\"/>
     <Project name=\"E1F\"/>
     <OS name=\"centos65\"/>
     <DiskSpace space=\"500\" unit=\"MB\"/>
@@ -63,7 +47,7 @@ do
     <Track name=\"analysis\"/>
     <TimeLimit unit=\"minutes\" time=\"600\"/>
     <Command><![CDATA[
-      proc_h10 -i h10.lst -t e1f:exp:elast -p $proc_chain -o delastR.root
+      proc_h10_lite -i h10.lst -t e1f:exp:recon -p -o delastR.root
     ]]></Command>
 
     <Job>
