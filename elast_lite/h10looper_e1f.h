@@ -74,7 +74,7 @@ public :
    //! delast
    TH1D* _hW;
    TH1D* _helast;
-   static const int _NBINS=32;
+   static const int _NBINS=32;//64;
    static const float _THETA_MIN=14;
    static const float _THETA_MAX=46;
    TH1D** _hf;//!full sector

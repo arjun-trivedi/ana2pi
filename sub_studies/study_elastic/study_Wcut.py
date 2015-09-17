@@ -18,7 +18,8 @@ T=FEXP.Get("delast/monitor/t")
 
 NSCTR=6
 
-FOUT=ROOT.TFile("out.root","RECREATE")
+OUTDIR=os.path.join(os.environ['STUDY_ELASTIC_DATADIR'],'study_Wcut')
+FOUT=ROOT.TFile("%s/out.root"%OUTDIR,"RECREATE")
 #! Study nphe for W[0,0.848] & W=[0.848,1.028]
 NWCUT=2
 w_cut=["W<0.848","W>0.848&&W<1.028"]
