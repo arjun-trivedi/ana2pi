@@ -39,14 +39,17 @@ public :
 
    //! cuts to be made in addition to 'dflt'
    //! eid: new cuts and corrections
-   bool _use_cut_ECin_min;
-   bool _use_cut_ECfid;
-   bool _use_cut_zvtx;
-   bool _use_corr_sf_etot;
+   bool _use_cut_ECin_min; //!1
+   bool _use_cut_ECfid; //!2
+   bool _use_cut_zvtx;//!3
+   bool _use_corr_sf_etot;//!4
+   //! eid: to match Isupov
+   bool _use_SChit;//!5
+   bool _use_dc_stat;//!6
    //! Evans's EFID
-   bool _use_ep_efid;
+   bool _use_ep_efid;//!7
    //! proton 
-   bool _use_proton;
+   bool _use_proton;//!8
 
    //! output objects
    //! Event level
@@ -316,7 +319,8 @@ public :
    TBranch        *b_lec_z;   //!
    TBranch        *b_lec_c2;   //!
 
-   h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name, Long64_t nentries);
+   h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name, Long64_t nentries,
+                 TString adtnl_cut_opt);
    virtual ~h10looper_e1f();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -327,6 +331,7 @@ public :
    virtual void     Show(Long64_t entry = -1);
 
    void setup_eid_cutpars(TString dtyp);
+   void setup_adtnl_cut_opts(TString adtnl_cut_opt);
 
    bool evt_trigger_electron();
    void mom_corr_electron();

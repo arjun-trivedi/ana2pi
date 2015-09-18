@@ -6,7 +6,8 @@
 #include <TCanvas.h>
 #include <TMath.h>
 
-h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,Long64_t nentries) : fChain(0) 
+h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,Long64_t nentries,
+						     TString adtnl_cut_opt) : fChain(0) 
 {
 	Info("h10looper_e1f::h10looper_e1f","Setting up h10looper_e1f...\n");
 
@@ -30,16 +31,8 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	Info("h10looper_e1f::h10looper_e1f", "Number of entries to processess =  %llu",_nentries_to_proc);
 
 	//! cuts to be made in addition to 'dflt'
-   //! eid: new cuts and corrections
-   _use_cut_ECin_min=kFALSE;
-   _use_cut_ECfid=kFALSE;
-   _use_cut_zvtx=kFALSE;
-   _use_corr_sf_etot=kFALSE;
-   //! Evans's EFID
-   _use_ep_efid=kFALSE;
-   //! proton 
-   _use_proton=kFALSE;
-
+    setup_adtnl_cut_opts(adtnl_cut_opt);
+	
 	//! set up eid
 	Info("h10looper_e1f::h10looper_e1f", "Setting up eid pars for dtyp=%s",_dtyp.Data());
 	setup_eid_cutpars(_dtyp);
@@ -312,13 +305,13 @@ bool h10looper_e1f::evt_trigger_electron(){
 				_heid->Fill(EID_HIT_DC);
 				if (hitCC){
 					_heid->Fill(EID_HIT_CC);
-					if (hitSC){
+					if ( (!_use_SChit) || (_use_SChit && hitSC) ){
 						_heid->Fill(EID_HIT_SC);
 						if (hitEC){
 							_heid->Fill(EID_HIT_EC);
 							if (stt>0){
 								_heid->Fill(EID_STAT);
-								if (dc_stt>0){
+								if ( (!_use_dc_stat) ||(_use_dc_stat && dc_stt>0) ){
 									_heid->Fill(EID_DC_STAT);
 									pass_lvl_1=kTRUE;
 								}
@@ -563,4 +556,47 @@ bool h10looper_e1f::pass_zvtx(){
 	int sctr=ec_sect[idxEC];
 	
 	return (zvtx>_z_vtx_min[sctr-1] && zvtx<_z_vtx_max[sctr-1]);
+}
+
+void h10looper_e1f::setup_adtnl_cut_opts(TString adtnl_cut_opt){
+	//! default values
+	//! cuts to be made in addition to 'dflt'
+    //! eid: new cuts and corrections
+    _use_cut_ECin_min=kFALSE;
+	_use_cut_ECfid=kFALSE;
+	_use_cut_zvtx=kFALSE;
+	_use_corr_sf_etot=kFALSE;
+	//! eid: to match Isupov
+	_use_SChit=kTRUE;
+	_use_dc_stat=kTRUE;
+	//! Evans's EFID
+	_use_ep_efid=kFALSE;
+	//! proton
+	_use_proton=kFALSE;
+
+	//! Now set as per adtnl_cut_opt
+	if (adtnl_cut_opt.Contains("1:")) _use_cut_ECin_min=kTRUE;
+	if (adtnl_cut_opt.Contains("2:")) _use_cut_ECfid=kTRUE;
+	if (adtnl_cut_opt.Contains("3:")) _use_cut_zvtx=kTRUE;
+	if (adtnl_cut_opt.Contains("4:")) _use_corr_sf_etot=kTRUE;
+	if (adtnl_cut_opt.Contains("5:")) _use_SChit=kFALSE;
+	if (adtnl_cut_opt.Contains("6:")) _use_dc_stat=kFALSE;
+	if (adtnl_cut_opt.Contains("7:")) _use_ep_efid=kTRUE;
+	if (adtnl_cut_opt.Contains("8:")) _use_proton=kTRUE;
+
+	Info("h10looper_e1f::setup_adtnl_cut_opts","***adtnl_cut_opt=%s***",adtnl_cut_opt.Data());
+	Info("h10looper_e1f::setup_adtnl_cut_opts","The following cuts-corrections will be made in addition to \'dflt\':");
+	//! eid: new cuts and corrections
+	if (_use_cut_ECin_min) Info("","use_cut_ECin_min");
+	if (_use_cut_ECfid) Info("","use_cut_ECfid");
+	if (_use_cut_zvtx) Info("","use_cut_zvtx");
+	if (_use_corr_sf_etot) Info("","use_corr_sf_etot");
+	//! eid: to match Isupov
+	if (!_use_SChit) Info("","not_use_SChit");
+	if (!_use_dc_stat) Info("","not_use_dc_stat");
+	//! Evans's EFID
+	if(_use_ep_efid) Info("","use_ep_efid");
+	//! proton 
+	if (_use_proton) Info("","use_proton");
+	Info("","***********");
 }

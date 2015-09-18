@@ -21,6 +21,10 @@ TString fout_name="";
 TString str_nentries="";
 Long64_t nentries=0;//[08-09-15]used to be 1B, till I cleaned up the "logic"
 
+//! cuts to be made in addition to 'dflt'
+//! syntax= 1:2:3:4: i.e. number followed by colon
+TString adtnl_cut_opt="";
+
 void parseArgs(int argc, char* const argv[]);
 
 int main(int argc,  char* const argv[])
@@ -62,7 +66,7 @@ int main(int argc,  char* const argv[])
 	TFileCollection fc("fileList", "", h10lst.Data());
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 	//! Set up h10looper	
-	h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,fout_name,nentries);
+	h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,fout_name,nentries,adtnl_cut_opt);
 	h10lpr_e1f->Loop();	
 
 	delete h10chain;
@@ -71,16 +75,20 @@ int main(int argc,  char* const argv[])
 	return 0;
 }
 
+/*
+Following function implemented as per:
+http://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html
+*/
 void parseArgs(int argc, char* const argv[]){
 	int c;
-	//char *filename;
 	extern char *optarg;
 	extern int optind, optopt, opterr;
+	int index;
 
-	while ((c = getopt(argc, argv, "hi:t:p:o:l:m:q:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:t:o:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<seq> -o <fout_name> -n <nevts>\n");
+			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<seq> -o <fout_name> -n <nevts> [adtnl_cut_opt]\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<seq>=recon/thrown\n");
@@ -106,5 +114,19 @@ void parseArgs(int argc, char* const argv[]){
 			break;
 		}
 	}
+
+	//! Use the following top debug argc,argv
+	/*printf("argc=%d\n",argc);
+	printf("argv[0]=%s\n",argv[0]);
+	printf("argv[1]=%s\n",argv[1]);
+	printf("argv[%d]=%s\n",argc-1,argv[argc-1]);
+	printf("optind=%d\n",optind);*/
+
+	//! Get adtnl_cut_opt, which is the last option passed to the program
+	adtnl_cut_opt=argv[argc-1];
+	/*for (index=optind;index<argc;index++){
+		string arg=argv[index];
+	}*/
+  	
 	return;
 }
