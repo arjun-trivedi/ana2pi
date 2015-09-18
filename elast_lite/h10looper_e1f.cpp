@@ -29,6 +29,17 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	Info("h10looper_e1f::h10looper_e1f", "Number of entries in TChain =  %llu",nentries_chain);
 	Info("h10looper_e1f::h10looper_e1f", "Number of entries to processess =  %llu",_nentries_to_proc);
 
+	//! cuts to be made in addition to 'dflt'
+   //! eid: new cuts and corrections
+   _use_cut_ECin_min=kFALSE;
+   _use_cut_ECfid=kFALSE;
+   _use_cut_zvtx=kFALSE;
+   _use_corr_sf_etot=kFALSE;
+   //! Evans's EFID
+   _use_ep_efid=kFALSE;
+   //! proton 
+   _use_proton=kFALSE;
+
 	//! set up eid
 	Info("h10looper_e1f::h10looper_e1f", "Setting up eid pars for dtyp=%s",_dtyp.Data());
 	setup_eid_cutpars(_dtyp);
@@ -60,6 +71,9 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_heid->GetXaxis()->SetBinLabel(EID_STAT, "stat>0");
 		_heid->GetXaxis()->SetBinLabel(EID_DC_STAT, "dc_stat>0");
 		_heid->GetXaxis()->SetBinLabel(EID_P_MIN_ECTH,"p>p_ecth");
+		_heid->GetXaxis()->SetBinLabel(EID_ECIN_MIN,"ec_ei > ECmin");
+		_heid->GetXaxis()->SetBinLabel(EID_EC_FID,"pass ECfid");
+		_heid->GetXaxis()->SetBinLabel(EID_ZVTX,"pass zvrtx");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
 		//! EFID
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
@@ -111,7 +125,16 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	Info("","nentries_to_proc=%llu",_nentries_to_proc);
 	Info("","Beam momentum and energy=%.3f,%.3f",_lvE0.Pz(),_lvE0.E());
 	Info("","*** eid-cut pars ***");
-	Info("","p_min_ECth=%.3f",_p_min_ECth);
+	Info("","P_MIN_ECTH=%.3f",P_MIN_ECTH);
+	for (int isctr=0;isctr<6;isctr++){
+		Info("","ECIN_MIN sctr%d=%.3f",isctr+1,_ECmin[isctr]);
+	}
+	Info("","UMIN=%.0f,UMAX=%.0f,VMIN=%.0f,VMAX=%.0f,WMIN=%.0f,WMAX=%.0f",
+		      UMIN,UMAX,VMIN,VMAX,WMIN,WMAX);
+	for (int isctr=0;isctr<6;isctr++){
+		Info("","_z_vtx_min_sctr%d=%.2f",isctr+1,_z_vtx_min[isctr]);
+		Info("","_z_vtx_max_sctr%d=%.2f",isctr+1,_z_vtx_max[isctr]);
+	}
 	for (int isctr=0;isctr<6;isctr++){
 		Info("","sf_low_sctr%d_pol3: %.5f,%.5f,%.5f,%.5f",
 			isctr+1,_sf_min[isctr]->GetParameter(0),_sf_min[isctr]->GetParameter(1),_sf_min[isctr]->GetParameter(2),_sf_min[isctr]->GetParameter(3));
@@ -132,6 +155,9 @@ h10looper_e1f::~h10looper_e1f()
 	delete[] _sf_mean;
 	delete[] _sf_min;
 	delete[] _sf_max;
+	delete _ECmin;
+	delete _z_vtx_min;
+	delete _z_vtx_max;
 	
 	delete _hevt;
 	delete _heid;
@@ -153,9 +179,43 @@ h10looper_e1f::~h10looper_e1f()
    delete _lvW;
 }
 
+/*
++ The following function sets up eid cut parameters. 
++ The cuts that can be directly set up, for example the ones that are the same
+for exp and sim and are a simple number are directly set up constant.h.
++ Others that are different for exp and sim and require complex Objects, like the SF cut, are set up here.
+*/
 void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 {
-	_p_min_ECth=P_MIN_ECTH;
+	//! minimum momentum that satisfies EC threshold
+	//! directly set in constants.h
+
+	//! ECin cut pars
+	//! pars obtained from constants.h
+	_ECmin=new Float_t[6];
+	for (int isctr=0;isctr<6;isctr++){
+		if      (dtyp=="exp") _ECmin[isctr]=ECIN_MIN_EXP[isctr];
+		else if (dtyp=="sim") _ECmin[isctr]=ECIN_MIN_SIM[isctr];
+	}
+
+	//! EC fid cut pars (as per MG and EP, and therefore as per "E1F run group"?)
+	//! directly setup in constant.h
+
+	//! z-vertex cut
+	_z_vtx_min=new Float_t[6];
+	_z_vtx_max=new Float_t[6];
+	for (int isctr=0;isctr<6;isctr++){
+		if(dtyp=="exp"){
+			_z_vtx_min[isctr]=ZVTX_MIN_EXP[isctr];
+			_z_vtx_max[isctr]=ZVTX_MAX_EXP[isctr];
+		}else if (dtyp=="sim"){
+			_z_vtx_min[isctr]=ZVTX_MIN_SIM[isctr];
+			_z_vtx_max[isctr]=ZVTX_MAX_SIM[isctr];
+		} 
+	}
+
+	//! SF cut
+	//! pars obtained from constants.h
 	_sf_mean=new TF1*[6];
 	_sf_min=new TF1*[6];
 	_sf_max=new TF1*[6];
@@ -235,16 +295,13 @@ void h10looper_e1f::Loop(){
 bool h10looper_e1f::evt_trigger_electron(){
 	bool ret=kFALSE;
 
+	//! prepare input for lvl_1 cut
 	int gprt=gpart;
 	int chrg=q[0];
 	bool hitDC=dc[0]>0,hitCC=cc[0]>0,hitSC=sc[0]>0,hitEC=ec[0]>0;
 	int idxDC=dc[0]-1,idxCC=cc[0]-1,idxSC=sc[0]-1,idxEC=ec[0]-1;
 	int stt=stat[0], dc_stt=dc_stat[idxDC];
-
-	int sctr=ec_sect[idxEC];
-	float mom=p[0];
-	float sf=etot[idxEC]/mom;
-
+	
 	_heid->Fill(EID_TRG);
 	bool pass_lvl_1=kFALSE;
 	if (gprt>0){
@@ -274,16 +331,24 @@ bool h10looper_e1f::evt_trigger_electron(){
 	} 
 
 	if (pass_lvl_1){
-		if (mom>_p_min_ECth){
+		if (pass_p_min_ECth()){
 			_heid->Fill(EID_P_MIN_ECTH);
-			float sf_min=_sf_min[sctr-1]->Eval(mom);
-			float sf_max=_sf_max[sctr-1]->Eval(mom);
-			if (sf>sf_min && sf<sf_max){
-				_heid->Fill(EID_SF);
-				ret=kTRUE;
-			}
+			if ( (!_use_cut_ECin_min) || (_use_cut_ECin_min && pass_ECin_min()) ){
+				_heid->Fill(EID_ECIN_MIN);
+				if ( (!_use_cut_ECfid) || (_use_cut_ECfid && pass_ECfid()) ){
+					_heid->Fill(EID_EC_FID);
+					if( (!_use_cut_zvtx) || (_use_cut_zvtx && pass_zvtx()) ){
+						_heid->Fill(EID_ZVTX);
+						if (pass_sf()){
+							_heid->Fill(EID_SF);
+							ret=kTRUE;
+						} 
+					}
+				}
+			}	
 		}
 	}
+	
 
 	return ret;
 }
@@ -404,4 +469,98 @@ int h10looper_e1f::get_sector(){
 		}*/
 	}
 	return sector;
+}
+
+/*****************************************************
+[07-09-15]
+The following function, taken directly as sent to my by Evan,
+takes the global x,y,z coordinates of the EC (ech_x,ech_y,ech_z)
+and fills calculates the local U,V,W coordinates of the EC.
+*****************************************************/
+void h10looper_e1f::GetUVW(float xyz[3], float uvw[3]) {
+  enum { X, Y, Z };
+  enum { U, V, W };
+  Float_t phi, ec_phi, ec_the, tgrho, sinrho, cosrho;
+  Float_t ylow, yhi, xi, yi, zi;
+  ec_the = 0.4363323;
+  ylow = -182.974;
+  yhi = 189.956;
+  tgrho = 1.95325;
+  sinrho = 0.8901256;
+  cosrho = 0.455715;
+  //----------------
+  phi = TMath::ATan2(xyz[Y], xyz[X]) * 57.29578;
+  if (phi < 0.)
+    phi += 360.;
+  phi = phi + 30.;
+  if (phi > 360.)
+    phi -= 360.;
+  ec_phi = 1.0471975 * int(phi / 60.);
+  //----------------
+  float rot11 = cos(ec_the) * cos(ec_phi);
+  float rot12 = -sin(ec_phi);
+  float rot13 = sin(ec_the) * cos(ec_phi);
+  float rot21 = cos(ec_the) * sin(ec_phi);
+  float rot22 = cos(ec_phi);
+  float rot23 = sin(ec_the) * sin(ec_phi);
+  float rot31 = -sin(ec_the);
+  float rot32 = 0.;
+  float rot33 = cos(ec_the);
+  //----------------
+  yi = xyz[X] * rot11 + xyz[Y] * rot21 + xyz[Z] * rot31;
+  xi = xyz[X] * rot12 + xyz[Y] * rot22 + xyz[Z] * rot32;
+  zi = xyz[X] * rot13 + xyz[Y] * rot23 + xyz[Z] * rot33;
+  zi -= 510.32;
+  //----------------
+  uvw[U] = (yi - ylow) / sinrho;
+  uvw[V] = (yhi - ylow) / tgrho - xi + (yhi - yi) / tgrho;
+  uvw[W] = ((yhi-ylow)/tgrho+xi+(yhi-yi)/tgrho)/2./cosrho;
+}
+
+bool h10looper_e1f::pass_sf()
+{
+	//! Get info to make cut
+	float mom=p[0];
+	int idxEC=ec[0]-1;
+	int sctr=ec_sect[idxEC];
+	//! correct etot. etot=max(etot,ec_ei_ec_eo)
+	if (_use_corr_sf_etot){
+		etot[idxEC]=etot[idxEC] > ec_ei[idxEC]+ec_eo[idxEC] ? etot[idxEC] : ec_ei[idxEC]+ec_eo[idxEC];
+	}
+	float sf=etot[idxEC]/mom;
+
+	//! make cut
+	float sf_min=_sf_min[sctr-1]->Eval(mom);
+	float sf_max=_sf_max[sctr-1]->Eval(mom);
+	return ( sf>sf_min && sf<sf_max );
+}
+
+bool h10looper_e1f::pass_ECfid(){
+	int idxEC=ec[0]-1;
+	Float_t xyz[3]={ech_x[idxEC],ech_y[idxEC],ech_z[idxEC]};
+	Float_t uvw[3]={0,0,0};
+	GetUVW(xyz,uvw);
+	enum { U, V, W };
+	bool passU= uvw[U]>UMIN && uvw[U]<UMAX;
+	bool passV= uvw[V]>VMIN && uvw[V]<VMAX;
+	bool passW= uvw[W]>WMIN && uvw[W]<WMAX;
+	return passU && passV && passW;
+}
+
+bool h10looper_e1f::pass_p_min_ECth(){
+	return (p[0]>P_MIN_ECTH);
+}
+
+bool h10looper_e1f::pass_ECin_min(){
+	int idxEC=ec[0]-1;
+	int sctr=ec_sect[idxEC];
+	return (ec_ei[sctr-1]>_ECmin[sctr-1]);
+}
+
+bool h10looper_e1f::pass_zvtx(){
+	float zvtx=vz[0];
+	int idxEC=ec[0]-1;
+	int sctr=ec_sect[idxEC];
+	
+	return (zvtx>_z_vtx_min[sctr-1] && zvtx<_z_vtx_max[sctr-1]);
 }

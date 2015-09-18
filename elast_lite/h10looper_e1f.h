@@ -37,40 +37,53 @@ public :
    //! nentries_to_proc
    Long64_t _nentries_to_proc;
 
-   //! eid cut pars
-   Float_t _p_min_ECth;
-   TF1** _sf_mean;
-   TF1** _sf_min;
-   TF1** _sf_max;
-
-   //! for mom corr
-   MomCorr_e1f* _pcorr;
-
-   //! elastic cut
-   static const float _W_CUT_MIN=0.848;
-   static const float _W_CUT_MAX=1.028;
+   //! cuts to be made in addition to 'dflt'
+   //! eid: new cuts and corrections
+   bool _use_cut_ECin_min;
+   bool _use_cut_ECfid;
+   bool _use_cut_zvtx;
+   bool _use_corr_sf_etot;
+   //! Evans's EFID
+   bool _use_ep_efid;
+   //! proton 
+   bool _use_proton;
 
    //! output objects
    //! Event level
    static const int NUM_EVT_STATS=4;
    enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID, EVT_ELSTC};
    TH1D* _hevt;
+
    //! EID
-   static const int NUM_EID_STATS=11;
+   static const int NUM_EID_STATS=14;
    enum {EID_NULL, EID_TRG, EID_GPART0, EID_Q, 
          EID_HIT_DC, EID_HIT_CC, EID_HIT_SC, EID_HIT_EC, 
-         EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_SF};
+         EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_ECIN_MIN, EID_EC_FID, EID_ZVTX, EID_SF};
    TH1D* _heid;
+   //! for SF cut
+   TF1** _sf_mean;
+   TF1** _sf_min;
+   TF1** _sf_max;
+   //! for ECin min cut
+   Float_t* _ECmin;
+   //! for z-vtx cut
+   Float_t* _z_vtx_min;
+   Float_t* _z_vtx_max;
+
    //! EFID
    static const int NUM_EFID_STATS=2;
    enum {EFID_NULL, EFID_TOT, EFID_IN};
    TH1D* _hefid;
+
    //! mom corr
    TH2D* _hpcorr_dpVp;
    TH1D* _hpcorr_dcx;
    TH1D* _hpcorr_dcy;
    TH1D* _hpcorr_dcz;
    TH1D* _hpcorr_dp;
+   //! for mom corr
+   MomCorr_e1f* _pcorr;
+
    //! delast
    TH1D* _hW;
    TH1D* _helast;
@@ -78,7 +91,10 @@ public :
    static const float _THETA_MIN=14;
    static const float _THETA_MAX=46;
    TH1D** _hf;//!full sector
-   TH1D** _hc;//!central sector   
+   TH1D** _hc;//!central sector
+   //! elastic cut
+   static const float _W_CUT_MIN=0.848;
+   static const float _W_CUT_MAX=1.028;   
 
    //! ekin
    TLorentzVector _lvE0;
@@ -321,6 +337,12 @@ public :
    void reset_ekin();
 
    int get_sector();
+   void GetUVW(float xyz[3], float uvw[3]);
+   bool pass_p_min_ECth();
+   bool pass_ECin_min();
+   bool pass_ECfid();
+   bool pass_zvtx();
+   bool pass_sf();
 };
 
 #endif

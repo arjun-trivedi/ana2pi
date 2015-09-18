@@ -48,8 +48,37 @@ const Int_t PHI_CENTRAL_SECTOR[6][2]={
 
 namespace E1F{
 	const Float_t E0_P = 5.499;
+
 	//! eid-cut pars
+	//! minimum momentum that satisfies EC threshold
 	const Float_t P_MIN_ECTH = 0.64;
+
+	//! ECin cut exp (taken from $EPCODE)
+	const Float_t ECIN_MIN_EXP[6]={0.058,0.064,0.060,0.056,0.058,0.056};  
+	//! ECin cut sim (taken from $EPCODE)
+	const Float_t ECIN_MIN_SIM[6]={0.063,0.063,0.063,0.063,0.063,0.063}; 
+
+	//! EC fid cut pars
+	//!(as per MG and EP($EPCODE), and therefore as per "E1F run group"?)
+	const Float_t UMIN=20; 
+	const Float_t UMAX=400;
+	const Float_t VMIN=0;
+	const Float_t VMAX=375;
+	const Float_t WMIN=0;
+	const Float_t WMAX=410;
+
+	//! z-vertex cut
+	//! + (-27.5,-22.5) cut from Kijun's ana note (sec. 4.2.1)
+	//! + The value above is adapted for exp sectors where there is a mismatch
+	//! (Kijun and Isupov correct this mismatch, but I for now have decided to
+	//! adapt the cut instead. See sub_studies/study_vrtx/plot_e_z_vtx.C)
+	//!exp
+	const Float_t ZVTX_MIN_EXP[6]={-28.25,-27.50,-27.50,-27.50,-28.25,-28.75};
+	const Float_t ZVTX_MAX_EXP[6]={-23.00,-22.50,-22.25,-22.50,-23.00,-23.50};
+	//! sim
+	const Float_t ZVTX_MIN_SIM[6]={-27.50,-27.50,-27.50,-27.50,-27.50,-27.50};
+  	const Float_t ZVTX_MAX_SIM[6]={-22.50,-22.50,-22.50,-22.50,-22.50,-22.50};
+
 	//! SF-exp
 	const Float_t SF_MEAN_EXP[6][4]={
 		{0.259351, 0.0290101,-0.002351,  -1.04206e-05},
