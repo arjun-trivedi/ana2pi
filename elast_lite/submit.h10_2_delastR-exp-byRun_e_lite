@@ -16,7 +16,7 @@ proc_opt=$1
 if [ $proc_opt = "dflt"* ];then
   adtnl_cut_opt=""
 elif [[ $proc_opt == "eid_all__eid_IU_all"* ]];then
-  adtnl_cut_opt="1:2:3:4:5:6"
+  adtnl_cut_opt="1:2:3:4:5:6:"
 elif [[ $proc_opt == "eid_ECin"* ]];then
   adtnl_cut_opt="1:"
 elif [[ $proc_opt == "eid_ECfid"* ]];then
