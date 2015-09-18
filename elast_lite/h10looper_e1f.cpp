@@ -547,7 +547,7 @@ bool h10looper_e1f::pass_p_min_ECth(){
 bool h10looper_e1f::pass_ECin_min(){
 	int idxEC=ec[0]-1;
 	int sctr=ec_sect[idxEC];
-	return (ec_ei[sctr-1]>_ECmin[sctr-1]);
+	return (ec_ei[idxEC]>_ECmin[sctr-1]);
 }
 
 bool h10looper_e1f::pass_zvtx(){
