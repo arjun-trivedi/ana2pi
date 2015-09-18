@@ -13,7 +13,7 @@
 
 ##-- Get proc_opt and simlist from user specified args
 proc_opt=$1
-if [ $proc_opt = "dflt"* ];then
+if [[ $proc_opt == "dflt"* ]];then
   adtnl_cut_opt=""
 elif [[ $proc_opt == "eid_all__eid_IU_all"* ]];then
   adtnl_cut_opt="1:2:3:4:5:6:"
