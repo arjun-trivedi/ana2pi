@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo ">arsync.ifarm.simple /work/clas/claseg3/atrivedi/data/e1f/elastic/delast/sim/sim4_lite $DELASTDIR_SIM/"
+arsync.ifarm.simple /work/clas/claseg3/atrivedi/data/e1f/elastic/delast/sim/sim4_lite $DELASTDIR_SIM/

@@ -41,7 +41,7 @@ void plot_e_z_vtx(Long64_t nentries=1000000000){
   leg_sim->Draw();
 
   //sector:exp vs sim
-  gStyle->SetOptStat("nmMrR");
+  gStyle->SetOptStat("nmMrRei");
   Float_t z_vtx_cut_min_exp[6]={-28.25,-27.50,-27.50,-27.50,-28.25,-28.75};
   Float_t z_vtx_cut_max_exp[6]={-23.00,-22.50,-22.25,-22.50,-23.00,-23.50};
   Float_t z_vtx_cut_min_sim[6]={-27.50,-27.50,-27.50,-27.50,-27.50,-27.50};
@@ -59,15 +59,23 @@ void plot_e_z_vtx(Long64_t nentries=1000000000){
     hsim[isctr]->SetLineColor(kRed);
     hexp[isctr]->Sumw2();
     hsim[isctr]->Sumw2();
-    TH1F* hexpn=hexp[isctr]->DrawNormalized("hist E",1000);
+    //! Normalize both to "peak"
+    float max_exp=hexp[isctr]->GetMaximum();
+    float scl_fctr_sim=max_exp/hsim[isctr]->GetMaximum();
+    hsim[isctr]->Scale(scl_fctr_sim);
+    hexp[isctr]->Draw("hist E");
+    hsim[isctr]->Draw("hist E sames");
+    //! Normalize to same area
+    /*TH1F* hexpn=hexp[isctr]->DrawNormalized("hist E",1000);
     TH1F* hsimn=hsim[isctr]->DrawNormalized("hist E sames",1000);
     float ymax=hexpn->GetMaximum();
     ymax=ymax>hsimn->GetMaximum()?ymax:hsimn->GetMaximum();
     ymax+=10;
     hexpn->SetMaximum(ymax);
     hsimn->SetMaximum(ymax);
-    gPad->Update();
+    gPad->Update();*/
     //! Draw z vtx cut
+    float ymax=max_exp+10; //! TLine's y2 coordinate
     lvtxcutmin_exp[isctr]=new TLine(z_vtx_cut_min_exp[isctr],0,z_vtx_cut_min_exp[isctr],ymax);
     lvtxcutmax_exp[isctr]=new TLine(z_vtx_cut_max_exp[isctr],0,z_vtx_cut_max_exp[isctr],ymax);
     lvtxcutmin_sim[isctr]=new TLine(z_vtx_cut_min_sim[isctr],0,z_vtx_cut_min_sim[isctr],ymax);

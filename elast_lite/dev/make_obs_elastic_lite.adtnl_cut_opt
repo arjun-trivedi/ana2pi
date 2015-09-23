@@ -1,0 +1,54 @@
+#!/bin/bash
+
+adtnl_cut_opt_arr=(dflt eid_ECin eid_ECfid eid_zvtx eid_etot eid_IU_no_SChit eid_IU_no_dc_stat eid_all eid_IU_all eid_all__eid_IU_all)
+for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
+
+  idtfr=$adtnl_cut_opt"_"092115
+  echo "***Processing $idtfr***"
+
+  #! Add retuls from all exp runs
+  if [ ! -e $DELASTDIR_EXP/delastR_lite_$idtfr.root ];then
+    echo ">ls $DELASTDIR_EXP/byRun_lite_$idtfr/*.root | xargs hadd $DELASTDIR_EXP/delastR_lite_$idtfr.root"
+    ls $DELASTDIR_EXP/byRun_lite_$idtfr/*.root | xargs hadd $DELASTDIR_EXP/delastR_lite_$idtfr.root
+  fi
+
+  #! Now make dir on $OBSDIR_ELASTIC/lite and link in exp and sim files
+  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr ];then
+    echo ">mkdir -p $OBSDIR_ELASTIC/lite/obs_$idtfr"
+    mkdir $OBSDIR_ELASTIC/lite/obs_$idtfr
+  fi
+
+  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/delastER.root ];then
+    echo ">ln -s $DELASTDIR_EXP/delastR_lite_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastER.root"
+    ln -s $DELASTDIR_EXP/delastR_lite_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastER.root
+  fi
+
+  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/delastSR.root ];then
+    echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastSR.root"
+    ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastSR.root
+  fi
+
+  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/delastST.root ];then
+    echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastST.root"
+    ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastST.root
+  fi
+
+  #! Now make obs
+  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/yield_full_sector.root ];then
+    echo ">root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","full")'"
+    export idtfr=$idtfr #! hack to tell ROOT of $idtfr since I cannot seem to pass it through the command line
+    root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","full")'
+  fi
+  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/yield_central_sector.root ];then
+    echo ">root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","full")'"
+    export idtfr=$idtfr #! hack to tell ROOT of $idtfr since I cannot seem to pass it through the command line
+    root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","central")'
+  fi
+  
+  echo "******"
+  
+done
+
+#! Put important results into a single pdf
+convert `ls $OBSDIR_ELASTIC/lite/obs_*092115*/crto_EClumnorm_TTnorm_full.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_full_092115.pdf 
+convert `ls $OBSDIR_ELASTIC/lite/obs_*092115*/crto_EClumnorm_TTnorm_central.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_central_092115.pdf

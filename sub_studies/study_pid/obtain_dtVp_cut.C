@@ -37,18 +37,46 @@
     c_cut[i]=new TCanvas(TString::Format("cut_dtVp_%s",dtyp_name[i].Data()),TString::Format("cut_dtVp_%s",dtyp_name[i].Data()));
     c_cut[i]->Divide(2,2);
     int nbins[3]={10,5,10}; //!0=p,1=pip,2=pim
-    float pmin[3][11]=
+    float pmin[3][10]=
     {
-      {0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,3.00,0.00},
-      {0.00,0.50,1.00,1.50,2.00,2.50,1.50,1.75,2.00,2.25,2.50},//{0.00,0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50},
-      {0.00,0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.50,0.00}
+      {0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,3.00},//0.00},
+      {0.00,0.50,1.00,1.50,2.00,2.50,1.50,1.75,2.00,2.25},//2.50},//{0.00,0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50},
+      {0.00,0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.50}//0.00}
     };
-    float pmax[3][11]=
+    float pmax[3][10]=
     {
-      {0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,2.75,3.25,0.00},
-      {0.50,1.00,1.50,2.00,2.50,3.00,1.75,2.00,2.25,2.50,3.00},//{0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,3.00},
-      {0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.75,0.00}
+      {0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,2.75,3.25},//,0.00},
+      {0.50,1.00,1.50,2.00,2.50,3.00,1.75,2.00,2.25,2.50},//,3.00},//{0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,3.00},
+      {0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.75}//,0.00}
     };
+    //! Method to obtain fit cure to dt vs. p for high momenta:
+    //! =======================================================
+    //! + Since data beyond 'pmax' defined above is either not available or sparse, fits to dt cannot be made and
+    //! therefore, the fit curve to dt vs. p points cannot be determined in the high momentum bins.
+    //!
+    //! + In order to get fit curves in p region where no data exists, I am going to use dt-mu/sg from the last bin
+    //! in p where there was data to obtain dt-mu/sg
+    //!
+    //! + While the highest p for each particle, I have noted, using sub_studies/study_d2pi_kinematics/plot_d2pi_kin.C for 2pi reaction and TTrees in $DELASTDIR_EXP(SIM)/study_elast_xsec_081715/*.root:/delast) as:
+    //!  + p=3.5GeV and 5GeV for 2pi and Elastic respectively
+    //!  + pip=2.5GeV for 2pi
+    //!  + pim=2.5GeV for 2pi,
+    //!  in this procedure, for reason of aesthetics, I have decided to use maximum p = 5GeV for all particles
+    int nbins_high_p[3]={5,2,2};// chosen so as to use minimum number of bins whose binning can be expressed within 2 decimal places. 
+    float pmin_high_p[3][5]=//! low bin for each particle should be pmax for each particle!
+    {
+      {3.25,3.60,3.95,4.30,4.65},
+      {2.50,3.75,0.00,0.00,0.00},
+      {2.50,3.75.0.00,0.00,0.00} 
+    }; 
+    float pmax_high_p[3][5]=
+    {
+      {3.60,3.95,4.30,4.65,5.00},
+      {3.75,5.00,0.00,0.00,0.00},
+      {3.75,5.00,0.00,0.00,0.00}
+    };
+    //! For each particle, get dt-mu/sg for each pbin and 
+    //! put values into histograms(hcut_h,hcut_l) that will later be fit
     for (int j=0;j<3;j++){
       //clear current cut data for jth particle
       TString cmd=TString::Format(".!rm dtVp_cuts/%s/%s/*",dtyp_name[i].Data(),part_name[j].Data());
@@ -63,6 +91,7 @@
       hcut_h->SetMarkerColor(kRed);
       hcut_l->SetMarkerStyle(kStar);
       hcut_l->SetMarkerColor(kRed);
+      //! fill hcut_l/h with dt obtained from fits in momentum bins
       for (int ibin=0;ibin<nbins[j];ibin++){
         int bmin=h2_dtVp[i][j]->GetXaxis()->FindBin(pmin[j][ibin]);
         int bmax=h2_dtVp[i][j]->GetXaxis()->FindBin(pmax[j][ibin]);
@@ -92,16 +121,35 @@
         hcut_h->SetBinContent(bavg,mean_plus_3sigma);
         hcut_l->SetBinContent(bavg,mean_minus_3sigma);
       }//end p-bin loop
+      //! Now fill hcut_l/h for high momentum bins where there is no data available to fit 
+      //! using the method noted earlier
+      //! Get bin content of the the last p bin where dt-mu/sg was obtained using a fit
+      float pavg_last_fitted_bin=(pmin[j][nbins[j]-1]+pmax[j][nbins[j]-1])/2;
+      float bavg_last_fitted_bin=hmean->GetXaxis()->FindBin(pavg_last_fitted_bin);
+      dt_mean_last_fitted_bin=hmean->GetBinContent(bavg_last_fitted_bin);
+      dt_h_last_fitted_bin=hcut_h->GetBinContent(bavg_last_fitted_bin);
+      dt_l_last_fitted_bin=hcut_l->GetBinContent(bavg_last_fitted_bin);
+      //! Now fill hcut_h/l
+      for (int ibin=0;ibin<nbins_high_p[j];ibin++){
+        float pavg=(pmin_high_p[j][ibin]+pmax_high_p[j][ibin])/2;
+        int bavg=hmean->GetXaxis()->FindBin(pavg);
+        hmean->SetBinContent(bavg,dt_mean_last_fitted_bin);
+        hcut_h->SetBinContent(bavg,dt_h_last_fitted_bin);
+        hcut_l->SetBinContent(bavg,dt_l_last_fitted_bin);
+      }// end high_p-bin loop
+      
       //Fit hcut_l and hcut_h
       TF1 *fl = new TF1("fl","pol3",-3,3);
       TF1 *fh = new TF1("fh","pol3",-3,3);
-      hcut_l->Fit("fl","","",pmin[j][0],pmax[j][nbins[j]-1]); 
-      hcut_h->Fit("fh","","",pmin[j][0],pmax[j][nbins[j]-1]);
+      hcut_l->Fit("fl","","",pmin[j][0],pmax_high_p[j][nbins_high_p[j]-1]);
+      hcut_h->Fit("fh","","",pmin[j][0],pmax_high_p[j][nbins_high_p[j]-1]);
       //c->Close();
       FILE* fcut;
       fcut=fopen(TString::Format("dtVp_cuts/%s/%s/cutpars.txt",dtyp_name[i].Data(),part_name[j].Data()).Data(), "w");
-      fprintf(fcut,"cut_l(pol3:p0:p1:p2:p3) %.2f %.2f %.2f %.2f\n",fl->GetParameter(0),fl->GetParameter(1),fl->GetParameter(2),fl->GetParameter(3)); 
-      fprintf(fcut,"cut_h(pol3:p0:p1:p2:p3) %.2f %.2f %.2f %.2f\n",fh->GetParameter(0),fh->GetParameter(1),fh->GetParameter(2),fh->GetParameter(3));
+      //fprintf(fcut,"cut_l(pol3:p0:p1:p2:p3) %.5f %.5f %.5f %.5f\n",fl->GetParameter(0),fl->GetParameter(1),fl->GetParameter(2),fl->GetParameter(3)); 
+      //fprintf(fcut,"cut_h(pol3:p0:p1:p2:p3) %.5f %.5f %.5f %.5f\n",fh->GetParameter(0),fh->GetParameter(1),fh->GetParameter(2),fh->GetParameter(3));
+      fprintf(fcut,"cut_l(pol3:p0:p1:p2:p3) %f %f %f %f\n",fl->GetParameter(0),fl->GetParameter(1),fl->GetParameter(2),fl->GetParameter(3));
+      fprintf(fcut,"cut_h(pol3:p0:p1:p2:p3) %f %f %f %f\n",fh->GetParameter(0),fh->GetParameter(1),fh->GetParameter(2),fh->GetParameter(3));
       fclose(fcut);
       //! Draw fit
       TCanvas* ccut=new TCanvas("cut","cut");

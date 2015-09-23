@@ -1,0 +1,7 @@
+#!/bin/bash
+
+adtnl_cut_opt_arr=(dflt eid_ECin eid_ECfid eid_zvtx eid_etot eid_IU_no_SChit eid_IU_no_dc_stat eid_all eid_IU_all eid_all__eid_IU_all)
+for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
+  echo ">arsync.ifarm.simple /work/clas/claseg3/atrivedi/data/e1f/elastic/delast/exp/byRun_lite_$adtnl_cut_opt"_"092115 $DELASTDIR_EXP/"
+  arsync.ifarm.simple /work/clas/claseg3/atrivedi/data/e1f/elastic/delast/exp/byRun_lite_$adtnl_cut_opt"_"092115 $DELASTDIR_EXP
+done
