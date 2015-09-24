@@ -1,10 +1,9 @@
 #!/bin/bash
 
-adtnl_cut_opt_arr=(dflt 1: 2: 3: 4: 5: 6: 7: 8: 1:2:3:4: 5:6: 1:2:3:4:5:6: 1:7: 1:8:)
-date=092415
+adtnl_cut_opt_arr=(dflt eid_ECin eid_ECfid eid_zvtx eid_etot eid_IU_no_SChit eid_IU_no_dc_stat eid_all eid_IU_all eid_all__eid_IU_all)
 for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
 
-  idtfr=$adtnl_cut_opt"_"$date
+  idtfr=$adtnl_cut_opt"_"092115
   echo "***Processing $idtfr***"
 
   #! Add retuls from all exp runs
@@ -51,5 +50,5 @@ for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
 done
 
 #! Put important results into a single pdf
-convert `ls $OBSDIR_ELASTIC/lite/obs_*$date*/crto_EClumnorm_TTnorm_full.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_full_$date.pdf 
-convert `ls $OBSDIR_ELASTIC/lite/obs_*$date*/crto_EClumnorm_TTnorm_central.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_central_$date.pdf
+convert `ls $OBSDIR_ELASTIC/lite/obs_*092115*/crto_EClumnorm_TTnorm_full.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_full_092115.pdf 
+convert `ls $OBSDIR_ELASTIC/lite/obs_*092115*/crto_EClumnorm_TTnorm_central.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_central_092115.pdf

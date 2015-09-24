@@ -6,7 +6,7 @@ CXX = g++
 C_FLAGS =
 CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -Wno-deprecated
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
-SRC = h10looper_e1f.cpp  
+SRC = pid.cpp h10looper_e1f.cpp  
 OBJS = $(patsubst %.cpp,obj/%.o,$(SRC)) 
 LIBS =          $(shell root-config --glibs)
 LIBOUT =        $(ELAST_LITE)/sobj/lib_proc_h10_lite.so

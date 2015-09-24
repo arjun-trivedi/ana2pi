@@ -37,8 +37,12 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	Info("h10looper_e1f::h10looper_e1f", "Setting up eid pars for dtyp=%s",_dtyp.Data());
 	setup_eid_cutpars(_dtyp);
 
+	//! set up pid
+	Info("h10looper_e1f::h10looper_e1f", "Setting up _pid_tool for dtyp=%s",_dtyp.Data());
+	_pid_tool=new Pid(_dtyp);
+
 	//! set up _pcorr
-	Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr for dtyp=%s",_dtyp.Data());
+	Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr");
 	TString ws=getenv("WORKSPACE");;
 	TString fpcorr=TString::Format("%s/ana2pi/MomCorr",ws.Data());
 	_pcorr=new MomCorr_e1f((char *)fpcorr.Data());
@@ -72,6 +76,10 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
 		_hefid->GetXaxis()->SetBinLabel(EFID_IN,"infid");
+		//! PID
+		_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
+		_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
+		_hpid->GetXaxis()->SetBinLabel(PID_PASS,"pass");
 		//! pcorr
 		if (_dtyp=="exp"){
 			//!pcorr
@@ -145,6 +153,9 @@ h10looper_e1f::~h10looper_e1f()
 	if (!fChain) return;
 	delete fChain->GetCurrentFile();
 
+	delete _pid_tool;
+	delete _pcorr;
+
 	delete[] _sf_mean;
 	delete[] _sf_min;
 	delete[] _sf_max;
@@ -155,6 +166,7 @@ h10looper_e1f::~h10looper_e1f()
 	delete _hevt;
 	delete _heid;
 	delete _hefid;
+	delete _hpid;
 	delete _hpcorr_dpVp;
 	delete _hpcorr_dcx;
    delete _hpcorr_dcy;
@@ -170,6 +182,7 @@ h10looper_e1f::~h10looper_e1f()
    delete _lvE1;
    delete _lvQ;
    delete _lvW;
+   Info("h10looper_e1f::~h10looper_e1f","Done.");
 }
 
 /*
@@ -255,9 +268,11 @@ void h10looper_e1f::Loop(){
 						mom_corr_electron();
 						set_ekin();
 					}
-					if (_W>_W_CUT_MIN && _W<_W_CUT_MAX){
-						_hevt->Fill(EVT_ELSTC);
-						make_delast();
+					if ( !_use_proton || (_use_proton && found_proton()) ){
+						if (_W>_W_CUT_MIN && _W<_W_CUT_MAX){
+							_hevt->Fill(EVT_ELSTC);
+							make_delast();
+						}
 					}
 				}
 			}
@@ -354,7 +369,12 @@ bool h10looper_e1f::electron_infid(){
 	Int_t paddle = 0;
 	
 	_hefid->Fill(EFID_TOT);
-	bool ret=Cuts::Fiducial(id, mom, _theta, _phi, sector, paddle);
+	bool ret=kFALSE;
+	if (_use_ep_efid){
+		ret=inFid(mom,_theta,_phi,sector);
+	}else{
+		ret=Cuts::Fiducial(id, mom, _theta, _phi, sector, paddle);
+	}
 	if (ret==kTRUE){
 		_hefid->Fill(EFID_IN);
 	}
@@ -410,6 +430,50 @@ void h10looper_e1f::set_ekin(){
 	_theta=_lvE1->Theta()*TMath::RadToDeg();
 	float phi=_lvE1->Phi()*TMath::RadToDeg();// [-180,180]
 	_phi=phi<-30?phi+360:phi; // [-30,330]
+}
+
+/*
+found_proton() alogrithm assumes that there is only 
+1 proton in an event. Therefore once the requirements
+for a track being a proton is fulfilled, the function returns.
+*/
+bool h10looper_e1f::found_proton(){
+	bool ret=kFALSE;
+	_hpid->Fill(PID_TOT);
+	//! Directly measured electron quantities
+	float l_e=sc_r[sc[0]-1];
+	float t_e=sc_t[sc[0]-1];
+	float t_off=t_e-(l_e/SOL);
+	//! Now loop over gpart to find proton
+	for (int i=1;i<gpart;i++){
+		int chrg=q[i];
+		bool hitDC=dc[i]>0,hitSC=sc[i]>0;
+		int stt=stat[i], dc_stt=dc_stat[dc[i]-1];
+
+		if(chrg==1 && hitDC && hitSC){
+			//! Get time of flight for track
+			float t=sc_t[sc[i]-1];
+
+			//! Now calculate dt using :
+			//! + length of track and 
+			//! + beta of track under assumption that it is a proton
+			//! that particle is a proton
+			float l=sc_r[sc[i]-1];
+			//! Calculate beta under assumption that particle is proton
+			float mom=p[i];
+			float b_p=TMath::Sqrt((mom*mom)/(MASS_P*MASS_P+mom*mom));
+			//! Now calculate dt
+			float dt=l/(b_p*SOL)+t_off- t;
+
+			//! Using dt and p, identify if particle is a proton
+			if (_pid_tool->is_proton(dt,mom)){
+				ret=kTRUE;
+				_hpid->Fill(PID_PASS);
+				break;
+			}
+		}
+	}
+	return ret;
 }
 
 void h10looper_e1f::reset_ekin(){

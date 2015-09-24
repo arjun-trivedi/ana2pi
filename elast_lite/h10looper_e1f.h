@@ -20,6 +20,8 @@
 using namespace E1F;
 
 #include "mom_corr.cpp"
+#include "fidfuncs.C"
+#include "pid.h"
 
 class h10looper_e1f {
 public :
@@ -87,6 +89,12 @@ public :
    //! for mom corr
    MomCorr_e1f* _pcorr;
 
+   //! PID
+   Pid* _pid_tool;
+   static const int NUM_PID_STATS=2;
+   enum {PID_NULL, PID_TOT, PID_PASS};
+   TH1D* _hpid;
+   
    //! delast
    TH1D* _hW;
    TH1D* _helast;
@@ -340,7 +348,8 @@ public :
 
    void set_ekin();
    void reset_ekin();
-
+   bool found_proton();
+   
    int get_sector();
    void GetUVW(float xyz[3], float uvw[3]);
    bool pass_p_min_ECth();

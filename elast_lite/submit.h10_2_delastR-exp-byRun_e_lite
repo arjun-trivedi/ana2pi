@@ -11,32 +11,40 @@
 # Usage submit.h10_2_delastR-exp proc_opt
 ###########################################################
 
-##-- Get proc_opt and simlist from user specified args
+##-- Get proc_opt user specified args
 proc_opt=$1
+echo "Going to submit h10_2_delastR-exp-byRun_e_lite for the following:"
+echo "proc_opt="$proc_opt
+
 if [[ $proc_opt == "dflt"* ]];then
   adtnl_cut_opt=""
-elif [[ $proc_opt == "eid_all__eid_IU_all"* ]];then
-  adtnl_cut_opt="1:2:3:4:5:6:"
-elif [[ $proc_opt == "eid_ECin"* ]];then
-  adtnl_cut_opt="1:"
-elif [[ $proc_opt == "eid_ECfid"* ]];then
-  adtnl_cut_opt="2:"
-elif [[ $proc_opt == "eid_zvtx"* ]];then
-  adtnl_cut_opt="3:"
-elif [[ $proc_opt == "eid_etot"* ]];then
-  adtnl_cut_opt="4:"
-elif [[ $proc_opt == "eid_all"* ]];then
-  adtnl_cut_opt="1:2:3:4:"
-elif [[ $proc_opt == "eid_IU_no_SChit"* ]];then
-  adtnl_cut_opt="5:"
-elif [[ $proc_opt == "eid_IU_no_dc_stat"* ]];then
-  adtnl_cut_opt="6:"
-elif [[ $proc_opt == "eid_IU_all"* ]];then
-  adtnl_cut_opt="5:6:"
 else
-  echo "proc_opt=$proc_opt not recognized. Exiting."
-  exit
+  adtnl_cut_opt=$proc_opt
 fi
+#if [[ $proc_opt == "dflt"* ]];then
+#  adtnl_cut_opt=""
+#elif [[ $proc_opt == "eid_all__eid_IU_all"* ]];then
+#  adtnl_cut_opt="1:2:3:4:5:6:"
+#elif [[ $proc_opt == "eid_ECin"* ]];then
+#  adtnl_cut_opt="1:"
+#elif [[ $proc_opt == "eid_ECfid"* ]];then
+#  adtnl_cut_opt="2:"
+#elif [[ $proc_opt == "eid_zvtx"* ]];then
+#  adtnl_cut_opt="3:"
+#elif [[ $proc_opt == "eid_etot"* ]];then
+#  adtnl_cut_opt="4:"
+#elif [[ $proc_opt == "eid_all"* ]];then
+#  adtnl_cut_opt="1:2:3:4:"
+#elif [[ $proc_opt == "eid_IU_no_SChit"* ]];then
+#  adtnl_cut_opt="5:"
+#elif [[ $proc_opt == "eid_IU_no_dc_stat"* ]];then
+#  adtnl_cut_opt="6:"
+#elif [[ $proc_opt == "eid_IU_all"* ]];then
+#  adtnl_cut_opt="5:6:"
+#else
+#  echo "proc_opt=$proc_opt not recognized. Exiting."
+#  exit
+#fi
 echo "proc_opt=$proc_opt"
 echo "adtnl_cut_opt=$adtnl_cut_opt"
 
