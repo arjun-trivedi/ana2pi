@@ -23,7 +23,6 @@ echo "simXs:"
 for simnum in "${simlist[@]}"; do
    echo "$simnum"
 done
-exit
 
 ##-- Now submit jobs for each simnum
 for simnum in "${simlist[@]}"; do

@@ -55,7 +55,6 @@ fi
 #fi
 echo "proc_opt=$proc_opt"
 echo "adtnl_cut_opt=$adtnl_cut_opt"
-exit
 
 ##-- Now submit jobs for each simnum
 for simnum in "${simlist[@]}"; do

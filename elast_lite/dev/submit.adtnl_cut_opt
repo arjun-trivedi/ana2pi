@@ -17,7 +17,7 @@
 adtnl_cut_opt_arr=(dflt 1: 2: 3: 4: 5: 6: 7: 8: 1:2:3:4: 5:6: 1:2:3:4:5:6: 1:7: 1:8:)
 for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
   echo "*** submitting exp and sim jobs for adtnl_cut_opt=$adtnl_cut_opt ***"
-  submit.h10_2_delastR-exp-byRun_e_lite $adtnl_cut_opt
+  #submit.h10_2_delastR-exp-byRun_e_lite $adtnl_cut_opt
   submit.h10_2_delastR-sim_lite $adtnl_cut_opt sim4
   submit.h10_2_delastT-sim_lite $adtnl_cut_opt sim4
 done
