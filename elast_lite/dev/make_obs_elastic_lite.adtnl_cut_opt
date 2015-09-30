@@ -1,11 +1,18 @@
 #!/bin/bash
 
 adtnl_cut_opt_arr=(dflt 1: 2: 3: 4: 5: 6: 7: 8: 1:2:3:4: 5:6: 1:2:3:4:5:6: 1:7: 1:8:)
+adtnl_cut_opt_name_arr=(dflt ECin ECfid zvtx etot noSChit nodcstat epEFID proton eid_AT_all eid_EI_all eid_AT_IU_all ECin_epEFID ECin_proton)
+
+#! + Date refers to the date tag with which delast jobs for exp and sim were tagged on the farm
+#! + Usually exp and sim have same date tags since their delast jobs are submitted on the same day. If not, then a date tag should be picked from the tag of either exp or sim and accordingly, the date tag of the non-picked jobs should be soft linked to the picked date tag. See dev/fix_date script  
 date=092415
+
+i=0
 for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
 
   idtfr=$adtnl_cut_opt"_"$date
-  echo "***Processing $idtfr***"
+  obsname=${adtnl_cut_opt_name_arr[$i]}
+  echo "***Processing $idtfr($obsname)***"
 
   #! Add retuls from all exp runs
   if [ ! -e $DELASTDIR_EXP/delastR_lite_$idtfr.root ];then
@@ -13,43 +20,51 @@ for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
     ls $DELASTDIR_EXP/byRun_lite_$idtfr/*.root | xargs hadd $DELASTDIR_EXP/delastR_lite_$idtfr.root
   fi
 
-  #! Now make dir on $OBSDIR_ELASTIC/lite and link in exp and sim files
-  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr ];then
-    echo ">mkdir -p $OBSDIR_ELASTIC/lite/obs_$idtfr"
-    mkdir $OBSDIR_ELASTIC/lite/obs_$idtfr
+  #! Now make dir on $OBSDIR_ELASTIC/lite/$date and link in exp and sim files
+  obsdir=$OBSDIR_ELASTIC/lite/obs_$date/$obsname
+  if [ ! -e $obsdir ];then
+    echo ">mkdir -p $obsdir"
+    mkdir -p $obsdir
   fi
-
-  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/delastER.root ];then
-    echo ">ln -s $DELASTDIR_EXP/delastR_lite_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastER.root"
-    ln -s $DELASTDIR_EXP/delastR_lite_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastER.root
+  #! Link in ER
+  if [ ! -e $obsdir/delastER.root ];then
+    echo ">ln -s $DELASTDIR_EXP/delastR_lite_$idtfr.root $obsdir/delastER.root"
+    ln -s $DELASTDIR_EXP/delastR_lite_$idtfr.root $obsdir/delastER.root 
   fi
-
-  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/delastSR.root ];then
-    echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastSR.root"
-    ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastSR.root
+  #! Link in SR
+  if [ ! -e $obsdir/delastSR.root ];then
+    echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $obsdir/delastSR.root"
+    ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $obsdir/delastSR.root
   fi
-
-  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/delastST.root ];then
-    echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastST.root"
-    ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $OBSDIR_ELASTIC/lite/obs_$idtfr/delastST.root
+  #! Link in ST
+  if [ ! -e $obsdir/delastST.root ];then
+    echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $obsdir/delastST.root"
+    ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $obsdir/delastST.root
   fi
 
   #! Now make obs
-  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/yield_full_sector.root ];then
-    echo ">root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","full")'"
-    export idtfr=$idtfr #! hack to tell ROOT of $idtfr since I cannot seem to pass it through the command line
-    root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","full")'
-  fi
-  if [ ! -e $OBSDIR_ELASTIC/lite/obs_$idtfr/yield_central_sector.root ];then
-    echo ">root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","full")'"
-    export idtfr=$idtfr #! hack to tell ROOT of $idtfr since I cannot seem to pass it through the command line
-    root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$OBSDIR_ELASTIC/lite/obs_$idtfr","central")'
-  fi
-  
+  #if [ ! -e $obsdir/yield_full_sector.root ];then
+    echo ">root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$obsdir","full")'"
+    export obsdir=$obsdir #! hack to tell ROOT of $obsdir since I cannot seem to pass it through the command line
+    export obsname=$obsname #! exploit hack to tell ROOT of obsname
+    root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$obsdir","full")'
+  #fi
+  #if [ ! -e $obsdir/yield_central_sector.root ];then
+    echo ">root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$obsdir","central")'"
+    export obsdir=$obsdir #! hack to tell ROOT of $obsdir since I cannot seem to pass it through the command line
+    export obsname=$obsname #! exploit hack to tell ROOT of obsname
+    root -l -q '$ELAST_LITE/plot_elast_xsec_lite2.C("$obsdir","central")'
+  #fi
+ 
+  i=$((i+1)) 
   echo "******"
   
 done
 
 #! Put important results into a single pdf
-convert `ls $OBSDIR_ELASTIC/lite/obs_*$date*/crto_EClumnorm_TTnorm_full.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_full_$date.pdf 
-convert `ls $OBSDIR_ELASTIC/lite/obs_*$date*/crto_EClumnorm_TTnorm_central.png` $OBSDIR_ELASTIC/lite/crto_EClumnorm_TTnorm_central_$date.pdf
+#! crto_EClumnorm_TTnorm
+convert `ls $OBSDIR_ELASTIC/lite/obs_$date/*/crto_EClumnorm_TTnorm_full.png` $OBSDIR_ELASTIC/lite/obs_$date/crto_EClumnorm_TTnorm_full.pdf 
+convert `ls $OBSDIR_ELASTIC/lite/obs_$date/*/crto_EClumnorm_TTnorm_central.png` $OBSDIR_ELASTIC/lite/obs_$date/crto_EClumnorm_TTnorm_central.pdf
+
+convert `ls $OBSDIR_ELASTIC/lite/obs_$date/*/cSA_full.png` $OBSDIR_ELASTIC/lite/obs_$date/cSA_full.pdf
+convert `ls $OBSDIR_ELASTIC/lite/obs_$date/*/cSA_central.png` $OBSDIR_ELASTIC/lite/obs_$date/cSA_central.pdf

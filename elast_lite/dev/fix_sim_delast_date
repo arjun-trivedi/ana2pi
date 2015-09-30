@@ -1,0 +1,15 @@
+#!/bin/bash
+
+adtnl_cut_opt_arr=(dflt 1: 2: 3: 4: 5: 6: 7: 8: 1:2:3:4: 5:6: 1:2:3:4:5:6: 1:7: 1:8:)
+date=092515
+ln_date=092415
+
+for adtnl_cut_opt in "${adtnl_cut_opt_arr[@]}";do
+  idtfr=$adtnl_cut_opt"_"$date
+  ln_idtfr=$adtnl_cut_opt"_"$ln_date
+
+  echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $DELASTDIR_SIM/sim4_lite/delastT_$ln_idtfr.root"
+  ln -s $DELASTDIR_SIM/sim4_lite/delastT_$idtfr.root $DELASTDIR_SIM/sim4_lite/delastT_$ln_idtfr.root
+  echo ">ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $DELASTDIR_SIM/sim4_lite/delastR_$ln_idtfr.root"
+  ln -s $DELASTDIR_SIM/sim4_lite/delastR_$idtfr.root $DELASTDIR_SIM/sim4_lite/delastR_$ln_idtfr.root
+done

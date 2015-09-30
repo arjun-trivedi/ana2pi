@@ -7,8 +7,8 @@
 
 void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString binw="binw-1"){
   printf("In plot_elast_xsec_lite2(). obsdir=%s,sector_bng=%s\n",obsdir.Data(),sector_bng.Data());
-  TString obs(getenv("idtfr"));
-  printf("obs=%s\n",obs.Data());
+  TString obsname(getenv("obsname"));
+  printf("obsname=%s\n",obsname.Data());
 
   //! Check to see if input args are OK
   if (sector_bng!="full" && sector_bng!="central"){
@@ -118,6 +118,10 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
     hEClumnorm[isctr]=(TH1D*)hEC[isctr]->Clone(TString::Format("hEClumnorm_s%d",isctr+1));
     hEClumnorm[isctr]->Divide(hlumnorm);
   }
+
+  //! Now plot histograms
+  gStyle->SetOptStat(0);
+
   //! Use the following TLine in ratio plots
   double xmin=hlumnorm->GetXaxis()->GetXmin();
   double xmax=hlumnorm->GetXaxis()->GetXmax();
@@ -135,8 +139,8 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
     hrto_EClumnorm_TTnorm[isctr]->Draw(); 
     //! if sector=1, then draw TPavetext which is useful for viewing .png of TCanvas
     if (isctr+1==1){
-      TPaveText *pt = new TPaveText(.30,.70,.90,.80,"NDC");
-      pt->AddText(TString::Format("%s_%s",obs.Data(),sector_bng.Data()));
+      TPaveText *pt = new TPaveText(.30,.80,.90,.90,"NDC");
+      pt->AddText(TString::Format("%s_%s",obsname.Data(),sector_bng.Data()));
       pt->Draw("same");
     }
     ln->Draw("same");
@@ -144,13 +148,19 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
   crto_EClumnorm_TTnorm->Write();	
   crto_EClumnorm_TTnorm->SaveAs(TString::Format("%s/crto_EClumnorm_TTnorm_%s.png",obsdir.Data(),sector_bng.Data()));
 
-  TCanvas *cSA=new TCanvas("cSA","cSA");
+  TCanvas *cSA=new TCanvas("cSA","cSA",1000,800);
   cSA->Divide(3,2);
   for (int isctr=0;isctr<NSCTR;isctr++){
     cSA->cd(isctr+1);
     hSA[isctr]->Draw();
+    if (isctr+1==1){
+      TPaveText *pt = new TPaveText(.30,.80,.90,.90,"NDC");
+      pt->AddText(TString::Format("%s_%s",obsname.Data(),sector_bng.Data()));
+      pt->Draw("same");
+    }
   }
   cSA->Write();
+  cSA->SaveAs(TString::Format("%s/cSA_%s.png",obsdir.Data(),sector_bng.Data()));
 
   TCanvas *cEC=new TCanvas("cEC","cEC");
   cEC->Divide(3,2);
