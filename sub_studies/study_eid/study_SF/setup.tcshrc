@@ -1,0 +1,3 @@
+#--
+setenv STUDY_EID_SF "${STUDY_EID}/study_SF"
+alias study_eid_sf 'cd ${STUDY_EID_SF}'

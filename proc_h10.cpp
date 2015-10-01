@@ -4,6 +4,7 @@
 #include "h10looper.h"
 #include "ep_processor.h"
 #include "proc_eid.h"
+#include "proc_eid_play.h"
 #include "proc_delast.h"
 #include "proc_efid.h"
 #include "proc_efid_new.h"
@@ -234,6 +235,8 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("eid_tree")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          /*else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);*/
+         else if (str.EqualTo("eidplay"))             proc = new ProcEidPlay(mkdir("eid"),dH10,dAna);
+         else if (str.EqualTo("eidplay_tree")) proc = new ProcEidPlay(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efid"))       proc = new ProcEFid(mkdir("efid"),dH10,dAna);
          /*else if (str.EqualTo("efidmon"))    proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("efidmononly"))proc = new ProcEFid(mkdir("efid"),dH10,dAna,kTRUE,kTRUE);*/
