@@ -169,12 +169,12 @@ def obtain_SFcut_pars():
 					#hSF.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 					#! fit projection and get SF-cut-pars(pbin)
 					if DTYP_NAME[idtyp]=="exp":
-						#! F
+						#! fullSF
 						if pbin_min>=0.84:
 							hSF.Fit(gf[F].GetName(),"+0","",0.26,hSF.GetXaxis().GetXmax())
 						else:
 							hSF.Fit(gf[F].GetName(),"+0","")
-						#! P
+						#! peakSF
 						if pbin_min>=0.94 and pbin_min<1.74:
 							hSF.Fit(gf[P].GetName(),"+0","",0.26,0.32)
 						elif pbin_min>=1.74 and pbin_min<4.04:
