@@ -109,6 +109,18 @@ def obtain_SFcut_pars():
 	MTHD_LINE_STYLE=[1,2] #1=regular, 2=dashed
 	MTHD_MRKR_STYLE=['kOpenCircle','kOpenSquare'] #1=regular, 2=dashed
 
+	#! Fit ranges for peakSF: peakSF_fit_range[NPRNG][NSCTR], where
+	#! +NPRNG: Number of momentum ranges where peakSF fit range needs to be tuned
+	PRNG=[[PMIN,0.94],[0.94,1.74],[1.74,4.04],[4.04,4.44],[4.44,PMAX]]
+	NPRNG=len(PRNG)
+	peakSF_fit_range=[[] for iprng in range(NPRNG)]
+	peakSF_fit_range[0]=[[0.23,0.32],[0.26,0.34],[0.26,0.34],[0.26,0.34],[0.23,0.32],[0.23,0.32]]
+	peakSF_fit_range[1]=[[0.26,0.32],[0.26,0.38],[0.26,0.36],[0.26,0.35],[0.26,0.32],[0.26,0.32]]
+	peakSF_fit_range[2]=[[0.28,0.35],[0.32,0.42],[0.31,0.38],[0.28,0.38],[0.28,0.35],[0.28,0.35]]
+	peakSF_fit_range[3]=[[0.30,0.36],[0.35,0.42],[0.32,0.39],[0.30,0.38],[0.28,0.36],[0.30,0.36]]
+	peakSF_fit_range[4]=[[0.32,0.37],[0.34,0.40],[0.35,0.42],[0.32,0.38],[0.31,0.38],[0.30,0.35]]
+
+
 	NFNC=3 #! h,m,l=(high,low,mean)
 	H,L,M=range(NFNC)
 	FNC_NAME=['high','low','mean']
@@ -171,24 +183,36 @@ def obtain_SFcut_pars():
 					if DTYP_NAME[idtyp]=="exp":
 						#! fullSF
 						if pbin_min>=0.84:
-							hSF.Fit(gf[F].GetName(),"+0","",0.26,hSF.GetXaxis().GetXmax())
+							hSF.Fit(gf[F].GetName(),"+0","",0.25,hSF.GetXaxis().GetXmax())
 						else:
 							hSF.Fit(gf[F].GetName(),"+0","")
 						#! peakSF
+						if pbin_min<0.94:
+							sfmin=peakSF_fit_range[0][isctr][0]
+							sfmax=peakSF_fit_range[0][isctr][1]
 						if pbin_min>=0.94 and pbin_min<1.74:
-							hSF.Fit(gf[P].GetName(),"+0","",0.26,0.32)
+							sfmin=peakSF_fit_range[1][isctr][0]
+							sfmax=peakSF_fit_range[1][isctr][1]
+							#hSF.Fit(gf[P].GetName(),"+0","",0.26,0.32)
 						elif pbin_min>=1.74 and pbin_min<4.04:
-							hSF.Fit(gf[P].GetName(),"+0","",0.29,0.35)
+							sfmin=peakSF_fit_range[2][isctr][0]
+							sfmax=peakSF_fit_range[2][isctr][1]
+							#hSF.Fit(gf[P].GetName(),"+0","",0.29,0.35)
 						elif pbin_min>=4.04 and pbin_min<4.44:
-							hSF.Fit(gf[P].GetName(),"+0","",0.30,0.36)
+							sfmin=peakSF_fit_range[3][isctr][0]
+							sfmax=peakSF_fit_range[3][isctr][1]
+							#hSF.Fit(gf[P].GetName(),"+0","",0.30,0.36)
 						elif pbin_min>=4.44 and PMAX:
-							hSF.Fit(gf[P].GetName(),"+0","",0.32,0.37)
-						else:
-							hSF.Fit(gf[P].GetName(),"+0","",0.24,0.32)
+							sfmin=peakSF_fit_range[4][isctr][0]
+							sfmax=peakSF_fit_range[4][isctr][1]
+							#hSF.Fit(gf[P].GetName(),"+0","",0.32,0.37)
+						# else:
+						# 	hSF.Fit(gf[P].GetName(),"+0","",0.24,0.32)
+						hSF.Fit(gf[P].GetName(),"+0","",sfmin,sfmax)
 					else:#! i.e. DTYP="sim"
-						#! F
+						#! fullSF
 						hSF.Fit(gf[F].GetName(),"+0","")
-						#! P
+						#! peakSF
 						hSF.Fit(gf[P].GetName(),"+0","",0.2,0.25)
 
 					#! Now get fit pars
