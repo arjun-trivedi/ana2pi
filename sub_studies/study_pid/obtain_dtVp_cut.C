@@ -5,12 +5,17 @@
   f[0]=TFile::Open("$D2PIDIR_EXP/mon_pid_new/dpid.root");
   f[1]=TFile::Open("$D2PIDIR_SIM/mon_pid_new/dpid.root");
  
-  TCanvas* c_cut[2];
   TH2F* h2_dtVp[2][3];
 
-  //! Create directory where output is stored
+  //! Create directory where output (in .root file and as .pngs) is stored
   TString OUTDIR=TString::Format("%s/dtVp_cuts",gSystem->ExpandPathName("$STUDY_PID_DATADIR"));
   gSystem->mkdir(OUTDIR); //! Will create dir only if it does not exist
+  //! 'touch' OUTDIR to reflect that it has been worked upon
+  TString cmd=TString::Format(".!touch %s",OUTDIR.Data());
+  gROOT->ProcessLine(cmd);
+  //! .root output
+  TFile* fout=new TFile(TString::Format("%s/fout.root",OUTDIR.Data()),"RECREATE");
+  
   TCanvas *c=new TCanvas("c","c");//default canvas
   for (int i=0;i<2;i++){
     TTree* t=(TTree*)f[i]->Get("pid/tree");;
@@ -37,8 +42,6 @@
 
     //! Now fit momentum projections for each particle
     //! and get cut parameters
-    c_cut[i]=new TCanvas(TString::Format("cut_dtVp_%s",dtyp_name[i].Data()),TString::Format("cut_dtVp_%s",dtyp_name[i].Data()));
-    c_cut[i]->Divide(2,2);
     int nbins[3]={10,5,10}; //!0=p,1=pip,2=pim
     float pmin[3][10]=
     {
@@ -81,9 +84,26 @@
     //! For each particle, get dt-mu/sg for each pbin and 
     //! put values into histograms(hcut_h,hcut_l) that will later be fit
     for (int j=0;j<3;j++){
+      //! create outdir pngs
       TString outdir=TString::Format("%s/%s/%s",OUTDIR.Data(),dtyp_name[i].Data(),part_name[j].Data());
       bool rcrsv=kTRUE;
       gSystem->mkdir(outdir,rcrsv);
+      //! create outdir in root file
+      if (fout->GetDirectory(dtyp_name[i].Data())!=NULL){//! i.e. dtyp dir already exists; cd() there and create prtcl dir
+         fout->cd(dtyp_name[i].Data());
+         gDirectory->mkdir(part_name[j].Data())->cd();
+      }else{//! directly create dtyp/prtcl dir
+         TString outdir_root=TString::Format("%s/%s",dtyp_name[i].Data(),part_name[j].Data());
+         fout->mkdir(outdir_root);
+         fout->cd(outdir_root);
+      }
+      /*TString outdir_root=TString::Format("%s/%s",dtyp_name[i].Data(),part_name[j].Data());
+      if (fout->mkdir(outdir_root)==NULL){//! i.e. dtyp_name dir already exists
+        fout->cd(dtyp_name[i].Data())->mkdir(part_name[j].Data());
+        TString outdir_root=TString::Format("%s/%s",dtyp_name[i].Data(),part_name[j].Data());;
+      }
+      fout->cd(outdir_root);     
+      return;*/
 
       //clear current cut data for jth particle
       TString cmd=TString::Format(".!rm %s/*",outdir.Data());
@@ -103,17 +123,36 @@
         int bmin=h2_dtVp[i][j]->GetXaxis()->FindBin(pmin[j][ibin]);
         int bmax=h2_dtVp[i][j]->GetXaxis()->FindBin(pmax[j][ibin]);
         TH1F* h=(TH1F*)h2_dtVp[i][j]->ProjectionY(TString::Format("_py_%d",ibin+1),bmin,bmax);
-        h->SetTitle(TString::Format("p_%.2f-%.2f",pmin[j][ibin],pmax[j][ibin]));
-        TCanvas* c=new TCanvas("c","c");
+        h->SetTitle(TString::Format("%s_%s_p_%.2f-%.2f",dtyp_name[i].Data(),part_name[j].Data(),pmin[j][ibin],pmax[j][ibin]));
+        //TCanvas* c=new TCanvas("c","c");
+        TString cname=TString::Format("c_%02d_%s_%s",ibin+1,dtyp_name[i].Data(),part_name[j].Data());
+        TCanvas* c=new TCanvas(cname,cname);
         h->Draw();
         if (part_name[j]=="pip"){
-          h->Fit("gaus","","",-0.20,0.30);//-0.40,0.20
+          //! 100715
+          //h->Fit("gaus","","",-0.20,0.30);
+          //! 100715.II
+          if (dtyp_name[i]=="exp"){
+            h->Fit("gaus","","",-0.60,0.40);
+          }else if (dtyp_name[i]=="sim"){
+            h->Fit("gaus","","",-0.40,0.40);
+          }
         }else if(part_name[j]=="pim"){
-          h->Fit("gaus","","",-0.20,0.20); 
+          //! 100715
+          //h->Fit("gaus","","",-0.20,0.20); 
+          //! 100715.II
+          h->Fit("gaus","","",-0.40,0.40);
         }else{
-          h->Fit("gaus","","",-0.20,0.20);
+          //! 100715
+          //h->Fit("gaus","","",-0.20,0.20);
+          //! 100715.II
+          h->Fit("gaus","","",-0.40,0.40);
         }
-        c->SaveAs(TString::Format("%s/c%02d.jpg",outdir.Data(),ibin+1));
+        //c->SaveAs(TString::Format("%s/c%02d.jpg",outdir.Data(),ibin+1));
+        //c->Write(TString::Format("c_%s_%s_pbin%02d",dtyp_name[i].Data(),part_name[j].Data(),ibin+1));
+        c->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),cname.Data()));
+        c->Write(cname.Data());
+        c->Close();
         //! Get fit parameters
         TF1 *fitf=h->GetFunction("gaus");
         Float_t constant=fitf->GetParameter(0);
@@ -159,19 +198,19 @@
       fprintf(fcut,"cut_h(pol3:p0:p1:p2:p3) %f %f %f %f\n",fh->GetParameter(0),fh->GetParameter(1),fh->GetParameter(2),fh->GetParameter(3));
       fclose(fcut);
       //! Draw fit
-      TCanvas* ccut=new TCanvas("cut","cut");
+      //TCanvas* ccut=new TCanvas("cut","cut");
+      cname=TString::Format("c_cut_%s_%s",dtyp_name[i].Data(),part_name[j].Data());
+      TCanvas* ccut=new TCanvas(cname,cname);
       h2_dtVp[i][j]->Draw("colz");
       hmean->Draw("P same");
       hcut_h->Draw("P same");
       hcut_l->Draw("P same");
-      ccut->SaveAs(TString::Format("%s/ccut.jpg",outdir.Data()));
-      //ccut->Close();
-      //! For interactive display
-      c_cut[i]->cd(j+1);
-      h2_dtVp[i][j]->Draw("colz");
-      hmean->Draw("P same");
-      hcut_h->Draw("P same");
-      hcut_l->Draw("P same");
+      //ccut->SaveAs(TString::Format("%s/ccut.jpg",outdir.Data()));
+      //ccut->Write(TString::Format("c_cut_%s_%s",dtyp_name[i].Data(),part_name[j].Data()));
+      ccut->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),cname.Data()));
+      ccut->Write(cname.Data());
+      ccut->Close();
+      //gPad->Update();
     }//end j loop
   }//end i loop
 }

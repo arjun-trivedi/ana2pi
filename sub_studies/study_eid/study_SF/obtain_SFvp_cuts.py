@@ -322,6 +322,9 @@ def obtain_SFcut_pars():
 OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
+#! 'touch' OUTDIR to show it has been worked upon
+os.system('touch %s'%OUTDIR)
+
 fout_sfvp_pre_fits_name="%s/fSFvp_pre_fits_exp_sim.root"%OUTDIR
 
 if not os.path.exists(fout_sfvp_pre_fits_name):
