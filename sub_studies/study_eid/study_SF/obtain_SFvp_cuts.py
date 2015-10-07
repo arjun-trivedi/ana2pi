@@ -318,7 +318,8 @@ def obtain_SFcut_pars():
 	
 
 #! Start of main program
-OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF']
+#OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF']
+OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
 fout_sfvp_pre_fits_name="%s/fSFvp_pre_fits_exp_sim.root"%OUTDIR

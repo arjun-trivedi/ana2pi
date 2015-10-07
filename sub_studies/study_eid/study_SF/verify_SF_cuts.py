@@ -66,7 +66,8 @@ NPAR=4 #! using pol3 (1 more for constant!)
 fpSFvp=[[[[[0 for ipar in range(NPAR)] for icut in range(NFNC)] for imthd in range(NMTHD)] for isctr in range(NSCTR)] for idtyp in range(NDTYP)]
 
 #! Read files and fill in data structure
-DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF']
+#DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF']
+DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF_DATADIR']
 for idtyp in range(NDTYP):
 	for imthd in range(NMTHD):
 		fname="%s/%s_%s.txt"%(DATADIR,DTYP_NAME[idtyp],MTHD_NAME[imthd])
@@ -133,7 +134,8 @@ for idtyp in range(NDTYP):
 
 #! + Now various plots will be made
 #! + Create fout to store plots
-OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF']
+#OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF']
+OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
 fout=ROOT.TFile("%s/verify_SF_cuts.root"%OUTDIR,"RECREATE")
 #! Now draw cut functions
 c=[0,0]
