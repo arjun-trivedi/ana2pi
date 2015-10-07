@@ -1,0 +1,5 @@
+#--
+setenv STUDY_PID "${ANA2PI}/sub_studies/study_pid"
+alias study_pid 'cd ${STUDY_PID}'
+
+setenv STUDY_PID_DATADIR "/data/trivedia/e1f/study_pid"

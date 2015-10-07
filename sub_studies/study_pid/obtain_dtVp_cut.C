@@ -8,6 +8,9 @@
   TCanvas* c_cut[2];
   TH2F* h2_dtVp[2][3];
 
+  //! Create directory where output is stored
+  TString OUTDIR=TString::Format("%s/dtVp_cuts",gSystem->ExpandPathName("$STUDY_PID_DATADIR"));
+  gSystem->mkdir(OUTDIR); //! Will create dir only if it does not exist
   TCanvas *c=new TCanvas("c","c");//default canvas
   for (int i=0;i<2;i++){
     TTree* t=(TTree*)f[i]->Get("pid/tree");;
@@ -78,8 +81,12 @@
     //! For each particle, get dt-mu/sg for each pbin and 
     //! put values into histograms(hcut_h,hcut_l) that will later be fit
     for (int j=0;j<3;j++){
+      TString outdir=TString::Format("%s/%s/%s",OUTDIR.Data(),dtyp_name[i].Data(),part_name[j].Data());
+      bool rcrsv=kTRUE;
+      gSystem->mkdir(outdir,rcrsv);
+
       //clear current cut data for jth particle
-      TString cmd=TString::Format(".!rm dtVp_cuts/%s/%s/*",dtyp_name[i].Data(),part_name[j].Data());
+      TString cmd=TString::Format(".!rm %s/*",outdir.Data());
       gROOT->ProcessLine(cmd);
 
       TH1F* hmean=new TH1F("hmean","hmean",100,0,5);
@@ -106,7 +113,7 @@
         }else{
           h->Fit("gaus","","",-0.20,0.20);
         }
-        c->SaveAs(TString::Format("dtVp_cuts/%s/%s/c%02d.jpg",dtyp_name[i].Data(),part_name[j].Data(),ibin+1));
+        c->SaveAs(TString::Format("%s/c%02d.jpg",outdir.Data(),ibin+1));
         //! Get fit parameters
         TF1 *fitf=h->GetFunction("gaus");
         Float_t constant=fitf->GetParameter(0);
@@ -145,7 +152,7 @@
       hcut_h->Fit("fh","","",pmin[j][0],pmax_high_p[j][nbins_high_p[j]-1]);
       //c->Close();
       FILE* fcut;
-      fcut=fopen(TString::Format("dtVp_cuts/%s/%s/cutpars.txt",dtyp_name[i].Data(),part_name[j].Data()).Data(), "w");
+      fcut=fopen(TString::Format("%s/cutpars.txt",outdir.Data()).Data(), "w");
       //fprintf(fcut,"cut_l(pol3:p0:p1:p2:p3) %.5f %.5f %.5f %.5f\n",fl->GetParameter(0),fl->GetParameter(1),fl->GetParameter(2),fl->GetParameter(3)); 
       //fprintf(fcut,"cut_h(pol3:p0:p1:p2:p3) %.5f %.5f %.5f %.5f\n",fh->GetParameter(0),fh->GetParameter(1),fh->GetParameter(2),fh->GetParameter(3));
       fprintf(fcut,"cut_l(pol3:p0:p1:p2:p3) %f %f %f %f\n",fl->GetParameter(0),fl->GetParameter(1),fl->GetParameter(2),fl->GetParameter(3));
@@ -157,7 +164,7 @@
       hmean->Draw("P same");
       hcut_h->Draw("P same");
       hcut_l->Draw("P same");
-      ccut->SaveAs(TString::Format("dtVp_cuts/%s/%s/ccut.jpg",dtyp_name[i].Data(),part_name[j].Data()));	
+      ccut->SaveAs(TString::Format("%s/ccut.jpg",outdir.Data()));
       //ccut->Close();
       //! For interactive display
       c_cut[i]->cd(j+1);
