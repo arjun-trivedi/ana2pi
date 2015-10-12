@@ -1,4 +1,5 @@
 #include "h10looper_e1f.h"
+#include "h10looper_2pi.h"
 
 #include <TChain.h>
 #include <TFileCollection.h>
@@ -44,13 +45,18 @@ int main(int argc,  char* const argv[])
 	TObjArray *h10type_tokens = h10type.Tokenize(":");
 	TString expt  = h10type_tokens->At(0)->GetName();
 	TString dtyp = h10type_tokens->At(1)->GetName();
-	TString seq = h10type_tokens->At(2)->GetName();
+	TString rctn = h10type_tokens->At(2)->GetName();
+	TString seq = h10type_tokens->At(3)->GetName();
 	if (expt!="e1f" && expt!="e16"){
 		printf("Incorrect expt entered: %s\n", expt.Data());
 		return 0;
 	}
 	if (dtyp!="exp" && dtyp!="sim"){
 		printf("Incorrect dtyp entered: %s\n", dtyp.Data());
+		return 0;
+	}
+	if (rctn!="2pi" && rctn!="elast"){
+		printf("Incorrect rctn entered: %s\n", rctn.Data());
 		return 0;
 	}
 	if (seq!="recon" && seq!="thrown"){
@@ -66,11 +72,17 @@ int main(int argc,  char* const argv[])
 	TFileCollection fc("fileList", "", h10lst.Data());
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 	//! Set up h10looper	
-	h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,fout_name,nentries,adtnl_cut_opt);
-	h10lpr_e1f->Loop();	
-
-	delete h10chain;
-	delete h10lpr_e1f;
+	if (rctn=="2pi"){
+		h10looper_2pi* h10lpr_2pi=new h10looper_2pi(h10type,h10chain,fout_name,nentries,adtnl_cut_opt);
+		h10lpr_2pi->Loop();
+		delete h10chain;
+		delete h10lpr_2pi;
+	}else if (rctn=="elast"){
+		h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,fout_name,nentries,adtnl_cut_opt);
+		h10lpr_e1f->Loop();	
+		delete h10chain;
+		delete h10lpr_e1f;
+	}
 	
 	return 0;
 }
@@ -88,9 +100,10 @@ void parseArgs(int argc, char* const argv[]){
 	while ((c = getopt(argc, argv, "hi:t:o:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<seq> -o <fout_name> -n <nevts> [adtnl_cut_opt]\n");
+			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<rctn>:<seq> -o <fout_name> -n <nevts> [adtnl_cut_opt]\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
+			printf("<rcnt>=2pi/elast\n");
 			printf("<seq>=recon/thrown\n");
 			break;
 		case 'i':

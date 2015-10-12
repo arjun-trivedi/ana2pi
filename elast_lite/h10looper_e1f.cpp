@@ -6,6 +6,10 @@
 #include <TCanvas.h>
 #include <TMath.h>
 
+#include "mom_corr.cpp"
+#include "fidfuncs.C"
+#include "pid.h"
+
 h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,Long64_t nentries,
 						     TString adtnl_cut_opt) : fChain(0) 
 {
@@ -15,7 +19,8 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	TObjArray *h10type_tokens = h10type.Tokenize(":");
 	_expt = h10type_tokens->At(0)->GetName();
 	_dtyp = h10type_tokens->At(1)->GetName();
-	_seq  = h10type_tokens->At(2)->GetName();
+	_rctn = h10type_tokens->At(2)->GetName();
+	_seq  = h10type_tokens->At(3)->GetName();
 
 	//! Setup h10chain
 	Init(h10chain);
@@ -48,13 +53,33 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	_pcorr=new MomCorr_e1f((char *)fpcorr.Data());
 
 
-	//!output objects
-	//!event level
-	_hevt=new TH1D("hevt","Event statistics",NUM_EVT_STATS,0.5,NUM_EVT_STATS+0.5);
-	_hevt->GetXaxis()->SetBinLabel(EVT_TRG,"trgr");
-	_hevt->GetXaxis()->SetBinLabel(EVT_E,"e^{-}");
-	_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
-	_hevt->GetXaxis()->SetBinLabel(EVT_ELSTC,"elstc-inc");
+	//! output objects
+    //! + Only cuts-n-corrs objects exactly same for 'elast' and '2pi':
+    //!    + EID,EFID,pcorr,PID
+    //!   are created here here.
+    //!   (NOTE: Event-level and PID histw should be different for 'elast' and '2pi',
+    //!    but they have been hacked to work for both)
+    //!   
+    //! + cuts-n-corrs objects that are different:
+    //!    + PFID
+    //!   are created in h10looper_2pi's Consrtuctor
+	
+	//!Event level
+	if (_rctn=="elast"){
+		_hevt=new TH1D("hevt","Event statistics",NUM_EVT_STATS_ELAST,0.5,NUM_EVT_STATS_ELAST+0.5);
+		_hevt->GetXaxis()->SetBinLabel(EVT_TRG,"trgr");
+		_hevt->GetXaxis()->SetBinLabel(EVT_E,"e^{-}");
+		_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
+		_hevt->GetXaxis()->SetBinLabel(EVT_ELSTC,"elstc-inc");
+	} else if (_rctn=="2pi"){
+		_hevt=new TH1D("hevt","Event statistics",NUM_EVT_STATS_2PI,0.5,NUM_EVT_STATS_2PI+0.5);
+		_hevt->GetXaxis()->SetBinLabel(EVT_TRG,"trgr");
+		_hevt->GetXaxis()->SetBinLabel(EVT_E,"e^{-}");
+		_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
+		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP,"p+pip");
+		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP_INFID,"p+pip infid");
+		_hevt->GetXaxis()->SetBinLabel(EVT_2PI,"2pi");
+	}
 	if (_seq=="recon"){
 		//! EID
 		_heid=new TH1D("heid","EID statistics",NUM_EID_STATS,0.5,NUM_EID_STATS+0.5);
@@ -76,10 +101,6 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
 		_hefid->GetXaxis()->SetBinLabel(EFID_IN,"infid");
-		//! PID
-		_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
-		_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
-		_hpid->GetXaxis()->SetBinLabel(PID_PASS,"pass");
 		//! pcorr
 		if (_dtyp=="exp"){
 			//!pcorr
@@ -89,23 +110,33 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 			_hpcorr_dcz=new TH1D("hdcz", "#Deltacz",60,-0.01,0.01);
 			_hpcorr_dp=new TH1D("hdp", "#Deltap", 160,-0.08,0.08);
 		}
+		//! PID
+		if (_rctn=="2pi" || (_rctn=="elast" && _use_proton)){
+			_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
+			_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
+			_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"found p");
+			_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"found pip");
+			_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"found pim");
+		}
 	}
 	//! delast
-	_hW=new TH1D("hW","hW",250,0,5);
-	_helast=new TH1D("helast","helast",100,0.7,1.2);
-	_hf=new TH1D*[6];
-	_hc=new TH1D*[6];
-	for (int isctr=0;isctr<6;isctr++){
-		TString name;
-		TString title;
-		//! _hf
-		name=TString::Format("hf_s%d",isctr+1);
-		title=TString::Format("#phi=[%d,%d]",PHI_FULL_SECTOR[isctr][0],PHI_FULL_SECTOR[isctr][1]);
-		_hf[isctr]=new TH1D(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
-		//! _hc
-		name=TString::Format("hc_s%d",isctr+1);
-		title=TString::Format("#phi=[%d,%d]",PHI_CENTRAL_SECTOR[isctr][0],PHI_CENTRAL_SECTOR[isctr][1]);
-		_hc[isctr]=new TH1D(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
+	if (_rctn=="elast"){
+		_hW=new TH1D("hW","hW",250,0,5);
+		_helast=new TH1D("helast","helast",100,0.7,1.2);
+		_hf=new TH1D*[6];
+		_hc=new TH1D*[6];
+		for (int isctr=0;isctr<6;isctr++){
+			TString name;
+			TString title;
+			//! _hf
+			name=TString::Format("hf_s%d",isctr+1);
+			title=TString::Format("#phi=[%d,%d]",PHI_FULL_SECTOR[isctr][0],PHI_FULL_SECTOR[isctr][1]);
+			_hf[isctr]=new TH1D(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
+			//! _hc
+			name=TString::Format("hc_s%d",isctr+1);
+			title=TString::Format("#phi=[%d,%d]",PHI_CENTRAL_SECTOR[isctr][0],PHI_CENTRAL_SECTOR[isctr][1]);
+			_hc[isctr]=new TH1D(name,title,_NBINS,_THETA_MIN,_THETA_MAX);
+		}
 	}
 	/*printf("debug = %s\n",_hf[-1]->GetName());
 	printf("debug = %s\n",_hf[-5]->GetName());*/
@@ -113,15 +144,15 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	//! Kinematics: initial and final: lvE0, lvP0
 	_lvE0.SetXYZM(0,0,E0_P,MASS_E);
 	_lvP0.SetXYZM(0,0,0,MASS_P);
-	_lvE1=new TLorentzVector(); 
-	_lvQ=new TLorentzVector();
-	_lvW=new TLorentzVector(); 
+	_lvE1.SetXYZT(0,0,0,0);
+	_lvQ.SetXYZT(0,0,0,0);
+	_lvW.SetXYZT(0,0,0,0);
 	_Q2=_W=0;
-	_theta=_phi=0;
+	_theta_e=_phi_e=0;
 
 	Info("h10looper_e1f::h10looper_e1f","Following information was setup:");
 	Info("","---------------------------------------");
-	Info("","expt:dtyp:seq=%s:%s:%s",_expt.Data(),_dtyp.Data(),_seq.Data());
+	Info("","expt:dtyp:rctn:seq=%s:%s:%s:%s",_expt.Data(),_dtyp.Data(),_rctn.Data(),_seq.Data());
 	Info("","fout=%s",_fout->GetName());
 	Info("","nentries_to_proc=%llu",_nentries_to_proc);
 	Info("","Beam momentum and energy=%.3f,%.3f",_lvE0.Pz(),_lvE0.E());
@@ -179,9 +210,6 @@ h10looper_e1f::~h10looper_e1f()
 
    delete _fout;
 
-   delete _lvE1;
-   delete _lvQ;
-   delete _lvW;
    Info("h10looper_e1f::~h10looper_e1f","Done.");
 }
 
@@ -268,7 +296,7 @@ void h10looper_e1f::Loop(){
 						mom_corr_electron();
 						set_ekin();
 					}
-					if ( !_use_proton || (_use_proton && found_proton()) ){
+					if ( !_use_proton || (_use_proton && found_hadron("p")>=1) ){
 						if (_W>_W_CUT_MIN && _W<_W_CUT_MAX){
 							_hevt->Fill(EVT_ELSTC);
 							make_delast();
@@ -371,9 +399,9 @@ bool h10looper_e1f::electron_infid(){
 	_hefid->Fill(EFID_TOT);
 	bool ret=kFALSE;
 	if (_use_ep_efid){
-		ret=inFid(mom,_theta,_phi,sector);
+		ret=inFid(mom,_theta_e,_phi_e,sector);
 	}else{
-		ret=Cuts::Fiducial(id, mom, _theta, _phi, sector, paddle);
+		ret=Cuts::Fiducial(id, mom, _theta_e, _phi_e, sector, paddle);
 	}
 	if (ret==kTRUE){
 		_hefid->Fill(EFID_IN);
@@ -383,14 +411,14 @@ bool h10looper_e1f::electron_infid(){
 
 void h10looper_e1f::mom_corr_electron(){
 	//! First store uncorr mom
-	float p_uncorr=_lvE1->P();
-	float cx_uncorr=_lvE1->Px()/_lvE1->P();
-	float cy_uncorr=_lvE1->Py()/_lvE1->P();
-	float cz_uncorr=_lvE1->Pz()/_lvE1->P();
+	float p_uncorr=_lvE1.P();
+	float cx_uncorr=_lvE1.Px()/_lvE1.P();
+	float cy_uncorr=_lvE1.Py()/_lvE1.P();
+	float cz_uncorr=_lvE1.Pz()/_lvE1.P();
 	//! Now correct
 	int q=-1;
 	int id=ELECTRON;
-	TLorentzVector pcorr=_pcorr->PcorN(*_lvE1,q,id);
+	TLorentzVector pcorr=_pcorr->PcorN(_lvE1,q,id);
 	//! update h10 data
 	p[0]=pcorr.P();
 	cx[0]=pcorr.Px()/pcorr.P();
@@ -409,7 +437,7 @@ void h10looper_e1f::set_ekin(){
 		float px=p[0]*cx[0];
 		float py=p[0]*cy[0];
 		float pz=p[0]*cz[0];
-		_lvE1->SetXYZM(px,py,pz,MASS_E);
+		_lvE1.SetXYZM(px,py,pz,MASS_E);
 	}else if (_seq=="thrown"){
 		for (int inprt=0; inprt<nprt;inprt++){
 			if (pidpart[inprt]==3){
@@ -417,28 +445,22 @@ void h10looper_e1f::set_ekin(){
 				float py=pypart[inprt];
 				float pz=pzpart[inprt];
 				float e=epart[inprt];
-				_lvE1->SetPxPyPzE(px,py,pz,e);
+				_lvE1.SetPxPyPzE(px,py,pz,e);
 			}
 		}
 	}
-	TLorentzVector lvQ=_lvE0-(*_lvE1);
-	TLorentzVector lvW=lvQ+_lvP0;
-	*_lvQ=lvQ;
-	*_lvW=lvW;
-	_Q2=-1*_lvQ->Mag2();
-	_W=_lvW->Mag();
-	_theta=_lvE1->Theta()*TMath::RadToDeg();
-	float phi=_lvE1->Phi()*TMath::RadToDeg();// [-180,180]
-	_phi=phi<-30?phi+360:phi; // [-30,330]
+	_lvQ=_lvE0-(_lvE1);
+	_lvW=_lvQ+_lvP0;
+	_Q2=-1*_lvQ.Mag2();
+	_W=_lvW.Mag();
+	_theta_e=_lvE1.Theta()*TMath::RadToDeg();
+	float phi=_lvE1.Phi()*TMath::RadToDeg();// [-180,180]
+	_phi_e=phi<-30?phi+360:phi; // [-30,330]
 }
 
 /*
-found_proton() alogrithm assumes that there is only 
-1 proton in an event. Therefore once the requirements
-for a track being a proton is fulfilled, the function returns.
-*/
-bool h10looper_e1f::found_proton(){
-	bool ret=kFALSE;
+int h10looper_e1f::found_proton(){
+	int ret=-1;
 	_hpid->Fill(PID_TOT);
 	//! Directly measured electron quantities
 	float l_e=sc_r[sc[0]-1];
@@ -467,8 +489,8 @@ bool h10looper_e1f::found_proton(){
 
 			//! Using dt and p, identify if particle is a proton
 			if (_pid_tool->is_proton(dt,mom)){
-				ret=kTRUE;
-				_hpid->Fill(PID_PASS);
+				ret=i;
+				_hpid->Fill(PID_P_FOUND);
 				break;
 			}
 		}
@@ -476,54 +498,201 @@ bool h10looper_e1f::found_proton(){
 	return ret;
 }
 
+int h10looper_e1f::found_pip(){
+	int ret=-1;
+	_hpid->Fill(PID_TOT);
+	//! Directly measured electron quantities
+	float l_e=sc_r[sc[0]-1];
+	float t_e=sc_t[sc[0]-1];
+	float t_off=t_e-(l_e/SOL);
+	//! Now loop over gpart to find pip
+	for (int i=1;i<gpart;i++){
+		int chrg=q[i];
+		bool hitDC=dc[i]>0,hitSC=sc[i]>0;
+		int stt=stat[i], dc_stt=dc_stat[dc[i]-1];
+
+		if(chrg==1 && hitDC && hitSC){
+			//! Get time of flight for track
+			float t=sc_t[sc[i]-1];
+
+			//! Now calculate dt using :
+			//! + length of track and 
+			//! + beta of track under assumption that it is a proton
+			//! that particle is a proton
+			float l=sc_r[sc[i]-1];
+			//! Calculate beta under assumption that particle is proton
+			float mom=p[i];
+			float b_pip=TMath::Sqrt((mom*mom)/(MASS_PIP*MASS_PIP+mom*mom));
+			//! Now calculate dt
+			float dt=l/(b_pip*SOL)+t_off- t;
+
+			//! Using dt and p, identify if particle is a proton
+			if (_pid_tool->is_pip(dt,mom)){
+				ret=i;
+				_hpid->Fill(PID_PIP_FOUND);
+				break;
+			}
+		}
+	}
+	return ret;
+}
+
+int h10looper_e1f::found_pim(){
+	int ret=-1;
+	_hpid->Fill(PID_TOT);
+	//! Directly measured electron quantities
+	float l_e=sc_r[sc[0]-1];
+	float t_e=sc_t[sc[0]-1];
+	float t_off=t_e-(l_e/SOL);
+	//! Now loop over gpart to find pip
+	for (int i=1;i<gpart;i++){
+		int chrg=q[i];
+		bool hitDC=dc[i]>0,hitSC=sc[i]>0;
+		int stt=stat[i], dc_stt=dc_stat[dc[i]-1];
+
+		if(chrg==-1 && hitDC && hitSC){
+			//! Get time of flight for track
+			float t=sc_t[sc[i]-1];
+
+			//! Now calculate dt using :
+			//! + length of track and 
+			//! + beta of track under assumption that it is a proton
+			//! that particle is a proton
+			float l=sc_r[sc[i]-1];
+			//! Calculate beta under assumption that particle is proton
+			float mom=p[i];
+			float b_pim=TMath::Sqrt((mom*mom)/(MASS_PIM*MASS_PIM+mom*mom));
+			//! Now calculate dt
+			float dt=l/(b_pip*SOL)+t_off- t;
+
+			//! Using dt and p, identify if particle is a proton
+			if (_pid_tool->is_pim(dt,mom)){
+				ret=i;
+				_hpid->Fill(PID_PIM_FOUND);
+				break;
+			}
+		}
+	}
+	return ret;
+}*/
+
+/*
++ found_hadron() alogrithm assumes that there is only 
+1 p,pip or pim in an event. Therefore once the requirements
+for a track being a p,pip or pim is fulfilled, the function returns.
++ if p,pip or pim found, return h10idx of the track which is >=1, else returns -1
+*/
+int h10looper_e1f::found_hadron(TString hdrn_name){
+	int ret=-1;
+	_hpid->Fill(PID_TOT);
+
+	//! Set up quantities for particular hadron
+	int hdrn_chrg;
+	float hdrn_mass;
+	if (hdrn_name=="p"){
+		hdrn_chrg=1;
+		hdrn_mass=MASS_P;
+	}else if (hdrn_name=="pip"){
+		hdrn_chrg=1;
+		hdrn_mass=MASS_PIP;
+	}else if (hdrn_name=="pim"){
+		hdrn_chrg=-1;
+		hdrn_mass=MASS_PIM;
+	}
+
+	//! Directly measured electron quantities
+	float l_e=sc_r[sc[0]-1];
+	float t_e=sc_t[sc[0]-1];
+	float t_off=t_e-(l_e/SOL);
+	//! Now loop over gpart to find proton
+	for (int i=1;i<gpart;i++){
+		int chrg=q[i];
+		bool hitDC=dc[i]>0,hitSC=sc[i]>0;
+		int stt=stat[i], dc_stt=dc_stat[dc[i]-1];
+
+		if(chrg==hdrn_chrg && hitDC && hitSC){
+			//! Get time of flight for track
+			float t=sc_t[sc[i]-1];
+
+			//! Now calculate dt using :
+			//! + length of track and 
+			//! + beta of track under assumption that it is a proton
+			//! that particle is a proton
+			float l=sc_r[sc[i]-1];
+			//! Calculate beta under assumption that particle is proton
+			float mom=p[i];
+			float beta=TMath::Sqrt((mom*mom)/(hdrn_mass*hdrn_mass+mom*mom));
+			//! Now calculate dt
+			float dt=l/(beta*SOL)+t_off- t;
+
+			//! Using dt and p, identify particle
+			if (hdrn_name=="p"){
+				if (_pid_tool->is_proton(dt,mom)){
+					ret=i;
+					_hpid->Fill(PID_P_FOUND);
+					break;
+				}
+			}else if (hdrn_name=="pip"){
+				if (_pid_tool->is_pip(dt,mom)){
+					ret=i;
+					_hpid->Fill(PID_PIP_FOUND);
+					break;
+				}
+			}else if (hdrn_name=="pim"){
+				if (_pid_tool->is_pim(dt,mom)){
+					ret=i;
+					_hpid->Fill(PID_PIM_FOUND);
+					break;
+				}
+			}
+		}
+	}
+	return ret;
+}
+
 void h10looper_e1f::reset_ekin(){
-	_lvE1->SetXYZT(0,0,0,0);
-	_lvQ->SetXYZT(0,0,0,0);
-	_lvW->SetXYZT(0,0,0,0);
+	_lvE1.SetXYZT(0,0,0,0);
+	_lvQ.SetXYZT(0,0,0,0);
+	_lvW.SetXYZT(0,0,0,0);
 	_Q2=_W=0;
-	_theta=_phi=0;
+	_theta_e=_phi_e=0;
 }
 
 void h10looper_e1f::make_delast(){
 	//! _hW and _helastic
 	_hW->Fill(_W);
 	_helast->Fill(_W);
-	int isctr=get_sector()-1;
+	int isctr=get_sector(_phi_e)-1;
 	//Info("h10looper_e1f::make_delast","isctr=%d",isctr);
 	//! _hf
-	_hf[isctr]->Fill(_theta);
+	_hf[isctr]->Fill(_theta_e);
 	//! _hc
-	if (_phi>=PHI_CENTRAL_SECTOR[isctr][0] && _phi<=PHI_CENTRAL_SECTOR[isctr][1]){
-		_hc[isctr]->Fill(_theta);
+	if (_phi_e>=PHI_CENTRAL_SECTOR[isctr][0] && _phi_e<=PHI_CENTRAL_SECTOR[isctr][1]){
+		_hc[isctr]->Fill(_theta_e);
 	}
 	return;
 }
 
-int h10looper_e1f::get_sector(){
+/*
+phi has to be [-30,330] for the following function to work.
+*/
+int h10looper_e1f::get_sector(float phi){
 	int sector=-1;
-	if ( (_phi>=PHI_FULL_SECTOR[0][0]  && _phi<PHI_FULL_SECTOR[0][1]) || _phi==PHI_FULL_SECTOR[5][1]){
+	if ( (phi>=PHI_FULL_SECTOR[0][0]  && phi<PHI_FULL_SECTOR[0][1]) || phi==PHI_FULL_SECTOR[5][1]){
 		sector=1;
-	}else if (_phi>=PHI_FULL_SECTOR[1][0] && _phi<PHI_FULL_SECTOR[1][1]){
+	}else if (phi>=PHI_FULL_SECTOR[1][0] && phi<PHI_FULL_SECTOR[1][1]){
 		sector=2;
-	}else if (_phi>=PHI_FULL_SECTOR[2][0] && _phi<PHI_FULL_SECTOR[2][1]){
+	}else if (phi>=PHI_FULL_SECTOR[2][0] && phi<PHI_FULL_SECTOR[2][1]){
 		sector=3;
-	}else if (_phi>=PHI_FULL_SECTOR[3][0] && _phi<PHI_FULL_SECTOR[3][1]){
+	}else if (phi>=PHI_FULL_SECTOR[3][0] && phi<PHI_FULL_SECTOR[3][1]){
 		sector=4;
-	}else if (_phi>=PHI_FULL_SECTOR[4][0] && _phi<PHI_FULL_SECTOR[4][1]){
+	}else if (phi>=PHI_FULL_SECTOR[4][0] && phi<PHI_FULL_SECTOR[4][1]){
 		sector=5;
-	}else if (_phi>=PHI_FULL_SECTOR[5][0] && _phi<PHI_FULL_SECTOR[5][1]){
+	}else if (phi>=PHI_FULL_SECTOR[5][0] && phi<PHI_FULL_SECTOR[5][1]){
 		sector=6;
 	}else{
-		Info("h10looper_e1f::get_sector","sector not found for electron phi,theta,Q2,W=%.2f,%.2f,%.2f,%.2f. Returning sector=-1",_phi,_theta,_Q2,_W);
+		Info("h10looper_e1f::get_sector","sector not found for phi=%.2f. Returning sector=-1",phi);
 		Info("h10looper_e1f::get_sector","file=%s\n",fChain->GetCurrentFile()->GetName());
-		/*printf("nprt=%d\n",nprt);
-		for (int inprt=0; inprt<nprt;inprt++){
-			printf("pidpart[%d]=%d\n",inprt,pidpart[inprt]);
-			printf("px[%d]=%.2f\n",inprt,pxpart[inprt]);
-			printf("py[%d]=%.2f\n",inprt,pypart[inprt]);
-			printf("pz[%d]=%.2f\n",inprt,pzpart[inprt]);
-			printf("e[%d]=%.2f\n",inprt,epart[inprt]);
-		}*/
 	}
 	return sector;
 }

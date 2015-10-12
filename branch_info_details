@@ -6,3 +6,5 @@
 			* As a result cut on MMep was removed from ProcDElast
 		+[09-04-15] test_elast_xsec_lite_090415
 		Re-do Elastic cross-section analysis
+			+ [10-11-15] test_2pi_xsec_lite_101115
+			Re-dp 2pi cross-section analysis

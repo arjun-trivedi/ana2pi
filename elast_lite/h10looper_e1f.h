@@ -19,9 +19,19 @@
 #include "constants.h"
 using namespace E1F;
 
-#include "mom_corr.cpp"
+//! [10-11-15] 
+//! + The following includes were moved to h10looper_e1f.cpp and
+//!   replaced by Forward Declarations of Classes defined in the includes
+//!   and used here.
+//! + This was done to avoid "multiple declaration" errors from g++
+//!   after implementing h10looper_2pi.h/.cpp that includes this file (since
+//!   it derives from Clas h10looper_e1f) and therefore objects in these includes 
+//!   were getting defined twice.
+/*#include "mom_corr.cpp"
 #include "fidfuncs.C"
-#include "pid.h"
+#include "pid.h"*/
+class MomCorr_e1f;
+class Pid;
 
 class h10looper_e1f {
 public :
@@ -31,6 +41,7 @@ public :
    //! To decode input h10type
    TString _expt;
    TString _dtyp;
+   TString _rctn;
    TString _seq;
 
    //! fout
@@ -54,10 +65,29 @@ public :
    bool _use_proton;//!8
 
    //! output objects
+   //! + Only cuts-n-corrs objects common to 'elast' and '2pi':
+   //!    + Event-level,EID,EFID,pcorr,PID 
+   //!   are declared here.
+   //!   (NOTE: Event-level and PID hists should be different for 'elast' and '2pi',
+   //!    but they have been hacked to work for both)
+   //!   
+   //! + cuts-n-corrs objects that are different:
+   //!    + PFID
+   //!   are declared in h10looper_2pi.h
+   
    //! Event level
-   static const int NUM_EVT_STATS=4;
-   enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID, EVT_ELSTC};
+   enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID};
+   //! Following used for _rcnt=elast
+   static const int NUM_EVT_STATS_ELAST=4;
+   enum {EVT_ELSTC=4};
+   //! Following used if _rctn=2pi
+   static const int NUM_EVT_STATS_2PI=6;
+   enum {EVT_P_PIP=4, EVT_P_PIP_INFID, EVT_2PI};
+   //! common hist
    TH1D* _hevt;
+   /*enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID,EVT_ELSTC};
+   static const int NUM_EVT_STATS=4;
+   TH1D* _hevt;*/
 
    //! EID
    static const int NUM_EID_STATS=14;
@@ -91,8 +121,8 @@ public :
 
    //! PID
    Pid* _pid_tool;
-   static const int NUM_PID_STATS=2;
-   enum {PID_NULL, PID_TOT, PID_PASS};
+   static const int NUM_PID_STATS=4;
+   enum {PID_NULL, PID_TOT, PID_P_FOUND, PID_PIP_FOUND, PID_PIM_FOUND};
    TH1D* _hpid;
    
    //! delast
@@ -110,16 +140,17 @@ public :
    //! ekin
    TLorentzVector _lvE0;
    TLorentzVector _lvP0;
-   TLorentzVector* _lvE1;
-   TLorentzVector* _lvQ;
-   TLorentzVector* _lvW;
+   TLorentzVector _lvE1;
+   TLorentzVector _lvQ;
+   TLorentzVector _lvW;
    float _Q2;
    float _W;
-   float _theta;
-   float _phi; //[-30,330]
+   float _theta_e;
+   float _phi_e; //[-30,330]
 
    // Declaration of leaf types
    static const int _MAX_PARTS=100;
+   //! PART Banks
    Int_t           nprt;
    Int_t           pidpart[_MAX_PARTS];   //[nprt]
    Float_t         xpart[_MAX_PARTS];   //[nprt]
@@ -131,6 +162,20 @@ public :
    Float_t         pzpart[_MAX_PARTS];   //[nprt]
    Float_t         qpart[_MAX_PARTS];   //[nprt]
    Int_t           flagspart[_MAX_PARTS];   //[nprt]
+   //! MCTK Banks
+   Int_t mcnentr;
+   UChar_t mcnpart;
+   Int_t mcst[_MAX_PARTS]; //[mcnentr]
+   Int_t mcid[_MAX_PARTS]; //[mcnentr]
+   Int_t mcpid[_MAX_PARTS]; //[mcnentr]
+   Float_t mctheta[_MAX_PARTS]; //[mcnentr]
+   Float_t mcphi[_MAX_PARTS]; //[mcnentr]
+   Float_t mcp[_MAX_PARTS]; //[mcnentr]
+   Float_t mcm[_MAX_PARTS]; //[mcnentr]
+   Float_t mcvx_x_el; //[mcnentr]
+   Float_t mcvx_y_el; //[mcnentr]
+   Float_t mcvx_z_el; //[mcnentr]
+   //! SEB Banks
    UChar_t         npart;
    UChar_t         evstat;
    UInt_t          evntid;
@@ -224,6 +269,7 @@ public :
    Float_t         lec_c2[_MAX_PARTS];   //[lac_part]
 
    // List of branches
+   //! PART Banks' Branches
    TBranch        *b_nprt;   //!
    TBranch        *b_pidpart;   //!
    TBranch        *b_xpart;   //!
@@ -235,6 +281,20 @@ public :
    TBranch        *b_pzpart;   //!
    TBranch        *b_qpart;   //!
    TBranch        *b_flagspart;   //!
+   //! MCTK Bank's Branches 
+   TBranch *b_mcnentr; //!
+   TBranch *b_mcnpart; //!
+   TBranch *b_mcst; //!
+   TBranch *b_mcid; //!
+   TBranch *b_mcpid; //!
+   TBranch *b_mctheta; //!
+   TBranch *b_mcphi; //!
+   TBranch *b_mcp; //!
+   TBranch *b_mcm; //!
+   TBranch *b_mcvx_x_el; //!
+   TBranch *b_mcvx_y_el; //!
+   TBranch *b_mcvx_z_el; //!
+   //! SEB Banks's Branches
    TBranch        *b_npart;   //!
    TBranch        *b_evstat;   //!
    TBranch        *b_evntid;   //!
@@ -348,9 +408,12 @@ public :
 
    void set_ekin();
    void reset_ekin();
-   bool found_proton();
+   /*int found_proton();
+   int found_pip();
+   int found_pim();*/
+   int found_hadron(TString hdrn_name);
    
-   int get_sector();
+   int get_sector(float phi); //! phi=[-30,330]
    void GetUVW(float xyz[3], float uvw[3]);
    bool pass_p_min_ECth();
    bool pass_ECin_min();
@@ -398,17 +461,32 @@ void h10looper_e1f::Init(TTree *tree)
    fChain->SetMakeClass(1);
 
    if (_seq=="thrown"){
-      fChain->SetBranchAddress("nprt", &nprt, &b_nprt);
-      fChain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
-      fChain->SetBranchAddress("xpart", xpart, &b_xpart);
-      fChain->SetBranchAddress("ypart", ypart, &b_ypart);
-      fChain->SetBranchAddress("zpart", zpart, &b_zpart);
-      fChain->SetBranchAddress("epart", epart, &b_epart);
-      fChain->SetBranchAddress("pxpart", pxpart, &b_pxpart);
-      fChain->SetBranchAddress("pypart", pypart, &b_pypart);
-      fChain->SetBranchAddress("pzpart", pzpart, &b_pzpart);
-      fChain->SetBranchAddress("qpart", qpart, &b_qpart);
-      fChain->SetBranchAddress("flagspart", flagspart, &b_flagspart);
+      if(_rctn=="2pi"){
+         fChain->SetBranchAddress("mcnentr", &mcnentr, &b_mcnentr);
+         fChain->SetBranchAddress("mcnpart", &mcnpart, &b_mcnpart);
+         fChain->SetBranchAddress("mcst", mcst, &b_mcst);
+         fChain->SetBranchAddress("mcid", mcid, &b_mcid);
+         fChain->SetBranchAddress("mcpid", mcpid, &b_mcpid);
+         fChain->SetBranchAddress("mctheta", mctheta, &b_mctheta);
+         fChain->SetBranchAddress("mcphi", mcphi, &b_mcphi);
+         fChain->SetBranchAddress("mcp", mcp, &b_mcp);
+         fChain->SetBranchAddress("mcm", mcm, &b_mcm);
+         fChain->SetBranchAddress("mcvx_x_el", &mcvx_x_el, &b_mcvx_x_el);
+         fChain->SetBranchAddress("mcvx_y_el", &mcvx_y_el, &b_mcvx_y_el);
+         fChain->SetBranchAddress("mcvx_z_el", &mcvx_z_el, &b_mcvx_z_el);
+      }else if (_rctn=="elast"){
+         fChain->SetBranchAddress("nprt", &nprt, &b_nprt);
+         fChain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
+         fChain->SetBranchAddress("xpart", xpart, &b_xpart);
+         fChain->SetBranchAddress("ypart", ypart, &b_ypart);
+         fChain->SetBranchAddress("zpart", zpart, &b_zpart);
+         fChain->SetBranchAddress("epart", epart, &b_epart);
+         fChain->SetBranchAddress("pxpart", pxpart, &b_pxpart);
+         fChain->SetBranchAddress("pypart", pypart, &b_pypart);
+         fChain->SetBranchAddress("pzpart", pzpart, &b_pzpart);
+         fChain->SetBranchAddress("qpart", qpart, &b_qpart);
+         fChain->SetBranchAddress("flagspart", flagspart, &b_flagspart);
+      }
    }
    if (_seq=="recon"){
       fChain->SetBranchAddress("npart", &npart, &b_npart);

@@ -6,17 +6,22 @@ CXX = g++
 C_FLAGS =
 CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -Wno-deprecated
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
-SRC = pid.cpp h10looper_e1f.cpp  
+SRC = pid.cpp h10looper_e1f.cpp h10looper_2pi.cpp 
 OBJS = $(patsubst %.cpp,obj/%.o,$(SRC)) 
 LIBS =          $(shell root-config --glibs)
 LIBOUT =        $(ELAST_LITE)/sobj/lib_proc_h10_lite.so
 TARGET = proc_h10_lite
 
+# The following lines are needed for Fortran compiler (used to compile cut_fid_e16.f)
+COMPILER = /usr/bin/gfortran
+F77OPT   = -O2 -fno-automatic -w
+F77OPT  += -ffixed-line-length-none -fno-second-underscore -DLinux
+
 obj/%.o: %.cpp
 	$(CXX) $(INCS) $(CXXFLAGS)  -c $< -o $@
 
-$(TARGET): obj/proc_h10_lite.o 
-	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/proc_h10_lite.o $(INCS) $(LIBS) -L. $(LIBOUT)
+$(TARGET): lib_cut_fid_e16 obj/proc_h10_lite.o 
+	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/cut_fid_e16.o obj/proc_h10_lite.o $(INCS) $(LIBS) -L. $(LIBOUT)
 
 all: $(OBJS) lib $(TARGET) 
 
@@ -30,6 +35,9 @@ obj:
 
 sobj:
 	@mkdir -p $@
+
+lib_cut_fid_e16: cut_fid_e16.f
+	$(COMPILER) $(F77OPT) -c $< -o obj/cut_fid_e16.o
 
 lib:	sobj $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $(LIBOUT)
