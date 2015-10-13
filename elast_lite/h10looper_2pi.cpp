@@ -12,10 +12,13 @@ h10looper_2pi::h10looper_2pi(TString h10type,TChain* h10chain,TString fout_name,
 	Info("h10looper_2pi::h10looper_2pi","Setting up h10looper_2pi...\n");
 
 	//! output objects
-	_hpfid=new TH1D("hpfid","PFID statistics",NUM_PFID_STATS,0.5,NUM_PFID_STATS+0.5);
-	_hpfid->GetXaxis()->SetBinLabel(PFID_TOT,"total");
-	_hpfid->GetXaxis()->SetBinLabel(PFID_P_PASS,"p infid");
-	_hpfid->GetXaxis()->SetBinLabel(PFID_PIP_PASS,"pip infid");
+	if (_seq=="recon"){
+		_hpfid=new TH1D("hpfid","PFID statistics",NUM_PFID_STATS,0.5,NUM_PFID_STATS+0.5);
+		_hpfid->GetXaxis()->SetBinLabel(PFID_TOT,"total");
+		_hpfid->GetXaxis()->SetBinLabel(PFID_P_IN,"p infid");
+		_hpfid->GetXaxis()->SetBinLabel(PFID_PIP_IN,"pip infid");
+		_hpfid->GetXaxis()->SetBinLabel(PFID_P_AND_PIP_IN,"p+pip infid");
+	}
 
 	//! d2pi
 	setup_d2pi();
@@ -55,10 +58,16 @@ h10looper_2pi::~h10looper_2pi()
 	
 	delete _hpfid;
 
-	delete _hmm2ppip_pre_cut;
-	delete _hmmppip_pre_cut;
-	delete _hmm2ppip_pst_cut;
-	delete _hmmppip_pst_cut;
+	delete _hq2w_prec;
+	delete _hq2w_pstc;
+	delete _hmm2_prec_fW;
+	delete _hmm_prec_fW;
+	delete _hmm2_pstc_fW;
+	delete _hmm_pstc_fW;
+	delete[] _hmm2_prec;
+	delete[] _hmm_prec;
+	delete[] _hmm2_pstc;
+	delete[] _hmm_pstc;
 	delete[] _h7;
 
 	Info("h10looper_2pi::~h10looper_2pi","Done.");
@@ -75,7 +84,10 @@ void h10looper_2pi::Loop(){
 		if (ientry < 0) break;
 		nb = fChain->GetEntry(jentry);   nbytes += nb;
 		
-		if ( (jentry+1)%100000==0 ) Info("h10looper_2pi::Loop()","Processing event %llu",jentry+1);
+		if ( (jentry+1)%100000==0 ) {
+			Info("h10looper_2pi::Loop()","Processing event %llu",jentry+1);
+			Info("h10looper_2pi::Loop()","Fraction of events processed %.2f%%",((float)(jentry+1)/_nentries_to_proc)*100);
+		}
 		//! Begin processing event
 		reset_ekin();
 		reset_hkin();
@@ -101,26 +113,42 @@ void h10looper_2pi::Loop(){
 					int h10idx_p=found_hadron("p");
 					int h10idx_pip=found_hadron("pip");
 					if (h10idx_p>=1 && h10idx_pip>=1){ 
+						_hpid->Fill(PID_P_AND_PIP_FOUND);
 						_hevt->Fill(EVT_P_PIP);
 						set_hkin(h10idx_p, h10idx_pip);
 						//! PFID
 						if (proton_infid() && pip_infid()){
+							_hpfid->Fill(PFID_P_AND_PIP_IN);
 							_hevt->Fill(EVT_P_PIP_INFID);
+							
 							//! Event selection
 
+							//! Q2-W kinematic cut
+							_hq2w_prec->Fill(_W,_Q2);
+							if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
+							_hevt->Fill(EVT_Q2W_KIN_PASS);
+							_hq2w_pstc->Fill(_W,_Q2);
+
+							//! MM cut
 							//! + NOTE that _lvPim is recons'd with no knowledge of pim!
 							//!    + _lvPim=_lvW-(_lvP+_lvPip)
 							//! + Therefore, its Mag2() and Mag() can be treated as MM2 and MM
 							float mm2ppip=_lvPim.Mag2();
 							float mmppip=_lvPim.Mag();
-							_hmm2ppip_pre_cut->Fill(mm2ppip);
-							_hmmppip_pre_cut->Fill(mmppip);
+							_hmm2_prec_fW->Fill(mm2ppip);
+							_hmm_prec_fW->Fill(mmppip);
+							int iw=GetCrsWBinIdx(_W);
+							_hmm2_prec[iw]->Fill(mm2ppip);
+							_hmm_prec[iw]->Fill(mmppip);
 
 							//! Apply MM cut
 							if (mm2ppip>0 && mm2ppip<0.04){
 								_hevt->Fill(EVT_2PI);
-								_hmm2ppip_pst_cut->Fill(mm2ppip);
-								_hmmppip_pst_cut->Fill(mmppip);
+								_hmm2_pstc_fW->Fill(mm2ppip);
+								_hmm_pstc_fW->Fill(mmppip);
+								_hmm2_prec[iw]->Fill(mm2ppip);
+								_hmm_prec[iw]->Fill(mmppip);
+								fill_h7();
 							}
 						}
 					}
@@ -129,8 +157,19 @@ void h10looper_2pi::Loop(){
 			}
 		}else if (_seq=="thrown"){
 			_hevt->Fill(EVT_TRG);
-			//! thrown kinematics
+			set_ekin();
+			set_hkin();
+			
+			//! Event selection
+
+			//! Q2-W kinematic cut
+			_hq2w_prec->Fill(_W,_Q2);
+			if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
+			_hevt->Fill(EVT_Q2W_KIN_PASS);
+			_hq2w_pstc->Fill(_W,_Q2);
+
 			_hevt->Fill(EVT_2PI);
+			fill_h7();
 		}
 	}//end event loop
 
@@ -164,25 +203,52 @@ void h10looper_2pi::reset_hkin(){
 /*
 set_hkin() implemented as per top2' logic
 */
-void h10looper_2pi::set_hkin(int h10idx_p, int h10idx_pip){
-	//! First set _lvP
-	float mom_p = p[h10idx_p];
-	float px_p = mom_p*cx[h10idx_p];
-	float py_p = mom_p*cy[h10idx_p];
-	float pz_p = mom_p*cz[h10idx_p];
-	float e_p = TMath::Sqrt(mom_p*mom_p+MASS_P*MASS_P);
-	_lvP.SetPxPyPzE(px_p,py_p,pz_p,e_p);
+void h10looper_2pi::set_hkin(int h10idx_p/*=-1*/, int h10idx_pip/*=-1*/){
+	if (_seq=="recon"){
+		//! First set _lvP
+		float mom_p = p[h10idx_p];
+		float px_p = mom_p*cx[h10idx_p];
+		float py_p = mom_p*cy[h10idx_p];
+		float pz_p = mom_p*cz[h10idx_p];
+		float e_p = TMath::Sqrt(mom_p*mom_p+MASS_P*MASS_P);
+		_lvP.SetPxPyPzE(px_p,py_p,pz_p,e_p);
 
-	//! Now set _lvPip
-	float mom_pip = p[h10idx_pip];
-	float px_pip = mom_pip*cx[h10idx_pip];
-	float py_pip = mom_pip*cy[h10idx_pip];
-	float pz_pip = mom_pip*cz[h10idx_pip];
-	float e_pip = TMath::Sqrt(mom_pip*mom_pip+MASS_PIP*MASS_PIP);
-	_lvPip.SetPxPyPzE(px_pip,py_pip,pz_pip,e_pip);
+		//! Now set _lvPip
+		float mom_pip = p[h10idx_pip];
+		float px_pip = mom_pip*cx[h10idx_pip];
+		float py_pip = mom_pip*cy[h10idx_pip];
+		float pz_pip = mom_pip*cz[h10idx_pip];
+		float e_pip = TMath::Sqrt(mom_pip*mom_pip+MASS_PIP*MASS_PIP);
+		_lvPip.SetPxPyPzE(px_pip,py_pip,pz_pip,e_pip);
 
-	//! Now set _lvPim
-	_lvPim = (_lvW-(_lvP+_lvPip));
+		//! Now set _lvPim
+		_lvPim = (_lvW-(_lvP+_lvPip));
+	}else if (_seq=="thrown"){
+		for (int idx=0;idx<mcnentr;idx++) {
+			int id=mcid[idx];
+			float mom=mcp[idx];
+			float theta=mctheta[idx]*TMath::DegToRad();
+			float phi=mcphi[idx]*TMath::DegToRad();
+			float mass=mcm[idx];
+			float energy=TMath::Sqrt(mom*mom+mass*mass);
+			float pz=mom*TMath::Cos(theta);
+			float py=mom*TMath::Sin(phi)*TMath::Sin(theta);
+			float px=mom*TMath::Cos(phi)*TMath::Sin(theta);
+			switch(id) {
+				case PROTON:
+					_lvP.SetPxPyPzE(px,py,pz,energy);
+					break;
+				case PIP:
+					_lvPip.SetPxPyPzE(px,py,pz,energy);
+					break;
+				case PIM:
+					_lvPim.SetPxPyPzE(px,py,pz,energy);
+					break;
+				default:
+					break;
+			}
+		}
+	}
 	
 	//! Set up Lab frame components of kin.
 	_p_p=_lvP.P();
@@ -276,7 +342,7 @@ bool h10looper_2pi::proton_infid(){
 	int sctr_p=get_sector(_phi_p);
 	bool ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
 	if (ret==kTRUE){
-		_hpfid->Fill(PFID_P_PASS);	
+		_hpfid->Fill(PFID_P_IN);	
 	} 
 	return ret;
 }
@@ -286,7 +352,7 @@ bool h10looper_2pi::pip_infid(){
 	int sctr_pip=get_sector(_phi_pip);
 	bool ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
 	if (ret==kTRUE){
-		 _hpfid->Fill(PFID_PIP_PASS);
+		 _hpfid->Fill(PFID_PIP_IN);
 	}
 	return ret;
 }
@@ -345,15 +411,38 @@ float h10looper_2pi::getAlpha(TVector3 uv_Gf,TVector3 uv_Gp,TVector3 uv_Bf,TVect
 }
 
 void h10looper_2pi::setup_d2pi(){
-	_fout->mkdir("d2pi")->cd();
+	TDirectory* dir_d2pi=_fout->mkdir("d2pi");
 
-	//! 1. Create hmm2ppip, hmmppip
-	_hmm2ppip_pre_cut=new TH1F("hmm2ppip_pre_cut", "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);//0.16));
-    _hmmppip_pre_cut= new TH1F("hmmppip_pre_cut",  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);//0.40));
-	_hmm2ppip_pst_cut=new TH1F("hmm2ppip_pst_cut", "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);//0.16));
-    _hmmppip_pst_cut= new TH1F("hmmppip_pst_cut",  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);//0.40));
+	//! 1. hq2w
+	dir_d2pi->mkdir("Q2W")->cd();
+	_hq2w_prec = new TH2F("hq2Vw_prec","Q^{2} vs. W",600,0,3.6,100,0,6); //to match Evgeny;s q2VW bng (Q2/bin, W/bin) = (0.06[GeV^2/bin], 0.006[GeV/bin])
+	_hq2w_pstc = new TH2F("hq2Vw_pstc","Q^{2} vs. W",600,0,3.6,100,0,6); //to match Evgeny;s q2VW bng (Q2/bin, W/bin) = (0.06[GeV^2/bin], 0.006[GeV/bin])
 
-	//! 2. Create h7[NBINS_WCRS][NVST]
+	//! 2 Create hmm2ppip, hmmppip,hmm2ppip[NBINS_WCRS],hmmppip[NBINS_WCRS]
+	if (_seq=="recon"){
+		TDirectory* dir_MM=dir_d2pi->mkdir("MM");
+		dir_MM->mkdir("pre_cut")->cd();
+		_hmm2_prec_fW=new TH1F("hmm2ppip_prec_fW", "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);//0.16));
+    	_hmm_prec_fW =new TH1F("hmmppip_prec_fW",  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);//0.40));
+		_hmm2_prec=new TH1F*[NBINS_WCRS];
+		_hmm_prec =new TH1F*[NBINS_WCRS];
+		for(int iw=0;iw<NBINS_WCRS;iw++){
+			_hmm2_prec[iw]=new TH1F(TString::Format("hmm2ppip_prec_%d",iw+1), "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);
+			_hmm_prec[iw]= new TH1F(TString::Format("hmmppip_prec_%d",iw+1),  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);
+		}
+		dir_MM->mkdir("pst_cut")->cd();
+		_hmm2_pstc_fW=new TH1F("hmm2ppip_pstc_fW", "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);//0.16));
+    	_hmm_pstc_fW =new TH1F("hmmppip_pstc_fW",  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);//0.40));
+		_hmm2_pstc=new TH1F*[NBINS_WCRS];
+		_hmm_pstc =new TH1F*[NBINS_WCRS];
+		for(int iw=0;iw<NBINS_WCRS;iw++){
+			_hmm2_pstc[iw]=new TH1F(TString::Format("hmm2ppip_pstc_%d",iw+1), "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);
+			_hmm_pstc[iw]= new TH1F(TString::Format("hmmppip_pstc_%d",iw+1),  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);
+		}
+	}
+
+	//! 3. Create h7[NBINS_WCRS][NVST]
+	dir_d2pi->cd();
 	Int_t hdim=7;
 	struct h7_bng{
     	int bins;
@@ -384,13 +473,13 @@ void h10looper_2pi::setup_d2pi(){
 	//! in each specific Wcrs-bin, pick appropriate binning for:
 	//! + W,M1 and M2
 	_h7=new THnSparse**[NBINS_WCRS];
-	for(int iwcrsbin=0;iwcrsbin<NBINS_WCRS;iwcrsbin++){
-		_h7[iwcrsbin]=new THnSparse*[NVST];
+	for(int iw=0;iw<NBINS_WCRS;iw++){
+		_h7[iw]=new THnSparse*[NVST];
 
 		//! pick binning for W, M1 and M2
-		bngW.bins=WCRSBIN[iwcrsbin].nbins;
-		bngW.xmin=WCRSBIN[iwcrsbin].xmin;
-		bngW.xmax=WCRSBIN[iwcrsbin].xmax;
+		bngW.bins=WCRSBIN[iw].nbins;
+		bngW.xmin=WCRSBIN[iw].xmin;
+		bngW.xmax=WCRSBIN[iw].xmax;
 			
 		bngMppip.bins=NBINS_M;
 		bngMppip.xmin=MASS_P+MASS_PIP;
@@ -410,32 +499,50 @@ void h10looper_2pi::setup_d2pi(){
 		Int_t bins1[]    =    {  bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 		Double_t xmin1[] =    {  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax1[] =    {  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		_h7[iwcrsbin][0] = new THnSparseF(TString::Format("h7_%d_%d",iwcrsbin+1,1), 
+		_h7[iw][0] = new THnSparseF(TString::Format("h7_%d_%d",iw+1,1), 
 		"Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
 		hdim, bins1, xmin1, xmax1);
-		_h7[iwcrsbin][0]->Sumw2();
-		gDirectory->Append(_h7[iwcrsbin][0]);
+		_h7[iw][0]->Sumw2();
+		gDirectory->Append(_h7[iw][0]);
 		
 		/* Varset 2 (Rho) */
 		//                    {  Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
 		Int_t bins2[]    =    {  bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 		Double_t xmin2[] =    {  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax2[] =    {  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		_h7[iwcrsbin][1] = new THnSparseF(TString::Format("h7_%d_%d",iwcrsbin+1,2), 
+		_h7[iw][1] = new THnSparseF(TString::Format("h7_%d_%d",iw+1,2), 
 		"Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][pp^{'}]}", 
 		hdim, bins2, xmin2, xmax2);
-		_h7[iwcrsbin][1]->Sumw2();
-		gDirectory->Append(_h7[iwcrsbin][1]);
+		_h7[iw][1]->Sumw2();
+		gDirectory->Append(_h7[iw][1]);
 			
 		/* Varset 3 (Delta0) */
 		//                    {  Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
 		Int_t bins3[]    =    {  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
 		Double_t xmin3[] =    {  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
 		Double_t xmax3[] =    {  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		_h7[iwcrsbin][2] = new THnSparseF(TString::Format("h7_%d_%d",iwcrsbin+1,3), 
+		_h7[iw][2] = new THnSparseF(TString::Format("h7_%d_%d",iw+1,3), 
 		"Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
 		hdim, bins3, xmin3, xmax3);
-		_h7[iwcrsbin][2]->Sumw2();
-		gDirectory->Append(_h7[iwcrsbin][2]);
+		_h7[iw][2]->Sumw2();
+		gDirectory->Append(_h7[iw][2]);
 	}
+}
+
+void h10looper_2pi::fill_h7(){
+	int iw=GetCrsWBinIdx(_W);
+	
+	/* Varset 1 (Delta++)*/
+	double coord1[] = {_Q2,_W,_M_ppip,_M_pippim,_theta_cms_pim,_phi_cms_pim,_alpha_1};
+	_h7[iw][0]->Fill(coord1);
+	
+	/* Varset 2 (Rho)*/
+	double coord2[] = {_Q2,_W,_M_ppip,_M_pippim,_theta_cms_p,_phi_cms_p,_alpha_2};
+	_h7[iw][1]->Fill(coord2);
+	
+	/* Varset 3 (Delta0)*/
+	double coord3[] = {_Q2,_W,_M_ppip,_M_ppim,_theta_cms_pip,_phi_cms_pip,_alpha_3};
+	_h7[iw][2]->Fill(coord3);
+
+	return;
 }

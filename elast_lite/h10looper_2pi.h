@@ -21,11 +21,12 @@ public :
    virtual void     Loop();
 
    void reset_hkin();
-   void set_hkin(int h10idx_p, int h10idx_pip); //! as per top2' logic
+   void set_hkin(int h10idx_p=-1, int h10idx_pip=-1); //! as per top2' logic
    bool proton_infid();
    bool pip_infid();
 
    void setup_d2pi();
+   void fill_h7();
 
    //! + Following 2 functions taken directly from proc_d2pi.h
    //! + Modifications are purely for the sake of code readability
@@ -59,16 +60,24 @@ public :
    //! output objects
 
    //! PFID
-   static const int NUM_PFID_STATS=3;
-   enum {PFID_NULL, PFID_TOT, PFID_P_PASS, PFID_PIP_PASS};
+   static const int NUM_PFID_STATS=4;
+   enum {PFID_NULL, PFID_TOT, PFID_P_IN, PFID_PIP_IN, PFID_P_AND_PIP_IN};
    TH1D* _hpfid;
 
    //! d2pi
+   //! Q2-W
+   TH2F* _hq2w_prec;
+   TH2F* _hq2w_pstc;
    //! hmm2ppip,hmmpip
-   TH1F* _hmm2ppip_pre_cut;
-   TH1F* _hmmppip_pre_cut;
-   TH1F* _hmm2ppip_pst_cut;
-   TH1F* _hmmppip_pst_cut;
+   TH1F* _hmm2_prec_fW;
+   TH1F* _hmm_prec_fW;
+   TH1F* _hmm2_pstc_fW;
+   TH1F* _hmm_pstc_fW;
+   //! hmm2ppip[NBINS_WCRS],hmmpip[NBINS_WCRS]
+   TH1F** _hmm2_prec;
+   TH1F** _hmm_prec;
+   TH1F** _hmm2_pstc;
+   TH1F** _hmm_pstc;
    //!h7[NBINS_WCRS][NVST]
    static const int NVST=3;
    THnSparse*** _h7;

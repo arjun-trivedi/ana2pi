@@ -81,8 +81,8 @@ public :
    static const int NUM_EVT_STATS_ELAST=4;
    enum {EVT_ELSTC=4};
    //! Following used if _rctn=2pi
-   static const int NUM_EVT_STATS_2PI=6;
-   enum {EVT_P_PIP=4, EVT_P_PIP_INFID, EVT_2PI};
+   static const int NUM_EVT_STATS_2PI=7;
+   enum {EVT_P_PIP=4, EVT_P_PIP_INFID, EVT_Q2W_KIN_PASS, EVT_2PI};
    //! common hist
    TH1D* _hevt;
    /*enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID,EVT_ELSTC};
@@ -121,8 +121,8 @@ public :
 
    //! PID
    Pid* _pid_tool;
-   static const int NUM_PID_STATS=4;
-   enum {PID_NULL, PID_TOT, PID_P_FOUND, PID_PIP_FOUND, PID_PIM_FOUND};
+   static const int NUM_PID_STATS=5;
+   enum {PID_NULL, PID_TOT, PID_P_FOUND, PID_PIP_FOUND, PID_PIM_FOUND, PID_P_AND_PIP_FOUND};
    TH1D* _hpid;
    
    //! delast

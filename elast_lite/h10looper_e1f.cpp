@@ -78,6 +78,7 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
 		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP,"p+pip");
 		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP_INFID,"p+pip infid");
+		_hevt->GetXaxis()->SetBinLabel(EVT_Q2W_KIN_PASS,"Q2W cut pass");
 		_hevt->GetXaxis()->SetBinLabel(EVT_2PI,"2pi");
 	}
 	if (_seq=="recon"){
@@ -114,9 +115,10 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		if (_rctn=="2pi" || (_rctn=="elast" && _use_proton)){
 			_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
 			_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
-			_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"found p");
-			_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"found pip");
-			_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"found pim");
+			_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"p found");
+			_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"pip found");
+			_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"pip found");
+			_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p+pip found");
 		}
 	}
 	//! delast
@@ -282,7 +284,10 @@ void h10looper_e1f::Loop(){
 		if (ientry < 0) break;
 		nb = fChain->GetEntry(jentry);   nbytes += nb;
 		
-		if ( (jentry+1)%100000==0 ) Info("h10looper_e1f::Loop()","Processing event %llu",jentry+1);
+		if ( (jentry+1)%100000==0 ) {
+			Info("h10looper_e1f::Loop()","Processing event %llu",jentry+1);
+			Info("h10looper_e1f::Loop()","Fraction of events processed %.2f%%",((float)(jentry+1)/_nentries_to_proc)*100);
+		}
 		//! Begin processing event
 		reset_ekin();
 		if (_seq=="recon"){
@@ -439,13 +444,27 @@ void h10looper_e1f::set_ekin(){
 		float pz=p[0]*cz[0];
 		_lvE1.SetXYZM(px,py,pz,MASS_E);
 	}else if (_seq=="thrown"){
-		for (int inprt=0; inprt<nprt;inprt++){
-			if (pidpart[inprt]==3){
-				float px=pxpart[inprt];
-				float py=pypart[inprt];
-				float pz=pzpart[inprt];
-				float e=epart[inprt];
-				_lvE1.SetPxPyPzE(px,py,pz,e);
+		if (_rctn=="2pi"){
+			for (int idx=0;idx<mcnentr;idx++) {
+				int id=mcid[idx];
+				if (id != ELECTRON) continue;
+				float mom=mcp[idx];
+				float theta=mctheta[idx]*TMath::DegToRad();
+				float phi=mcphi[idx]*TMath::DegToRad();
+				float px=mom*TMath::Cos(phi)*TMath::Sin(theta);
+				float py=mom*TMath::Sin(phi)*TMath::Sin(theta);
+				float pz=mom*TMath::Cos(theta);
+				_lvE1.SetPxPyPzE(px,py,pz,TMath::Sqrt(mom*mom+MASS_E*MASS_E));
+			}
+		}else if (_rctn=="elast"){
+			for (int inprt=0; inprt<nprt;inprt++){
+				if (pidpart[inprt]==3){
+					float px=pxpart[inprt];
+					float py=pypart[inprt];
+					float pz=pzpart[inprt];
+					float e=epart[inprt];
+					_lvE1.SetPxPyPzE(px,py,pz,e);
+				}
 			}
 		}
 	}
