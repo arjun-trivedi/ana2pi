@@ -26,7 +26,7 @@ public :
    bool pip_infid();
 
    void setup_d2pi();
-   void fill_h7();
+   void fill_h8();
 
    //! + Following 2 functions taken directly from proc_d2pi.h
    //! + Modifications are purely for the sake of code readability
@@ -80,7 +80,7 @@ public :
    TH1F** _hmm_pstc;
    //!h7[NBINS_WCRS][NVST]
    static const int NVST=3;
-   THnSparse*** _h7;
+   THnSparse*** _h8;
    
    
 };

@@ -1,0 +1,53 @@
+#!/usr/bin/python
+from proc_yields_lite import ProcYieldsLite
+import sys,time
+
+"""
+py [obsdir] [dtyps] [simnum=siml] [q2min=1.25] [q2min=3.25] [usehel=False] [dbg=False] 
+"""
+if len(sys.argv)<3:
+	sys.exit("Not all parameters entered. obsdir and dtyps are required")
+
+obsdir=sys.argv[1]
+
+dtypl=[]
+for dtyp in sys.argv[2].split(":"):
+	if dtyp!="sim" and dtyp!="exp":
+		sys.exit("valid dtyps are sim and exp only!")
+	dtypl.append(dtyp)
+
+if len(sys.argv)>3:#i.e. simnum entered by user
+	simnum=sys.argv[3]
+else:
+	simnum='siml'
+
+if len(sys.argv)>4:#i.e. q2min entered by user
+	q2min=float(sys.argv[7])
+else:
+        q2min=1.25
+
+if len(sys.argv)>5:#i.e. q2max entered by user
+        q2max=float(sys.argv[8])
+else:
+        q2max=3.25
+
+if len(sys.argv)>6:#i.e. usehel entered by user
+        if   sys.argv[5]=='True':  usehel=True
+        elif sys.argv[5]=='False': usehel=False
+        else: sys.exit("usehel=\'%s\' not valid. Exiting."%sys.argv[5])
+
+else:
+        usehel=False
+
+if len(sys.argv)>7:#i.e. dbg entered by user
+        if   sys.argv[6]=='True':  dbg=True
+        elif sys.argv[6]=='False': dbg=False
+        else: sys.exit("dbg=\'%s\' not valid. Exiting"%sys.argv[6])
+else:
+        dbg=False
+
+print "py_lite: Going to process yields for (obsdir dtyps simmnum q2min q2max usehel debug)=(", obsdir,dtypl,simnum,q2min,q2max,usehel,dbg,")"
+time.sleep(3)
+for dtyp in dtypl:
+	py_lite=ProcYieldsLite(obsdir,dtyp,simnum=simnum,q2min=q2min,q2max=q2max,usehel=usehel,dbg=dbg)#,wmin=1.725)
+	py_lite.execute()

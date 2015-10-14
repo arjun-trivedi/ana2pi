@@ -1,0 +1,43 @@
+#!/usr/bin/python
+from __future__ import division
+import ROOT
+
+import study_acc_tools as tl
+
+import collections
+from array import *
+import os,sys
+import glob
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+
+"""
+ds_q2wbin [obsdir] [q2wbin] [sim=siml]
+
++ This script displays simstats for user entered simnum (siml by default):
+
+"""
+#! Get obsdir
+if len(sys.argv)==1:
+	sys.exit("Please enter obsdir")
+else:
+	obsdir=sys.argv[1]
+
+#! Get obsdir
+if len(sys.argv)==2:
+        sys.exit("Please enter q2wbin")
+else:
+        q2wbin=sys.argv[2]
+
+#! User input simnum, else use siml
+if len(sys.argv)>3:#i.e. simnum entered by user
+	simnum=sys.argv[3]	
+else:
+        simnum='siml'
+
+print "Displaying  simstats-q2wbin for (obsdir,q2wbin,simnun)=(",obsdir,q2wbin,simnum,")"
+
+tl.plot_acc_q2wbin_5D(obsdir,q2wbin,simnum)

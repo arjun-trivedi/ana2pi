@@ -1,0 +1,68 @@
+#!/usr/bin/python
+from proc_yields_lite import ProcYieldsLite
+from disp_yields_lite import DispYieldsLite
+import sys
+
+#! ---------------------
+#  dy [obsdir] [view] [norm=False] [dbg=False] [simnum=siml]
+#  + obsdir
+#  + view = various views defined in display_yields::disp_1D()
+#  + norm = True/False; if yields are to be normalized or not
+#  + dbg  = True/False; if True, then not all q2wbins processed
+#  + simnum = simulation to use to get Acceptance and Hole yields
+#!----------------------
+#! Get obsdir
+if len(sys.argv)==1:
+        sys.exit("Please enter obsdir")
+else:
+        obsdir=sys.argv[1]
+
+#! User input view, else ask!
+if len(sys.argv)<3:
+	view=raw_input("Please enter view(q2_evltn or full_ana or all)!\n")
+else:
+	view=sys.argv[2] 
+#! User input norm, else use norm=False
+if len(sys.argv)<4:
+        norm=False
+else:
+        if sys.argv[3]=="False":
+		norm=False
+	elif sys.argv[3]=="True":
+		norm=True
+	else:
+		print "Please enter norm=True or False!"
+		sys.exit()
+#! User input dbg, else use dbg=False
+if len(sys.argv)<5:
+        dbg=False
+else:
+        if sys.argv[4]=="False":
+                dbg=False
+        elif sys.argv[4]=="True":
+                dbg=True
+        else:
+                print "Please enter dbg=True or False!"
+                sys.exit()	
+#! User input simnum, else use siml
+if len(sys.argv)<6:
+	simnum='siml'
+else:
+	simnum=sys.argv[5]
+
+#! set Q2-W kinematic limits in which to extract yields
+#! can make user input later
+q2min,q2max=1.25,2.25 #5.25
+wmin,wmax=1.400,2.125 #3.000
+print "Displaying 1D-Obs: %s,%s"%(view,simnum)
+if view=="all":
+  print "Displaying 1D-Obs: %s,%s"%("q2_evltn",simnum)
+  dy_lite=DispYieldsLite(obsdir,simnum) 
+  dy_lite.disp_1D("q2_evltn",q2min,q2max,wmin,wmax,norm,dbg)
+  print "Displaying 1D-Obs: %s,%s"%("full_ana",simnum)
+  dy_lite=DispYieldsLite(obsdir,simnum)
+  dy_lite.disp_1D("full_ana",q2min,q2max,wmin,wmax,norm,dbg)
+else:
+  print "Displaying 1D-Obs: %s,%s"%(view,simnum)
+  dy_lite=DispYieldsLite(obsdir,simnum)
+  dy_lite.disp_1D(view,q2min,q2max,wmin,wmax,norm,dbg)

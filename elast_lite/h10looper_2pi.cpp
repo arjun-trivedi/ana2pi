@@ -2,7 +2,7 @@
 #include "h10looper_2pi.h"
 
 #include "wrpr_cut_fid_e16.h"
-#include "h7_bng.h"
+#include "h8_bng.h"
 
 #include <TLorentzRotation.h>
 
@@ -68,7 +68,7 @@ h10looper_2pi::~h10looper_2pi()
 	delete[] _hmm_prec;
 	delete[] _hmm2_pstc;
 	delete[] _hmm_pstc;
-	delete[] _h7;
+	delete[] _h8;
 
 	Info("h10looper_2pi::~h10looper_2pi","Done.");
 }
@@ -148,7 +148,7 @@ void h10looper_2pi::Loop(){
 								_hmm_pstc_fW->Fill(mmppip);
 								_hmm2_prec[iw]->Fill(mm2ppip);
 								_hmm_prec[iw]->Fill(mmppip);
-								fill_h7();
+								fill_h8();
 							}
 						}
 					}
@@ -169,7 +169,7 @@ void h10looper_2pi::Loop(){
 			_hq2w_pstc->Fill(_W,_Q2);
 
 			_hevt->Fill(EVT_2PI);
-			fill_h7();
+			fill_h8();
 		}
 	}//end event loop
 
@@ -443,7 +443,7 @@ void h10looper_2pi::setup_d2pi(){
 
 	//! 3. Create h7[NBINS_WCRS][NVST]
 	dir_d2pi->cd();
-	Int_t hdim=7;
+	Int_t hdim=8;
 	struct h7_bng{
     	int bins;
     	float xmin;
@@ -472,9 +472,9 @@ void h10looper_2pi::setup_d2pi(){
 	//! Now create h7[NBINS_WCRS][NVST] and
 	//! in each specific Wcrs-bin, pick appropriate binning for:
 	//! + W,M1 and M2
-	_h7=new THnSparse**[NBINS_WCRS];
+	_h8=new THnSparse**[NBINS_WCRS];
 	for(int iw=0;iw<NBINS_WCRS;iw++){
-		_h7[iw]=new THnSparse*[NVST];
+		_h8[iw]=new THnSparse*[NVST];
 
 		//! pick binning for W, M1 and M2
 		bngW.bins=WCRSBIN[iw].nbins;
@@ -495,54 +495,60 @@ void h10looper_2pi::setup_d2pi(){
 	
 		//! Varsets as per "three assignments(i,ii,iii)"  listed on page 4 of JM06_model_PhysRevC.80.045212.pdf
 		/* Varset 1 (Delta++) */
-		//                    {  Q2,         W,         Mppip,         Mpippim,         theta_pim,     phi_pim,     alpha[p'pip][ppim]}
-		Int_t bins1[]    =    {  bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
-		Double_t xmin1[] =    {  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
-		Double_t xmax1[] =    {  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		_h7[iw][0] = new THnSparseF(TString::Format("h7_%d_%d",iw+1,1), 
-		"Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
+		//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_pim,     phi_pim,     alpha[p'pip][ppim]}
+		Int_t bins1[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+		Double_t xmin1[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
+		Double_t xmax1[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
+		_h8[iw][0] = new THnSparseF(TString::Format("h8_%d_%d",iw+1,1), 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
 		hdim, bins1, xmin1, xmax1);
-		_h7[iw][0]->Sumw2();
-		gDirectory->Append(_h7[iw][0]);
+		_h8[iw][0]->Sumw2();
+		gDirectory->Append(_h8[iw][0]);
 		
 		/* Varset 2 (Rho) */
-		//                    {  Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
-		Int_t bins2[]    =    {  bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
-		Double_t xmin2[] =    {  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
-		Double_t xmax2[] =    {  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		_h7[iw][1] = new THnSparseF(TString::Format("h7_%d_%d",iw+1,2), 
-		"Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][pp^{'}]}", 
+		//                    {  h, Q2,         W,         Mppip,         Mpippim,         theta_p,       phi_p,       alpha[pippim][p'p]}
+		Int_t bins2[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMpippim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+		Double_t xmin2[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMpippim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
+		Double_t xmax2[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMpippim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
+		_h8[iw][1] = new THnSparseF(TString::Format("h8_%d_%d",iw+1,2), 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][pp^{'}]}", 
 		hdim, bins2, xmin2, xmax2);
-		_h7[iw][1]->Sumw2();
-		gDirectory->Append(_h7[iw][1]);
+		_h8[iw][1]->Sumw2();
+		gDirectory->Append(_h8[iw][1]);
 			
 		/* Varset 3 (Delta0) */
-		//                    {  Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
-		Int_t bins3[]    =    {  bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
-		Double_t xmin3[] =    {  bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
-		Double_t xmax3[] =    {  bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
-		_h7[iw][2] = new THnSparseF(TString::Format("h7_%d_%d",iw+1,3), 
-		"Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
+		//                    {  h, Q2,         W,         Mppip,         Mppim,         theta_pip,     phi_pip,     alpha[p'pim][ppip]}
+		Int_t bins3[]    =    {  3, bngQ2.bins, bngW.bins, bngMppip.bins, bngMppim.bins, bngTheta.bins, bngPhi.bins, bngAlpha.bins };
+		Double_t xmin3[] =    { -1, bngQ2.xmin, bngW.xmin, bngMppip.xmin, bngMppim.xmin, bngTheta.xmin, bngPhi.xmin, bngAlpha.xmin };
+		Double_t xmax3[] =    {  2, bngQ2.xmax, bngW.xmax, bngMppip.xmax, bngMppim.xmax, bngTheta.xmax, bngPhi.xmax, bngAlpha.xmax };
+		_h8[iw][2] = new THnSparseF(TString::Format("h8_%d_%d",iw+1,3), 
+		"h, Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
 		hdim, bins3, xmin3, xmax3);
-		_h7[iw][2]->Sumw2();
-		gDirectory->Append(_h7[iw][2]);
+		_h8[iw][2]->Sumw2();
+		gDirectory->Append(_h8[iw][2]);
 	}
 }
 
-void h10looper_2pi::fill_h7(){
+void h10looper_2pi::fill_h8(){
 	int iw=GetCrsWBinIdx(_W);
 	
+	int h=evthel;
+	//! + If _dtyp=="sim", then overwrite h with 0.
+	//! + sim-h10 should contain 0, but from what I checked, evthel=7 for sim-h10
+	if (_dtyp=="sim"){
+		h=0;
+	}
 	/* Varset 1 (Delta++)*/
-	double coord1[] = {_Q2,_W,_M_ppip,_M_pippim,_theta_cms_pim,_phi_cms_pim,_alpha_1};
-	_h7[iw][0]->Fill(coord1);
+	double coord1[] = {h,_Q2,_W,_M_ppip,_M_pippim,_theta_cms_pim,_phi_cms_pim,_alpha_1};
+	_h8[iw][0]->Fill(coord1);
 	
 	/* Varset 2 (Rho)*/
-	double coord2[] = {_Q2,_W,_M_ppip,_M_pippim,_theta_cms_p,_phi_cms_p,_alpha_2};
-	_h7[iw][1]->Fill(coord2);
+	double coord2[] = {h,_Q2,_W,_M_ppip,_M_pippim,_theta_cms_p,_phi_cms_p,_alpha_2};
+	_h8[iw][1]->Fill(coord2);
 	
 	/* Varset 3 (Delta0)*/
-	double coord3[] = {_Q2,_W,_M_ppip,_M_ppim,_theta_cms_pip,_phi_cms_pip,_alpha_3};
-	_h7[iw][2]->Fill(coord3);
+	double coord3[] = {h,_Q2,_W,_M_ppip,_M_ppim,_theta_cms_pip,_phi_cms_pip,_alpha_3};
+	_h8[iw][2]->Fill(coord3);
 
 	return;
 }
