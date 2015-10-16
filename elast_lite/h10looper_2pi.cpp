@@ -101,10 +101,10 @@ void h10looper_2pi::Loop(){
 				if (electron_infid()){
 					_hevt->Fill(EVT_E_INFID);
 					//! pcorr
-					if (_dtyp=="exp"){
+					/*if (_dtyp=="exp"){
 						mom_corr_electron();
 						set_ekin();
-					}
+					}*/
 					//! PID
 					//! only top2':
 					//!   + only p and pip need to be detected

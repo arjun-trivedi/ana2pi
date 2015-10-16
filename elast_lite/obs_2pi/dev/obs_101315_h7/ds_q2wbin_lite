@@ -2,7 +2,7 @@
 from __future__ import division
 import ROOT
 
-import study_acc_tools as tl
+import study_acc_tools_lite as tl
 
 import collections
 from array import *
