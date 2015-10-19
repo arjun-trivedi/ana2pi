@@ -1,0 +1,47 @@
+#!/usr/bin/python
+from disp_obs import DispObs
+import sys
+
+#! ---------------------
+#  dobs_1D [obsdir] [simnum=siml] [norm=False] [dbg=False]
+#!----------------------
+#! Get obsdir
+if len(sys.argv)==1:
+        sys.exit("Please enter obsdir")
+else:
+        obsdir=sys.argv[1]
+
+if len(sys.argv)>2: #! User input simnum, else use siml
+	simnum=sys.argv[2]
+else:
+	simnum='siml'
+
+if len(sys.argv)>3: #! User input norm, else use norm=False
+	if sys.argv[3]=="False":
+                norm=False
+        elif sys.argv[3]=="True":
+                norm=True
+        else:
+                print "Please enter norm=True or False!"
+                sys.exit()
+else:
+	norm=False
+
+if len(sys.argv)>4: #! User input dbg, else use dbg=False
+	if sys.argv[4]=="False":
+                dbg=False
+        elif sys.argv[4]=="True":
+                dbg=True
+        else:
+                print "Please enter dbg=True or False!"
+                sys.exit()
+else:
+	dbg="False"
+
+#! set Q2-W kinematic limits in which to extract yields
+#! can make user input later
+q2min,q2max=1.25,2.25
+wmin,wmax=1.575,1.725
+print "Displaying 1D-Obs for obsdir simnum norm dbg",obsdir,simnum,norm,dbg
+do=DispObs(obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg)
+do.disp_1D()

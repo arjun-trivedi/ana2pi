@@ -32,6 +32,7 @@ H5_PROJDIM=array('i',[H8_DIM['M1'],H8_DIM['M2'],H8_DIM['THETA'],H8_DIM['PHI'],
 					  H8_DIM['ALPHA']])
 	
 H5_DIM=OrderedDict([('M1',0),('M2',1),('THETA',2),('PHI',3),('ALPHA',4)])
+VSTS=[1,2,3]
 VARS=['M1','M2','THETA','PHI','ALPHA']
 
 #! Enumerate measured Helicity values as per their corresponding bin number in h8's Helicity dimension (see DataAna::MakrYields())
@@ -60,10 +61,8 @@ class ProcH8:
 		+ if self.USEHEL=true:  Not implemented yet!
 	
 	"""
-	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125,vsts=[1,2,3],usehel=False,dbg=False):
+	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125,usehel=False,dbg=False):
 		self.SIMNUM=simnum
-
-		self.VSTS=vsts 
 
 		self.USEHEL=usehel
 		print "USEHEL=",self.USEHEL
@@ -92,8 +91,6 @@ class ProcH8:
 		else:           self.FOUTNAME="yield.root"
 		print "DATADIR=%s\nFIN[ER]=%s\nFIN[ST]=%s\nFIN[SR]=%s\nOUTDIR=%s\nFOUTNAME=%s"%(self.DATADIR, self.FIN['ER'].GetName(),self.FIN['ST'].GetName(),self.FIN['SR'].GetName(), self.OUTDIR, self.FOUTNAME)
 		
-
-		self.wmax=None #Used for setM1M2axisrange()
 
 	def execute(self):
 		'''
@@ -133,8 +130,8 @@ class ProcH8:
 		4. For every Q2-W bin in h8:
 			3.i.   h8(SEQ_DRCT,VST)=>h5(SEQ_DRCT,VST)
 			3.ii.  h5(SEQ_DRCT,VST)=>h5(SEQ_CALC,VST)
-			3.iii. If self.USEHEL=false, then h5(SEQ_ALL,VST)=>h1(SEQ_ALL,VST) 
-			3.iv.  Save h5(SEQ_ALL,VST) and h1(SEQ_ALL,VST)
+			3.iii. If self.USEHEL=false, then h5(SEQ_ALL,VST)=>h1(SEQ_ALL,VST,VARS) 
+			3.iv.  Save h5(SEQ_ALL,VST) and h1(SEQ_ALL,VST,VARS)
 				
 		"""
 		print "proc(): Processing Crs-W bin %s"%(iw+1)
@@ -146,7 +143,7 @@ class ProcH8:
 		# 	print k,h8[k].GetEntries()
 
 		#! 2. Make sure H8_DIM['HEL'] is appropriately set for h8(SEQ_DRCT,vst)
-		for vst in self.VSTS:
+		for vst in VSTS:
 			if self.USEHEL==False:
 				nbins=h8['ST',vst].GetAxis(H8_DIM['HEL']).GetNbins()
 				h8['ST',vst].GetAxis(H8_DIM['HEL']).SetRange(1,nbins)
@@ -189,61 +186,98 @@ class ProcH8:
 			h5=OrderedDict()
 			#! 3.i. h8(SEQ_DRCT,VST)=>h5(SEQ_DRCT,VST)
 			for seq in SEQ_DRCT:
-				for vst in self.VSTS:
+				for vst in VSTS:
 					#! Make Q2,W projections
 					h8[seq,vst].GetAxis(H8_DIM['Q2']).SetRange(q2wb_crd[0],q2wb_crd[0])
 					h8[seq,vst].GetAxis(H8_DIM['W']).SetRange(q2wb_crd[1],q2wb_crd[1])
 					h5[seq,vst]=h8[seq,vst].Projection(5,H5_PROJDIM,"E")
-					thntool.SetUnderOverFLowBinsToZero(h5[seq,vst]);
+					h5[seq,vst].SetName('h5')
+					h5[seq,vst].SetTitle('%s_%s_%d'%(q2wb_name,seq,vst))
+					thntool.SetUnderOverFLowBinsToZero(h5[seq,vst])
 			#! 3.ii.  h5(SEQ_DRCT,VST)=>h5(SEQ_CALC,VST)
-			for vst in self.VSTS:
+			for vst in VSTS:
 				#! SA
 				h5['SA',vst]=h5['SR',vst].Clone()
 				h5['SA',vst].Divide(h5['ST',vst])
+				thntool.SetUnderOverFLowBinsToZero(h5['SA',vst])
 				#! SC
 				h5['SC',vst]=h5['SR',vst].Clone()
 				h5['SC',vst].Divide(h5['SA',vst])
+				thntool.SetUnderOverFLowBinsToZero(h5['SC',vst])
 				#! SH
 				h5['SH',vst]=h5['ST',vst].Clone()
 				h5['SH',vst].Add(h5['SC',vst],-1)
+				thntool.SetUnderOverFLowBinsToZero(h5['SH',vst])
 				#! SF
 				h5['SF',vst]=h5['SC',vst].Clone()
 				h5['SF',vst].Add(h5['SH',vst],1)
+				thntool.SetUnderOverFLowBinsToZero(h5['SF',vst])
 				#! EC
 				h5['EC',vst]=h5['ER',vst].Clone()
 				h5['EC',vst].Divide(h5['SA',vst])
+				thntool.SetUnderOverFLowBinsToZero(h5['EC',vst]);
 				#! EH
 				#! 1. Set EH=SH
 				h5['EH',vst]=h5['SH',vst].Clone()
 				#! 2. Now scale EH by scale_factor 
 				scale_factor=self.calc_EH_scale_factor(h5['EC',vst],h5['SC',vst])
 				h5['EH',vst].Scale(scale_factor)
+				thntool.SetUnderOverFLowBinsToZero(h5['EH',vst]);
 				#! EF
 				h5['EF',vst]=h5['EC',vst].Clone()
 				h5['EF',vst].Add(h5['EH',vst],1)
+				thntool.SetUnderOverFLowBinsToZero(h5['EF',vst]);
+			#! Set the names of titles of h5(SEQ_CALC,VST) created
+			for item in list(itertools.product(SEQ_CALC,VSTS)):
+				seq,vst=item[0],item[1]
+				h5[seq,vst].SetName('h5')
+				h5[seq,vst].SetTitle('%s_%s_%d'%(q2wb_name,seq,vst))
 
-			#! 3.iii. If self.USEHEL=false, then h5(SEQ_ALL,VST)=>h1(SEQ_ALL,VST) 
+			#! 3.iii. If self.USEHEL=false, then h5(SEQ_ALL,VST)=>h1(SEQ_ALL,VST,VARS) 
+			#! + For technical reasons (see below), h1s are directly created 
+			#!   under the appropriate file directory when saving the histograms (3.iv)
+			#! + Additionally, it so happens, that this also saves memory
+			#!   since the h1(SEQ_ALL,VST,VARS) structure does not have to be created
+			#! 
+			#!   + Technical reason
+			#!   ------------------
+			#! 	+ Write() seems to be needed only for THnSparse Objects, where after 'cd' into appropriate
+			#!    fout's directory, THnSparse::Write() needs to be called.
+			#!  + TH1::Write()' seems to save all cycles of the object(name;cycle) making fout look messy.
+			#!	  Therefore, instead of first creating h1(SEQ_ALL,VST,VARS) and then using 'Write()'
+			#!    to save each of them, it is simpler to use the default behaviour of TH1s, where 
+			#!    if they are created after 'cd' into the appropriate fout's directory, they are automatically
+			#!    saved when fout is written.
 
-			#3.iv.  Save h5(SEQ_ALL,VST) and h1(SEQ_ALL,VST)			
+
+			#3.iv.  Save h5(SEQ_ALL,VST) and h1(SEQ_ALL,VST,VARS)			
 			q2wb_dir=fout.GetDirectory(q2wb_name)
 			if q2wb_dir==None: 
 				q2wb_dir=fout.mkdir(q2wb_name)
 			q2wb_dir.cd() 	
-
-			for seq in SEQ_ALL:
+			for item in list(itertools.product(SEQ_ALL,VSTS)):
+				seq,vst=item[0],item[1]
+				#! Ensure seq_dir exists and cd into it
 				seq_dir=q2wb_dir.GetDirectory(seq)
 				if seq_dir==None:
 					seq_dir=q2wb_dir.mkdir(seq)
 				seq_dir.cd()
-				for vst in self.VSTS:
-					vst_name="VST%d"%vst
-					vst_dir=seq_dir.GetDirectory(vst_name)
-					if vst_dir==None:
-						vst_dir=seq_dir.mkdir(vst_name)
-					vst_dir.cd()
-					h5[seq,vst].SetName('h5')#_%s_%s'%(seq,vst_name))
-					h5[seq,vst].SetTitle('%s_%s_%s'%(q2wb_name,seq,vst))
-					h5[seq,vst].Write()
+				#! Ensure vst_dir exists and cd into it
+				vst_name="VST%d"%vst
+				vst_dir=seq_dir.GetDirectory(vst_name)
+				if vst_dir==None:
+					vst_dir=seq_dir.mkdir(vst_name)
+				vst_dir.cd()
+				#! Save h5[seq,vst]
+				h5[seq,vst].Write()
+				#! Create and save h1 for every [seq,vst,var]
+				if self.USEHEL==False:
+					for var in VARS:
+						h1=h5[seq,vst].Projection(H5_DIM[var],"E")
+						h1.SetName('h1_%s'%var)
+						h1.SetTitle("%s_%s_%d_%s"%(q2wb_name,seq,vst,var))
+						if var=='M1' or var=='M2':
+							self.setM1M2axisrange(h1,vst,var,wb_max)
 			
 		print "proc(): If appearing to be stuck, then either fout is still being written or Python is probably doing \"garbage collection\"(?); Wait a while!"
 		if que!=None:
@@ -260,18 +294,18 @@ class ProcH8:
 		"""
 		h8=OrderedDict()
 		#! Fetch h8(SEQ_DRCT,vst) directly from file 
-		for vst in self.VSTS:
+		for vst in VSTS:
 			h8['ER',vst]=self.FIN['ER'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
 			h8['ST',vst]=self.FIN['ST'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
 			h8['SR',vst]=self.FIN['SR'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
 		return h8
 
 	
-	def setM1M2axisrange(self,h,vst,var):
-		if (vst=="VST1" and var=='M1') or (vst=="VST3" and var=='M2'):
-			h.GetXaxis().SetRangeUser(1.1000,self.wmax-0.14)
-		if (vst=="VST2" and var=='M2'):
-			h.GetXaxis().SetRangeUser(0.2780,self.wmax-0.938)
+	def setM1M2axisrange(self,h,vst,var,wmax):
+		if (vst==1 and var=='M1') or (vst==3 and var=='M2'):
+			h.GetXaxis().SetRangeUser(1.1000,wmax-0.14)
+		elif (vst==2 and var=='M2'):
+			h.GetXaxis().SetRangeUser(0.2780,wmax-0.938)
 	
 	def calc_EH_scale_factor(self,hN_EC,hN_SC):
 		scale_factor,nExpEvts,nSimEvts=0,0,0
