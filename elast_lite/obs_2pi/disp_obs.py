@@ -803,11 +803,11 @@ class DispObs:
 		print "***make_h2_itg_yld() Done \n***"
 		return h2
 
-	def disp_itg_yld_drct_old_mchnry(self):
+	def disp_itg_yld_drct_from_h5(self):
 		"""
-		Walk the ROOT file and plot y(w;seq,q2bin). 
+		Walk the ROOT file and plot y(w;seq,vst,q2bin). 
 		"""
-		print "*** In DispObs::disp_itg_yld_old_mchnry() ***"
+		print "*** In DispObs::disp_itg_yld_drct_from_h5() ***"
 		
 		if self.NORM==False:
 			outdir=os.path.join(self.OUTDIR,"Obs_Itg_Yld_drct")
