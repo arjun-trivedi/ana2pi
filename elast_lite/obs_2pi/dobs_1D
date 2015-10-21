@@ -44,4 +44,7 @@ q2min,q2max=1.25,2.25
 wmin,wmax=1.575,1.725
 print "Displaying 1D-Obs for obsdir simnum norm dbg",obsdir,simnum,norm,dbg
 do=DispObs(obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg)
+#! Using new machinery
 do.disp_1D()
+#! Integrated yield using old machinery's code
+do.disp_itg_yld_drct_old_mchnry()
