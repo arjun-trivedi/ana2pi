@@ -54,7 +54,8 @@ VAR_NAMES={(1,VARS[0]):"M_{p#pi^{+}}",(1,VARS[1]):"M_{#pi^{+}#pi^{-}}",
            (3,VARS[2]):"#theta_{#pi^{+}}",(3,VARS[3]): "#phi_{#pi^{+}}",
            (3,VARS[4]):"#alpha_{[p_{f}#pi^{-}][p#pi^{+}]}"}
 
-VAR_UNIT_NAMES={VARS[0]:"[GeV]",VARS[1]:"[GeV]",VARS[2]:"",VARS[3]:"",VARS[4]:""}
+VAR_UNIT_NAMES={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"deg",VARS[3]:"deg",VARS[4]:"deg"}
+VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"",VARS[3]:"rad",VARS[4]:"rad"}
 
 #! Following dictionaries for extracting R2
 R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
@@ -179,7 +180,6 @@ class DispObs:
 				for i,seq in enumerate(self.SEQS):
 					draw_opt="" if i==0 else "same"
 					h1[seq,vst,var].Draw(draw_opt)
-				#h1['EF',vst,var].Draw("same")
 			elif self.NORM!=True:#! Draw all hists normed to same integral (since I want to compare their distributions)
 				#! seq that can be directly drawn normalized
 				seq_drct=['ST','SR','SF','ER','EF']
@@ -253,19 +253,23 @@ class DispObs:
 		print "*** plot_1D() Done ***\n"
 		return
 
-	def disp_1D(self):#,norm=False,q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,dbg=False):
+	def disp_1D(self):
 		"""
-		+ Walk the ROOT file, per Q2-W bin:
+		1. Get Q2-W bin list from yield.root
+		2. Create h2(seq,vst,var) to store integrated yields=f(Q2-bin,W-bin)
+		3. Per Q2-W bin:
 			+ Extract h1(seq,vst,var)(=Obs_1D) where
 				+ seq:
 					+ =EC,EF if norm=True, 
-					+ =SEQ_ALL
+					+ =PLT_SEQ_ALL
 				+ var:	
 					+ if vst==1:           VARS=(M1,THETA,ALPHA)
 					+ if vst==2 or vst==3: VARS=(M2,THETA,ALPHA)
 
-			+ If norm=True, then Normalize h1(seq,vst,var)
+			+ If self.NORM=True, then Normalize h1(seq,vst,var)
 			+ Fill relevant bin of h2 (=Intg_yld)
+			+ Plot h1(seq,vst,var)
+		4. Plot h2(seq,vst,var) and its projection on W
 		"""
 		print "*** In DispObs::disp_1D() ***"
 
@@ -288,10 +292,10 @@ class DispObs:
 		print "DispObs::disp_1D() Q2-W bins got from yield.root=",q2wbinl
 
 		#! Place holder for h2[seq,vst,var]: histogram to keep integrated yields in each Q2-W bin
-		#! + Implementation appears sloppy for now, but they created inside Q2-W bin loop
+		#! + Implementation appears sloppy for now, but it is created inside Q2-W bin loop
 		h2=None
 		#! + Get binning information for Q2 and W, individually, from Q2-W binning
-		#! + This is needed later to create h2s
+		#! + This is needed later to specify the Q2- and W-binning when creating h2
 		q2bng=self.get_q2bng(q2wbinl)
 		wbng=self.get_wbng(q2wbinl)
 		print "DispObs::disp_1D() nq2bins,nwbins=",q2bng['NBINS'],wbng['NBINS']
@@ -316,7 +320,7 @@ class DispObs:
 				for var in varl:
 					h1[seq,vst,var]=self.FIN.Get("%s/%s/VST%d/h1_%s"%(q2wbin,seq,vst,var))
 					#! Call Sumw2() since the errors as currently in the h1s
-					#! need to propagated in all subsequent calculations that involve them
+					#! need to be propagated in all subsequent calculations that involve them
 					h1[seq,vst,var].Sumw2()
 			#! End of [seq,vst,var] loop
 
@@ -354,8 +358,8 @@ class DispObs:
 		vgflux=getvgflux(w,q2)
 
 		#! Create h1n[SEQ,VSTS,VARS]
-		#! + SEQ and VSTS in this case is redundant, 
-		#!   but helps in code organization and readability
+		#! + SEQ and VSTS in this case is redundant, since normalization depends, aside from Q2,W
+		#!   and vgflux, only on VAR; however this redundancy helps in code organization and readability
 		h1n=OrderedDict()
 		for k in h1:
 			seq,vst,var=k[0],k[1],k[2]
@@ -365,26 +369,24 @@ class DispObs:
 			hname="hnorm_%s_VST%d_%s"%(seq,vst,var)
 			h1n[k]=ROOT.TH1F(hname,hname,nbins,xmin,xmax)
 
-			if var!='THETA':
-				for ibin in range(nbins):
-					if var=='ALPHA':
-						alpha_a=h1n[k].GetBinLowEdge(ibin+1)
-						alpha_b=h1n[k].GetBinLowEdge(ibin+2)# + h1n[k].GetBinWidth(ibin+1)
-						var_binw=math.fabs(math.radians(alpha_b)-math.radians(alpha_a))
-					elif var=='M1' or var=='M2':
-						var_binw=h1n[k].GetBinWidth(ibin+1)
-					if ibin==0: print "norm_1D() var_binw[bin# %d] for %s=%f"%(ibin+1,var,var_binw)
-					normf=LUM*LUM_INVFB_TO_INVMICROB*vgflux*Q2BINW*WBINW*var_binw
-					h1n[k].SetBinContent(ibin+1,normf)
-					h1n[k].SetBinError(ibin+1,0)
-			elif var =='THETA':
-				for ibin in range(nbins):
+			for ibin in range(nbins):
+				#! Calculate var specific normalization factor
+				if var=='M1' or var=='M2':
+					DM=h1n[k].GetBinWidth(ibin+1)
+					var_norm_fctr=DM
+				elif var=='ALPHA':
+					alpha_a=h1n[k].GetBinLowEdge(ibin+1)
+					alpha_b=h1n[k].GetBinLowEdge(ibin+2)
+					DAlpha=math.fabs(math.radians(alpha_b)-math.radians(alpha_a))
+					var_norm_fctr=DAlpha
+				elif var=='THETA':
 					theta_a=h1n[k].GetBinLowEdge(ibin+1)
-					theta_b=h1n[k].GetBinLowEdge(ibin+2)# + h1n[k].GetBinWidth(ibin+1)
+					theta_b=h1n[k].GetBinLowEdge(ibin+2)
 					DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
-					normf=LUM*LUM_INVFB_TO_INVMICROB*vgflux*Q2BINW*WBINW*DCosTheta
-					h1n[k].SetBinContent(ibin+1,normf)
-					h1n[k].SetBinError(ibin+1,0.)
+					var_norm_fctr=DCosTheta
+				normf=LUM*LUM_INVFB_TO_INVMICROB*vgflux*Q2BINW*WBINW*var_norm_fctr
+				h1n[k].SetBinContent(ibin+1,normf)
+				h1n[k].SetBinError(ibin+1,0)
 
 		#! Now normalize h1s
 		for k in h1:
@@ -410,6 +412,21 @@ class DispObs:
 	def plot_h2_itg_yld(self,h2):
 		print "*** In DispObs::plot_h2_itg_yld() ***"
 
+		#! Set up some plotting related aesthetics particular to this function
+		#! Marker colors and styles
+		#! + The idea is to use a uniqute MarkerColor for [vst,var]
+		#! + As a further distinguishing feature, since colors take time to distinguish,
+		#!   each var is assigned its own MarkerStyle, which can be additionally be classified
+		#!   as 'Full' or 'Open' type markers, when for example, more than one seq is being plotted on the same plot.  
+		#! 
+		clrd={(1,'M1'):'kRed-6',     (2,'M2'):'kRed',     (3,'M2'):'kMagenta',
+		      (1,'THETA'):'kBlue-6', (2,'THETA'):'kBlue', (3,'THETA'):'kCyan',
+		      (1,'ALPHA'):'kGreen-6',(2,'ALPHA'):'kGreen',(3,'ALPHA'):'kOrange'}	
+		mrkr_fulld={'M1':'kFullDotLarge', 'M2':'kFullDotLarge',     
+		            'THETA':'kFullSquare', 'ALPHA':'kFullTriangleUp'}
+		mrkr_opend={'M1':'kOpenCircle', 'M2':'kOpenCircle',     
+		            'THETA':'kOpenSquare', 'ALPHA':'kOpenTriangleUp'}
+
 		#! 1. Directly plot each h2[seq,vst,var] in its own canvas
 		outdir_h2=os.path.join(self.OUTDIR_ITG_YLD,"Q2_W")
 		if not os.path.exists(outdir_h2):
@@ -432,14 +449,11 @@ class DispObs:
 			if self.NORM==True:
 				#! Plotting aesthetics
 				#ROOT.gROOT.SetOptStat("ne")
+				
 				#! + First create all projections: h1p[seq,vst,var]
 				#! + This has to be done so that, before plotting, min and max for the Y-axis
 				#!   can be determined from all the h1p[seq,vst,var]
 				h1p=OrderedDict()
-				clrd={(1,'M1'):'kRed-6',     (2,'M2'):'kRed',     (3,'M2'):'kMagenta',
-				      (1,'THETA'):'kBlue-6', (2,'THETA'):'kBlue', (3,'THETA'):'kCyan',
-				      (1,'ALPHA'):'kGreen-6',(2,'ALPHA'):'kGreen',(3,'ALPHA'):'kOrange'}
-				#for i,k in enumerate(h2):
 				for k in h2:
 					seq,vst,var=k[0],k[1],k[2]
 					hname="qbin_%d_%s_VST%d_%s"%(iq2bin+1,seq,vst,var)
@@ -447,45 +461,24 @@ class DispObs:
 					h1p[k]=h2[k].ProjectionX(hname,iq2bin+1,iq2bin+1,"e")
 					h1p[k].SetTitle(htitle)
 					h1p[k].SetYTitle("#sigma[#mub]")
-					# if var=='M1' or var=='M2':
-					# 	mrkr=ROOT.gROOT.ProcessLine("kFullDotLarge")
-					# elif var=='THETA':
-					# 	mrkr=ROOT.gROOT.ProcessLine("kFullSquare")
-					# elif var=='ALPHA':
-					# 	mrkr=ROOT.gROOT.ProcessLine("kFullTriangleUp")
-					# if seq=='EC':
-					# 	clr=clrd[vst,var]
-					# elif seq=='EF':
-					# 	clr="%s+4"%clrd[vst,var]
+					
 					clr=clrd[vst,var]
 					if seq=='EC':
-						if var=='M1' or var=='M2':
-							mrkr=ROOT.gROOT.ProcessLine("kFullDotLarge")
-						elif var=='THETA':
-							mrkr=ROOT.gROOT.ProcessLine("kFullSquare")
-						elif var=='ALPHA':
-							mrkr=ROOT.gROOT.ProcessLine("kFullTriangleUp")
+						mrkr=mrkr_fulld[var]
 					elif seq=='EF':
-						if var=='M1' or var=='M2':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenCircle")
-						elif var=='THETA':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenSquare")
-						elif var=='ALPHA':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenTriangleUp")
-
-					h1p[k].SetMarkerStyle(mrkr)
+						mrkr=mrkr_opend[var]
+					
+					h1p[k].SetMarkerStyle(ROOT.gROOT.ProcessLine(mrkr))
 					h1p[k].SetLineColor(ROOT.gROOT.ProcessLine(clr))
 					h1p[k].SetMarkerColor(ROOT.gROOT.ProcessLine(clr))
 					
 				#! Determine max and set Y-axis min(=0),max for all h1p[seq,vst,var]
 				maxl=[h1p[k].GetMaximum() for k in h2]
-				#print "plot_h2_itg_yld() maxl=",maxl
 				maximum=max(maxl)
 				for k in h1p:
 					h1p[k].SetMinimum(0.)
 					h1p[k].SetMaximum(maximum)
-				#print "plot_h2_itg_yld() maximum=",maximum
-
+				
 				#! Now draw
 				ROOT.gStyle.SetOptStat(0)
 				c=ROOT.TCanvas()
@@ -513,10 +506,6 @@ class DispObs:
 				#ROOT.gROOT.SetOptStat("ne")
 				#! + First create all projections: h1p[seq,vst,var]
 				h1p=OrderedDict()
-				clrd={(1,'M1'):'kRed-6',     (2,'M2'):'kRed',     (3,'M2'):'kMagenta',
-				      (1,'THETA'):'kBlue-6', (2,'THETA'):'kBlue', (3,'THETA'):'kCyan',
-				      (1,'ALPHA'):'kGreen-6',(2,'ALPHA'):'kGreen',(3,'ALPHA'):'kOrange'}
-				#for i,k in enumerate(h2):
 				for k in h2:
 					seq,vst,var=k[0],k[1],k[2]
 					if seq=='SH' or seq=='EH': continue
@@ -524,49 +513,23 @@ class DispObs:
 					htitle="itg_yld Q2=%s"%h2[k].GetYaxis().GetBinLabel(iq2bin+1)
 					h1p[k]=h2[k].ProjectionX(hname,iq2bin+1,iq2bin+1,"e")
 					h1p[k].SetTitle(htitle)
-					# if var=='M1' or var=='M2':
-					# 	mrkr=ROOT.gROOT.ProcessLine("kFullDotLarge")
-					# elif var=='THETA':
-					# 	mrkr=ROOT.gROOT.ProcessLine("kFullSquare")
-					# elif var=='ALPHA':
-					# 	mrkr=ROOT.gROOT.ProcessLine("kFullTriangleUp")
+					
 					clr=clrd[vst,var]
+					#! Set appropriate MarkerStyles for SEQS plotted on same cavas
+					#! ER,SR on same
 					if seq=='ER':
-						#clr=clrd[vst,var]
-						if var=='M1' or var=='M2':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenCircle")
-						elif var=='THETA':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenSquare")
-						elif var=='ALPHA':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenTriangleUp")
-					if seq=='SR':
-						#clr=clrd[vst,var]
-						if var=='M1' or var=='M2':
-							mrkr=ROOT.gROOT.ProcessLine("kFullDotLarge")
-						elif var=='THETA':
-							mrkr=ROOT.gROOT.ProcessLine("kFullSquare")
-						elif var=='ALPHA':
-							mrkr=ROOT.gROOT.ProcessLine("kFullTriangleUp")
+						mrkr=mrkr_opend[var]
+					elif seq=='SR':
+						mrkr=mrkr_fulld[var]
+					#! EC,EF on same; SC,SF,ST on same	
 					if seq=='EC' or seq=='SC':
-						#clr=clrd[vst,var]
-						if var=='M1' or var=='M2':
-							mrkr=ROOT.gROOT.ProcessLine("kFullDotLarge")
-						elif var=='THETA':
-							mrkr=ROOT.gROOT.ProcessLine("kFullSquare")
-						elif var=='ALPHA':
-							mrkr=ROOT.gROOT.ProcessLine("kFullTriangleUp")
+						mrkr=mrkr_fulld[var]
 					elif seq=='SF' or seq=='EF':
-						#clr="%s+4"%clrd[vst,var]
-						if var=='M1' or var=='M2':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenCircle")
-						elif var=='THETA':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenSquare")
-						elif var=='ALPHA':
-							mrkr=ROOT.gROOT.ProcessLine("kOpenTriangleUp")
+						mrkr=mrkr_opend[var]
 					elif seq=='ST':
-						mrkr=ROOT.gROOT.ProcessLine("kPlus")
-						#clr="%s+4"%clrd[vst,var]
-					h1p[k].SetMarkerStyle(mrkr)
+						mrkr="kPlus"
+					
+					h1p[k].SetMarkerStyle(ROOT.gROOT.ProcessLine(mrkr))
 					h1p[k].SetLineColor(ROOT.gROOT.ProcessLine(clr))
 					h1p[k].SetMarkerColor(ROOT.gROOT.ProcessLine(clr))
 				
@@ -594,8 +557,6 @@ class DispObs:
 				#! Add additional label for ER,SR to say that they are normed to same integral
 				pt=ROOT.TPaveText(.05,.90,.95,.95,"NDC")
   				pt.AddText("Integral of all hists. normalized to 1000")
-  				#pt.SetFillStyle(0)
-  				#pt.SetTextSize(0.40)
   				pt.Draw()
 				gpad=c1.cd(2)
 				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
@@ -671,76 +632,35 @@ class DispObs:
 				l3.Draw()
 				c3.SaveAs("%s/c_qbin%d_EC_EH.png"%(outdir_w_proj,iq2bin+1))
 
-				#! Draw SEQ_ALL w projs noramalized to same integral
-				# c=ROOT.TCanvas()
-				# c.Divide(2,1) 
-				# h1n=OrderedDict() #! To keep normalized projections
-				# #! legend
-				# l=ROOT.TLegend(0.0,0.00,1.0,1.00)
-				# # l.SetFillStyle(0)
-				# # l.SetBorderSize(0)
-				# l.SetTextSize(0.02)
-				# c.cd(1)
-				# for i,k in enumerate(h2):
-				# 	draw_opt=""
-				# 	if i>0: draw_opt="same"
-				# 	htmp=h2[k].ProjectionX("qbin_%d"%(iq2bin+1),iq2bin+1,iq2bin+1,"e")
-				# 	htmp.SetTitle("itg_yld Q2=%s"%h2[k].GetYaxis().GetBinLabel(iq2bin+1))
-				# 	htmp.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
-				# 	htmp.SetLineColor(i+1)
-				# 	htmp.SetMarkerColor(i+1)
-				# 	h1n[k]=htmp.DrawNormalized(draw_opt,1000) #! Results in "WARNING:ROOT.TH1D.Add] Attempt to add histograms with labels"
-				# 	#! Use the following for debugging
-				# 	# h1n[k]=htmp.Clone()
-				# 	# h1n[k].SetMinimum(0)
-				# 	# h1n[k].SetMaximum(9615000)
-				# 	# h1n[k].Draw(draw_opt)
-				# 	l.AddEntry(h1n[k],"%s_VST%d_%s"%(k[0],k[1],k[2]),"p")
-				# c.cd(2)
-				# l.Draw()
-				# c.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj,iq2bin+1))
 		print "*** plot_h2_itg_yld() Done ***\n"
 		
 		
 	def fill_h2_itg_yld(self,h2,h1,iq2bin,iwbin):
 		print "*** In DispObs::fill_h2_itg_yld ***"
-		opt="%s"%("width" if self.NORM==True else "")
+		
 		for k in h1:
 			seq,vst,var=k[0],k[1],k[2]
-			#if (self.NORM!=True) or (self.NORM==True and var!='THETA'): #! then directly use TH1::Integral(opt)
-			if var=='M1' or var=='M2':
+			if var=='M1' or var=='M2': #! then directly use TH1::Integral(opt); opt="width" when self.NORM=True, "" when self.NORM=False
+				opt="%s"%("width" if self.NORM==True else "")
 				nbins=h1[k].GetNbinsX()
 				itg_err=ROOT.Double(0)#https://root.cern.ch/phpBB3/viewtopic.php?t=2499
 				itg=h1[k].IntegralAndError(1,nbins,itg_err,opt)
 				h2[k].SetBinContent(iwbin+1,iq2bin+1,itg)
 				h2[k].SetBinError(iwbin+1,iq2bin+1,itg_err)
-				# itg,itg_err=0,0
-				# nbins=h1[k].GetNbinsX()
-				# for ibin in range(nbins):
-				# 	binc=h1[k].GetBinContent(ibin+1)
-				# 	bincerr=h1[k].GetBinError(ibin+1)
-				# 	M_a=h1[k].GetBinLowEdge(ibin+1)
-				# 	M_b=h1[k].GetBinLowEdge(ibin+2)# + h1[k].GetBinWidth(ibin+1)
-				# 	DM=math.fabs(M_b-M_a)
-				# 	itg+=binc*DM
-				# 	itg_err+=bincerr*DM
-				# h2[k].SetBinContent(iwbin+1,iq2bin+1,itg)
-				# h2[k].SetBinError(iwbin+1,iq2bin+1,itg_err)
-			#elif self.NORM==True and var=='THETA': #! then manually compute integral to adapt for DCosTheta 
-			elif var=='THETA': #! then manually compute integral to adapt for DCosTheta 
+			elif var=='THETA': #! manually compute integral to adapt for DCosTheta irrespective of self.NORM! (NOTE, theta distributions are atleast DCosTheta normalized irrespective of self.NORM!)
 				itg,itg_err=0,0
 				nbins=h1[k].GetNbinsX()
 				for ibin in range(nbins):
 					binc=h1[k].GetBinContent(ibin+1)
 					bincerr=h1[k].GetBinError(ibin+1)
 					theta_a=h1[k].GetBinLowEdge(ibin+1)
-					theta_b=h1[k].GetBinLowEdge(ibin+2)# + h1[k].GetBinWidth(ibin+1)
+					theta_b=h1[k].GetBinLowEdge(ibin+2)
 					DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
 					itg+=binc*DCosTheta
 					itg_err+=bincerr*DCosTheta
 				h2[k].SetBinContent(iwbin+1,iq2bin+1,itg)
 				h2[k].SetBinError(iwbin+1,iq2bin+1,itg_err)
-			elif var=='ALPHA':
+			elif var=='ALPHA': #! manually compute integral to adapt for DAlpha; DAlpha is in radians when self.NORM=true, 1 when self.NORM=False
 				itg,itg_err=0,0
 				nbins=h1[k].GetNbinsX()
 				for ibin in range(nbins):
@@ -1081,13 +1001,25 @@ class DispObs:
 		for k in h1.keys():	
 			seq,vst,var=k[0],k[1],k[2]
 			h1[k].SetTitle("")
-			h1[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+			h1[k].SetXTitle( "%s[%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+			#! X-axis title aesthetics
 			h1[k].GetXaxis().SetLabelSize(.05)
 			h1[k].GetXaxis().SetTitleSize(.10)
 			h1[k].GetXaxis().SetTitleOffset(.7)
+			#! Y-axis title aesthetics
 			h1[k].GetYaxis().SetTitleOffset(1.5)
+			h1[k].GetYaxis().SetTitleSize(.05)
 			if self.NORM==True:
-				h1[k].SetYTitle("#frac{#Delta#sigma}{#Delta%s}"%VAR_NAMES[(vst,var)])
+				# if var!='THETA':
+				# 	h1[k].SetYTitle("#frac{#Delta#sigma}{#Delta%s}[#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				# elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
+				# 	h1[k].SetYTitle("#frac{#Delta#sigma}{#Deltacos(%s)}[#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				if var!='THETA':
+					h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
+					h1[k].SetYTitle("#Delta#sigma/#Deltacos(%s) [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+			elif self.NORM==False:
+				h1[k].SetYTitle("\"Normalized\" counts")
 
 			#if self.NORM!=True:
 			h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
