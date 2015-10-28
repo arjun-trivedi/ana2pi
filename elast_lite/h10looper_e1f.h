@@ -90,10 +90,10 @@ public :
    TH1D* _hevt;*/
 
    //! EID
-   static const int NUM_EID_STATS=14;
+   static const int NUM_EID_STATS=15;
    enum {EID_NULL, EID_TRG, EID_GPART0, EID_Q, 
          EID_HIT_DC, EID_HIT_CC, EID_HIT_SC, EID_HIT_EC, 
-         EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_ECIN_MIN, EID_EC_FID, EID_ZVTX, EID_SF};
+         EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_ECIN_MIN, EID_EC_FID, EID_ZVTX, EID_SF, EID_E};
    TH1D* _heid;
    //! for SF cut
    TF1** _sf_mean;

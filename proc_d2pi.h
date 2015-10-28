@@ -16,22 +16,23 @@ using namespace TMath;
 using namespace ParticleConstants;
 
 /******************************************************
-[07-07-15]
-
-+ Note that this processor assumes that eid:efid:pid have been called
-  already and that therefore, DataEid, DataEkin,DataPid are filled. If not, 
-  then this proc will still work, but output objects that rely on DataEid, DataEkin,DataPidElast
-  will be empty.
-
+[10-28-15]
 + Note
-	+ For Reconstructed data, ProcD2pi must follow a "chain of processors" (set up in scripts)
+	+ For Reconstructed data, ProcD2pi must follow a determined "chain of processors" (set up in scripts)
+		+ While there are several reasons that are encapsulated into "chain of processors", one critical reason
+		  is that since [10-18-15], ProcD2pi does not do its own EID and PID ; it relies on ProcEid to pass 
+		  only events with identified e- and uses h10's gpart indices of identified hadrons by ProcPidNew 
+		  (dAna->pidnew.h10IdxP/Pip/Pim) to set up 2pi kinematics. Note that if ProcPid is used, then the code has to be, for now, manually changed
+		  to use h10's gpart indices of identified hadrons setup up ProcPid (dAna->pid.h10IdxP/Pip/Pim)
 	+ For Thrown data, it is directly called (setup in scripts)
 + For Reconstruction,Pass Events only if:
-	+ proton,pip,pim are identified AND MMppippim satisfied
+	+ t1: p,pip,pim are found AND MMppippim satisfied
 	OR	
-	+ proton,pip are identified     AND MMppip satisfied 
+	+ t2: p,pip are found AND pim is not found AND MMppip satisfied 
 	OR
-	+ ( (p,pim identified  AND MMppim satisfied)  OR (pip,pim identfied AND MMpippim satisfied) )
+	+ t3: p,pim are found AND pip is not found  AND MMppim satisfied
+	OR
+	+ t4: pip,pim are found AND p is not found AND MMpippim satisfied
 *******************************************************/
 
 class ProcD2pi : public EpProcessor {
@@ -57,15 +58,15 @@ protected:
 	Float_t getTheta(TLorentzVector lv); //angle in degrees between lv and _lvQCMS
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
 	Float_t getAlpha(TVector3 uv_Gf,TVector3 uv_Gp,TVector3 uv_Bf,TVector3 uv_Bp);
-    Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
-    
-    TRandom* _rand; //atrivedi[06-13-14]: for _rand
-    ProcEid* _proc_eid;
+	Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
+	
+	TRandom* _rand; //atrivedi[06-13-14]: for _rand
+	ProcEid* _proc_eid;
 	ProcPid* _proc_pid;
-    bool _procT,_procR;
-    bool _make_tree;
-    TObjArray* _hists_ana_MM;    
-    TObjArray** _h8R[NTOPS];
+	bool _procT,_procR;
+	bool _make_tree;
+	TObjArray* _hists_ana_MM;    
+	TObjArray** _h8R[NTOPS];
 	TObjArray* _hists_MM_R[NTOPS];
 	TObjArray* _hists_ekin_R[NTOPS];
 	TObjArray** _h8T;
@@ -89,8 +90,12 @@ protected:
 	TTree* _tT;
 	TTree* _tR;
 protected:
-	static const Int_t NUM_EVTCUTS=6;
-	enum { EVT_NULL, EVT, EVT_T1, EVT_T2, EVT_T3, EVT_T4, EVT_OTHER };
+	static const Int_t NUM_EVTCUTS=14;//6
+	enum { EVT_NULL, EVT, 
+		   EVT_E,
+		   EVT_P_FOUND, EVT_PIP_FOUND, EVT_PIM_FOUND,
+		   EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX,
+		   EVT_T1, EVT_T2, EVT_T3, EVT_T4, EVT_OTHER };
 };
 
 ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
@@ -108,11 +113,20 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T1,"T1(p#pi^{+}#pi^{-})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T2,"T2(p#pi^{+})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T3,"T3(p#pi^{-})");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_T4,"T4(#pi^{+}#pi^{-})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_E,"e^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_P_FOUND,"p found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIP_FOUND,"#pi^{+} found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIM_FOUND,"#pi^{-} found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"p + #pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,   "p + #pi^{+} + (pi^{-}_{m})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,   "p + (#pi^{+}_{m}) + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX, "(p_{m})+ #pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T1,"T1:p + #pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T2,"T2:p + #pi^{+} + (#pi^{-}_{m})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T3,"T3:p + #pi^{+}_{m} + (#pi^{-})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_T4,"T4:(p_{m}) + #pi^{+} + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
+	hevtsum->SetMinimum(0);
 
 	if (_procT) {
 		TDirectory* subdir=NULL;
@@ -161,12 +175,12 @@ ProcD2pi::~ProcD2pi() {
 	delete hevtsum;
 	delete _hists_ana_MM;
 	for (int iTop = 0; iTop < NTOPS; ++iTop)
-    {
-    	delete _h8R[iTop];
-    	delete _hists_MM_R[iTop];
-    	delete _hists_ekin_R[iTop];
-    }
-    delete _h8T;
+	{
+		delete _h8R[iTop];
+		delete _hists_MM_R[iTop];
+		delete _hists_ekin_R[iTop];
+	}
+	delete _h8T;
 	delete _hists_MM_T;
 	delete _hists_ekin_T;
 	delete _rand; //atrivedi[06-13-14]: for _rand
@@ -204,118 +218,123 @@ void ProcD2pi::handle() {
 	//! (In case of _procT, Lvs will have been set to Thrown values)
 	ResetLvs(); 
 
-	Bool_t gE, gP, gPip, gPim;
-	gE=gP=gPip=gPim=kFALSE;
-	for (int i=0;i<dH10->gpart;i++) {
-		switch (dH10->id[i]) {
-		case ELECTRON:
-			dAna->h10idxE = i;
-			gE = kTRUE;
-			break;
-		case PROTON:
-			dAna->h10idxP = i;
-			gP = kTRUE;
-			break;
-		case PIP:
-			dAna->h10idxPip = i;
-			gPip = kTRUE;
-			break;
-		case PIM:
-		    dAna->h10idxPim = i;
-			gPim = kTRUE;
-			break;
-		default:
-			break;
-		}
-	}
-	if (gE) { 
-		//! Determine if identified particles match requirement of tops
-		Bool_t t1a=gP&&gPip&&gPim;
-		Bool_t t2a=gP&&gPip&&!gPim;
-		Bool_t t3a=gP&&gPim&&!gPip;
-		Bool_t t4a=gPip&&gPim&&!gP;
-		if ( t1a || t2a || t3a || t4a ) { //top:particle selection
-			/* *** Q2, W *** */
-			Double_t mom = dH10->p[dAna->h10idxE];
-	        Double_t px = mom*dH10->cx[dAna->h10idxE];
-	        Double_t py = mom*dH10->cy[dAna->h10idxE];
-	        Double_t pz = mom*dH10->cz[dAna->h10idxE];
-	        Double_t energy = Sqrt(mom*mom+MASS_E*MASS_E);
-	        _lvE.SetPxPyPzE(px,py,pz,energy);
-	        _lvQ = lvE0-_lvE;
-	        _lvW = _lvQ+lvP0;
-	        	        
-	        /* *** _lvP, _lvPip, _lvPim, _lvMM[TOP1/2/3/4] *** */
-	        //! lvs for only particular top is set; rest are 0
-	        SetLabFrmHadronLvs();
-	              
-	        /* *** MM *** */ 
-	        //! MM for only particular top is set; rest are 0  
-	        Float_t mm2ppippim = _lvMM[TOP1].Mag2();
-			Float_t mm2ppip    = _lvMM[TOP2].Mag2();
-			Float_t mm2ppim    = _lvMM[TOP3].Mag2();
-			Float_t mm2pippim  = _lvMM[TOP4].Mag2();
+	//! + Set particles' h10 indices as per ProcEid,ProcPidNew (or ProcPid, in which case manual changes required!)
+	//! + hevtsum filling for EID and PID is redundant, but helps in debugging in ProcD2pi correctly followed
+	//!	  EID and PID processors
 
-			//used to study and determine top MM cut
-			UpdateD2pi_Q2_W_MM();
-			dAna->fillHistsMM(_hists_ana_MM); //method "knows" the particular top's MM hist to fill
-			//! [07-17-15] The following should have already been called 
-			//! by the previous processors: ProcEid,ProcPidElast 
-			/*_proc_eid->updateEkin();
-			_proc_eid->updateEid();
-			_proc_pid->updatePid();*/
+	//! e: Since events have passed ProcEid, h10 index of e=0
+	dAna->h10idxE=0;
+	//! p,pip,pim
+	//! pidnew
+	dAna->h10idxP=dAna->pidnew.h10IdxP;
+	dAna->h10idxPip=dAna->pidnew.h10IdxPip;
+	dAna->h10idxPim=dAna->pidnew.h10IdxPim;
+	if (dAna->pidnew.h10IdxP>0)   hevtsum->Fill(EVT_P_FOUND);
+	if (dAna->pidnew.h10IdxPip>0) hevtsum->Fill(EVT_PIP_FOUND);
+	if (dAna->pidnew.h10IdxPim>0) hevtsum->Fill(EVT_PIM_FOUND);
+	//! pidold
+	/*dAna->h10idxP=dAna->pid.h10IdxP;
+	dAna->h10idxPip=dAna->pid.h10IdxPip;
+	dAna->h10idxPim=dAna->pid.h10IdxPim;
+	if (dAna->pid.h10IdxP>0) hevtsum->Fill(EVT_P_FOUND);
+	if (dAna->pid.h10IdxPip>0) hevtsum->Fill(EVT_PIP_FOUND);
+	if (dAna->pid.h10IdxPim>0) hevtsum->Fill(EVT_PIM_FOUND);*/
+
+	//! Determine if identified particles match requirement of tops
+	Bool_t t1a=dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim>0;
+	Bool_t t2a=dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim==0;
+	Bool_t t3a=dAna->h10idxP>0 && dAna->h10idxPip==0 && dAna->h10idxPim>0;
+	Bool_t t4a=dAna->h10idxP==0 && dAna->h10idxPip>0 && dAna->h10idxPim>0;
+	
+	hevtsum->Fill(EVT_E);
+	if (t1a) hevtsum->Fill(EVT_PPIPPIM_EX);
+	if (t2a) hevtsum->Fill(EVT_PPIP_EX);
+	if (t3a) hevtsum->Fill(EVT_PPIM_EX);
+	if (t4a) hevtsum->Fill(EVT_PIPPIM_EX);
+	
+	//! Now move on to event selection
+	if ( t1a || t2a || t3a || t4a ) { //top:particle selection
+		//! Q2,W
+		Double_t mom = dH10->p[dAna->h10idxE];
+		Double_t px = mom*dH10->cx[dAna->h10idxE];
+		Double_t py = mom*dH10->cy[dAna->h10idxE];
+		Double_t pz = mom*dH10->cz[dAna->h10idxE];
+		Double_t energy = Sqrt(mom*mom+MASS_E*MASS_E);
+		_lvE.SetPxPyPzE(px,py,pz,energy);
+		_lvQ = lvE0-_lvE;
+		_lvW = _lvQ+lvP0;
 						
-			//! Make final top selection cut
-			Bool_t t1b=TMath::Abs(mm2ppippim) < 0.0005;
-			Bool_t t2b=mm2ppip>0 && mm2ppip<0.04;//0.16
-			Bool_t t3b=mm2ppim>0 && mm2ppim<0.04;//0.16;
-			Bool_t t4b=mm2pippim>0.8 && mm2pippim<1.00;//mm2pippim>0.0 && mm2pippim<1.25;
+		//! _lvP, _lvPip, _lvPim, _lvMM[TOP1/2/3/4] 
+		//! lvs for only particular top is set; rest are 0
+		SetLabFrmHadronLvs();
+				  
+		//! 
+		//! MM for only particular top is set; rest are 0  
+		Float_t mm2ppippim = _lvMM[TOP1].Mag2();
+		Float_t mm2ppip    = _lvMM[TOP2].Mag2();
+		Float_t mm2ppim    = _lvMM[TOP3].Mag2();
+		Float_t mm2pippim  = _lvMM[TOP4].Mag2();
 
-			Bool_t t1=t1a && t1b;
-			Bool_t t2=t2a && t2b;
-			Bool_t t3=t3a && t3b;
-			Bool_t t4=t4a && t4b;
+		//used to study and determine top MM cut
+		UpdateD2pi_Q2_W_MM();
+		dAna->fillHistsMM(_hists_ana_MM); //method "knows" the particular top's MM hist to fill
+		//! [07-17-15] The following should have already been called 
+		//! by the previous processors: ProcEid,ProcPidElast 
+		//_proc_eid->updateEkin();
+		//_proc_eid->updateEid();
+		//_proc_pid->updatePid();
+						
+		//! Make final top selection cut
+		Bool_t t1b=TMath::Abs(mm2ppippim) < 0.0005;
+		Bool_t t2b=mm2ppip>0 && mm2ppip<0.04;//0.16
+		Bool_t t3b=mm2ppim>0 && mm2ppim<0.04;//0.16;
+		Bool_t t4b=mm2pippim>0.8 && mm2pippim<1.00;//mm2pippim>0.0 && mm2pippim<1.25;
+
+		Bool_t t1=t1a && t1b;
+		Bool_t t2=t2a && t2b;
+		Bool_t t3=t3a && t3b;
+		Bool_t t4=t4a && t4b;
 			
-			if ( t1 || t2 || t3 || t4) { //top:particle selection + MM cut
-				pass = kTRUE;
+		if ( t1 || t2 || t3 || t4) { //top:particle selection + MM cut
+			pass = kTRUE;
 				
-				if (t1) {
-					hevtsum->Fill(EVT_T1);
-					dAna->d2pi.top = 1;
-				}else if (t2) {
-					hevtsum->Fill(EVT_T2);
-					dAna->d2pi.top = 2;
-					_lvPim = _lvMM[TOP2];
-				}else if (t3) {
-					hevtsum->Fill(EVT_T3);
-					dAna->d2pi.top = 3;
-					_lvPip = _lvMM[TOP3];
-				}else if (t4) {
-					hevtsum->Fill(EVT_T4);
-					dAna->d2pi.top = 4;
-					_lvP = _lvMM[TOP4];
-				}
+			if (t1) {
+				hevtsum->Fill(EVT_T1);
+				dAna->d2pi.top = 1;
+			}else if (t2) {
+				hevtsum->Fill(EVT_T2);
+				dAna->d2pi.top = 2;
+				_lvPim = _lvMM[TOP2];
+			}else if (t3) {
+				hevtsum->Fill(EVT_T3);
+				dAna->d2pi.top = 3;
+				_lvPip = _lvMM[TOP3];
+			}else if (t4) {
+				hevtsum->Fill(EVT_T4);
+				dAna->d2pi.top = 4;
+				_lvP = _lvMM[TOP4];
+			}
 
-				UpdateD2pi(); //MM part of d2pi already updated
-				dAna->fillYields(_h8R[dAna->d2pi.top-1],dAna->d2pi.W);
-				dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
-				dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
-				if (_make_tree){
-					_tR->Fill();
+			UpdateD2pi(); //MM part of d2pi already updated
+			dAna->fillYields(_h8R[dAna->d2pi.top-1],dAna->d2pi.W);
+			dAna->fillHistsMM(_hists_MM_R[dAna->d2pi.top-1]);
+			dAna->fillHistsEkin(_hists_ekin_R[dAna->d2pi.top-1]);
+			if (_make_tree){
+				_tR->Fill();
+			}
+			if (_procT){
+				ResetLvs();
+				McKin();
+				dAna->fillYields(_h8T, dAna->d2pi_mc.W, kTRUE);
+				dAna->fillHistsMM(_hists_MM_T, kTRUE);
+				dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
+				if(_make_tree){
+					_tT->Fill();
 				}
-				if (_procT){
-					ResetLvs();
-					McKin();
-					dAna->fillYields(_h8T, dAna->d2pi_mc.W, kTRUE);
-					dAna->fillHistsMM(_hists_MM_T, kTRUE);
-					dAna->fillHistsEkin(_hists_ekin_T, kTRUE);
-					if(_make_tree){
-						_tT->Fill();
-					}
-				}
-			} else (hevtsum->Fill(EVT_OTHER));
-		}
+			}
+		} else (hevtsum->Fill(EVT_OTHER));
 	}
+
 	if (pass) {
 		EpProcessor::handle();
 	}
@@ -369,7 +388,7 @@ void ProcD2pi::McKin() {
 	_lvW = _lvQ+lvP0;
 	_lvMM[TOP1] = (_lvW-(_lvP+_lvPip+_lvPim));
 	_lvMM[TOP2] = (_lvW-(_lvP+_lvPip));
-    _lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
+	_lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
 	_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
 	//at-h8
 	/*dAna->d2pi_mc.Q2 = -1*(_lvQ.Mag2());
@@ -481,13 +500,13 @@ void ProcD2pi::SetLabFrmHadronLvs(){
 	if (dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim>0){
 		_lvMM[TOP1] = (_lvW-(_lvP+_lvPip+_lvPim));
 	}
-	if (dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim==-1){
+	if (dAna->h10idxP>0 && dAna->h10idxPip>0 && dAna->h10idxPim==0){//dAna->h10idxPim==-1
 		_lvMM[TOP2] = (_lvW-(_lvP+_lvPip));
 	}
-	if (dAna->h10idxP>0 && dAna->h10idxPim>0 && dAna->h10idxPip==-1){
-    	_lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
+	if (dAna->h10idxP>0 && dAna->h10idxPim>0 && dAna->h10idxPip==0){//dAna->h10idxPip==-1
+		_lvMM[TOP3] = (_lvW-(_lvP+_lvPim));  
 	}
-	if (dAna->h10idxPip>0 && dAna->h10idxPim>0 && dAna->h10idxP==-1){
+	if (dAna->h10idxPip>0 && dAna->h10idxPim>0 && dAna->h10idxP==0){//dAna->h10idxP==-1
 		_lvMM[TOP4] = (_lvW-(_lvPip+_lvPim)); 
 	}
 }
@@ -625,14 +644,14 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	//! Varsets
 	//! Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
 	TVector3 uz = _lvQ.Vect().Unit();
-    TVector3 ux = (lvE0.Vect().Cross(_lvE.Vect())).Unit();
-    ux.Rotate(-TMath::Pi()/2,uz);
-    TRotation r3;// = new TRotation();
-    r3.SetZAxis(uz,ux).Invert();
-    //! _w and _q are in z-direction
-    TVector3 boost(-1*_lvW.BoostVector());
-    TLorentzRotation r4(r3); //*_boost);
-    r4 *= boost; //*_3rot;
+	TVector3 ux = (lvE0.Vect().Cross(_lvE.Vect())).Unit();
+	ux.Rotate(-TMath::Pi()/2,uz);
+	TRotation r3;// = new TRotation();
+	r3.SetZAxis(uz,ux).Invert();
+	//! _w and _q are in z-direction
+	TVector3 boost(-1*_lvW.BoostVector());
+	TLorentzRotation r4(r3); //*_boost);
+	r4 *= boost; //*_3rot;
 	
 	_lvQCMS   = _lvQ;
 	_lvP0CMS  = lvP0;

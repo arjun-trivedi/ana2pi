@@ -86,9 +86,9 @@ Pid::Pid(TString dtyp)
 
 Pid::~Pid()
 {
-	delete _prtcl_name;
-	delete _fcut_l;
-    delete _fcut_h;
+	delete[] _prtcl_name;
+	delete[] _fcut_l;
+    delete[] _fcut_h;
 }
 
 bool Pid::is_proton(float dt,float p){

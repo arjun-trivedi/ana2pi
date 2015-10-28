@@ -71,6 +71,7 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_hevt->GetXaxis()->SetBinLabel(EVT_E,"e^{-}");
 		_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
 		_hevt->GetXaxis()->SetBinLabel(EVT_ELSTC,"elstc-inc");
+		_hevt->SetMinimum(0);
 	} else if (_rctn=="2pi"){
 		_hevt=new TH1D("hevt","Event statistics",NUM_EVT_STATS_2PI,0.5,NUM_EVT_STATS_2PI+0.5);
 		_hevt->GetXaxis()->SetBinLabel(EVT_TRG,"trgr");
@@ -79,7 +80,8 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP,"p+pip");
 		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP_INFID,"p+pip infid");
 		_hevt->GetXaxis()->SetBinLabel(EVT_Q2W_KIN_PASS,"Q2W cut pass");
-		_hevt->GetXaxis()->SetBinLabel(EVT_2PI,"2pi");
+		_hevt->GetXaxis()->SetBinLabel(EVT_2PI,"2pi event");
+		_hevt->SetMinimum(0);
 	}
 	if (_seq=="recon"){
 		//! EID
@@ -98,6 +100,7 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_heid->GetXaxis()->SetBinLabel(EID_EC_FID,"pass ECfid");
 		_heid->GetXaxis()->SetBinLabel(EID_ZVTX,"pass zvrtx");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
+		_heid->GetXaxis()->SetBinLabel(EID_E,"e found");
 		//! EFID
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
@@ -116,9 +119,9 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 			_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
 			_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
 			_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"p found");
-			_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"pip found");
-			_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"pip found");
-			_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p+pip found");
+			_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"#pi^{+} found");
+			_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"#pi^{-} found");
+			_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p + #pi^{+}");
 		}
 	}
 	//! delast
@@ -292,16 +295,26 @@ void h10looper_e1f::Loop(){
 		reset_ekin();
 		if (_seq=="recon"){
 			_hevt->Fill(EVT_TRG);
+			//! EID
+			_heid->Fill(EID_TRG);
 			if (evt_trigger_electron()){
+				_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
+				//! EFID
+				_hefid->Fill(EFID_TOT);
 				if (electron_infid()){
+					_hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
+					//! PCORR
 					if (_dtyp=="exp"){
 						mom_corr_electron();
 						set_ekin();
 					}
+					//! PID
+					_hpid->Fill(PID_TOT);
 					if ( !_use_proton || (_use_proton && found_hadron("p")>=1) ){
+						_hpid->Fill(PID_P_FOUND);
 						if (_W>_W_CUT_MIN && _W<_W_CUT_MAX){
 							_hevt->Fill(EVT_ELSTC);
 							make_delast();
@@ -343,7 +356,6 @@ bool h10looper_e1f::evt_trigger_electron(){
 	int idxDC=dc[0]-1,idxCC=cc[0]-1,idxSC=sc[0]-1,idxEC=ec[0]-1;
 	int stt=stat[0], dc_stt=dc_stat[idxDC];
 	
-	_heid->Fill(EID_TRG);
 	bool pass_lvl_1=kFALSE;
 	if (gprt>0){
 		_heid->Fill(EID_GPART0);
@@ -401,15 +413,11 @@ bool h10looper_e1f::electron_infid(){
 	Int_t sector=ec_sect[ecidx];
 	Int_t paddle = 0;
 	
-	_hefid->Fill(EFID_TOT);
 	bool ret=kFALSE;
 	if (_use_ep_efid){
 		ret=inFid(mom,_theta_e,_phi_e,sector);
 	}else{
 		ret=Cuts::Fiducial(id, mom, _theta_e, _phi_e, sector, paddle);
-	}
-	if (ret==kTRUE){
-		_hefid->Fill(EFID_IN);
 	}
 	return ret;
 }
@@ -603,8 +611,7 @@ for a track being a p,pip or pim is fulfilled, the function returns.
 */
 int h10looper_e1f::found_hadron(TString hdrn_name){
 	int ret=-1;
-	_hpid->Fill(PID_TOT);
-
+	
 	//! Set up quantities for particular hadron
 	int hdrn_chrg;
 	float hdrn_mass;
@@ -647,20 +654,20 @@ int h10looper_e1f::found_hadron(TString hdrn_name){
 			//! Using dt and p, identify particle
 			if (hdrn_name=="p"){
 				if (_pid_tool->is_proton(dt,mom)){
-					ret=i;
 					_hpid->Fill(PID_P_FOUND);
+					ret=i;
 					break;
 				}
 			}else if (hdrn_name=="pip"){
 				if (_pid_tool->is_pip(dt,mom)){
-					ret=i;
 					_hpid->Fill(PID_PIP_FOUND);
+					ret=i;
 					break;
 				}
 			}else if (hdrn_name=="pim"){
 				if (_pid_tool->is_pim(dt,mom)){
-					ret=i;
 					_hpid->Fill(PID_PIM_FOUND);
+					ret=i;
 					break;
 				}
 			}

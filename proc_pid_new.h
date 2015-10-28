@@ -11,14 +11,21 @@ using namespace ParticleConstants;
 /******************************************************
 [06-09-15] New effort to develop PID for ana2pi
 
-[06-24-15] Documentation
-+ Note, ProcPid must follow ProcSkimQ
+[11-28-15] Documentation
 + Pass Events only if:
-	+ dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG AND proton,pip,pim are identified
-	OR	+ 
-	+ dAna->skimq.isEVT_ETGT_2POS     AND proton,pip are identified
+	+ t1: p,pip,pim are found
+	OR	
+	+ t2: p,pip are found AND pim is not found
 	OR
-	+ dAna->skimq.isEVT_ETGT_1POS_ETGT_1NEG AND (p,pim identified OR pip,pim identfied)
+	+ t3: p,pim are found AND pip is not found
+	OR
+	+ t4: pip,pim are found AND p is not found
++ Import notes:
+	1, The 1st identified hadron in gpart is assumed to be the true hadron and
+  once it is found, the remaining tracks in gpart are not considered.
+	2. A track can exclusively be identified as either p or pip or pim
+	  i.e. it cannot be identified as both, at it can happen, for example,
+	  in the high momentum region.
 + Output
 	+ hevtsum: showing stats for number of events processed and number passing selection
 	+ In 'mon' and 'mononly' mode: PID monitoring hists
@@ -44,8 +51,9 @@ protected:
 	
 	TTree* _tree;
 
-	static const Int_t NUM_EVTCUTS=6;
-	enum { EVT_NULL, EVT, EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};   
+	static const Int_t NUM_EVTCUTS=9;
+	enum { EVT_NULL, EVT, EVT_P_FOUND, EVT_PIP_FOUND, EVT_PIM_FOUND,
+		   EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};   
 	     
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 };
@@ -57,11 +65,15 @@ ProcPidNew::ProcPidNew(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	td->cd();	
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_P_FOUND,"p found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIP_FOUND,"#pi^{+} found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIM_FOUND,"#pi^{-} found");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"p + #pi^{+} + #pi^{-}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,"p + #pi^{+}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,"p + #pi^{-}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX,"#pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,   "p + #pi^{+} + (pi^{-}_{m})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,   "p + (pi^{+}_{m}) + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX, "(p_{m})+ #pi^{+} + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
+	hevtsum->SetMinimum(0);
 
 	_make_tree=make_tree;
 	_pid_tool=new Pid(dH10->dtyp);
@@ -94,7 +106,7 @@ void ProcPidNew::handle()
 	pass=kFALSE;
 	hevtsum->Fill(EVT);
 
-	//! 1. Obtain DataPidNew. NOTE, id[ntrk] is untouched!
+	//! 1. Obtain DataPidNew. NOTE, id[ntrk] and h10IdxP(Pip,Pim) are untouched!
 	//! + At this point all the necessary data to perform PID is obtained and id[ntrk] is untouched i.e.
 	//!   it continues to be equal to 0
 	//! + PID is done later and there id[ntrk] & h10IdxP(Pip,Pim) are updated
@@ -138,58 +150,58 @@ void ProcPidNew::handle()
 
 	
 	//! 2. Apply PID cut using DataPidNew
-	//! Here id[ntrk] is set along with h10IdxP(Pip,Pim)
-	//! Additionally, dH10->id[] is also set
+	//! + Here id[ntrk] is set along with h10IdxP(Pip,Pim)
+	//! + Additionally, dH10->id[] is also set
+	//!
+	//! + After finding first hadron, exit gpart loop.
+	bool found_p,found_pip,found_pim;
+	found_p=found_pip=found_pim=kFALSE;
 	DataPidNew* dpid = &dAna->pidnew;
 	for (int itrk=0;itrk<dpid->ntrk;itrk++){//! loop over ntrk in the event
-		if (dpid->q[itrk]==1){//! Select +ve trks
-			if (_pid_tool->is_proton(dpid->dt_p[itrk],dpid->p[itrk])){
-				dpid->id[itrk]=PROTON;
-				dpid->h10IdxP=dpid->h10_idx[itrk];
-				dH10->id[dpid->h10_idx[itrk]]==PROTON;
-			}else if (_pid_tool->is_pip(dpid->dt_pip[itrk],dpid->p[itrk])){
-				dpid->id[itrk]=PIP;
-				dpid->h10IdxPip=dpid->h10_idx[itrk];
-				dH10->id[dpid->h10_idx[itrk]]==PIP;
+		if (dpid->dc[itrk]>0 && dpid->sc[itrk]>0){
+			if (dpid->q[itrk]==1){//! Select +ve trks
+				if (!found_p && _pid_tool->is_proton(dpid->dt_p[itrk],dpid->p[itrk])){
+					found_p=kTRUE;
+					hevtsum->Fill(EVT_P_FOUND);
+					dpid->id[itrk]=PROTON;
+					dpid->h10IdxP=dpid->h10_idx[itrk];
+					dH10->id[dpid->h10_idx[itrk]]=PROTON;
+				}else if (!found_pip && dpid->dc[itrk]>0 &&  dpid->sc[itrk]>0 && _pid_tool->is_pip(dpid->dt_pip[itrk],dpid->p[itrk])){
+					found_pip=kTRUE;
+					hevtsum->Fill(EVT_PIP_FOUND);
+					dpid->id[itrk]=PIP;
+					dpid->h10IdxPip=dpid->h10_idx[itrk];
+					dH10->id[dpid->h10_idx[itrk]]=PIP;
+				}
 			}
-		}
-		if (dpid->q[itrk]==-1){//! Select -ve trks
-			if (_pid_tool->is_pim(dpid->dt_pim[itrk],dpid->p[itrk])){
-				dpid->id[itrk]=PIM;
-				dpid->h10IdxPim=dpid->h10_idx[itrk];
-				dH10->id[dpid->h10_idx[itrk]]==PIM;
+			if (dpid->q[itrk]==-1){//! Select -ve trks
+				if (!found_pim && _pid_tool->is_pim(dpid->dt_pim[itrk],dpid->p[itrk])){
+					found_pim=kTRUE;
+					hevtsum->Fill(EVT_PIM_FOUND);
+					dpid->id[itrk]=PIM;
+					dpid->h10IdxPim=dpid->h10_idx[itrk];
+					dH10->id[dpid->h10_idx[itrk]]=PIM;
+				}
 			}
 		}
 	}
 
-	//! 3. Finally decide if event passes selection criterion based on qskim and PID for ana2pi
-	if(dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG){
-	 	if (dpid->h10IdxP>0 && dpid->h10IdxPip>0 && dpid->h10IdxPim>0) {
-			hevtsum->Fill(EVT_PPIPPIM_EX);
-			pass = kTRUE;
-		}else{
-			hevtsum->Fill(EVT_OTHER);
-		}
+	if (dpid->h10IdxP>0 && dpid->h10IdxPip>0 && dpid->h10IdxPim>0) {
+		hevtsum->Fill(EVT_PPIPPIM_EX);
+		pass = kTRUE;
+	}else if (dpid->h10IdxP>0 && dpid->h10IdxPip>0 && dpid->h10IdxPim==0){
+		hevtsum->Fill(EVT_PPIP_EX);
+		pass = kTRUE;
+	}else if (dpid->h10IdxP>0 && dpid->h10IdxPip==0 && dpid->h10IdxPim>0){
+		hevtsum->Fill(EVT_PPIM_EX);
+		pass = kTRUE;
+	}else if (dpid->h10IdxP==0 && dpid->h10IdxPip>0 && dpid->h10IdxPim>0){
+		hevtsum->Fill(EVT_PIPPIM_EX);
+		pass = kTRUE;
+	}else{
+		hevtsum->Fill(EVT_OTHER);
 	}
-	if(dAna->skimq.isEVT_ETGT_2POS){
-		if (dpid->h10IdxP>0 && dpid->h10IdxPip>0) {
-			hevtsum->Fill(EVT_PPIP_EX);
-			pass = kTRUE;
-		}else{
-			hevtsum->Fill(EVT_OTHER);
-		}
-	}
-	if(dAna->skimq.isEVT_ETGT_1POS_ETGT_1NEG){
-		if(dpid->h10IdxP>0 && dpid->h10IdxPim>0) {
-			hevtsum->Fill(EVT_PPIM_EX);
-			pass = kTRUE;
-		}else if(dpid->h10IdxPip>0 && dpid->h10IdxPim>0) {
-			hevtsum->Fill(EVT_PIPPIM_EX);
-			pass = kTRUE;
-		}else{
-			hevtsum->Fill(EVT_OTHER);	
-		}
-	}
+
 	
 	//! If event passes, the call next processor
 	if (pass) {

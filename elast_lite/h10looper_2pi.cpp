@@ -16,8 +16,9 @@ h10looper_2pi::h10looper_2pi(TString h10type,TChain* h10chain,TString fout_name,
 		_hpfid=new TH1D("hpfid","PFID statistics",NUM_PFID_STATS,0.5,NUM_PFID_STATS+0.5);
 		_hpfid->GetXaxis()->SetBinLabel(PFID_TOT,"total");
 		_hpfid->GetXaxis()->SetBinLabel(PFID_P_IN,"p infid");
-		_hpfid->GetXaxis()->SetBinLabel(PFID_PIP_IN,"pip infid");
-		_hpfid->GetXaxis()->SetBinLabel(PFID_P_AND_PIP_IN,"p+pip infid");
+		_hpfid->GetXaxis()->SetBinLabel(PFID_PIP_IN,"#pi^{+} infid");
+		_hpfid->GetXaxis()->SetBinLabel(PFID_P_AND_PIP_IN,"p + #pi^{+} infid");
+		_hpfid->SetMinimum(0);
 	}
 
 	//! d2pi
@@ -94,29 +95,30 @@ void h10looper_2pi::Loop(){
 		if (_seq=="recon"){
 			_hevt->Fill(EVT_TRG);
 			//! EID
+			_heid->Fill(EID_TRG);
 			if (evt_trigger_electron()){
+				_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
+				_hefid->Fill(EFID_TOT);
 				if (electron_infid()){
+					_hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! pcorr
-					/*if (_dtyp=="exp"){
+					if (_dtyp=="exp"){
 						mom_corr_electron();
 						set_ekin();
-					}*/
-					//! PID
-					//! only top2':
-					//!   + only p and pip need to be detected
-					//!   + pim is always reconstructed using lvPim=lvW-(lvP+lvPip)
-					//!     i.e. it does not matter if it is detected or missing
-					int h10idx_p=found_hadron("p");
-					int h10idx_pip=found_hadron("pip");
-					if (h10idx_p>=1 && h10idx_pip>=1){ 
+					}
+					//! PID (top2')
+					_hpid->Fill(PID_TOT);
+					int h10idx_p=0,h10idx_pip=0;
+					if (pass_pid(h10idx_p,h10idx_pip)){
 						_hpid->Fill(PID_P_AND_PIP_FOUND);
 						_hevt->Fill(EVT_P_PIP);
 						set_hkin(h10idx_p, h10idx_pip);
-						//! PFID
+						//! PFID (top2')
+						_hpfid->Fill(PFID_TOT);
 						if (proton_infid() && pip_infid()){
 							_hpfid->Fill(PFID_P_AND_PIP_IN);
 							_hevt->Fill(EVT_P_PIP_INFID);
@@ -126,8 +128,8 @@ void h10looper_2pi::Loop(){
 							//! Q2-W kinematic cut
 							_hq2w_prec->Fill(_W,_Q2);
 							if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
-							_hevt->Fill(EVT_Q2W_KIN_PASS);
 							_hq2w_pstc->Fill(_W,_Q2);
+							_hevt->Fill(EVT_Q2W_KIN_PASS);
 
 							//! MM cut
 							//! + NOTE that _lvPim is recons'd with no knowledge of pim!
@@ -146,8 +148,8 @@ void h10looper_2pi::Loop(){
 								_hevt->Fill(EVT_2PI);
 								_hmm2_pstc_fW->Fill(mm2ppip);
 								_hmm_pstc_fW->Fill(mmppip);
-								_hmm2_prec[iw]->Fill(mm2ppip);
-								_hmm_prec[iw]->Fill(mmppip);
+								_hmm2_pstc[iw]->Fill(mm2ppip);
+								_hmm_pstc[iw]->Fill(mmppip);
 								fill_h8();
 							}
 						}
@@ -337,10 +339,39 @@ void h10looper_2pi::set_hkin(int h10idx_p/*=-1*/, int h10idx_pip/*=-1*/){
 
 }
 
+//! PID only for top2':
+//!   + only p and pip need to be detected
+//!   + pim is always reconstructed using lvPim=lvW-(lvP+lvPip)
+//!     i.e. it does not matter if it is detected or missing
+bool h10looper_2pi::pass_pid(int& h10idx_p, int& h10idx_pip){
+	bool ret=kFALSE;
+	h10idx_p=found_hadron("p");
+	h10idx_pip=found_hadron("pip");
+	/*if (h10idx_p>=1) {
+		_hpid->Fill(PID_P_FOUND);
+	}
+	if (h10idx_pip>=1) {
+		_hpid->Fill(PID_PIP_FOUND);
+	}*/
+	if (h10idx_p>=1 && h10idx_pip>=1 && h10idx_p!=h10idx_pip){
+		ret=kTRUE;
+	}
+	return ret;
+}
+
+//! PID only for top2'
+bool h10looper_2pi::pass_pfid(){
+	bool ret=kFALSE;
+	if (proton_infid() && pip_infid()){
+		ret=kTRUE;
+	}
+	return ret;
+}
+
 bool h10looper_2pi::proton_infid(){
-	_hpfid->Fill(PFID_TOT);
+	bool ret=kFALSE;
 	int sctr_p=get_sector(_phi_p);
-	bool ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
+	ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
 	if (ret==kTRUE){
 		_hpfid->Fill(PFID_P_IN);	
 	} 
@@ -348,9 +379,9 @@ bool h10looper_2pi::proton_infid(){
 }
 
 bool h10looper_2pi::pip_infid(){
-	_hpfid->Fill(PFID_TOT);
+	bool ret=kFALSE;
 	int sctr_pip=get_sector(_phi_pip);
-	bool ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
+	ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
 	if (ret==kTRUE){
 		 _hpfid->Fill(PFID_PIP_IN);
 	}

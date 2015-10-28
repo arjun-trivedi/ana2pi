@@ -47,8 +47,9 @@ protected:
 	       EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_PPIPPIM_EX
 	}; */  
 
-	static const Int_t NUM_EVTCUTS=6;
-	enum { EVT_NULL, EVT, EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};   
+	static const Int_t NUM_EVTCUTS=9;
+	enum { EVT_NULL, EVT, EVT_P_FOUND, EVT_PIP_FOUND, EVT_PIM_FOUND,
+		   EVT_PPIPPIM_EX, EVT_PPIP_EX, EVT_PPIM_EX, EVT_PIPPIM_EX, EVT_OTHER};  
 	     
 	//void updatePid();
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
@@ -80,12 +81,17 @@ ProcPid::ProcPid(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX,"e^{-} + #pi^{+} + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"e^{-} + p + #pi^{+} + #pi^{-}");*/
 
+	
 	hevtsum->GetXaxis()->SetBinLabel(EVT,"Total");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_P_FOUND,"p found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIP_FOUND,"#pi^{+} found");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIM_FOUND,"#pi^{-} found");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIPPIM_EX,"p + #pi^{+} + #pi^{-}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,"p + #pi^{+}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,"p + #pi^{-}");
-	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX,"#pi^{+} + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIP_EX,   "p + #pi^{+} + (pi^{-}_{m})");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PPIM_EX,   "p + (pi^{+}_{m}) + #pi^{-}");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_PIPPIM_EX, "(p_{m})+ #pi^{+} + #pi^{-}");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_OTHER,"other");
+	hevtsum->SetMinimum(0);
 }
 
 ProcPid::ProcPid(DataH10* dataH10,DataAna* dataAna)
@@ -141,10 +147,12 @@ void ProcPid::handle()
 			if (dH10->dc[i]>0) {
 				if (dH10->sc[i]>0) {
 					if (dH10->id[i]==PROTON){
+						hevtsum->Fill(EVT_P_FOUND);
 						dH10->id[i]=PROTON;
 						dAna->pid.h10IdxP=i;
 					}
 					if (dH10->id[i]==PIP){
+						hevtsum->Fill(EVT_PIP_FOUND);
 						dH10->id[i]=PIP;
 						dAna->pid.h10IdxPip=i;
 					}
@@ -154,6 +162,7 @@ void ProcPid::handle()
 			if (dH10->dc[i]>0) {
 				if (dH10->sc[i]>0) {
 					if (dH10->id[i]==PIM){
+						hevtsum->Fill(EVT_PIM_FOUND);
 						dH10->id[i]=PIM;
 						dAna->pid.h10IdxPim=i;
 					}
@@ -162,7 +171,8 @@ void ProcPid::handle()
 		}
 		
 	}
-	if(dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG){
+	//! Following  block of code re-written
+	/*if(dAna->skimq.isEVT_ETGT_2POS_ETGT_1NEG){
 	 	if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
 			hevtsum->Fill(EVT_PPIPPIM_EX);
 			pass = kTRUE;
@@ -188,7 +198,24 @@ void ProcPid::handle()
 		}else{
 			hevtsum->Fill(EVT_OTHER);	
 		}
+	}*/
+
+	if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0) {
+		hevtsum->Fill(EVT_PPIPPIM_EX);
+		pass = kTRUE;
+	}else if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim==0){
+		hevtsum->Fill(EVT_PPIP_EX);
+		pass = kTRUE;
+	}else if (dAna->pid.h10IdxP>0 && dAna->pid.h10IdxPip==0 && dAna->pid.h10IdxPim>0){
+		hevtsum->Fill(EVT_PPIM_EX);
+		pass = kTRUE;
+	}else if (dAna->pid.h10IdxP==0 && dAna->pid.h10IdxPip>0 && dAna->pid.h10IdxPim>0){
+		hevtsum->Fill(EVT_PIPPIM_EX);
+		pass = kTRUE;
+	}else{
+		hevtsum->Fill(EVT_OTHER);
 	}
+
 	
 	
 	if (pass) {

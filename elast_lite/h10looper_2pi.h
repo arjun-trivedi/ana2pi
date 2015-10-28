@@ -22,6 +22,10 @@ public :
 
    void reset_hkin();
    void set_hkin(int h10idx_p=-1, int h10idx_pip=-1); //! as per top2' logic
+
+   bool pass_pid(int& h10idx_p, int& h10idx_pip);
+   
+   bool pass_pfid();
    bool proton_infid();
    bool pip_infid();
 
