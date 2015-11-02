@@ -6,13 +6,16 @@
 
 #include <TLorentzRotation.h>
 
-h10looper_2pi::h10looper_2pi(TString h10type,TChain* h10chain,TString fout_name,Long64_t nentries,
-						     TString adtnl_cut_opt) : h10looper_e1f(h10type,h10chain,fout_name,nentries,adtnl_cut_opt)
+h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
+	                         TString cutsncors,
+	                         TString fout_name, Long64_t nentries,
+						     TString adtnl_opts) : h10looper_e1f(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts)
 {
 	Info("h10looper_2pi::h10looper_2pi","Setting up h10looper_2pi...\n");
 
 	//! output objects
 	if (_seq=="recon"){
+		_fout->mkdir("pfid")->cd();
 		_hpfid=new TH1D("hpfid","PFID statistics",NUM_PFID_STATS,0.5,NUM_PFID_STATS+0.5);
 		_hpfid->GetXaxis()->SetBinLabel(PFID_TOT,"total");
 		_hpfid->GetXaxis()->SetBinLabel(PFID_P_IN,"p infid");
@@ -96,35 +99,34 @@ void h10looper_2pi::Loop(){
 			_hevt->Fill(EVT_TRG);
 			//! EID
 			_heid->Fill(EID_TRG);
-			if (evt_trigger_electron()){
+			if ( !_do_eid  || (_do_eid && evt_trigger_electron()) ){
 				_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
 				_hefid->Fill(EFID_TOT);
-				if (electron_infid()){
+				if ( !_do_efid || (_do_efid && electron_infid()) ){
 					_hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! pcorr
-					if (_dtyp=="exp"){
+					if (_do_pcorr){
 						mom_corr_electron();
 						set_ekin();
 					}
 					//! PID (top2')
 					_hpid->Fill(PID_TOT);
 					int h10idx_p=0,h10idx_pip=0;
-					if (pass_pid(h10idx_p,h10idx_pip)){
+					if ( !_do_pid || (_do_pid && pass_pid(h10idx_p,h10idx_pip)) ){
 						_hpid->Fill(PID_P_AND_PIP_FOUND);
 						_hevt->Fill(EVT_P_PIP);
 						set_hkin(h10idx_p, h10idx_pip);
 						//! PFID (top2')
 						_hpfid->Fill(PFID_TOT);
-						if (proton_infid() && pip_infid()){
+						if ( !_do_pfid || (_do_pfid && proton_infid() && pip_infid()) ){
 							_hpfid->Fill(PFID_P_AND_PIP_IN);
 							_hevt->Fill(EVT_P_PIP_INFID);
 							
 							//! Event selection
-
 							//! Q2-W kinematic cut
 							_hq2w_prec->Fill(_W,_Q2);
 							if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
@@ -144,7 +146,7 @@ void h10looper_2pi::Loop(){
 							_hmm_prec[iw]->Fill(mmppip);
 
 							//! Apply MM cut
-							if (mm2ppip>0 && mm2ppip<0.04){
+							if ( !_do_evtsel_2pi || (_do_evtsel_2pi && mm2ppip>0 && mm2ppip<0.04) ){
 								_hevt->Fill(EVT_2PI);
 								_hmm2_pstc_fW->Fill(mm2ppip);
 								_hmm_pstc_fW->Fill(mmppip);
@@ -154,7 +156,6 @@ void h10looper_2pi::Loop(){
 							}
 						}
 					}
-					
 				}
 			}
 		}else if (_seq=="thrown"){

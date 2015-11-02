@@ -15,8 +15,10 @@
 class h10looper_2pi: public h10looper_e1f {
 public :
 
-   h10looper_2pi(TString h10type,TChain* h10chain,TString fout_name, Long64_t nentries,
-                 TString adtnl_cut_opt);
+   h10looper_2pi(TString h10type,TChain* h10chain,
+                 TString cutsncors,
+                 TString fout_name, Long64_t nentries,
+                 TString adtnl_opts);
    virtual ~h10looper_2pi();
    virtual void     Loop();
 

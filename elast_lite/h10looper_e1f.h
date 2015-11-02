@@ -44,13 +44,22 @@ public :
    TString _rctn;
    TString _seq;
 
+   //! cutsncors: applicable only for Reconstructed Events
+   bool _do_eid;
+   bool _do_efid;
+   bool _do_pcorr;
+   bool _do_pid;
+   bool _do_pfid;
+   bool _do_evtsel_2pi;
+   bool _do_evtsel_elast;
+
    //! fout
    TFile* _fout;
 
    //! nentries_to_proc
    Long64_t _nentries_to_proc;
 
-   //! cuts to be made in addition to 'dflt'
+   //! additional options
    //! eid: new cuts and corrections
    bool _use_cut_ECin_min; //!1
    bool _use_cut_ECfid; //!2
@@ -61,9 +70,7 @@ public :
    bool _use_dc_stat;//!6
    //! Evans's EFID
    bool _use_ep_efid;//!7
-   //! proton 
-   bool _use_proton;//!8
-
+   
    //! output objects
    //! + Only cuts-n-corrs objects common to 'elast' and '2pi':
    //!    + Event-level,EID,EFID,pcorr,PID 
@@ -387,8 +394,10 @@ public :
    TBranch        *b_lec_z;   //!
    TBranch        *b_lec_c2;   //!
 
-   h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name, Long64_t nentries,
-                 TString adtnl_cut_opt);
+   h10looper_e1f(TString h10type,TChain* h10chain,
+                 TString cutsncors, 
+                 TString fout_name, Long64_t nentries,
+                 TString adtnl_opts);
    virtual ~h10looper_e1f();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -398,8 +407,10 @@ public :
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 
+   void setup_cutsncors(TString cutsncors);
+
    void setup_eid_cutpars(TString dtyp);
-   void setup_adtnl_cut_opts(TString adtnl_cut_opt);
+   void setup_adtnl_opts(TString adtnl_opts);
 
    bool evt_trigger_electron();
    void mom_corr_electron();

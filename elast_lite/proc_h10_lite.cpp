@@ -15,6 +15,7 @@ using namespace std;
 //! user input
 TString h10lst="";
 TString h10type="";
+TString cutsncors="";
 TString fout_name="";
 //! + nentries can be specified by user
 //! + default=0, in which case number of entries in TChain is used, as per logic in h10looper.C:
@@ -24,7 +25,7 @@ Long64_t nentries=0;//[08-09-15]used to be 1B, till I cleaned up the "logic"
 
 //! cuts to be made in addition to 'dflt'
 //! syntax= 1:2:3:4: i.e. number followed by colon
-TString adtnl_cut_opt="";
+TString adtnl_opts="";
 
 void parseArgs(int argc, char* const argv[]);
 
@@ -36,7 +37,7 @@ int main(int argc,  char* const argv[])
 	parseArgs(argc, argv);
 	
 	//! Make sure user input is OK
-	if (h10lst==""||h10type==""||fout_name==""){
+	if (h10lst==""||h10type==""||cutsncors==""||fout_name==""){
 		printf("Not all arguments entered\n");
 		printf("Execute \"proc_h10_lite -h\" to see correct usage\n");
 		return 0;
@@ -63,8 +64,8 @@ int main(int argc,  char* const argv[])
 		printf("Incorrect seq entered: %s\n", dtyp.Data());
 		return 0;
 	}
-	Info("proc_h10_lite","h10lst=%s,h10type=%s,fout_name=%s,nentries=%llu\n",
-		h10lst.Data(),h10type.Data(),fout_name.Data(),nentries);
+	Info("proc_h10_lite","h10lst=%s,h10type=%s,cutsncors=%s,fout_name=%s,nentries=%llu\n,adtnl_opts=%s",
+		h10lst.Data(),h10type.Data(),cutsncors.Data(),fout_name.Data(),nentries,adtnl_opts.Data());
 
 	//! Now setup h10looper and call h10looper::Loop()
 	//! h10chain
@@ -73,12 +74,12 @@ int main(int argc,  char* const argv[])
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 	//! Set up h10looper	
 	if (rctn=="2pi"){
-		h10looper_2pi* h10lpr_2pi=new h10looper_2pi(h10type,h10chain,fout_name,nentries,adtnl_cut_opt);
+		h10looper_2pi* h10lpr_2pi=new h10looper_2pi(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts);
 		h10lpr_2pi->Loop();
 		delete h10chain;
 		delete h10lpr_2pi;
 	}else if (rctn=="elast"){
-		h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,fout_name,nentries,adtnl_cut_opt);
+		h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts);
 		h10lpr_e1f->Loop();	
 		delete h10chain;
 		delete h10lpr_e1f;
@@ -97,10 +98,10 @@ void parseArgs(int argc, char* const argv[]){
 	extern int optind, optopt, opterr;
 	int index;
 
-	while ((c = getopt(argc, argv, "hi:t:o:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hi:t:c:o:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<rctn>:<seq> -o <fout_name> -n <nevts> [adtnl_cut_opt]\n");
+			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<rctn>:<seq> -c <cutsncors> -o <fout_name> -n <nevts> [adtnl_opts]\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<rcnt>=2pi/elast\n");
@@ -111,6 +112,8 @@ void parseArgs(int argc, char* const argv[]){
 			break;	
 		case 't':
 			h10type = optarg;
+		case 'c':
+			cutsncors = optarg;
 			break;
 		case 'o':
 			fout_name = optarg;
@@ -135,8 +138,8 @@ void parseArgs(int argc, char* const argv[]){
 	printf("argv[%d]=%s\n",argc-1,argv[argc-1]);
 	printf("optind=%d\n",optind);*/
 
-	//! Get adtnl_cut_opt, which is the last option passed to the program
-	adtnl_cut_opt=argv[argc-1];
+	//! Get adtnl_opts, which is the last option passed to the program
+	adtnl_opts=argv[argc-1];
 	/*for (index=optind;index<argc;index++){
 		string arg=argv[index];
 	}*/

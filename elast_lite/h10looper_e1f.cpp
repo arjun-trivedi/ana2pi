@@ -10,8 +10,10 @@
 #include "fidfuncs.C"
 #include "pid.h"
 
-h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,Long64_t nentries,
-						     TString adtnl_cut_opt) : fChain(0) 
+h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
+                             TString cutsncors,
+	                         TString fout_name, Long64_t nentries,
+						     TString adtnl_opts) : fChain(0) 
 {
 	Info("h10looper_e1f::h10looper_e1f","Setting up h10looper_e1f...\n");
 
@@ -35,8 +37,13 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	Info("h10looper_e1f::h10looper_e1f", "Number of entries in TChain =  %llu",nentries_chain);
 	Info("h10looper_e1f::h10looper_e1f", "Number of entries to processess =  %llu",_nentries_to_proc);
 
+	//! cutsncors
+	if (_seq=="recon"){
+		setup_cutsncors(cutsncors);
+	}
+
 	//! cuts to be made in addition to 'dflt'
-    setup_adtnl_cut_opts(adtnl_cut_opt);
+    setup_adtnl_opts(adtnl_opts);
 	
 	//! set up eid
 	Info("h10looper_e1f::h10looper_e1f", "Setting up eid pars for dtyp=%s",_dtyp.Data());
@@ -85,6 +92,7 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 	}
 	if (_seq=="recon"){
 		//! EID
+		_fout->mkdir("eid")->cd();
 		_heid=new TH1D("heid","EID statistics",NUM_EID_STATS,0.5,NUM_EID_STATS+0.5);
 		_heid->GetXaxis()->SetBinLabel(EID_TRG,"trgr");
 		_heid->GetXaxis()->SetBinLabel(EID_GPART0,"gpart>0");
@@ -101,31 +109,31 @@ h10looper_e1f::h10looper_e1f(TString h10type,TChain* h10chain,TString fout_name,
 		_heid->GetXaxis()->SetBinLabel(EID_ZVTX,"pass zvrtx");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
 		_heid->GetXaxis()->SetBinLabel(EID_E,"e found");
+		
 		//! EFID
+		_fout->mkdir("efid")->cd();
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
 		_hefid->GetXaxis()->SetBinLabel(EFID_IN,"infid");
 		//! pcorr
-		if (_dtyp=="exp"){
-			//!pcorr
-			_hpcorr_dpVp=new TH2D("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
-			_hpcorr_dcx=new TH1D("hdcx", "#Deltacx",60,-0.01,0.01);
-			_hpcorr_dcy=new TH1D("hdcy", "#Deltacy",60,-0.01,0.01);
-			_hpcorr_dcz=new TH1D("hdcz", "#Deltacz",60,-0.01,0.01);
-			_hpcorr_dp=new TH1D("hdp", "#Deltap", 160,-0.08,0.08);
-		}
+		_fout->mkdir("pcorr")->cd();
+		_hpcorr_dpVp=new TH2D("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
+		_hpcorr_dcx=new TH1D("hdcx", "#Deltacx",60,-0.01,0.01);
+		_hpcorr_dcy=new TH1D("hdcy", "#Deltacy",60,-0.01,0.01);
+		_hpcorr_dcz=new TH1D("hdcz", "#Deltacz",60,-0.01,0.01);
+		_hpcorr_dp=new TH1D("hdp", "#Deltap", 160,-0.08,0.08);
 		//! PID
-		if (_rctn=="2pi" || (_rctn=="elast" && _use_proton)){
-			_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
-			_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
-			_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"p found");
-			_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"#pi^{+} found");
-			_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"#pi^{-} found");
-			_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p + #pi^{+}");
-		}
+		_fout->mkdir("pid")->cd();
+		_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
+		_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
+		_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"p found");
+		_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"#pi^{+} found");
+		_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"#pi^{-} found");
+		_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p + #pi^{+}");
 	}
 	//! delast
 	if (_rctn=="elast"){
+		_fout->mkdir("delast")->cd();
 		_hW=new TH1D("hW","hW",250,0,5);
 		_helast=new TH1D("helast","helast",100,0.7,1.2);
 		_hf=new TH1D*[6];
@@ -297,25 +305,25 @@ void h10looper_e1f::Loop(){
 			_hevt->Fill(EVT_TRG);
 			//! EID
 			_heid->Fill(EID_TRG);
-			if (evt_trigger_electron()){
+			if ( !_do_eid  || (_do_eid && evt_trigger_electron()) ){
 				_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
 				_hefid->Fill(EFID_TOT);
-				if (electron_infid()){
+				if ( !_do_efid || (_do_efid && electron_infid()) ){
 					_hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! PCORR
-					if (_dtyp=="exp"){
+					if (_do_pcorr){
 						mom_corr_electron();
 						set_ekin();
 					}
 					//! PID
 					_hpid->Fill(PID_TOT);
-					if ( !_use_proton || (_use_proton && found_hadron("p")>=1) ){
+					if ( !_do_pid || (_do_pid && found_hadron("p")>=1) ){
 						_hpid->Fill(PID_P_FOUND);
-						if (_W>_W_CUT_MIN && _W<_W_CUT_MAX){
+						if (!_do_evtsel_elast || (_do_evtsel_elast && _W>_W_CUT_MIN && _W<_W_CUT_MAX) ){
 							_hevt->Fill(EVT_ELSTC);
 							make_delast();
 						}
@@ -817,7 +825,39 @@ bool h10looper_e1f::pass_zvtx(){
 	return (zvtx>_z_vtx_min[sctr-1] && zvtx<_z_vtx_max[sctr-1]);
 }
 
-void h10looper_e1f::setup_adtnl_cut_opts(TString adtnl_cut_opt){
+void h10looper_e1f::setup_cutsncors(TString cutsncors){
+	Info("h10looper_e1f::setup_cutsncors","***cutsncors=%s***",cutsncors.Data());
+	//! default values
+	_do_eid=kFALSE;
+	_do_efid=kFALSE;
+	_do_pcorr=kFALSE;
+	_do_pid=kFALSE;
+	_do_pfid=kFALSE;
+	_do_evtsel_2pi=kFALSE;
+	_do_evtsel_elast=kFALSE;
+
+	//! Now setup as per cutsncors
+	if (cutsncors.Contains("eid:"))          _do_eid=kTRUE;
+	if (cutsncors.Contains("efid:"))         _do_efid=kTRUE;
+	if (cutsncors.Contains("pcorr:"))        _do_pcorr=kTRUE;
+	if (cutsncors.Contains("pid:"))          _do_pid=kTRUE;
+	if (cutsncors.Contains("pfid:"))         _do_pfid=kTRUE;
+	if (cutsncors.Contains("evtsel_2pi:"))   _do_evtsel_2pi=kTRUE;
+	if (cutsncors.Contains("evtsel_elast:")) _do_evtsel_elast=kTRUE;
+	
+	Info("h10looper_e1f::setup_cutsncors","The following cuts-n-corrections will be made:");
+	//! eid: new cuts and corrections
+	if (_do_eid)          Info("","do_eid");
+	if (_do_efid)         Info("","do_efid");
+	if (_do_pcorr)        Info("","do_pcorr");
+	if (_do_pid)          Info("","do_pid");
+	if (_do_pfid)         Info("","do_pfid");
+	if (_do_evtsel_2pi)   Info("","do_evtsel_2pi");
+	if (_do_evtsel_elast) Info("","do_evtsel_elast");
+	Info("","***********");
+}
+
+void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	//! default values
 	//! cuts to be made in addition to 'dflt'
     //! eid: new cuts and corrections
@@ -830,21 +870,19 @@ void h10looper_e1f::setup_adtnl_cut_opts(TString adtnl_cut_opt){
 	_use_dc_stat=kTRUE;
 	//! Evans's EFID
 	_use_ep_efid=kFALSE;
-	//! proton
-	_use_proton=kFALSE;
 
-	//! Now set as per adtnl_cut_opt
-	if (adtnl_cut_opt.Contains("1:")) _use_cut_ECin_min=kTRUE;
-	if (adtnl_cut_opt.Contains("2:")) _use_cut_ECfid=kTRUE;
-	if (adtnl_cut_opt.Contains("3:")) _use_cut_zvtx=kTRUE;
-	if (adtnl_cut_opt.Contains("4:")) _use_corr_sf_etot=kTRUE;
-	if (adtnl_cut_opt.Contains("5:")) _use_SChit=kFALSE;
-	if (adtnl_cut_opt.Contains("6:")) _use_dc_stat=kFALSE;
-	if (adtnl_cut_opt.Contains("7:")) _use_ep_efid=kTRUE;
-	if (adtnl_cut_opt.Contains("8:")) _use_proton=kTRUE;
-
-	Info("h10looper_e1f::setup_adtnl_cut_opts","***adtnl_cut_opt=%s***",adtnl_cut_opt.Data());
-	Info("h10looper_e1f::setup_adtnl_cut_opts","The following cuts-corrections will be made in addition to \'dflt\':");
+	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
+	
+	//! Now set as per adtnl_opts
+	if (adtnl_opts.Contains("1:")) _use_cut_ECin_min=kTRUE;
+	if (adtnl_opts.Contains("2:")) _use_cut_ECfid=kTRUE;
+	if (adtnl_opts.Contains("3:")) _use_cut_zvtx=kTRUE;
+	if (adtnl_opts.Contains("4:")) _use_corr_sf_etot=kTRUE;
+	if (adtnl_opts.Contains("5:")) _use_SChit=kFALSE;
+	if (adtnl_opts.Contains("6:")) _use_dc_stat=kFALSE;
+	if (adtnl_opts.Contains("7:")) _use_ep_efid=kTRUE;
+	
+	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
 	if (_use_cut_ECin_min) Info("","use_cut_ECin_min");
 	if (_use_cut_ECfid) Info("","use_cut_ECfid");
@@ -855,7 +893,5 @@ void h10looper_e1f::setup_adtnl_cut_opts(TString adtnl_cut_opt){
 	if (!_use_dc_stat) Info("","not_use_dc_stat");
 	//! Evans's EFID
 	if(_use_ep_efid) Info("","use_ep_efid");
-	//! proton 
-	if (_use_proton) Info("","use_proton");
 	Info("","***********");
 }
