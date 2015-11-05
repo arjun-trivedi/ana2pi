@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ##########################################################
-# [02-18-15]
-# + Get h10.lst files for all E1F Runs from ${HOME}/ongoing/e1f_allruns_h10lst
-# and submit h10->dlum jobs for each of them.
+# [11-02-15]
+# + Get h10.lst files for all E1F Runs from ${HOME}/ongoing/e1f_allruns_h10lst_e
+# and submit h10->d2pi jobs for each of them.
 # + The h10.lst files contain just the root file names for each Run, therefore
 # this script additionally appends the full /mss path to the files and lists them
 # as separate input files for the job
@@ -18,7 +18,7 @@ if [[ ! -d $OUTDIR ]]; then
     mkdir -p $OUTDIR
 fi
 
-for h10lst in $(ls  ${HOME}/ongoing/e1f_goldenruns_h10lst/*.lst);
+for h10lst in $(ls  ${HOME}/ongoing/e1f_goldenruns_h10lst_e/*.lst);
 do
   runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
   JSUBFILE=$SUBDIR/$runnum.sub
@@ -44,7 +44,7 @@ do
         <Input src=\"$h10lst\" dest=\"h10.lst\" />
         `for f in $(cat $h10lst)
          do
-           echo \<Input src='"'mss:$E1FD/$f'"' dest='"'$f'"' /\> 
+           echo \<Input src='"'mss:$E1FD_E/$f'"' dest='"'$f'"' /\> 
          done`
         <Output src=\"d2pi.root\" dest=\"$OUTDIR/$runnum.root\"/>
     </Job>
