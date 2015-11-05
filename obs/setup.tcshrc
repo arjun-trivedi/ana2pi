@@ -28,6 +28,8 @@ endif
 setenv OBSDIR "$D2PIDIR"
 alias gleb_obs 'gqview /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/gleb_obs/ &'
 alias isupov_obs 'gqview /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/isupov_obs/ &'
+alias garillon_acc_7D 'evince -w /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/garillon_obs/Acc7D_Accgt0.pdf &'
+alias garillon_acc_7D_err 'evince -w /home/trivedia/Dropbox/ongoing/Physics/NuclearPhysics/at-research/garillon_obs/ErrAccOvrAccvsAcc7D_Accgt0.pdf &'
 
 ##-- dir where h10.lst and d2pi are kept
 #if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then

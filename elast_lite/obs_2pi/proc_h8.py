@@ -61,17 +61,22 @@ class ProcH8:
 		+ if self.USEHEL=true:  Not implemented yet!
 	
 	"""
-	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.300,wmax=2.125,usehel=False,dbg=False):
+	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,
+		         acc_rel_err_cut=-1,
+		         usehel=False,dbg=False):
 		self.SIMNUM=simnum
+
+		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
+		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
+
+		self.ACC_REL_ERR_CUT=acc_rel_err_cut
+		print "ACC_REL_ERR_CUT=",self.ACC_REL_ERR_CUT
 
 		self.USEHEL=usehel
 		print "USEHEL=",self.USEHEL
 
 		self.DBG=dbg
 		print "DBG=",self.DBG
-
-		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
-		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
 
 		self.DATADIR=obsdir
 
@@ -83,7 +88,7 @@ class ProcH8:
 		#! Prepare OUTDIR
 		self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
 		if not os.path.exists(self.OUTDIR): 
-			sys.exit("Path %s does not exist. Exiting."%self.OUTDIR)
+			os.makedirs(self.OUTDIR)
 		#! + Prepare FOUTNAME 
 		#! + Note only FOUTNAME is created here; FOUT creation is handled, with attention to 
 		#!   using multiprocessing, by 'proc()'. See doc. of 'proc()' for more details
@@ -200,6 +205,9 @@ class ProcH8:
 				h5['SA',vst]=h5['SR',vst].Clone()
 				h5['SA',vst].Divide(h5['ST',vst])
 				thntool.SetUnderOverFLowBinsToZero(h5['SA',vst])
+				#! for SA,SR SetBinContentsAboveRelBinErrThresholdToZero()
+				if (self.ACC_REL_ERR_CUT>0):
+					thntool.SetBinContentsAboveRelBinErrThresholdToZero(h5['SA',vst],h5['SR',vst],0.3)
 				#! SC
 				h5['SC',vst]=h5['SR',vst].Clone()
 				h5['SC',vst].Divide(h5['SA',vst])

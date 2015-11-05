@@ -40,8 +40,8 @@ else:
 
 #! set Q2-W kinematic limits in which to extract yields
 #! can make user input later
-q2min,q2max=1.25,2.25
-wmin,wmax=1.575,1.725
+q2min,q2max=1.25,5.25#1.25,2.25#1.25,5.25
+wmin,wmax=1.400,2.125#1.400,2.125#1.575,1.725
 print "Displaying 1D-Obs for obsdir simnum norm dbg",obsdir,simnum,norm,dbg
 do=DispObs(obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg)
 #! Using new machinery

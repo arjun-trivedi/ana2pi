@@ -161,7 +161,7 @@ class DispObs:
 		         (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
 				          
 		c=ROOT.TCanvas("c","c",1000,1000)
-		pad_t=ROOT.TPad("pad_t","Title pad",0.25,0.935,0.75,1.00)
+		pad_t=ROOT.TPad("pad_l","Legend pad",0.25,0.935,0.75,1.00)
 		pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
   		if (self.NORM!=True):pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
   		pad_p.Draw()
@@ -177,6 +177,13 @@ class DispObs:
 			print "pad,vst,var=",pad,vst,var
 			gpad=pad_p.cd(pad)
 			if self.NORM==True:
+				#! First set minimum(=0) and maximum of y-axis
+				maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
+				maximum=max(maxl)
+				for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
+					htmp.SetMinimum(0.)
+					htmp.SetMaximum(maximum+0.5)
+				#! Now draw
 				for i,seq in enumerate(self.SEQS):
 					draw_opt="" if i==0 else "same"
 					h1[seq,vst,var].Draw(draw_opt)
@@ -481,23 +488,31 @@ class DispObs:
 				
 				#! Now draw
 				ROOT.gStyle.SetOptStat(0)
-				c=ROOT.TCanvas()
-				c.Divide(2,1) #! One for the plot and the other for the large legend
+				c=ROOT.TCanvas("c","c",1200,800)
+				#c.Divide(2,1) #! One for the plot and the other for the large legend
+				pad_l=ROOT.TPad("pad_l","Title pad",0.70,0.00,1.00,1.00)
+				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,0.70,1.00)
+				pad_l.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+				pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+				pad_l.Draw()
+  				pad_p.Draw()
 				#! legend
-				l=ROOT.TLegend(0.0,0.00,1.0,1.00)
+				l=ROOT.TLegend(0.0,0.00,1.00,1.00)
 				l.SetFillStyle(0)
 				l.SetBorderSize(0)
-				l.SetTextSize(0.02)
-				gpad=c.cd(1)
-				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+				l.SetTextSize(0.03)#0.02
+				#gpad=c.cd(1)
+				#gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+				pad_p.cd()
 				for i,k in enumerate(h1p):
 					seq,vst,var=k[0],k[1],k[2]
 					draw_opt=""
 					if i>0: draw_opt="same"
 					h1p[k].Draw(draw_opt)
 					l.AddEntry(h1p[k],"%s_VST%d_%s"%(seq,vst,var),"p")
-				gpad=c.cd(2)
-				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+				#gpad=c.cd(2)
+				#gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+				pad_l.cd()
 				l.Draw()
 				c.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj,iq2bin+1))
 
@@ -788,9 +803,16 @@ class DispObs:
 		#! 4. Now plot
 		fig=plt.figure()
 		ax=plt.subplot(111)
-		# clrd={'1.25-1.75':'red','1.75-2.25':'brown','2.25-2.75':'magenta','2.75-3.25':'orange',
+		#clrd={'1.25-1.75':'red','1.75-2.25':'brown','2.25-2.75':'magenta','2.75-3.25':'orange',
 		#       '3.25-3.75':'yellow','3.75-4.25':'green','4.25-4.75':'cyan','4.75-5.25':'blue'}
-		clrd={('1.25-1.75',1):'red',('1.25-1.75',2):'brown',('1.25-1.75',3):'magenta'}
+		clrd={('1.25-1.75',1):'red',('1.25-1.75',2):'brown',('1.25-1.75',3):'magenta',
+		      ('1.75-2.25',1):'cyan',('1.75-2.25',2):'blue',('1.75-2.25',3):'green',
+		      ('2.25-2.75',1):'orange',('2.25-2.75',2):'yellow',('2.25-2.75',3):'black',
+		      ('2.75-3.25',1):'cyan',('2.75-3.25',2):'blue',('2.75-3.25',3):'green',
+		      ('3.25-3.75',1):'cyan',('3.25-3.75',2):'blue',('3.25-3.75',3):'green',
+		      ('3.75-4.25',1):'cyan',('3.75-4.25',2):'blue',('3.75-4.25',3):'green',
+		      ('4.25-4.75',1):'cyan',('4.25-4.75',2):'blue',('4.25-4.75',3):'green',
+		      ('4.75-5.25',1):'orange',('4.75-5.25',2):'yellow',('4.75-5.25',3):'black'}
 		mrkrd={'EC':'o','EF':'^'}
 		for k in oy.keys():
 			seq,vst,q2wbin=k[0],k[1],k[2]
@@ -805,7 +827,7 @@ class DispObs:
 			ax.grid(1)
 			ax.set_ylim(0,10)
 			ax.set_ylabel(r'$\mu b$',fontsize='xx-large')
-		ax.legend(loc='lower right')
+		ax.legend(loc='upper left',prop={'size':8}) #loc='lower right'
 		fig.savefig('%s/integ_yield.png'%(outdir))
 		#fig.savefig('%s/integ_yield.eps'%(outdir))
 
