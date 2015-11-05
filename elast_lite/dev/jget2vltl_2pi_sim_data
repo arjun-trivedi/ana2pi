@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#! sim1: /mss/home/atrivedi/batchdata/e1f/sim/Jun14/2pi_1B_06194
+#! sim2: /mss/home/atrivedi/batchdata/e1f/sim/Jul14/2pi_1B_071014
+#! sim3: /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_072814
+#! sim4: /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_091714
+#! sim5: /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_020615 (W<2.125 GeV)
+
+simoutdirl=(/mss/home/atrivedi/batchdata/e1f/sim/Jun14/2pi_1B_06194 /mss/home/atrivedi/batchdata/e1f/sim/Jul14/2pi_1B_071014 /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_072814 /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_091714 /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_020615)
+
+isim=0
+for simoutdir in "${simoutdirl[@]}";do
+  arr=(${simoutdir//\// })
+  simname=${arr[${#arr[@]}-1]} #! does not work: ${arr[-1]}
+  echo "simnum:simname=$((isim + 1)):$simname"
+
+  #! Remove any existing file in $H10DIR_SIM
+  echo ">rm $H10DIR_SIM/$simname/recon/*.root"
+  rm $H10DIR_SIM/$simname/recon/*.root
+  #! Now get files from /mss
+  echo ">jget `ls $simoutdir/recon/*.root|grep -v ana` $H10DIR_SIM/$simname/recon/ >& /tmp/atrivedi/jget_$simname.log&"
+  jget `ls $simoutdir/recon/*.root|grep -v ana` $H10DIR_SIM/$simname/recon/ >& /tmp/atrivedi/jget_$simname.log&
+  
+  isim=$((isim + 1))
+done
