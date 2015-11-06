@@ -32,7 +32,7 @@ if [[ -n $1 && $1 == "touch" ]]; then
     echo "touching simnum:simname=$((isim + 1)):$simname"
     for f in `ls $H10DIR_SIM/$simname/recon/*.root`;do
       echo ">touch $f"
-      #touch $f
+      touch $f
     done
     isim=$((isim + 1))
     echo "***"
