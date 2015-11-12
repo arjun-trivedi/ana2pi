@@ -870,6 +870,9 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	_use_dc_stat=kTRUE;
 	//! Evans's EFID
 	_use_ep_efid=kFALSE;
+	//! Evans's PFID
+	_use_ep_pfid=kFALSE;
+
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
 	
@@ -881,6 +884,7 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains("5:")) _use_SChit=kFALSE;
 	if (adtnl_opts.Contains("6:")) _use_dc_stat=kFALSE;
 	if (adtnl_opts.Contains("7:")) _use_ep_efid=kTRUE;
+	if (adtnl_opts.Contains("8:")) _use_ep_pfid=kTRUE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
@@ -893,5 +897,7 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (!_use_dc_stat) Info("","not_use_dc_stat");
 	//! Evans's EFID
 	if(_use_ep_efid) Info("","use_ep_efid");
+	//! Evans's PFID
+	if(_use_ep_pfid) Info("","use_ep_pfid");
 	Info("","***********");
 }

@@ -3,7 +3,7 @@ from disp_obs import DispObs
 import sys
 
 #! ---------------------
-#  dobs_1D [obsdir] [simnum=siml] [norm=False] [dbg=False]
+#  dobs_1D [obsdir] [simnum=siml] [norm=False] [q2min=1.25] [q2max=5.25] [wmin=1.400] [wmax=2.125] [dbg=False]
 #!----------------------
 #! Get obsdir
 if len(sys.argv)==1:
@@ -27,10 +27,31 @@ if len(sys.argv)>3: #! User input norm, else use norm=False
 else:
 	norm=False
 
-if len(sys.argv)>4: #! User input dbg, else use dbg=False
-	if sys.argv[4]=="False":
+if len(sys.argv)>4: #! User input q2min 
+        q2min=float(sys.argv[4])
+else:
+        q2min=1.25
+
+if len(sys.argv)>5: #! User input q2max 
+        q2max=float(sys.argv[5])
+else:
+        q2max=5.25
+
+if len(sys.argv)>6: #! User input wmin 
+        wmin=float(sys.argv[6])
+else:
+        wmin=1.400
+
+if len(sys.argv)>7: #! User input q2min 
+        wmax=float(sys.argv[7])
+else:
+        wmax=2.125
+
+
+if len(sys.argv)>8: #! User input dbg, else use dbg=False
+	if sys.argv[8]=="False":
                 dbg=False
-        elif sys.argv[4]=="True":
+        elif sys.argv[8]=="True":
                 dbg=True
         else:
                 print "Please enter dbg=True or False!"
@@ -38,13 +59,8 @@ if len(sys.argv)>4: #! User input dbg, else use dbg=False
 else:
 	dbg="False"
 
-#! set Q2-W kinematic limits in which to extract yields
-#! can make user input later
-q2min,q2max=1.25,5.25#1.25,2.25#1.25,5.25
-wmin,wmax=1.400,2.125#1.400,2.125#1.575,1.725
-print "Displaying 1D-Obs for obsdir simnum norm dbg",obsdir,simnum,norm,dbg
-do=DispObs(obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg)
-#! Using new machinery
-do.disp_1D()
-if norm==True:#! Integrated yield direct from h5 (currently implemented, for tech. reasons, only for norm=True)
-	do.disp_itg_yld_drct_from_h5()
+print "Displaying 1D-Obs for obsdir simnum norm q2min q2max wmin wmax dbg",obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg
+#do=DispObs(obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg)
+#do.disp_1D()
+#if norm==True:#! Integrated yield direct from h5 (currently implemented, for tech. reasons, only for norm=True)
+#	do.disp_itg_yld_drct_from_h5()

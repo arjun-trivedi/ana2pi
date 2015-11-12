@@ -70,6 +70,8 @@ public :
    bool _use_dc_stat;//!6
    //! Evans's EFID
    bool _use_ep_efid;//!7
+   //! Evans's PFID
+   bool _use_ep_pfid; //!8
    
    //! output objects
    //! + Only cuts-n-corrs objects common to 'elast' and '2pi':

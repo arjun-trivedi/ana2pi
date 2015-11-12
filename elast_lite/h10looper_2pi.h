@@ -69,6 +69,9 @@ public :
    static const int NUM_PFID_STATS=4;
    enum {PFID_NULL, PFID_TOT, PFID_P_IN, PFID_PIP_IN, PFID_P_AND_PIP_IN};
    TH1D* _hpfid;
+   //! _hpfid_p/pip[2], before and after cut
+   TH2F** _hpfid_p;
+   TH2F** _hpfid_pip;
 
    //! d2pi
    //! Q2-W

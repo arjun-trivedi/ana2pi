@@ -1,14 +1,13 @@
 #include "TF1.h"
+#include "TLine.h"
+#include "TString.h"
+#include "TMath.h"
 using namespace TMath;
-
-const Int_t ID_P = 2212;
-const Int_t ID_PIP = 211;
-const Int_t ID_PIM = -211;
 
 //! + NPRT=2=proton and pip
 //! + Fiducial cuts for pim are momentum dependent and therefore, different
 const int NPRT=2; 
-enum {P,PIP};
+enum {IDX_P,IDX_PIP};
 TString PRT_NAME[]={"p","pip"};
 
 const int NDTYP=2;
@@ -81,6 +80,7 @@ float Cl[NPRT][NDTYP][NSCTR]={
 
 
 Double_t dPhiFid_hdrn(Double_t *x, Double_t *parms) {
+    //printf("fidfuncs_hadrons.C: dPhiFid_hdrn()\n");
 	Double_t theta = x[0];
 	Double_t A = parms[0];
 	Double_t B = parms[1];
@@ -89,7 +89,8 @@ Double_t dPhiFid_hdrn(Double_t *x, Double_t *parms) {
 	return phib;
 }
 
-TF1* fPhiFid_hdrn_h(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {	
+TF1* fPhiFid_hdrn_h(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+    //printf("fidfuncs_hadrons.C: fPhiFid_hdrn_h()\n");	
 	//! Get cut pars
 	float _Ah=0;
 	float _Bh=0;
@@ -97,28 +98,29 @@ TF1* fPhiFid_hdrn_h(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
 	Int_t iprt=-1;
 	Int_t idtyp=-1;
 
-        if (id==ID_P){iprt=P;}
-	else if (id==ID_PIP){iprt=PIP;}
-	else if (id==ID_PIM){
-		cout<<"Fiducial cuts for pi- not implemented"<<endl;
+        if (id==PROTON){iprt=IDX_P;}
+	else if (id==PIP){iprt=IDX_PIP;}
+	else if (id==PIM){
+        printf("fidfuncs_hadrons.C: Fiducial cuts for pi- not implemented\n");
 		return 0;
 	}
 
 	if (dtyp_name=="exp"){idtyp=EXP;}
 	else if (dtyp_name=="sim"){idtyp=SIM;}
-	else{printf("dtyp_name=%s not recognized",dtyp_name.Data());}
+	else{printf("fidfuncs_hadrons.C: dtyp_name=%s not recognized",dtyp_name.Data());}
 
 	_Ah=Ah[iprt][idtyp][sector-1];
 	_Bh=Bh[iprt][idtyp][sector-1];
 	_Ch=Ch[iprt][idtyp][sector-1];
-	printf("Ah=%0.3f,Bh=%0.3f,Ch=%0.3f\n",_Ah,_Bh,_Ch);
+	//printf("fidfuncs_hadrons.C: Ah=%0.3f,Bh=%0.3f,Ch=%0.3f\n",_Ah,_Bh,_Ch);
 	 
-	TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_h",PRT_NAME[iprt],DTYP_NAME[idtyp]),dPhiFid_hdrn,0,70,3);
+	TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_h",PRT_NAME[iprt].Data(),DTYP_NAME[idtyp].Data()),dPhiFid_hdrn,0,70,3);
 	retFunc->SetParameters(_Ah,_Bh,_Ch);
 	return retFunc;
 }
 
 TF1* fPhiFid_hdrn_l(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+        //printf("fidfuncs_hadrons.C: fPhiFid_hdrn_l()\n");
         //! Get cut pars
         float _Al=0;
         float _Bl=0;
@@ -126,47 +128,56 @@ TF1* fPhiFid_hdrn_l(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
         Int_t iprt=-1;
         Int_t idtyp=-1;
 
-        if (id==ID_P){iprt=P;}
-        else if (id==ID_PIP){iprt=PIP;}
-        else if (id==ID_PIM){
-                cout<<"Fiducial cuts for pi- not implemented"<<endl;
+        if (id==PROTON){iprt=IDX_P;}
+        else if (id==PIP){iprt=IDX_PIP;}
+        else if (id==PIM){
+                printf("fidfuncs_hadrons.C: Fiducial cuts for pi- not implemented\n");
                 return 0;
         }
 
         if (dtyp_name=="exp"){idtyp=EXP;}
         else if (dtyp_name=="sim"){idtyp=SIM;}
-        else{printf("dtyp_name=%s not recognized",dtyp_name.Data());}
+        else{printf("fidfuncs_hadrons.C: dtyp_name=%s not recognized",dtyp_name.Data());}
 
         _Al=Al[iprt][idtyp][sector-1];
         _Bl=Bl[iprt][idtyp][sector-1];
         _Cl=Cl[iprt][idtyp][sector-1];
-        printf("Al=%0.3f,Bl=%0.3f,Cl=%0.3f\n",_Al,_Bl,_Cl);
+        //printf("fidfuncs_hadrons.C: Al=%0.3f,Bl=%0.3f,Cl=%0.3f\n",_Al,_Bl,_Cl);
 
-        TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_l",PRT_NAME[iprt],DTYP_NAME[idtyp]),dPhiFid_hdrn,0,70,3);
+        TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_l",PRT_NAME[iprt].Data(),DTYP_NAME[idtyp].Data()),dPhiFid_hdrn,0,70,3);
         retFunc->SetParameters(_Al,_Bl,_Cl);
         return retFunc;
 }
 
-TLine* lt0(Int_t id, TString dtyp_name){
+//! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+//TLine* lt0(Int_t id, TString dtyp_name){
+TLine lt0(Int_t id, TString dtyp_name){
+    //printf("fidfuncs_hadrons.C: lt0()\n");
 	//! Get t0
 	float _t0=0;
 	Int_t iprt=-1;
         Int_t idtyp=-1;
 
-	if (id==ID_P){iprt=P;}
-        else if (id==ID_PIP){iprt=PIP;}
-        else if (id==ID_PIM){
-                cout<<"Fiducial cuts for pi- not implemented"<<endl;
-                return 0;
+	if (id==PROTON){iprt=IDX_P;}
+        else if (id==PIP){iprt=IDX_PIP;}
+        else if (id==PIM){
+                printf("fidfuncs_hadrons.C: Fiducial cuts for pi- not implemented\n");
+                //! [11-10-15] To match return type
+                TLine retLine(0,0,0,0);
+                return retLine;
+                //return 0;
         }
 
         if (dtyp_name=="exp"){idtyp=EXP;}
         else if (dtyp_name=="sim"){idtyp=SIM;}
-        else{printf("dtyp_name=%s not recognized",dtyp_name.Data());}
+        else{printf("fidfuncs_hadrons.C: dtyp_name=%s not recognized",dtyp_name.Data());}
 	
 	_t0=t0[iprt][idtyp];
-	TLine* retLine=new TLine(_t0,0,_t0,0);//y1 and y2 to be set by whatever uses lt0
-	return retLine;
+    //! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+	/*TLine* retLine=new TLine(_t0,0,_t0,0);//y1 and y2 to be set by whatever uses lt0
+	return retLine;*/
+    TLine retLine(_t0,0,_t0,0);//y1 and y2 to be set by whatever uses lt0
+    return retLine;
 }
 
 /****************************************************
@@ -194,7 +205,10 @@ Double_t dPhiFid_hdrn_mod(Double_t *x, Double_t *parms) {
         return phib;
 }
 
-TF1* fPhiFid_hdrn_h_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+//! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+//TF1* fPhiFid_hdrn_h_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+TF1 fPhiFid_hdrn_h_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+        //printf("fidfuncs_hadrons.C: fPhiFid_hdrn_h_mod()\n");
         //! Get cut pars
         float _Ah=0;
         float _Bh=0;
@@ -202,32 +216,43 @@ TF1* fPhiFid_hdrn_h_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
         Int_t iprt=-1;
         Int_t idtyp=-1;
 
-        if (id==ID_P){iprt=P;}
-        else if (id==ID_PIP){iprt=PIP;}
-        else if (id==ID_PIM){
-                cout<<"Fiducial cuts for pi- not implemented"<<endl;
-                return 0;
+        if (id==PROTON){iprt=IDX_P;}
+        else if (id==PIP){iprt=IDX_PIP;}
+        else if (id==PIM){
+                printf("fidfuncs_hadrons.C: Fiducial cuts for pi- not implemented\n");
+                //! [11-10-15] To match return type
+                TF1 retFunc("fblank","0",0,1);
+                return retFunc;
+                //return 0;
         }
 
         if (dtyp_name=="exp"){idtyp=EXP;}
         else if (dtyp_name=="sim"){idtyp=SIM;}
-        else{printf("dtyp_name=%s not recognized",dtyp_name.Data());}
+        else{printf("fidfuncs_hadrons.C: dtyp_name=%s not recognized",dtyp_name.Data());}
 
         _Ah=Ah[iprt][idtyp][sector-1];
         _Bh=Bh[iprt][idtyp][sector-1];
         _Ch=Ch[iprt][idtyp][sector-1];
-        printf("Ah=%0.3f,Bh=%0.3f,Ch=%0.3f\n",_Ah,_Bh,_Ch);
+        //printf("Ah=%0.3f,Bh=%0.3f,Ch=%0.3f\n",_Ah,_Bh,_Ch);
 
 	//! trivedia modified
 	//TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_h",PRT_NAME[iprt],DTYP_NAME[idtyp]),dPhiFid_hdrn_mod,0,70,3);
         //retFunc->SetParameters(_Ah,_Bh,_Ch);
-        TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_h_mod",PRT_NAME[iprt],DTYP_NAME[idtyp]),dPhiFid_hdrn_mod,0,70,4);
-        retFunc->SetParameters(_Ah,_Bh,_Ch,sector);
+        //! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+        /*TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_h_mod",PRT_NAME[iprt].Data(),DTYP_NAME[idtyp].Data()),dPhiFid_hdrn_mod,0,70,4);
+        retFunc->SetParameters(_Ah,_Bh,_Ch,sector);*/
+        TF1 retFunc(TString::Format("fphifid_%s_%s_h_mod",PRT_NAME[iprt].Data(),DTYP_NAME[idtyp].Data()),dPhiFid_hdrn_mod,0,70,4);
+        retFunc.SetParameters(_Ah,_Bh,_Ch,sector);
 	//!
+        //! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+        //return retFunc;
         return retFunc;
 }
 
-TF1* fPhiFid_hdrn_l_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+//! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+//TF1* fPhiFid_hdrn_l_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+TF1 fPhiFid_hdrn_l_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
+        //printf("fidfuncs_hadrons.C: fPhiFid_hdrn_l_mod()\n");
         //! Get cut pars
         float _Al=0;
         float _Bl=0;
@@ -235,28 +260,36 @@ TF1* fPhiFid_hdrn_l_mod(Int_t id, TString dtyp_name, Int_t sector, Int_t p) {
         Int_t iprt=-1;
         Int_t idtyp=-1;
 
-        if (id==ID_P){iprt=P;}
-        else if (id==ID_PIP){iprt=PIP;}
-        else if (id==ID_PIM){
-                cout<<"Fiducial cuts for pi- not implemented"<<endl;
-                return 0;
+        if (id==PROTON){iprt=IDX_P;}
+        else if (id==PIP){iprt=IDX_PIP;}
+        else if (id==PIM){
+                printf("fidfuncs_hadrons.C: Fiducial cuts for pi- not implemented\n");
+                //! [11-10-15] To match return type
+                TF1 retFunc("fblank","0",0,1);
+                return retFunc;
+                //return 0;
         }
 
         if (dtyp_name=="exp"){idtyp=EXP;}
         else if (dtyp_name=="sim"){idtyp=SIM;}
-        else{printf("dtyp_name=%s not recognized",dtyp_name.Data());}
+        else{printf("fidfuncs_hadrons.C: dtyp_name=%s not recognized",dtyp_name.Data());}
 
         _Al=Al[iprt][idtyp][sector-1];
         _Bl=Bl[iprt][idtyp][sector-1];
         _Cl=Cl[iprt][idtyp][sector-1];
-        printf("Al=%0.3f,Bl=%0.3f,Cl=%0.3f\n",_Al,_Bl,_Cl);
+        //printf("Al=%0.3f,Bl=%0.3f,Cl=%0.3f\n",_Al,_Bl,_Cl);
 
 	//! trivedia modified
 	//TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_l",PRT_NAME[iprt],DTYP_NAME[idtyp]),dPhiFid_hdrn_mod,0,70,3);
         //retFunc->SetParameters(_Al,_Bl,_Cl);
-        TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_l_mod",PRT_NAME[iprt],DTYP_NAME[idtyp]),dPhiFid_hdrn_mod,0,70,4);
-        retFunc->SetParameters(_Al,_Bl,_Cl,sector);
+        //! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+        /*TF1* retFunc = new TF1(TString::Format("fphifid_%s_%s_l_mod",PRT_NAME[iprt].Data(),DTYP_NAME[idtyp].Data()),dPhiFid_hdrn_mod,0,70,4);
+        retFunc->SetParameters(_Al,_Bl,_Cl,sector);*/
+        TF1 retFunc(TString::Format("fphifid_%s_%s_l_mod",PRT_NAME[iprt].Data(),DTYP_NAME[idtyp].Data()),dPhiFid_hdrn_mod,0,70,4);
+        retFunc.SetParameters(_Al,_Bl,_Cl,sector);
 	//!
+        //! [11-10-15] To avoid memory leak: this function is called by h10looper_2pi::proton/pip_infid()
+        //return retFunc;
         return retFunc;
 }
 

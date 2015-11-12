@@ -4,6 +4,8 @@
 #include "wrpr_cut_fid_e16.h"
 #include "h8_bng.h"
 
+#include "fidfuncs_hadrons.C"
+
 #include <TLorentzRotation.h>
 
 h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
@@ -22,6 +24,17 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 		_hpfid->GetXaxis()->SetBinLabel(PFID_PIP_IN,"#pi^{+} infid");
 		_hpfid->GetXaxis()->SetBinLabel(PFID_P_AND_PIP_IN,"p + #pi^{+} infid");
 		_hpfid->SetMinimum(0);
+
+		//! phi vs. theta hists
+		_hpfid_p=new TH2F*[2];
+		_hpfid_pip=new TH2F*[2];
+		for (int i=0;i<2;i++){
+			TString name_sfx;
+			if      (i==0) name_sfx="prec";
+			else if (i==1) name_sfx="pstc";
+			_hpfid_p[i]  = new TH2F(TString::Format("h_p_phiVtheta_%s",name_sfx.Data()),  "#phi vs. #theta for p",  100,0,60,  100,-30,330);
+			_hpfid_pip[i]= new TH2F(TString::Format("h_pip_phiVtheta_%s",name_sfx.Data()),"#phi vs. #theta for pip",100,0,120, 100,-30,330);
+		}
 	}
 
 	//! d2pi
@@ -61,6 +74,8 @@ h10looper_2pi::~h10looper_2pi()
 	Info("h10looper_2pi::~h10looper_2pi","");
 	
 	delete _hpfid;
+	delete[] _hpfid_p;
+	delete[] _hpfid_pip;
 
 	delete _hq2w_prec;
 	delete _hq2w_pstc;
@@ -371,20 +386,82 @@ bool h10looper_2pi::pass_pfid(){
 
 bool h10looper_2pi::proton_infid(){
 	bool ret=kFALSE;
+	
+	//!prec
+	_hpfid_p[0]->Fill(_theta_p,_phi_p);
+
 	int sctr_p=get_sector(_phi_p);
-	ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
+	if (_use_ep_pfid){
+		/*TF1* f_l=fPhiFid_hdrn_l_mod(PROTON,_dtyp,sctr_p,1);//! The last argument is mom, but cut is independent of it
+        TF1* f_h=fPhiFid_hdrn_h_mod(PROTON,_dtyp,sctr_p,1);//! The last argument is mom, but cut is independent of it
+        TLine* l=lt0(PROTON, _dtyp);
+
+        float theta_min=l->GetX1();
+        float phi_min=f_l->Eval(_theta_p);
+        float phi_max=f_h->Eval(_theta_p);*/
+
+        //! + The last argument is momentum, but cut is independent of it
+        //! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
+        TF1 f_l=fPhiFid_hdrn_l_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
+        TF1 f_h=fPhiFid_hdrn_h_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
+        TLine l=lt0(PROTON, _dtyp);
+
+        float theta_min=l.GetX1();
+        float phi_min=f_l.Eval(_theta_p);
+        float phi_max=f_h.Eval(_theta_p);
+
+        if ( (_theta_p > theta_min) && (_phi_p > phi_min) && (_phi_p < phi_max) ){
+        	ret=kTRUE;
+        }
+        //delete f_l,f_h,l;
+	}else{
+		ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
+	}
 	if (ret==kTRUE){
 		_hpfid->Fill(PFID_P_IN);	
+		//!pstc
+		_hpfid_p[1]->Fill(_theta_p,_phi_p);
 	} 
 	return ret;
 }
 
 bool h10looper_2pi::pip_infid(){
 	bool ret=kFALSE;
+
+	//!prec
+	_hpfid_pip[0]->Fill(_theta_pip,_phi_pip);
+	
 	int sctr_pip=get_sector(_phi_pip);
-	ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
+	if (_use_ep_pfid){
+		/*TF1* f_l=fPhiFid_hdrn_l_mod(PIP,_dtyp,sctr_pip,1);//! The last argument is mom, but cut is independent of it
+        TF1* f_h=fPhiFid_hdrn_h_mod(PIP,_dtyp,sctr_pip,1);//! The last argument is mom, but cut is independent of it
+        TLine* l=lt0(PIP, _dtyp);
+
+        float theta_min=l->GetX1();
+        float phi_min=f_l->Eval(_theta_pip);
+        float phi_max=f_h->Eval(_theta_pip);*/
+
+        //! + The last argument is momentum, but cut is independent of it
+        //! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
+        TF1 f_l=fPhiFid_hdrn_l_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
+        TF1 f_h=fPhiFid_hdrn_h_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
+        TLine l=lt0(PIP, _dtyp);
+
+        float theta_min=l.GetX1();
+        float phi_min=f_l.Eval(_theta_pip);
+        float phi_max=f_h.Eval(_theta_pip);
+
+        if ( (_theta_pip > theta_min) && (_phi_pip > phi_min) && (_phi_pip < phi_max) ){
+        	ret=kTRUE;
+        }
+        //delete f_l,f_h,l;
+	}else{
+		ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
+	}
 	if (ret==kTRUE){
 		 _hpfid->Fill(PFID_PIP_IN);
+		 //!pstc
+		_hpfid_pip[1]->Fill(_theta_pip,_phi_pip);
 	}
 	return ret;
 }
