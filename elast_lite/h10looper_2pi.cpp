@@ -392,15 +392,7 @@ bool h10looper_2pi::proton_infid(){
 
 	int sctr_p=get_sector(_phi_p);
 	if (_use_ep_pfid){
-		/*TF1* f_l=fPhiFid_hdrn_l_mod(PROTON,_dtyp,sctr_p,1);//! The last argument is mom, but cut is independent of it
-        TF1* f_h=fPhiFid_hdrn_h_mod(PROTON,_dtyp,sctr_p,1);//! The last argument is mom, but cut is independent of it
-        TLine* l=lt0(PROTON, _dtyp);
-
-        float theta_min=l->GetX1();
-        float phi_min=f_l->Eval(_theta_p);
-        float phi_max=f_h->Eval(_theta_p);*/
-
-        //! + The last argument is momentum, but cut is independent of it
+		//! + The last argument is momentum, but cut is independent of it
         //! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
         TF1 f_l=fPhiFid_hdrn_l_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
         TF1 f_h=fPhiFid_hdrn_h_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
@@ -413,8 +405,7 @@ bool h10looper_2pi::proton_infid(){
         if ( (_theta_p > theta_min) && (_phi_p > phi_min) && (_phi_p < phi_max) ){
         	ret=kTRUE;
         }
-        //delete f_l,f_h,l;
-	}else{
+    }else{
 		ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
 	}
 	if (ret==kTRUE){
@@ -433,15 +424,7 @@ bool h10looper_2pi::pip_infid(){
 	
 	int sctr_pip=get_sector(_phi_pip);
 	if (_use_ep_pfid){
-		/*TF1* f_l=fPhiFid_hdrn_l_mod(PIP,_dtyp,sctr_pip,1);//! The last argument is mom, but cut is independent of it
-        TF1* f_h=fPhiFid_hdrn_h_mod(PIP,_dtyp,sctr_pip,1);//! The last argument is mom, but cut is independent of it
-        TLine* l=lt0(PIP, _dtyp);
-
-        float theta_min=l->GetX1();
-        float phi_min=f_l->Eval(_theta_pip);
-        float phi_max=f_h->Eval(_theta_pip);*/
-
-        //! + The last argument is momentum, but cut is independent of it
+		//! + The last argument is momentum, but cut is independent of it
         //! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
         TF1 f_l=fPhiFid_hdrn_l_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
         TF1 f_h=fPhiFid_hdrn_h_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
@@ -454,8 +437,7 @@ bool h10looper_2pi::pip_infid(){
         if ( (_theta_pip > theta_min) && (_phi_pip > phi_min) && (_phi_pip < phi_max) ){
         	ret=kTRUE;
         }
-        //delete f_l,f_h,l;
-	}else{
+    }else{
 		ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
 	}
 	if (ret==kTRUE){
