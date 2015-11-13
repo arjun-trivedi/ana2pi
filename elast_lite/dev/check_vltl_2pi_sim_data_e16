@@ -1,15 +1,12 @@
 #!/bin/bash
 
-#! sim1: /mss/home/atrivedi/batchdata/e1f/sim/Jun14/2pi_1B_06194
-#! sim2: /mss/home/atrivedi/batchdata/e1f/sim/Jul14/2pi_1B_071014
-#! sim3: /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_072814
-#! sim4: /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_091714
-#! sim5: /mss/home/atrivedi/batchdata/e1f/2pi/sim/2pi_1B_020615 (W<2.125 GeV)
+#! sim1.1: /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_200M_051815
+#! sim2:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_300M_052015
 
-simnamel=(2pi_1B_06194 2pi_1B_071014 2pi_1B_072814 2pi_1B_091714 2pi_1B_020615)
+simnamel=(2pi_200M_051815 2pi_300M_052015)
 #! Following list obtained by ls /mss-path-to-sim/recon/*.root |grep -v ana |wc -l 
 #! (Information matches what I originally noted in at-sim/README for each simulation)
-sim_nfmssl=(9945 9793 9942 9821 9964)
+sim_nfmssl=(1991 2987)
 
 isim=0
 for simname in "${simnamel[@]}";do
@@ -17,8 +14,8 @@ for simname in "${simnamel[@]}";do
   echo "Processing simnum:simname=$((isim + 1)):$simname"
 
   #! Check number .root files in $H10DIR_SIM/recon/
-  echo '>nfvltl=$(ls $H10DIR_SIM/$simname/recon/*.root |wc -l)'
-  nfvltl=$(ls $H10DIR_SIM/$simname/recon/*.root |wc -l)
+  echo '>nfvltl=$(ls $H10DIR_SIM_E16/$simname/recon/*.root |wc -l)'
+  nfvltl=$(ls $H10DIR_SIM_E16/$simname/recon/*.root |wc -l)
   diff=$((nfmss-nfvltl))
   echo "simnum:simname:nfmss:nfvltl:diff=$((isim + 1)):$simname:$nfmss:$nfvltl:$diff"
   echo "***" 
@@ -30,7 +27,7 @@ if [[ -n $1 && $1 == "touch" ]]; then
   isim=0
   for simname in "${simnamel[@]}";do
     echo "touching simnum:simname=$((isim + 1)):$simname"
-    for f in `ls $H10DIR_SIM/$simname/recon/*.root`;do
+    for f in `ls $H10DIR_SIM_E16/$simname/recon/*.root`;do
       echo ">touch $f"
       touch $f
     done
