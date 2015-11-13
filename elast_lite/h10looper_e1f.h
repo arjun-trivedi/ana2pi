@@ -17,7 +17,7 @@
 #include <TH2.h>
 
 #include "constants.h"
-using namespace E1F;
+//using namespace E1F; //! [11-12-15] now dynamically chosing namespace as per _expt at "appropriate places"
 
 //! [10-11-15] 
 //! + The following includes were moved to h10looper_e1f.cpp and
@@ -104,13 +104,19 @@ public :
          EID_HIT_DC, EID_HIT_CC, EID_HIT_SC, EID_HIT_EC, 
          EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_ECIN_MIN, EID_EC_FID, EID_ZVTX, EID_SF, EID_E};
    TH1D* _heid;
+   //! for p_min_ECth
+   float _p_min_ECth;
+   //! for ECin min cut
+   Float_t* _ECmin;
+   //! for ECfid cut
+   float _Umin,_Umax;
+   float _Vmin,_Vmax;
+   float _Wmin,_Wmax;
    //! for SF cut
    TF1** _sf_mean;
    TF1** _sf_min;
    TF1** _sf_max;
-   //! for ECin min cut
-   Float_t* _ECmin;
-   //! for z-vtx cut
+      //! for z-vtx cut
    Float_t* _z_vtx_min;
    Float_t* _z_vtx_max;
 
@@ -118,7 +124,9 @@ public :
    static const int NUM_EFID_STATS=2;
    enum {EFID_NULL, EFID_TOT, EFID_IN};
    TH1D* _hefid;
-
+   //! _hefid_e[2], before and after cut
+   TH2F** _hefid_e;
+   
    //! mom corr
    TH2D* _hpcorr_dpVp;
    TH1D* _hpcorr_dcx;
@@ -277,6 +285,26 @@ public :
    Float_t         lec_z[_MAX_PARTS];   //[lac_part]
    Float_t         lec_c2[_MAX_PARTS];   //[lac_part]
 
+   //for some Branches of SEB' Banks that are different
+   struct tmp{
+      Int_t id[_MAX_PARTS]; //[gpart]
+      Int_t stat[_MAX_PARTS]; //[gpart]
+      Int_t dc[_MAX_PARTS]; //[gpart]
+      Int_t cc[_MAX_PARTS]; //[gpart]
+      Int_t sc[_MAX_PARTS]; //[gpart]
+      Int_t ec[_MAX_PARTS]; //[gpart]
+      Int_t q[_MAX_PARTS]; //[gpart]
+      Int_t dc_sect[_MAX_PARTS]; //[dc_part]
+      Int_t dc_stat[_MAX_PARTS]; //[dc_part]
+      Int_t ec_stat[_MAX_PARTS]; //[ec_part]
+      Int_t ec_sect[_MAX_PARTS]; //[ec_part]
+      Int_t sc_sect[_MAX_PARTS]; //[sc_part]
+      Int_t sc_pd[_MAX_PARTS]; //[sc_part]
+      Int_t sc_stat[_MAX_PARTS]; //[sc_part]
+      Int_t cc_sect[_MAX_PARTS]; //[cc_part]
+      Int_t nphe[_MAX_PARTS]; //[cc_part]
+   } tmpVars;
+
    // List of branches
    //! PART Banks' Branches
    TBranch        *b_nprt;   //!
@@ -409,14 +437,16 @@ public :
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 
+   void Reconcile();
+
    void setup_cutsncors(TString cutsncors);
 
    void setup_eid_cutpars(TString dtyp);
    void setup_adtnl_opts(TString adtnl_opts);
 
-   bool evt_trigger_electron();
+   bool pass_eid();
    void mom_corr_electron();
-   bool electron_infid();
+   bool pass_efid();
    void make_delast();
 
    void set_ekin();
@@ -502,6 +532,44 @@ void h10looper_e1f::Init(TTree *tree)
       }
    }
    if (_seq=="recon"){
+      //! + First take care of Binding for some of the SEB Branches in h10 TTrees
+      //!   that are generally can differ based on 'cooking'.
+      //! + For my case, only some Branches for e16:exp are different.
+      //! + The rest: e1f:exp,e1f:sim and e16:sim are same
+      //! + For detailed notes see at-h10/formats/README
+      if (_expt=="e16" && _dtyp=="exp"){//! SEB' = Branches that differ for e16:exp
+         fChain->SetBranchAddress("id", tmpVars.id, &b_id);
+         fChain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
+         fChain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
+         fChain->SetBranchAddress("cc", tmpVars.cc, &b_cc);
+         fChain->SetBranchAddress("sc", tmpVars.sc, &b_sc);
+         fChain->SetBranchAddress("ec", tmpVars.ec, &b_ec);
+         fChain->SetBranchAddress("q", tmpVars.q, &b_q);
+         fChain->SetBranchAddress("dc_sect", tmpVars.dc_sect, &b_dc_sect);
+         fChain->SetBranchAddress("dc_stat", tmpVars.dc_stat, &b_dc_stat);
+         fChain->SetBranchAddress("ec_stat", tmpVars.ec_stat, &b_ec_stat);
+         fChain->SetBranchAddress("ec_sect", tmpVars.ec_sect, &b_ec_sect);
+         fChain->SetBranchAddress("sc_pd", tmpVars.sc_pd, &b_sc_pd);
+         fChain->SetBranchAddress("sc_stat", tmpVars.sc_stat, &b_sc_stat);
+         fChain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
+         fChain->SetBranchAddress("nphe", tmpVars.nphe, &b_nphe);
+      }else{
+         fChain->SetBranchAddress("id", id, &b_id);
+         fChain->SetBranchAddress("stat", stat, &b_stat);
+         fChain->SetBranchAddress("dc", dc, &b_dc);
+         fChain->SetBranchAddress("cc", cc, &b_cc);
+         fChain->SetBranchAddress("sc", sc, &b_sc);
+         fChain->SetBranchAddress("ec", ec, &b_ec);
+         fChain->SetBranchAddress("q", q, &b_q);
+         fChain->SetBranchAddress("dc_sect", dc_sect, &b_dc_sect);
+         fChain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
+         fChain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
+         fChain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
+         fChain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
+         fChain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
+         fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
+         fChain->SetBranchAddress("nphe", nphe, &b_nphe);         
+      }
       fChain->SetBranchAddress("npart", &npart, &b_npart);
       fChain->SetBranchAddress("evstat", &evstat, &b_evstat);
       fChain->SetBranchAddress("evntid", &evntid, &b_evntid);
@@ -515,16 +583,11 @@ void h10looper_e1f::Init(TTree *tree)
       fChain->SetBranchAddress("rf_time1", &rf_time1, &b_rf_time1);
       fChain->SetBranchAddress("rf_time2", &rf_time2, &b_rf_time2);
       fChain->SetBranchAddress("gpart", &gpart, &b_gpart);
-      fChain->SetBranchAddress("id", id, &b_id);
-      fChain->SetBranchAddress("stat", stat, &b_stat);
-      fChain->SetBranchAddress("dc", dc, &b_dc);
-      fChain->SetBranchAddress("cc", cc, &b_cc);
-      fChain->SetBranchAddress("sc", sc, &b_sc);
-      fChain->SetBranchAddress("ec", ec, &b_ec);
+      
       fChain->SetBranchAddress("lec", lec, &b_lec);
       fChain->SetBranchAddress("p", p, &b_p);
       fChain->SetBranchAddress("m", m, &b_m);
-      fChain->SetBranchAddress("q", q, &b_q);
+      
       fChain->SetBranchAddress("b", b, &b_b);
       fChain->SetBranchAddress("cx", cx, &b_cx);
       fChain->SetBranchAddress("cy", cy, &b_cy);
@@ -533,9 +596,9 @@ void h10looper_e1f::Init(TTree *tree)
       fChain->SetBranchAddress("vy", vy, &b_vy);
       fChain->SetBranchAddress("vz", vz, &b_vz);
       fChain->SetBranchAddress("dc_part", &dc_part, &b_dc_part);
-      fChain->SetBranchAddress("dc_sect", dc_sect, &b_dc_sect);
+      
       fChain->SetBranchAddress("dc_trk", dc_trk, &b_dc_trk);
-      fChain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
+      
       fChain->SetBranchAddress("dc_xsc", dc_xsc, &b_dc_xsc);
       fChain->SetBranchAddress("dc_ysc", dc_ysc, &b_dc_ysc);
       fChain->SetBranchAddress("dc_zsc", dc_zsc, &b_dc_zsc);
@@ -548,8 +611,7 @@ void h10looper_e1f::Init(TTree *tree)
       fChain->SetBranchAddress("dc_thcc", dc_thcc, &b_dc_thcc);
       fChain->SetBranchAddress("dc_c2", dc_c2, &b_dc_c2);
       fChain->SetBranchAddress("ec_part", &ec_part, &b_ec_part);
-      fChain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
-      fChain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
+      
       fChain->SetBranchAddress("ec_whol", ec_whol, &b_ec_whol);
       fChain->SetBranchAddress("ec_inst", ec_inst, &b_ec_inst);
       fChain->SetBranchAddress("ec_oust", ec_oust, &b_ec_oust);
@@ -568,17 +630,16 @@ void h10looper_e1f::Init(TTree *tree)
       fChain->SetBranchAddress("sc_part", &sc_part, &b_sc_part);
       fChain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
       fChain->SetBranchAddress("sc_hit", sc_hit, &b_sc_hit);
-      fChain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
-      fChain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
+      
       fChain->SetBranchAddress("edep", edep, &b_edep);
       fChain->SetBranchAddress("sc_t", sc_t, &b_sc_t);
       fChain->SetBranchAddress("sc_r", sc_r, &b_sc_r);
       fChain->SetBranchAddress("sc_c2", sc_c2, &b_sc_c2);
       fChain->SetBranchAddress("cc_part", &cc_part, &b_cc_part);
-      fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
+      
       fChain->SetBranchAddress("cc_hit", cc_hit, &b_cc_hit);
       fChain->SetBranchAddress("cc_segm", cc_segm, &b_cc_segm);
-      fChain->SetBranchAddress("nphe", nphe, &b_nphe);
+      
       fChain->SetBranchAddress("cc_t", cc_t, &b_cc_t);
       fChain->SetBranchAddress("cc_r", cc_r, &b_cc_r);
       fChain->SetBranchAddress("cc_c2", cc_c2, &b_cc_c2);
@@ -621,5 +682,34 @@ Int_t h10looper_e1f::Cut(Long64_t entry)
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
+}
+
+void h10looper_e1f::Reconcile() {
+   for (int i = 0; i < gpart; i++) {
+      id[i] = tmpVars.id[i];
+      stat[i] = tmpVars.stat[i];
+      dc[i] = tmpVars.dc[i];
+      cc[i] = tmpVars.cc[i];
+      sc[i] = tmpVars.sc[i];
+      ec[i] = tmpVars.ec[i];
+      q[i] = tmpVars.q[i];
+   }
+   for (int i = 0; i < dc_part; i++) {
+      dc_sect[i] = tmpVars.dc_sect[i];
+      dc_stat[i] = tmpVars.dc_stat[i];
+   }
+   for (int i = 0; i < ec_part; i++) {
+      ec_stat[i] = tmpVars.ec_stat[i];
+      ec_sect[i] = tmpVars.ec_sect[i];
+   }
+   for (int i = 0; i < sc_part; i++) {
+      sc_stat[i] = tmpVars.sc_stat[i];
+      sc_sect[i] = tmpVars.sc_sect[i];
+      sc_pd[i] = tmpVars.sc_pd[i];
+   }
+   for (int i = 0; i < cc_part; i++) {
+      cc_sect[i] = tmpVars.cc_sect[i];
+      nphe[i] = tmpVars.nphe[i];
+   }
 }
 #endif // #ifdef h10looper_e1f_cxx

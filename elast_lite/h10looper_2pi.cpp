@@ -1,10 +1,10 @@
 #define h10looper_2pi_cxx
 #include "h10looper_2pi.h"
 
-#include "wrpr_cut_fid_e16.h"
 #include "h8_bng.h"
 
-#include "fidfuncs_hadrons.C"
+#include "fidfuncs_hadrons.C" //! EP_PFID
+#include "wrpr_cut_fid_e16.h" //! EI_PFID
 
 #include <TLorentzRotation.h>
 
@@ -64,6 +64,7 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 	
 	Info("h10looper_2pi::h10looper_2pi","Following information was setup:");
 	Info("","---------------------------------------");
+	Info("","_mm2ppip_l=%f,_mm2ppip_h=%f",_mm2ppip_l,_mm2ppip_h);
 	Info("","---------------------------------------");
 	Info("h10looper_2pi::h10looper_2pi","Done setting up h10looper_2pi\n");
 	
@@ -97,6 +98,11 @@ void h10looper_2pi::Loop(){
 
 	if (fChain == 0) return;
 
+	//! Reconcile h10 Branch binding for e16:exp
+	if (_expt=="e16" && _dtyp=="exp") {
+		Reconcile();
+	}
+
 	Long64_t nbytes = 0, nb = 0;
 	for (Long64_t jentry=0; jentry<_nentries_to_proc;jentry++) {
 		Long64_t ientry = LoadTree(jentry);
@@ -114,13 +120,13 @@ void h10looper_2pi::Loop(){
 			_hevt->Fill(EVT_TRG);
 			//! EID
 			_heid->Fill(EID_TRG);
-			if ( !_do_eid  || (_do_eid && evt_trigger_electron()) ){
+			if ( !_do_eid  || (_do_eid && pass_eid()) ){
 				_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
 				_hefid->Fill(EFID_TOT);
-				if ( !_do_efid || (_do_efid && electron_infid()) ){
+				if ( !_do_efid || (_do_efid && pass_efid()) ){
 					_hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! pcorr
@@ -161,7 +167,7 @@ void h10looper_2pi::Loop(){
 							_hmm_prec[iw]->Fill(mmppip);
 
 							//! Apply MM cut
-							if ( !_do_evtsel_2pi || (_do_evtsel_2pi && mm2ppip>0 && mm2ppip<0.04) ){
+							if ( !_do_evtsel_2pi || (_do_evtsel_2pi && mm2ppip>_mm2ppip_l && mm2ppip<_mm2ppip_h) ){
 								_hevt->Fill(EVT_2PI);
 								_hmm2_pstc_fW->Fill(mm2ppip);
 								_hmm_pstc_fW->Fill(mmppip);
@@ -391,23 +397,28 @@ bool h10looper_2pi::proton_infid(){
 	_hpfid_p[0]->Fill(_theta_p,_phi_p);
 
 	int sctr_p=get_sector(_phi_p);
-	if (_use_ep_pfid){
-		//! + The last argument is momentum, but cut is independent of it
-        //! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
-        TF1 f_l=fPhiFid_hdrn_l_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
-        TF1 f_h=fPhiFid_hdrn_h_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
-        TLine l=lt0(PROTON, _dtyp);
+	if (_expt=="e1f"){
+		if (_use_ep_pfid){
+			//! + The last argument is momentum, but cut is independent of it
+        	//! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
+        	TF1 f_l=fPhiFid_hdrn_l_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
+        	TF1 f_h=fPhiFid_hdrn_h_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
+        	TLine l=lt0(PROTON, _dtyp);
 
-        float theta_min=l.GetX1();
-        float phi_min=f_l.Eval(_theta_p);
-        float phi_max=f_h.Eval(_theta_p);
+        	float theta_min=l.GetX1();
+        	float phi_min=f_l.Eval(_theta_p);
+        	float phi_max=f_h.Eval(_theta_p);
 
-        if ( (_theta_p > theta_min) && (_phi_p > phi_min) && (_phi_p < phi_max) ){
-        	ret=kTRUE;
-        }
-    }else{
+        	if ( (_theta_p > theta_min) && (_phi_p > phi_min) && (_phi_p < phi_max) ){
+        		ret=kTRUE;
+        	}
+    	}else{
+			ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
+		}
+	}else if (_expt=="e16"){
 		ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
 	}
+
 	if (ret==kTRUE){
 		_hpfid->Fill(PFID_P_IN);	
 		//!pstc
@@ -423,23 +434,28 @@ bool h10looper_2pi::pip_infid(){
 	_hpfid_pip[0]->Fill(_theta_pip,_phi_pip);
 	
 	int sctr_pip=get_sector(_phi_pip);
-	if (_use_ep_pfid){
-		//! + The last argument is momentum, but cut is independent of it
-        //! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
-        TF1 f_l=fPhiFid_hdrn_l_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
-        TF1 f_h=fPhiFid_hdrn_h_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
-        TLine l=lt0(PIP, _dtyp);
+	if (_expt=="e1f"){
+		if (_use_ep_pfid){
+			//! + The last argument is momentum, but cut is independent of it
+        	//! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
+        	TF1 f_l=fPhiFid_hdrn_l_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
+        	TF1 f_h=fPhiFid_hdrn_h_mod(PIP,"exp",sctr_pip,1);//! The last argument is mom, but cut is independent of it
+        	TLine l=lt0(PIP, _dtyp);
 
-        float theta_min=l.GetX1();
-        float phi_min=f_l.Eval(_theta_pip);
-        float phi_max=f_h.Eval(_theta_pip);
+        	float theta_min=l.GetX1();
+        	float phi_min=f_l.Eval(_theta_pip);
+        	float phi_max=f_h.Eval(_theta_pip);
 
-        if ( (_theta_pip > theta_min) && (_phi_pip > phi_min) && (_phi_pip < phi_max) ){
-        	ret=kTRUE;
-        }
-    }else{
+        	if ( (_theta_pip > theta_min) && (_phi_pip > phi_min) && (_phi_pip < phi_max) ){
+        		ret=kTRUE;
+        	}
+    	}else{
+			ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
+		}
+	}else if (_expt=="e16"){
 		ret=Fiducial_e16_hdrn(_theta_pip,_phi_pip,sctr_pip);
 	}
+
 	if (ret==kTRUE){
 		 _hpfid->Fill(PFID_PIP_IN);
 		 //!pstc
@@ -617,6 +633,13 @@ void h10looper_2pi::setup_d2pi(){
 		hdim, bins3, xmin3, xmax3);
 		_h8[iw][2]->Sumw2();
 		gDirectory->Append(_h8[iw][2]);
+	}
+
+	//!MMcut values
+	if (_expt=="e1f"){
+		_mm2ppip_l=-0.04,_mm2ppip_h=0.06; //0,0.04
+	}else if (_expt=="e16"){
+		_mm2ppip_l=-0.04,_mm2ppip_h=0.06;
 	}
 }
 

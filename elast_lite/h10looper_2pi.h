@@ -90,6 +90,8 @@ public :
    //!h7[NBINS_WCRS][NVST]
    static const int NVST=3;
    THnSparse*** _h8;
+   //! MMcut value
+   float _mm2ppip_l,_mm2ppip_h;
    
    
 };

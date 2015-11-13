@@ -7,7 +7,8 @@
 #include <TMath.h>
 
 #include "mom_corr.cpp"
-#include "fidfuncs.C"
+#include "fidfuncs.C"         //! EP_EFID
+#include "wrpr_cut_fid_e16.h" //! EI_EFID
 #include "pid.h"
 
 h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
@@ -115,6 +116,14 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
 		_hefid->GetXaxis()->SetBinLabel(EFID_IN,"infid");
+		//! phi vs. theta hists
+		_hefid_e=new TH2F*[2];
+		for (int i=0;i<2;i++){
+			TString name_sfx;
+			if      (i==0) name_sfx="prec";
+			else if (i==1) name_sfx="pstc";
+			_hefid_e[i]  = new TH2F(TString::Format("h_e_phiVtheta_%s",name_sfx.Data()),  "#phi vs. #theta for e-",  100,0,60,  100,-30,330);
+		}
 		//! pcorr
 		_fout->mkdir("pcorr")->cd();
 		_hpcorr_dpVp=new TH2D("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
@@ -155,7 +164,8 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	printf("debug = %s\n",_hf[-5]->GetName());*/
    
 	//! Kinematics: initial and final: lvE0, lvP0
-	_lvE0.SetXYZM(0,0,E0_P,MASS_E);
+	if      (_expt=="e1f") _lvE0.SetXYZM(0,0,E1F::E0_P,MASS_E);
+	else if (_expt=="e16") _lvE0.SetXYZM(0,0,E16::E0_P,MASS_E);
 	_lvP0.SetXYZM(0,0,0,MASS_P);
 	_lvE1.SetXYZT(0,0,0,0);
 	_lvQ.SetXYZT(0,0,0,0);
@@ -170,12 +180,12 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	Info("","nentries_to_proc=%llu",_nentries_to_proc);
 	Info("","Beam momentum and energy=%.3f,%.3f",_lvE0.Pz(),_lvE0.E());
 	Info("","*** eid-cut pars ***");
-	Info("","P_MIN_ECTH=%.3f",P_MIN_ECTH);
+	Info("","P_MIN_ECTH=%.3f",_p_min_ECth);
 	for (int isctr=0;isctr<6;isctr++){
 		Info("","ECIN_MIN sctr%d=%.3f",isctr+1,_ECmin[isctr]);
 	}
 	Info("","UMIN=%.0f,UMAX=%.0f,VMIN=%.0f,VMAX=%.0f,WMIN=%.0f,WMAX=%.0f",
-		      UMIN,UMAX,VMIN,VMAX,WMIN,WMAX);
+		      _Umin,_Umax,_Vmin,_Vmax,_Wmin,_Wmax);
 	for (int isctr=0;isctr<6;isctr++){
 		Info("","_z_vtx_min_sctr%d=%.2f",isctr+1,_z_vtx_min[isctr]);
 		Info("","_z_vtx_max_sctr%d=%.2f",isctr+1,_z_vtx_max[isctr]);
@@ -210,6 +220,7 @@ h10looper_e1f::~h10looper_e1f()
 	delete _hevt;
 	delete _heid;
 	delete _hefid;
+	delete[] _hefid_e;
 	delete _hpid;
 	delete _hpcorr_dpVp;
 	delete _hpcorr_dcx;
@@ -235,34 +246,58 @@ for exp and sim and are a simple number are directly set up constant.h.
 void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 {
 	//! minimum momentum that satisfies EC threshold
-	//! directly set in constants.h
+	//! + pars obtained from constants.h
+	//! + NOTE, (slightly) different for E1F and E16
+	if      (_expt=="e1f") _p_min_ECth=E1F::P_MIN_ECTH;
+	else if (_expt=="e16") _p_min_ECth=E16::P_MIN_ECTH;
+	
 
 	//! ECin cut pars
-	//! pars obtained from constants.h
+	//! + pars obtained from constants.h
+	//! + NOTE, same for E1F and E16
 	_ECmin=new Float_t[6];
 	for (int isctr=0;isctr<6;isctr++){
-		if      (dtyp=="exp") _ECmin[isctr]=ECIN_MIN_EXP[isctr];
-		else if (dtyp=="sim") _ECmin[isctr]=ECIN_MIN_SIM[isctr];
+		if      (dtyp=="exp") _ECmin[isctr]=E1F::ECIN_MIN_EXP[isctr];
+		else if (dtyp=="sim") _ECmin[isctr]=E1F::ECIN_MIN_SIM[isctr];
 	}
 
 	//! EC fid cut pars (as per MG and EP, and therefore as per "E1F run group"?)
-	//! directly setup in constant.h
+	//! + pars obtained from constants.h
+	//! + NOTE, (slightly) different for E1F and E16
+	if (_expt=="e1f"){
+		_Umin=E1F::UMIN;
+		_Umax=E1F::UMAX;
+		_Vmin=E1F::VMIN;
+		_Vmax=E1F::VMAX;
+		_Wmin=E1F::WMIN;
+		_Wmax=E1F::WMAX;
+	}else if ("e16"){
+		_Umin=E16::UMIN;
+		_Umax=E16::UMAX;
+		_Vmin=E16::VMIN;
+		_Vmax=E16::VMAX;
+		_Wmin=E16::WMIN;
+		_Wmax=E16::WMAX;
+	}
 
 	//! z-vertex cut
+	//! + pars obtained from constants.h
+	//! + NOTE, same for E1F and E16
 	_z_vtx_min=new Float_t[6];
 	_z_vtx_max=new Float_t[6];
 	for (int isctr=0;isctr<6;isctr++){
 		if(dtyp=="exp"){
-			_z_vtx_min[isctr]=ZVTX_MIN_EXP[isctr];
-			_z_vtx_max[isctr]=ZVTX_MAX_EXP[isctr];
+			_z_vtx_min[isctr]=E1F::ZVTX_MIN_EXP[isctr];
+			_z_vtx_max[isctr]=E1F::ZVTX_MAX_EXP[isctr];
 		}else if (dtyp=="sim"){
-			_z_vtx_min[isctr]=ZVTX_MIN_SIM[isctr];
-			_z_vtx_max[isctr]=ZVTX_MAX_SIM[isctr];
+			_z_vtx_min[isctr]=E1F::ZVTX_MIN_SIM[isctr];
+			_z_vtx_max[isctr]=E1F::ZVTX_MAX_SIM[isctr];
 		} 
 	}
 
 	//! SF cut
-	//! pars obtained from constants.h
+	//! + pars obtained from constants.h
+	//! + NOTE, same for E1F and E16
 	_sf_mean=new TF1*[6];
 	_sf_min=new TF1*[6];
 	_sf_max=new TF1*[6];
@@ -272,13 +307,13 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 		_sf_max[isctr]= new TF1(TString::Format("sf_max_s%d",isctr+1), "pol3",0,10);
 		for (int ipar=0;ipar<4;ipar++){
 			if (dtyp=="exp"){
-				_sf_mean[isctr]->FixParameter(ipar,SF_MEAN_EXP[isctr][ipar]);
-				_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*SF_SIGMA_EXP[isctr][ipar]);
-				_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*SF_SIGMA_EXP[isctr][ipar]);
+				_sf_mean[isctr]->FixParameter(ipar,E1F::SF_MEAN_EXP[isctr][ipar]);
+				_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*E1F::SF_SIGMA_EXP[isctr][ipar]);
+				_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*E1F::SF_SIGMA_EXP[isctr][ipar]);
 			}else if (dtyp=="sim"){
-				_sf_mean[isctr]->FixParameter(ipar,SF_MEAN_SIM[isctr][ipar]);
-				_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*SF_SIGMA_SIM[isctr][ipar]);
-				_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*SF_SIGMA_SIM[isctr][ipar]);
+				_sf_mean[isctr]->FixParameter(ipar,E1F::SF_MEAN_SIM[isctr][ipar]);
+				_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*E1F::SF_SIGMA_SIM[isctr][ipar]);
+				_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*E1F::SF_SIGMA_SIM[isctr][ipar]);
 			}
 		}
 	}
@@ -288,6 +323,11 @@ void h10looper_e1f::Loop(){
 	Info("h10looper_e1f::Loop()","");
 
 	if (fChain == 0) return;
+
+	//! Reconcile h10 Branch binding for e16:exp
+	if (_expt=="e16" && _dtyp=="exp") {
+		Reconcile();
+	}
 
 	Long64_t nbytes = 0, nb = 0;
 	for (Long64_t jentry=0; jentry<_nentries_to_proc;jentry++) {
@@ -305,13 +345,13 @@ void h10looper_e1f::Loop(){
 			_hevt->Fill(EVT_TRG);
 			//! EID
 			_heid->Fill(EID_TRG);
-			if ( !_do_eid  || (_do_eid && evt_trigger_electron()) ){
+			if ( !_do_eid  || (_do_eid && pass_eid()) ){
 				_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
 				_hefid->Fill(EFID_TOT);
-				if ( !_do_efid || (_do_efid && electron_infid()) ){
+				if ( !_do_efid || (_do_efid && pass_efid()) ){
 					_hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! PCORR
@@ -354,7 +394,7 @@ void h10looper_e1f::Loop(){
 	_fout->Write();
 }//end Loop()
 
-bool h10looper_e1f::evt_trigger_electron(){
+bool h10looper_e1f::pass_eid(){
 	bool ret=kFALSE;
 
 	//! prepare input for lvl_1 cut
@@ -414,7 +454,7 @@ bool h10looper_e1f::evt_trigger_electron(){
 	return ret;
 }
 
-bool h10looper_e1f::electron_infid(){
+bool h10looper_e1f::pass_efid(){
 	Int_t id=ELECTRON;
 	Double_t mom=p[0];
 	Int_t ecidx=ec[0]-1;
@@ -422,10 +462,22 @@ bool h10looper_e1f::electron_infid(){
 	Int_t paddle = 0;
 	
 	bool ret=kFALSE;
-	if (_use_ep_efid){
-		ret=inFid(mom,_theta_e,_phi_e,sector);
-	}else{
-		ret=Cuts::Fiducial(id, mom, _theta_e, _phi_e, sector, paddle);
+
+	//!prec
+	_hefid_e[0]->Fill(_theta_e,_phi_e);
+
+	if (_expt=="e1f"){
+		if (_use_ep_efid){
+			ret=inFid(mom,_theta_e,_phi_e,sector);
+		}else{
+			ret=Cuts::Fiducial(id, mom, _theta_e, _phi_e, sector, paddle);
+		}
+	}else if (_expt=="e16"){
+		ret=Fiducial_e16_elctrn(id,mom,_theta_e,_phi_e);
+	}
+	if (ret==kTRUE){
+		//!pstc
+		_hefid_e[1]->Fill(_theta_e,_phi_e);
 	}
 	return ret;
 }
@@ -779,16 +831,21 @@ void h10looper_e1f::GetUVW(float xyz[3], float uvw[3]) {
 
 bool h10looper_e1f::pass_sf()
 {
+	//Info("h10looper_e1f::pass_sf()","");
 	//! Get info to make cut
 	float mom=p[0];
 	int idxEC=ec[0]-1;
 	int sctr=ec_sect[idxEC];
+	if (sctr==0) {//! [11-12-15] Found sctr=0, from EC and SC, in E16
+		Info("h10looper_e1f::pass_sf()","sctr for 1st particle=0. pass_sf=kFALSE");
+		return kFALSE;
+	}
 	//! correct etot. etot=max(etot,ec_ei_ec_eo)
 	if (_use_corr_sf_etot){
 		etot[idxEC]=etot[idxEC] > ec_ei[idxEC]+ec_eo[idxEC] ? etot[idxEC] : ec_ei[idxEC]+ec_eo[idxEC];
 	}
 	float sf=etot[idxEC]/mom;
-
+	
 	//! make cut
 	float sf_min=_sf_min[sctr-1]->Eval(mom);
 	float sf_max=_sf_max[sctr-1]->Eval(mom);
@@ -801,14 +858,14 @@ bool h10looper_e1f::pass_ECfid(){
 	Float_t uvw[3]={0,0,0};
 	GetUVW(xyz,uvw);
 	enum { U, V, W };
-	bool passU= uvw[U]>UMIN && uvw[U]<UMAX;
-	bool passV= uvw[V]>VMIN && uvw[V]<VMAX;
-	bool passW= uvw[W]>WMIN && uvw[W]<WMAX;
+	bool passU= uvw[U]>_Umin && uvw[U]<_Umax;
+	bool passV= uvw[V]>_Vmin && uvw[V]<_Vmax;
+	bool passW= uvw[W]>_Wmin && uvw[W]<_Wmax;
 	return passU && passV && passW;
 }
 
 bool h10looper_e1f::pass_p_min_ECth(){
-	return (p[0]>P_MIN_ECTH);
+	return (p[0]>_p_min_ECth);
 }
 
 bool h10looper_e1f::pass_ECin_min(){
@@ -869,9 +926,9 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	_use_SChit=kTRUE;
 	_use_dc_stat=kTRUE;
 	//! Evans's EFID
-	_use_ep_efid=kFALSE;
+	_use_ep_efid=kTRUE;
 	//! Evans's PFID
-	_use_ep_pfid=kFALSE;
+	_use_ep_pfid=kTRUE;
 
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
@@ -883,8 +940,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains("4:")) _use_corr_sf_etot=kTRUE;
 	if (adtnl_opts.Contains("5:")) _use_SChit=kFALSE;
 	if (adtnl_opts.Contains("6:")) _use_dc_stat=kFALSE;
-	if (adtnl_opts.Contains("7:")) _use_ep_efid=kTRUE;
-	if (adtnl_opts.Contains("8:")) _use_ep_pfid=kTRUE;
+	if (adtnl_opts.Contains("7:")) _use_ep_efid=kFALSE;
+	if (adtnl_opts.Contains("8:")) _use_ep_pfid=kFALSE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections

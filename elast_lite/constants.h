@@ -117,6 +117,20 @@ namespace E1F{
 
 namespace E16{
 	const Float_t E0_P = 5.754;
+
+	//! eid-cut pars
+	//! minimum momentum that satisfies EC threshold
+	//! (as per EI analysis note)
+	const Float_t P_MIN_ECTH = 0.70;
+
+	//! EC fid cut pars
+	//!(as per EI analysis note)
+	const Float_t UMIN=40; 
+	const Float_t UMAX=9999; //! no cut on UMAX 
+	const Float_t VMIN=0;
+	const Float_t VMAX=360;
+	const Float_t WMIN=0;
+	const Float_t WMAX=390;
 }
 
 #endif /* CONSTANTS_H_ */
