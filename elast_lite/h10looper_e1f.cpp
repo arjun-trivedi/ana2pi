@@ -324,11 +324,6 @@ void h10looper_e1f::Loop(){
 
 	if (fChain == 0) return;
 
-	//! Reconcile h10 Branch binding for e16:exp
-	if (_expt=="e16" && _dtyp=="exp") {
-		Reconcile();
-	}
-
 	Long64_t nbytes = 0, nb = 0;
 	for (Long64_t jentry=0; jentry<_nentries_to_proc;jentry++) {
 		Long64_t ientry = LoadTree(jentry);
@@ -339,6 +334,12 @@ void h10looper_e1f::Loop(){
 			Info("h10looper_e1f::Loop()","Processing event %llu",jentry+1);
 			Info("h10looper_e1f::Loop()","Fraction of events processed %.2f%%",((float)(jentry+1)/_nentries_to_proc)*100);
 		}
+
+		//! Reconcile h10 Branch binding for e16:exp
+		if (_expt=="e16" && _dtyp=="exp") {
+			Reconcile();
+		}
+
 		//! Begin processing event
 		reset_ekin();
 		if (_seq=="recon"){

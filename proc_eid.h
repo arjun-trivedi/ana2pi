@@ -55,7 +55,7 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
   	path=getenv("WORKSPACE");
   	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
-	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6 exp.
@@ -68,7 +68,11 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
     	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
     }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
-    }
+    }*/
+
+    //![11-17-15] Use same eid-cut pars for E16 and E1F
+    if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	
 	_make_tree=make_tree;
 	_dirmon=NULL;
@@ -123,7 +127,7 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
   	path=getenv("WORKSPACE");
   	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
-	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6 exp.
@@ -136,7 +140,11 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
     	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
     }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
     	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
-    }
+    }*/
+
+    //![11-17-15] Use same eid-cut pars for E16 and E1F
+    if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 }
 
 ProcEid::~ProcEid(){
@@ -164,10 +172,11 @@ void ProcEid::handle() {
 	//! Cut	
 	Bool_t gE = kFALSE;
 
-    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE();
+    /*if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE();
     else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  goodE_bos();
     else if (dH10->expt=="e16" && _eidTool->eidParFileFound) gE =  goodE();
-    else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained
+    else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained*/
+    gE=goodE();
     
 	if (gE) {	
 		dAna->fillHistsEid(hists[CUTMODE][EVTINC]);

@@ -26,7 +26,7 @@ for simnum in "${simlist[@]}"; do
 
   echo "\
   <Request>
-    <Name name=\"e1f_h10_2_d2piR-sim\"/>
+    <Name name=\"e1f_h10_2_d2piR-sim_$simnum\"/>
     <Project name=\"E1F\"/>
     <OS name=\"centos65\"/>
     <DiskSpace space=\"5000\" unit=\"MB\"/>
