@@ -3,7 +3,7 @@ from disp_obs import DispObs
 import sys
 
 #! ---------------------
-#  dobs_1D [obsdir] [simnum=siml] [norm=False] [q2min=1.25] [q2max=5.25] [wmin=1.400] [wmax=2.125] [dbg=False]
+#  dobs_1D [obsdir] [simnum=siml] [view=norm] [q2min=1.25] [q2max=5.25] [wmin=1.400] [wmax=2.125] [expt=e1f] [dbg=False]
 #!----------------------
 #! Get obsdir
 if len(sys.argv)==1:
@@ -16,16 +16,12 @@ if len(sys.argv)>2: #! User input simnum, else use siml
 else:
 	simnum='siml'
 
-if len(sys.argv)>3: #! User input norm, else use norm=False
-	if sys.argv[3]=="False":
-                norm=False
-        elif sys.argv[3]=="True":
-                norm=True
-        else:
-                print "Please enter norm=True or False!"
-                sys.exit()
+if len(sys.argv)>3: #! User input view, else use view=norm 
+	view=sys.argv[3]
+	if view!="norm" and view!="fullana" and view!="ERyield":
+		sys.exit("view=norm/fullana/ERyield only")
 else:
-	norm=False
+	view="norm"	
 
 if len(sys.argv)>4: #! User input q2min 
         q2min=float(sys.argv[4])
@@ -47,11 +43,17 @@ if len(sys.argv)>7: #! User input q2min
 else:
         wmax=2.125
 
+if len(sys.argv)>8: #! User input expt 
+        expt=sys.argv[8]
+	if expt!='e1f' and expt!='e16':
+		sys.exit("expt=e1f or e16 only.")
+else:
+        expt='e1f'
 
-if len(sys.argv)>8: #! User input dbg, else use dbg=False
-	if sys.argv[8]=="False":
+if len(sys.argv)>9: #! User input dbg, else use dbg=False
+	if sys.argv[9]=="False":
                 dbg=False
-        elif sys.argv[8]=="True":
+        elif sys.argv[9]=="True":
                 dbg=True
         else:
                 print "Please enter dbg=True or False!"
@@ -59,8 +61,8 @@ if len(sys.argv)>8: #! User input dbg, else use dbg=False
 else:
 	dbg="False"
 
-print "Displaying 1D-Obs for obsdir simnum norm q2min q2max wmin wmax dbg",obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg
-do=DispObs(obsdir,simnum,norm,q2min,q2max,wmin,wmax,dbg)
+print "Displaying 1D-Obs for obsdir simnum view q2min q2max wmin wmax expt dbg",obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg
+do=DispObs(obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg)
 do.disp_1D()
-if norm==True:#! Integrated yield direct from h5 (currently implemented, for tech. reasons, only for norm=True)
+if view=="norm":#! Integrated yield direct from h5 (currently implemented, for tech. reasons, only for norm=True)
 	do.disp_itg_yld_drct_from_h5()

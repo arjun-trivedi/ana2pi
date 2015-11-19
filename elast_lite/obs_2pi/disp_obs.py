@@ -16,6 +16,8 @@ import math
 
 import atlib as atlib
 
+from rootpy.interactive import wait
+
 from proc_h8 import H5_DIM,VSTS,VARS,SEQ_ALL 
 
 ROOT.gROOT.ProcessLine(".L THnTool.C+")
@@ -25,11 +27,15 @@ from ROOT import THnTool
 thntool=THnTool()
 
 #! For Luminosity & vgflux
-LUM=19.844 #fb^-1
+LUM_E1F=19.844 #fb^-1
+E1F_E0=5.499
+
+LUM_E16=28
+E16_E0=5.754
+
 LUM_INVFB_TO_INVMICROB=1000000000
 
 PI=3.14159265358979312
-E1F_E0=5.499
 FSC=0.00729735253
 A=FSC
 NA=6.02214129E23
@@ -45,14 +51,14 @@ WBINW=0.025 # GeV
 #! 		+VST2: Rho     => (pip,pim)p
 #! 		+VST3: Delta0  => (p,pim)pip
 VAR_NAMES={(1,VARS[0]):"M_{p#pi^{+}}",(1,VARS[1]):"M_{#pi^{+}#pi^{-}}",
-           (1,VARS[2]):"#theta_{#pi^{-}}",(1,VARS[3]):"#phi_{#pi^{-}}",
-           (1,VARS[4]):"#alpha_{[p_{f}#pi^{+}][p#pi^{-}]}",
-           (2,VARS[0]):"M_{p#pi^{+}}",(2,VARS[1]):"M_{#pi^{+}#pi^{-}}",
-           (2,VARS[2]):"#theta_{p}",(2,VARS[3]): "#phi_{p}",
-           (2,VARS[4]):"#alpha_{[#pi^{+}#pi^{-}][pp_{f}]}",
-           (3,VARS[0]):"M_{p#pi^{+}}",(3,VARS[1]):"M_{p#pi^{-}}",
-           (3,VARS[2]):"#theta_{#pi^{+}}",(3,VARS[3]): "#phi_{#pi^{+}}",
-           (3,VARS[4]):"#alpha_{[p_{f}#pi^{-}][p#pi^{+}]}"}
+		   (1,VARS[2]):"#theta_{#pi^{-}}",(1,VARS[3]):"#phi_{#pi^{-}}",
+		   (1,VARS[4]):"#alpha_{[p_{f}#pi^{+}][p#pi^{-}]}",
+		   (2,VARS[0]):"M_{p#pi^{+}}",(2,VARS[1]):"M_{#pi^{+}#pi^{-}}",
+		   (2,VARS[2]):"#theta_{p}",(2,VARS[3]): "#phi_{p}",
+		   (2,VARS[4]):"#alpha_{[#pi^{+}#pi^{-}][pp_{f}]}",
+		   (3,VARS[0]):"M_{p#pi^{+}}",(3,VARS[1]):"M_{p#pi^{-}}",
+		   (3,VARS[2]):"#theta_{#pi^{+}}",(3,VARS[3]): "#phi_{#pi^{+}}",
+		   (3,VARS[4]):"#alpha_{[p_{f}#pi^{-}][p#pi^{+}]}"}
 
 VAR_UNIT_NAMES={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"deg",VARS[3]:"deg",VARS[4]:"deg"}
 VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"",VARS[3]:"rad",VARS[4]:"rad"}
@@ -82,24 +88,24 @@ PLT_SEQ_ALL=SEQ_ALL#['ST','SR','SA','SC','SH','SF','ER','EC','EH','EF']
 PLT_SEQ_ALL.remove('SA') #! SA is not plotted, at least not as an Observable
 
 CLRS_PLT_SEQ_ALL={('ST'):ROOT.gROOT.ProcessLine("kGreen"),
-			      ('SR'):ROOT.gROOT.ProcessLine("kMagenta"),
-			      ('SC'):ROOT.gROOT.ProcessLine("kOrange"),
-			      ('SH'):ROOT.gROOT.ProcessLine("kPink+1"),
-			      ('SF'):ROOT.gROOT.ProcessLine("kRed"),
-                  ('ER'):ROOT.gROOT.ProcessLine("kYellow"),
-			      ('EC'):ROOT.gROOT.ProcessLine("kCyan"),
-			      ('EH'):ROOT.gROOT.ProcessLine("kBlack"),
-			      ('EF'):ROOT.gROOT.ProcessLine("kBlue")}
+				  ('SR'):ROOT.gROOT.ProcessLine("kMagenta"),
+				  ('SC'):ROOT.gROOT.ProcessLine("kOrange"),
+				  ('SH'):ROOT.gROOT.ProcessLine("kPink+1"),
+				  ('SF'):ROOT.gROOT.ProcessLine("kRed"),
+				  ('ER'):ROOT.gROOT.ProcessLine("kYellow"),
+				  ('EC'):ROOT.gROOT.ProcessLine("kCyan"),
+				  ('EH'):ROOT.gROOT.ProcessLine("kBlack"),
+				  ('EF'):ROOT.gROOT.ProcessLine("kBlue")}
 
 MRKS_PLT_SEQ_ALL={('ST'):ROOT.gROOT.ProcessLine("kPlus"),
-			      ('SR'):ROOT.gROOT.ProcessLine("kOpenStar"),
-			      ('SC'):ROOT.gROOT.ProcessLine("kFullDotLarge"),
-			      ('SH'):ROOT.gROOT.ProcessLine("kCircle"),
-			      ('SF'):ROOT.gROOT.ProcessLine("kFullDotLarge"),
-                  ('ER'):ROOT.gROOT.ProcessLine("kOpenStar"),
-			      ('EC'):ROOT.gROOT.ProcessLine("kFullDotLarge"),
-			      ('EH'):ROOT.gROOT.ProcessLine("kCircle"),
-			      ('EF'):ROOT.gROOT.ProcessLine("kFullDotLarge")}
+				  ('SR'):ROOT.gROOT.ProcessLine("kOpenStar"),
+				  ('SC'):ROOT.gROOT.ProcessLine("kFullDotLarge"),
+				  ('SH'):ROOT.gROOT.ProcessLine("kCircle"),
+				  ('SF'):ROOT.gROOT.ProcessLine("kFullDotLarge"),
+				  ('ER'):ROOT.gROOT.ProcessLine("kOpenStar"),
+				  ('EC'):ROOT.gROOT.ProcessLine("kFullDotLarge"),
+				  ('EH'):ROOT.gROOT.ProcessLine("kCircle"),
+				  ('EF'):ROOT.gROOT.ProcessLine("kFullDotLarge")}
 
 def nu(w,q2):
 	return (w*w-MP*MP+q2)/(2*MP)
@@ -116,26 +122,39 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispObs:
-	def __init__(self,obsdir,simnum='siml',norm=False,q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,dbg=False):
+	def __init__(self,obsdir,simnum='siml',view="norm",q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,expt='e1f',dbg=False):
 		print "*** In DispObs::_init_() ***"
+		self.OBSDIR=obsdir
 		self.SIM_NUM=simnum
-		self.NORM=norm
+		self.VIEW=view
 		self.Q2MIN,self.Q2MAX=q2min,q2max
 		self.WMIN,self.WMAX=wmin,wmax
+		if expt=='e1f':
+			self.LUM=LUM_E1F
+			self.E0=E1F_E0
+		elif expt=='e16':
+			self.LUM=LUM_E16
+			self.E0=E16_E0
+
 		self.DBG=dbg
 				
-		self.FIN=root_open(os.path.join(obsdir,self.SIM_NUM,'yield.root'))
-		self.OUTDIR=os.path.join(obsdir,self.SIM_NUM)
+		self.FIN=root_open(os.path.join(self.OBSDIR,self.SIM_NUM,'yield.root'))
+		self.OUTDIR=os.path.join(self.OBSDIR,self.SIM_NUM)
 
 		#! Set SEQS to process
-		if self.NORM==True:
+		if   self.VIEW=="norm":
 			self.SEQS=['EC','EF']
-		else:
+		elif self.VIEW=="fullana":
 			self.SEQS=SEQ_ALL
+		elif self.VIEW=="ERyield":
+			self.SEQS=['ER']
+		else:
+			sys.exit("view={norm,fullana,ERyield} only")
 
-		print "obsdir=%s\nFIN=%s\nOUTDIR=%s"%(obsdir,self.FIN,self.OUTDIR)
-		print "self.NORM=",self.NORM
+		print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
+		print "self.VIEW=",self.VIEW
 		print "SEQS to process=",self.SEQS
+		print "expt=",expt
 		time.sleep(3)
 
 		#! Some general ROOT related setup
@@ -157,26 +176,26 @@ class DispObs:
 				
 		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
 		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
-		         (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
-		         (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
-				          
+				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
+				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
+						  
 		c=ROOT.TCanvas("c","c",1000,1000)
 		pad_t=ROOT.TPad("pad_l","Legend pad",0.25,0.935,0.75,1.00)
 		pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
-  		if (self.NORM!=True):pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-  		pad_p.Draw()
-  		pad_t.Draw()
-  		pad_t.cd()
-  		pt=ROOT.TPaveText(.05,.1,.95,.8)
-  		pt.AddText("Q2_W bin=%s"%q2wbin)
-  		pt.SetTextSize(0.40)
-  		pt.Draw()
-  		pad_p.Divide(3,3)
+		if (self.VIEW=="fullana"):pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+		pad_p.Draw()
+		pad_t.Draw()
+		pad_t.cd()
+		pt=ROOT.TPaveText(.05,.1,.95,.8)
+		pt.AddText("Q2_W bin=%s"%q2wbin)
+		pt.SetTextSize(0.40)
+		pt.Draw()
+		pad_p.Divide(3,3)
 		for item in pad_map:
 			pad,vst,var=item[0],item[1],item[2]
 			print "pad,vst,var=",pad,vst,var
 			gpad=pad_p.cd(pad)
-			if self.NORM==True:
+			if self.VIEW=="norm" or self.VIEW=="ERyield":
 				#! First set minimum(=0) and maximum of y-axis
 				maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
 				maximum=max(maxl)
@@ -187,7 +206,7 @@ class DispObs:
 				for i,seq in enumerate(self.SEQS):
 					draw_opt="" if i==0 else "same"
 					h1[seq,vst,var].Draw(draw_opt)
-			elif self.NORM!=True:#! Draw all hists normed to same integral (since I want to compare their distributions)
+			elif self.VIEW=="fullana":#! Draw all hists normed to same integral (since I want to compare their distributions)
 				#! seq that can be directly drawn normalized
 				seq_drct=['ST','SR','SF','ER','EF']
 				#! seq that need to be manipulated
@@ -267,13 +286,14 @@ class DispObs:
 		3. Per Q2-W bin:
 			+ Extract h1(seq,vst,var)(=Obs_1D) where
 				+ seq:
-					+ =EC,EF if norm=True, 
-					+ =PLT_SEQ_ALL
+					+ =EC,EF       if view="norm" 
+					+ =PLT_SEQ_ALL if view="fullana"
+					+ =ER          if view="ERyield"
 				+ var:	
 					+ if vst==1:           VARS=(M1,THETA,ALPHA)
 					+ if vst==2 or vst==3: VARS=(M2,THETA,ALPHA)
 
-			+ If self.NORM=True, then Normalize h1(seq,vst,var)
+			+ If self.VIEW="norm", then Normalize h1(seq,vst,var)
 			+ Fill relevant bin of h2 (=Intg_yld)
 			+ Plot h1(seq,vst,var)
 		4. Plot h2(seq,vst,var) and its projection on W
@@ -281,12 +301,14 @@ class DispObs:
 		print "*** In DispObs::disp_1D() ***"
 
 		#! Make OUTDIR_1D
-		self.OUTDIR_1D=os.path.join(self.OUTDIR,"Obs_1D%s"%("_norm" if self.NORM==True else ""))
+		#self.OUTDIR_1D=os.path.join(self.OUTDIR,"Obs_1D%s"%("_norm" if self.VIEW==True else ""))
+		self.OUTDIR_1D=os.path.join(self.OUTDIR,"Obs_1D_%s"%self.VIEW)
 		if not os.path.exists(self.OUTDIR_1D):
 			os.makedirs(self.OUTDIR_1D)
 
 		#! Make OUTDIR_2D
-		self.OUTDIR_ITG_YLD=os.path.join(self.OUTDIR,"Obs_Itg_Yld%s"%("_norm" if self.NORM==True else ""))
+		#self.OUTDIR_ITG_YLD=os.path.join(self.OUTDIR,"Obs_Itg_Yld%s"%("_norm" if self.VIEW==True else ""))
+		self.OUTDIR_ITG_YLD=os.path.join(self.OUTDIR,"Obs_Itg_Yld_%s"%self.VIEW)
 		if not os.path.exists(self.OUTDIR_ITG_YLD):
 			os.makedirs(self.OUTDIR_ITG_YLD)
 
@@ -332,7 +354,7 @@ class DispObs:
 			#! End of [seq,vst,var] loop
 
 			#! If norm, then normalize h1(SEQ,VSTS,VARS)
-			if self.NORM==True:
+			if self.VIEW=="norm":
 				self.norm_1D(h1,q2wbin)
 			else: #! just DCosTheta normalize theta distributions
 				for k in h1:
@@ -362,7 +384,7 @@ class DispObs:
 		q2=q2bin_le+(Q2BINW/2)
 		w=wbin_le+(WBINW/2)
 		print "norm_1D() Going to get vgflux for %s at q2=%.2f,w=%.3f"%(q2wbin,q2,w)
-		vgflux=getvgflux(w,q2)
+		vgflux=getvgflux(w,q2,e0=self.E0)
 
 		#! Create h1n[SEQ,VSTS,VARS]
 		#! + SEQ and VSTS in this case is redundant, since normalization depends, aside from Q2,W
@@ -391,7 +413,7 @@ class DispObs:
 					theta_b=h1n[k].GetBinLowEdge(ibin+2)
 					DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
 					var_norm_fctr=DCosTheta
-				normf=LUM*LUM_INVFB_TO_INVMICROB*vgflux*Q2BINW*WBINW*var_norm_fctr
+				normf=self.LUM*LUM_INVFB_TO_INVMICROB*vgflux*Q2BINW*WBINW*var_norm_fctr
 				h1n[k].SetBinContent(ibin+1,normf)
 				h1n[k].SetBinError(ibin+1,0)
 
@@ -427,12 +449,12 @@ class DispObs:
 		#!   as 'Full' or 'Open' type markers, when for example, more than one seq is being plotted on the same plot.  
 		#! 
 		clrd={(1,'M1'):'kRed-6',     (2,'M2'):'kRed',     (3,'M2'):'kMagenta',
-		      (1,'THETA'):'kBlue-6', (2,'THETA'):'kBlue', (3,'THETA'):'kCyan',
-		      (1,'ALPHA'):'kGreen-6',(2,'ALPHA'):'kGreen',(3,'ALPHA'):'kOrange'}	
+			  (1,'THETA'):'kBlue-6', (2,'THETA'):'kBlue', (3,'THETA'):'kCyan',
+			  (1,'ALPHA'):'kGreen-6',(2,'ALPHA'):'kGreen',(3,'ALPHA'):'kOrange'}	
 		mrkr_fulld={'M1':'kFullDotLarge', 'M2':'kFullDotLarge',     
-		            'THETA':'kFullSquare', 'ALPHA':'kFullTriangleUp'}
+					'THETA':'kFullSquare', 'ALPHA':'kFullTriangleUp'}
 		mrkr_opend={'M1':'kOpenCircle', 'M2':'kOpenCircle',     
-		            'THETA':'kOpenSquare', 'ALPHA':'kOpenTriangleUp'}
+					'THETA':'kOpenSquare', 'ALPHA':'kOpenTriangleUp'}
 
 		#! 1. Directly plot each h2[seq,vst,var] in its own canvas
 		outdir_h2=os.path.join(self.OUTDIR_ITG_YLD,"Q2_W")
@@ -453,7 +475,7 @@ class DispObs:
 			os.makedirs(outdir_w_proj)
 		nq2bins=h2[h2.keys()[0]].GetNbinsY()
 		for iq2bin in range(nq2bins):
-			if self.NORM==True:
+			if self.VIEW=="norm" or self.VIEW=="ERyield":
 				#! Plotting aesthetics
 				#ROOT.gROOT.SetOptStat("ne")
 				
@@ -467,13 +489,16 @@ class DispObs:
 					htitle="itg_xsec Q2=%s"%h2[k].GetYaxis().GetBinLabel(iq2bin+1)
 					h1p[k]=h2[k].ProjectionX(hname,iq2bin+1,iq2bin+1,"e")
 					h1p[k].SetTitle(htitle)
-					h1p[k].SetYTitle("#sigma[#mub]")
+					if   self.VIEW=="norm": h1p[k].SetYTitle("#sigma[#mub]")
+					elif self.VIEW=="ERyield": h1p[k].SetYTitle("counts")
 					
 					clr=clrd[vst,var]
 					if seq=='EC':
 						mrkr=mrkr_fulld[var]
 					elif seq=='EF':
 						mrkr=mrkr_opend[var]
+					elif seq=="ER":
+						mrkr=mrkr_fulld[var]
 					
 					h1p[k].SetMarkerStyle(ROOT.gROOT.ProcessLine(mrkr))
 					h1p[k].SetLineColor(ROOT.gROOT.ProcessLine(clr))
@@ -495,7 +520,7 @@ class DispObs:
 				pad_l.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				pad_l.Draw()
-  				pad_p.Draw()
+				pad_p.Draw()
 				#! legend
 				l=ROOT.TLegend(0.0,0.00,1.00,1.00)
 				l.SetFillStyle(0)
@@ -516,7 +541,7 @@ class DispObs:
 				l.Draw()
 				c.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj,iq2bin+1))
 
-			elif self.NORM!=True: 
+			elif self.VIEW=="fullana": 
 				#! Plotting aesthetics
 				#ROOT.gROOT.SetOptStat("ne")
 				#! + First create all projections: h1p[seq,vst,var]
@@ -571,8 +596,8 @@ class DispObs:
 					i+=1
 				#! Add additional label for ER,SR to say that they are normed to same integral
 				pt=ROOT.TPaveText(.05,.90,.95,.95,"NDC")
-  				pt.AddText("Integral of all hists. normalized to 1000")
-  				pt.Draw()
+				pt.AddText("Integral of all hists. normalized to 1000")
+				pt.Draw()
 				gpad=c1.cd(2)
 				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				l1.Draw()
@@ -655,14 +680,14 @@ class DispObs:
 		
 		for k in h1:
 			seq,vst,var=k[0],k[1],k[2]
-			if var=='M1' or var=='M2': #! then directly use TH1::Integral(opt); opt="width" when self.NORM=True, "" when self.NORM=False
-				opt="%s"%("width" if self.NORM==True else "")
+			if var=='M1' or var=='M2': #! then directly use TH1::Integral(opt); opt="width" when self.VIEW="norm", "" when self.VIEW="fullana"/"ERyield"
+				opt="%s"%("width" if self.VIEW=="norm" else "")
 				nbins=h1[k].GetNbinsX()
 				itg_err=ROOT.Double(0)#https://root.cern.ch/phpBB3/viewtopic.php?t=2499
 				itg=h1[k].IntegralAndError(1,nbins,itg_err,opt)
 				h2[k].SetBinContent(iwbin+1,iq2bin+1,itg)
 				h2[k].SetBinError(iwbin+1,iq2bin+1,itg_err)
-			elif var=='THETA': #! manually compute integral to adapt for DCosTheta irrespective of self.NORM! (NOTE, theta distributions are atleast DCosTheta normalized irrespective of self.NORM!)
+			elif var=='THETA': #! manually compute integral to adapt for DCosTheta irrespective of self.VIEW (NOTE, theta distributions are atleast DCosTheta normalized irrespective of self.VIEW)
 				itg,itg_err=0,0
 				nbins=h1[k].GetNbinsX()
 				for ibin in range(nbins):
@@ -675,7 +700,7 @@ class DispObs:
 					itg_err+=bincerr*DCosTheta
 				h2[k].SetBinContent(iwbin+1,iq2bin+1,itg)
 				h2[k].SetBinError(iwbin+1,iq2bin+1,itg_err)
-			elif var=='ALPHA': #! manually compute integral to adapt for DAlpha; DAlpha is in radians when self.NORM=true, 1 when self.NORM=False
+			elif var=='ALPHA': #! manually compute integral to adapt for DAlpha; DAlpha is in radians when self.VIEW="norm", 1 when self.VIEW="fullana"/"ERyield"
 				itg,itg_err=0,0
 				nbins=h1[k].GetNbinsX()
 				for ibin in range(nbins):
@@ -683,7 +708,7 @@ class DispObs:
 					bincerr=h1[k].GetBinError(ibin+1)
 					alpha_a=h1[k].GetBinLowEdge(ibin+1)
 					alpha_b=h1[k].GetBinLowEdge(ibin+2)# + h1[k].GetBinWidth(ibin+1)
-					if self.NORM==True:
+					if self.VIEW=="norm":
 						DAlpha=math.fabs(math.radians(alpha_b)-math.radians(alpha_a))
 					else:
 						DAlpha=1
@@ -744,10 +769,11 @@ class DispObs:
 		"""
 		print "*** In DispObs::disp_itg_yld_drct_from_h5() ***"
 		
-		if self.NORM==False:
-			outdir=os.path.join(self.OUTDIR,"Obs_Itg_Yld_drct")
-		else:
-			outdir=os.path.join(self.OUTDIR,"Obs_Itg_Yld_drct_norm")
+		# if self.VIEW==False:
+		# 	outdir=os.path.join(self.OUTDIR,"Obs_Itg_Yld_drct")
+		# else:
+		# 	outdir=os.path.join(self.OUTDIR,"Obs_Itg_Yld_drct_norm")
+		outdir=os.path.join(self.OUTDIR,"Obs_Itg_Yld_drct_%s"%self.VIEW)
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 
@@ -785,12 +811,12 @@ class DispObs:
 					#wbin=q2wbin.split('_')[1]
 					h5=self.FIN.Get("%s/%s/VST%d/h5"%(q2wbin,seq,vst))
 					y[seq,vst,q2bin][w]=thntool.GetIntegral(h5)
-					if self.NORM==True:
+					if self.VIEW=="norm":
 						q2=float(q2wbin.split('_')[0].split('-')[0])
 						dq2=float(q2wbin.split('_')[0].split('-')[1])-q2
-						#normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2)*dw*dq2#!mub^-1
-						normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+(dw/2),q2+(dq2/2))*dw*dq2#!mub^-1
-						#normf=LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+dw,q2+dq2)*dw*dq2#!mub^-1
+						#normf=self.LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2,e0=self.E0)*dw*dq2#!mub^-1
+						normf=self.LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+(dw/2),q2+(dq2/2),e0=self.E0)*dw*dq2#!mub^-1
+						#normf=self.LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+dw,q2+dq2,e0=self.E0)*dw*dq2#!mub^-1
 						print "yield=",y[seq,vst,q2bin][w]
 						print "dw,dq2=",dw,dq2
 						print "norm=",normf
@@ -806,13 +832,13 @@ class DispObs:
 		#clrd={'1.25-1.75':'red','1.75-2.25':'brown','2.25-2.75':'magenta','2.75-3.25':'orange',
 		#       '3.25-3.75':'yellow','3.75-4.25':'green','4.25-4.75':'cyan','4.75-5.25':'blue'}
 		clrd={('1.25-1.75',1):'red',('1.25-1.75',2):'brown',('1.25-1.75',3):'magenta',
-		      ('1.75-2.25',1):'cyan',('1.75-2.25',2):'blue',('1.75-2.25',3):'green',
-		      ('2.25-2.75',1):'orange',('2.25-2.75',2):'yellow',('2.25-2.75',3):'black',
-		      ('2.75-3.25',1):'cyan',('2.75-3.25',2):'blue',('2.75-3.25',3):'green',
-		      ('3.25-3.75',1):'cyan',('3.25-3.75',2):'blue',('3.25-3.75',3):'green',
-		      ('3.75-4.25',1):'cyan',('3.75-4.25',2):'blue',('3.75-4.25',3):'green',
-		      ('4.25-4.75',1):'cyan',('4.25-4.75',2):'blue',('4.25-4.75',3):'green',
-		      ('4.75-5.25',1):'orange',('4.75-5.25',2):'yellow',('4.75-5.25',3):'black'}
+			  ('1.75-2.25',1):'cyan',('1.75-2.25',2):'blue',('1.75-2.25',3):'green',
+			  ('2.25-2.75',1):'orange',('2.25-2.75',2):'yellow',('2.25-2.75',3):'black',
+			  ('2.75-3.25',1):'cyan',('2.75-3.25',2):'blue',('2.75-3.25',3):'green',
+			  ('3.25-3.75',1):'cyan',('3.25-3.75',2):'blue',('3.25-3.75',3):'green',
+			  ('3.75-4.25',1):'cyan',('3.75-4.25',2):'blue',('3.75-4.25',3):'green',
+			  ('4.25-4.75',1):'cyan',('4.25-4.75',2):'blue',('4.25-4.75',3):'green',
+			  ('4.75-5.25',1):'orange',('4.75-5.25',2):'yellow',('4.75-5.25',3):'black'}
 		mrkrd={'EC':'o','EF':'^'}
 		for k in oy.keys():
 			seq,vst,q2wbin=k[0],k[1],k[2]
@@ -820,7 +846,7 @@ class DispObs:
 			ax.scatter(oy[k].keys(),oy[k].values(),label=lbl,c=clrd[q2wbin,vst],marker=mrkrd[seq],s=50)
 			ax.set_xticks(oy[k].keys())
 			ax.set_xticklabels(oy[k].keys(),rotation='vertical')
-		if self.NORM==False:
+		if self.VIEW!="norm":
 			ax.set_ylim(0,600000)
 			ax.set_ylabel(r'Yield [A.U.]',fontsize='xx-large')
 		else:
@@ -838,9 +864,9 @@ class DispObs:
 		"""
 		Walk the ROOT file and obtain simstats(ss) for a h5 in a Q2-W bin:
 		ss={'ST':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
-		    'SR':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
-		    'SA':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
-		    'SH':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
+			'SR':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'SA':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'SH':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
 
 		where:
 			+ nbins=number of filled bins in a h5_UNPOL
@@ -886,9 +912,9 @@ class DispObs:
 
 		Walk the ROOT file and obtain simstats(ss) for a h5_UNPOL in a Q2-W bin:
 		ss={'T':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
-		    'R':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
-		    'A':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
-		    'H':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
+			'R':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'A':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'H':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
 
 		where:
 			+ nbins=number of filled bins in a h5_UNPOL
@@ -931,6 +957,101 @@ class DispObs:
 				sg=binc_stats[1]
 				ss[seq].append([q2,w,nbins,N,mu,sg])
 		return ss
+
+	def plot_sim_stats_q2wbin_5D(self,q2wbin='',acc_rel_err_cut=-1,cut_type='lt',vst=1):
+		"""
+		[11-16-15] 
+		+ Orignal in study_acc_tools_lite.py::plot_acc_q2wbin_5D()
+		+ Brought over to disp_obs.py in order to consolidate
+
+		Notes:
+		+ Unless q2wbin is specified, this function will plot and save 5D simstats 
+          for all q2wbins in yield.root
+        + If q2wbin is specified, then this function will make an interactive plot for that
+          particular q2wbin
+		"""
+		is_intrctv=False
+		if q2wbin=='':#! Get all q2wbin directories from file
+			q2wbinl=self.get_q2wbinlist()
+			#! Create output directory
+			outdir=os.path.join(self.OUTDIR,'simstats')
+			if not os.path.exists(outdir):
+				os.makedirs(outdir)
+			#! Create output.root file
+			sfx=''
+			if acc_rel_err_cut>0:sfx="_acc_relerr_%s_%.2f"%(cut_type,acc_rel_err_cut)
+			fout=ROOT.TFile("%s/simstats%s.root"%(outdir,sfx),"RECREATE")
+		else:#! interactive mode for particular q2wbin
+			q2wbinl=[q2wbin]
+			is_intrctv=True;
+
+		print "Going to plot 5D simstats for q2wbinl=",q2wbinl
+
+		ROOT.gStyle.SetOptStat("nemMrRuo")
+
+		for q2wbin in q2wbinl:
+			#! Get 5D histograms
+			h5T=self.FIN.Get('%s/ST/VST%d/h5'%(q2wbin,vst))
+			h5R=self.FIN.Get('%s/SR/VST%d/h5'%(q2wbin,vst))
+			h5A=self.FIN.Get('%s/SA/VST%d/h5'%(q2wbin,vst))
+	
+			nbins=h5T.GetNbins()
+			hT=ROOT.TH1F("hT","ST:%s"%q2wbin,400,0,400)
+			hR=ROOT.TH1F("hR","SR:%s"%q2wbin,60,0,60)
+			hA=ROOT.TH1F("hA","SA:%s"%q2wbin,100,0,1.5)
+			h_relErrA=ROOT.TH1F("hA_rel_err","SA_rel_err:%s"%q2wbin,100,0,1.5)
+			#print nbins
+			bincoordT=np.zeros(5,'i')
+			for ibin in range(nbins):
+				bincT=h5T.GetBinContent(ibin,bincoordT)
+	
+				binR=h5R.GetBin(bincoordT)
+				bincR=h5R.GetBinContent(binR)
+	   
+				binA=h5A.GetBin(bincoordT)
+				bincA=h5A.GetBinContent(binA)
+				if bincA>0:
+					rel_err_A=h5A.GetBinError(binA)/bincA
+					if acc_rel_err_cut>0: #! i.e. make a cut on acc_rel_err_cut
+						pass_cut=False
+						if   cut_type=='lt': pass_cut=rel_err_A<acc_rel_err_cut
+						elif cut_type=='gt': pass_cut=rel_err_A>acc_rel_err_cut
+						if pass_cut: 
+							hT.Fill(bincT)
+							hR.Fill(bincR)
+							hA.Fill(bincA)
+							h_relErrA.Fill(rel_err_A)
+					else:
+						hT.Fill(bincT)
+						hR.Fill(bincR)
+						hA.Fill(bincA)
+						h_relErrA.Fill(rel_err_A)
+	
+				# if bincA>0:# and bincA<1:
+				# 	hT.Fill(bincT)
+				# 	hR.Fill(bincR)
+				# 	hA.Fill(bincA)
+				# 	h_relErrA.Fill(rel_err_A)
+		
+			#! Now draw hists
+			cname="c_%s"%q2wbin
+			c=ROOT.TCanvas(cname,cname)
+			c.Divide(2,2)
+			c.cd(1)
+			hT.Draw()
+			c.cd(2)
+			hR.Draw()
+			c.cd(3)
+			hA.Draw()
+			c.cd(4)
+			h_relErrA.Draw()
+
+			if is_intrctv:
+				plt.show()
+				# wait for you to close the ROOT canvas before exiting
+				wait(True)
+			else:
+				c.Write()
 
 
 	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=10):
@@ -1031,7 +1152,7 @@ class DispObs:
 			#! Y-axis title aesthetics
 			h1[k].GetYaxis().SetTitleOffset(1.5)
 			h1[k].GetYaxis().SetTitleSize(.05)
-			if self.NORM==True:
+			if self.VIEW=="norm":
 				# if var!='THETA':
 				# 	h1[k].SetYTitle("#frac{#Delta#sigma}{#Delta%s}[#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 				# elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
@@ -1040,13 +1161,15 @@ class DispObs:
 					h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
 					h1[k].SetYTitle("#Delta#sigma/#Deltacos(%s) [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			elif self.NORM==False:
+			elif self.VIEW=="fullana":
 				h1[k].SetYTitle("\"Normalized\" counts")
+			elif self.VIEW=="ERyield":
+				h1[k].SetYTitle("Counts")
 
-			#if self.NORM!=True:
-			h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
-			h1[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
-			h1[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq])	
+			if self.VIEW!="ERyield":
+				h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+				h1[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+				h1[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq])	
 
 	def plot_1D_athtcs(self):
 		#ROOT.gStyle.Reset()

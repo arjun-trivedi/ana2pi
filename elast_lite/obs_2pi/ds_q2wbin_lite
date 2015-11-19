@@ -2,7 +2,8 @@
 from __future__ import division
 import ROOT
 
-import study_acc_tools_lite as tl
+#import study_acc_tools_lite as tl
+from disp_obs import DispObs
 
 import collections
 from array import *
@@ -15,9 +16,12 @@ import numpy as np
 
 
 """
-ds_q2wbin [obsdir] [q2wbin] [sim=siml] 
+ds_q2wbin_lite [obsdir] [sim=siml] [q2wbin=''] [acc_rel_err_cut=-1] [cut_type='lt']
 
-+ This script displays simstats for user entered simnum (siml by default):
++ If q2wbin=
++ '': plot and save 5D simstats for all q2wbins in yield.root in 
+  obsdir/simstats/simstats.root
++ X.XX_Y.YY_A.AAA-B.BBB: Interactive plot for 5D stats for this particular bin
 
 """
 #! Get obsdir
@@ -26,18 +30,40 @@ if len(sys.argv)==1:
 else:
 	obsdir=sys.argv[1]
 
-#! Get obsdir
-if len(sys.argv)==2:
-        sys.exit("Please enter q2wbin")
+#! setup simnum
+if len(sys.argv)>2:#i.e. simnum entered by user
+	simnum=sys.argv[2]	
 else:
-        q2wbin=sys.argv[2]
+	simnum='siml'
 
-#! User input simnum, else use siml
-if len(sys.argv)>3:#i.e. simnum entered by user
-	simnum=sys.argv[3]	
+#! setup q2wbin
+if len(sys.argv)>3: #! q2wbin entered by user
+	q2wbin=sys.argv[3]
+        
 else:
-        simnum='siml'
+    q2wbin=''
 
-print "Displaying  simstats-q2wbin for (obsdir,q2wbin,simnun)=(",obsdir,q2wbin,simnum,")"
+#! setup acc_rel_err_cut
+if len(sys.argv)>4: #! acc_rel_err_cut entered by user
+	acc_rel_err_cut=float(sys.argv[4])
+        
+else:
+    acc_rel_err_cut=-1
 
-tl.plot_acc_q2wbin_5D(obsdir,q2wbin,simnum)
+#! setup cut_type
+if len(sys.argv)>5: #! cut_type entered by user
+	cut_type=sys.argv[5]
+	if cut_type!='lt' and cut_type!='gt':
+			sys.exit("cut_type can only be 'lt' or 'gt'")
+        
+else:
+    cut_type='lt'
+
+
+
+print "Displaying simstats-q2wbin for (obsdir,sim,q2wbin,acc_rel_err_cut,cut_type)=(",obsdir,simnum,q2wbin,acc_rel_err_cut,cut_type,")"
+
+#tl.plot_acc_q2wbin_5D(obsdir,q2wbin,simnum)
+
+dy=DispObs(obsdir,simnum=simnum)
+dy.plot_sim_stats_q2wbin_5D(q2wbin=q2wbin,acc_rel_err_cut=acc_rel_err_cut,cut_type=cut_type)

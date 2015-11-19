@@ -183,7 +183,7 @@ class ProcH8:
 			wb_min, wb_max =q2wb_lmt[1][0],q2wb_lmt[1][1]
 			q2wb_name="%0.2f-%0.2f_%0.3f-%0.3f"%(q2b_min,q2b_max,wb_min,wb_max)#(q2wb_lmt[0][0],q2wb_lmt[0][1],q2wb_lmt[1][0],q2wb_lmt[1][1])
 			print "proc(): Processing q2wb_name=",q2wb_name
-			if q2b_min<self.Q2MIN or q2b_max>self.Q2MAX:
+			if q2b_min<self.Q2MIN or q2b_max>self.Q2MAX or wb_min<self.WMIN or wb_max>self.WMAX:
 				print "proc(): Skipping q2wb_name=",q2wb_name
 				continue
 			

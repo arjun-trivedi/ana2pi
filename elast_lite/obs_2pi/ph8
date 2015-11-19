@@ -3,7 +3,7 @@ from proc_h8 import ProcH8
 import sys,time
 
 """
-ph8 [obsdir] [simnum=siml] [q2min=1.25] [q2min=3.25] [acc_rel_err_cut=-1] [usehel=False] [dbg=False]
+ph8 [obsdir] [simnum=siml] [q2min=1.25] [q2min=3.25] [wmin=1.400] [wmax=2.125] [acc_rel_err_cut=-1] [usehel=False] [dbg=False]
 """
 if len(sys.argv)<3:
 	sys.exit("Not all parameters entered. obsdir and dtyps are required")
@@ -31,28 +31,38 @@ if len(sys.argv)>4:#i.e. q2max entered by user
 else:
         q2max=3.25
 
-if len(sys.argv)>5:#i.e. acc_rel_err_cut 
-	acc_rel_err_cut=float(sys.argv[5])
+if len(sys.argv)>5:#i.e. wmin entered by user
+        wmin=float(sys.argv[5])
+else:
+        wmin=1.400
+
+if len(sys.argv)>6:#i.e. wmax entered by user
+        wmax=float(sys.argv[6])
+else:
+        wmax=2.125
+
+if len(sys.argv)>7:#i.e. acc_rel_err_cut 
+	acc_rel_err_cut=float(sys.argv[7])
 else:
         acc_rel_err_cut=-1
 
-if len(sys.argv)>6:#i.e. usehel entered by user
-        if   sys.argv[6]=='True':  usehel=True
-        elif sys.argv[6]=='False': usehel=False
-        else: sys.exit("usehel=\'%s\' not valid. Exiting."%sys.argv[6])
+if len(sys.argv)>8:#i.e. usehel entered by user
+        if   sys.argv[8]=='True':  usehel=True
+        elif sys.argv[8]=='False': usehel=False
+        else: sys.exit("usehel=\'%s\' not valid. Exiting."%sys.argv[8])
 
 else:
         usehel=False
 
-if len(sys.argv)>7:#i.e. dbg entered by user
-        if   sys.argv[7]=='True':  dbg=True
-        elif sys.argv[7]=='False': dbg=False
-        else: sys.exit("dbg=\'%s\' not valid. Exiting"%sys.argv[7])
+if len(sys.argv)>9:#i.e. dbg entered by user
+        if   sys.argv[9]=='True':  dbg=True
+        elif sys.argv[9]=='False': dbg=False
+        else: sys.exit("dbg=\'%s\' not valid. Exiting"%sys.argv[9])
 else:
         dbg=False
 
-print "ph8: Going to process h8 for (obsdir simmnum q2min q2max acc_rel_err_cut usehel debug)=(", obsdir,simnum,q2min,q2max,acc_rel_err_cut,usehel,dbg,")"
+print "ph8: Going to process h8 for (obsdir simmnum q2min q2max wmin wmax acc_rel_err_cut usehel debug)=(", obsdir,simnum,q2min,q2max,wmin,wmax,acc_rel_err_cut,usehel,dbg,")"
 time.sleep(3)
 #for dtyp in dtypl:
-ph8=ProcH8(obsdir,simnum=simnum,q2min=q2min,q2max=q2max,usehel=usehel,dbg=dbg)#,wmin=1.725)
+ph8=ProcH8(obsdir,simnum=simnum,q2min=q2min,q2max=q2max,wmin=wmin,wmax=wmax,acc_rel_err_cut=acc_rel_err_cut,usehel=usehel,dbg=dbg)#,wmin=1.725)
 ph8.execute()

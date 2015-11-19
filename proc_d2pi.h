@@ -33,13 +33,18 @@ using namespace ParticleConstants;
 	+ t3: p,pim are found AND pip is not found  AND MMppim satisfied
 	OR
 	+ t4: pip,pim are found AND p is not found AND MMpippim satisfied
+
+[11-16-15]
++ ProcD2pi() now takes in 'study_BG' as a parameter which is used for 'study_BG'. When study_BG=kTRUE,
+  then missing mass cuts are not applied and therefore the TTree made contains the entire MM spectrum,
+  which can be studied.
 *******************************************************/
 
 class ProcD2pi : public EpProcessor {
 
 public:
 	ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-			 bool procT, bool procR, bool make_tree=kFALSE);
+			 bool procT, bool procR, bool make_tree=kFALSE, bool study_BG=kFALSE);
 	~ProcD2pi();
 	void handle();
 	//at-h8 void write();
@@ -65,6 +70,7 @@ protected:
 	ProcPid* _proc_pid;
 	bool _procT,_procR;
 	bool _make_tree;
+	bool _study_BG;
 	TObjArray* _hists_ana_MM;    
 	TObjArray** _h8R[NTOPS];
 	TObjArray* _hists_MM_R[NTOPS];
@@ -99,7 +105,7 @@ protected:
 };
 
 ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-				   bool procT, bool procR, bool make_tree/*=kFALSE*/)
+				   bool procT, bool procR, bool make_tree/*=kFALSE*/,bool study_BG/*=kFALSE*/)
 				 :EpProcessor(td, dataH10, dataAna) {
 	_rand=new TRandom(); //atrivedi[06-13-14]: for _rand
 	_proc_eid=new ProcEid(dataH10,dataAna);
@@ -107,6 +113,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	_procT=procT;
 	_procR=procR;
 	_make_tree=make_tree;
+	_study_BG=study_BG;
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 		
@@ -294,6 +301,13 @@ void ProcD2pi::handle() {
 		Bool_t t2=t2a && t2b;
 		Bool_t t3=t3a && t3b;
 		Bool_t t4=t4a && t4b;
+
+		if (_study_BG){//! then over-ride above selection with that based purely on 'a' selection
+			t1=t1a;
+			t2=t2a;
+			t3=t3a;
+			t4=t4a;
+		}
 			
 		if ( t1 || t2 || t3 || t4) { //top:particle selection + MM cut
 			pass = kTRUE;

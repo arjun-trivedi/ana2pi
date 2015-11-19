@@ -1,0 +1,7 @@
+#!/bin/bash
+nentries=${1:-0}
+
+#! [10-25-15] 
+#! + Removed qskim to match with 'lite'
+#!    + Code appropriately changed in ProcPidNew,ProcPFidNew
+proc_h10 -i h10_e.lst -t e1f:exp:2pi  -p eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG -o d2piR_hvy.root -n $nentries

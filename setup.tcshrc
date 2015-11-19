@@ -45,3 +45,5 @@ source ${ANA2PI}/sub_studies/study_pid/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_efid/setup.tcshrc
 #-- study_elast_sim
 source ${ANA2PI}/sub_studies/study_elastic/study_elast_sim/setup.tcshrc
+#-- study_BG
+source ${ANA2PI}/sub_studies/study_BG/setup.tcshrc

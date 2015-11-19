@@ -1,0 +1,13 @@
+#--
+setenv STUDY_BG "${ANA2PI}/sub_studies/study_BG"
+alias study_bg 'cd ${STUDY_BG}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_BG}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_BG}"
+
+##- Set up STUDY_BG_DATADIR
+setenv STUDY_BG_DATADIR "/data/trivedia/e1f/study_BG/"
+
