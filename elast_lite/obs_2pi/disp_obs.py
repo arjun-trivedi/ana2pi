@@ -381,7 +381,11 @@ class DispObs:
 		#! Get virtual photon flux for this q2wbin
 		q2bin_le=self.get_q2bin_le(q2wbin)
 		wbin_le=self.get_wbin_le(q2wbin)
-		q2=q2bin_le+(Q2BINW/2)
+		# q2=q2bin_le+(Q2BINW/2)
+		# w=wbin_le+(WBINW/2)
+		q2bin_ue=self.get_q2bin_ue(q2wbin)
+		q2binw=q2bin_ue-q2bin_le
+		q2=q2bin_le+(q2binw/2)
 		w=wbin_le+(WBINW/2)
 		print "norm_1D() Going to get vgflux for %s at q2=%.2f,w=%.3f"%(q2wbin,q2,w)
 		vgflux=getvgflux(w,q2,e0=self.E0)
@@ -413,7 +417,7 @@ class DispObs:
 					theta_b=h1n[k].GetBinLowEdge(ibin+2)
 					DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
 					var_norm_fctr=DCosTheta
-				normf=self.LUM*LUM_INVFB_TO_INVMICROB*vgflux*Q2BINW*WBINW*var_norm_fctr
+				normf=self.LUM*LUM_INVFB_TO_INVMICROB*vgflux*q2binw*WBINW*var_norm_fctr #!Q2BINW
 				h1n[k].SetBinContent(ibin+1,normf)
 				h1n[k].SetBinError(ibin+1,0)
 
@@ -489,7 +493,10 @@ class DispObs:
 					htitle="itg_xsec Q2=%s"%h2[k].GetYaxis().GetBinLabel(iq2bin+1)
 					h1p[k]=h2[k].ProjectionX(hname,iq2bin+1,iq2bin+1,"e")
 					h1p[k].SetTitle(htitle)
-					if   self.VIEW=="norm": h1p[k].SetYTitle("#sigma[#mub]")
+					if   self.VIEW=="norm": 
+						h1p[k].SetYTitle("#sigma[#mub]")
+						h1p[k].SetMinimum(0)
+						h1p[k].SetMaximum(15)
 					elif self.VIEW=="ERyield": h1p[k].SetYTitle("counts")
 					
 					clr=clrd[vst,var]
@@ -829,16 +836,20 @@ class DispObs:
 		#! 4. Now plot
 		fig=plt.figure()
 		ax=plt.subplot(111)
-		#clrd={'1.25-1.75':'red','1.75-2.25':'brown','2.25-2.75':'magenta','2.75-3.25':'orange',
-		#       '3.25-3.75':'yellow','3.75-4.25':'green','4.25-4.75':'cyan','4.75-5.25':'blue'}
-		clrd={('1.25-1.75',1):'red',('1.25-1.75',2):'brown',('1.25-1.75',3):'magenta',
-			  ('1.75-2.25',1):'cyan',('1.75-2.25',2):'blue',('1.75-2.25',3):'green',
-			  ('2.25-2.75',1):'orange',('2.25-2.75',2):'yellow',('2.25-2.75',3):'black',
-			  ('2.75-3.25',1):'cyan',('2.75-3.25',2):'blue',('2.75-3.25',3):'green',
-			  ('3.25-3.75',1):'cyan',('3.25-3.75',2):'blue',('3.25-3.75',3):'green',
-			  ('3.75-4.25',1):'cyan',('3.75-4.25',2):'blue',('3.75-4.25',3):'green',
-			  ('4.25-4.75',1):'cyan',('4.25-4.75',2):'blue',('4.25-4.75',3):'green',
-			  ('4.75-5.25',1):'orange',('4.75-5.25',2):'yellow',('4.75-5.25',3):'black'}
+		# clrd={('1.25-1.75',1):'red',('1.25-1.75',2):'brown',('1.25-1.75',3):'magenta',
+		# 	  ('1.75-2.25',1):'cyan',('1.75-2.25',2):'blue',('1.75-2.25',3):'green',
+		# 	  ('2.25-2.75',1):'orange',('2.25-2.75',2):'yellow',('2.25-2.75',3):'black',
+		# 	  ('2.75-3.25',1):'cyan',('2.75-3.25',2):'blue',('2.75-3.25',3):'green',
+		# 	  ('3.25-3.75',1):'cyan',('3.25-3.75',2):'blue',('3.25-3.75',3):'green',
+		# 	  ('3.75-4.25',1):'cyan',('3.75-4.25',2):'blue',('3.75-4.25',3):'green',
+		# 	  ('4.25-4.75',1):'cyan',('4.25-4.75',2):'blue',('4.25-4.75',3):'green',
+		# 	  ('4.75-5.25',1):'orange',('4.75-5.25',2):'yellow',('4.75-5.25',3):'black'}
+		clrd={('1.50-2.00',1):'red',('1.50-2.00',2):'brown',('1.50-2.00',3):'magenta',
+			  ('2.00-2.40',1):'cyan',('2.00-2.40',2):'blue',('2.00-2.40',3):'green',
+			  ('2.40-3.00',1):'orange',('2.40-3.00',2):'yellow',('2.40-3.00',3):'black',
+			  ('3.00-3.50',1):'cyan',('3.00-3.50',2):'blue',('3.00-3.50',3):'green',
+			  ('3.50-4.20',1):'cyan',('3.50-4.20',2):'blue',('3.50-4.20',3):'green',
+			  ('4.20-5.00',1):'cyan',('4.20-5.00',2):'blue',('4.20-5.00',3):'green'}
 		mrkrd={'EC':'o','EF':'^'}
 		for k in oy.keys():
 			seq,vst,q2wbin=k[0],k[1],k[2]
@@ -1135,11 +1146,11 @@ class DispObs:
 		return float(self.get_q2bin(q2wbin).split('-')[0])
 	def get_wbin_le(self,q2wbin):
 		return float(self.get_wbin(q2wbin).split('-')[0])
-	# def get_q2bin_le(self,q2wbin):
-	# 	return float(q2wbin.split('_')[0].split('-')[0])
-	# def get_wbin_le(self,q2wbin):
-	# 	return float(q2wbin.split('_')[1].split('-')[0])
-
+	def get_q2bin_ue(self,q2wbin):
+		return float(self.get_q2bin(q2wbin).split('-')[1])
+	def get_wbin_ue(self,q2wbin):
+		return float(self.get_wbin(q2wbin).split('-')[1])
+	
 	def hist_1D_athtcs(self,h1):
 		for k in h1.keys():	
 			seq,vst,var=k[0],k[1],k[2]

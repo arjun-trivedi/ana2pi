@@ -3,7 +3,7 @@ from disp_obs import DispObs
 import sys
 
 #! ---------------------
-#  dobs_1D [obsdir] [simnum=siml] [view=norm] [q2min=1.25] [q2max=5.25] [wmin=1.400] [wmax=2.125] [expt=e1f] [dbg=False]
+#  dobs_1D [obsdir] [simnum=siml] [view=norm] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [expt=e1f] [dbg=False]
 #!----------------------
 #! Get obsdir
 if len(sys.argv)==1:
@@ -26,12 +26,12 @@ else:
 if len(sys.argv)>4: #! User input q2min 
         q2min=float(sys.argv[4])
 else:
-        q2min=1.25
+        q2min=1.50
 
 if len(sys.argv)>5: #! User input q2max 
         q2max=float(sys.argv[5])
 else:
-        q2max=5.25
+        q2max=5.00
 
 if len(sys.argv)>6: #! User input wmin 
         wmin=float(sys.argv[6])

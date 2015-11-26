@@ -39,26 +39,30 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	Info("h10looper_e1f::h10looper_e1f", "Number of entries to processess =  %llu",_nentries_to_proc);
 
 	//! cutsncors
-	if (_seq=="recon"){
-		setup_cutsncors(cutsncors);
-	}
-
+	setup_cutsncors(cutsncors);
+	
 	//! cuts to be made in addition to 'dflt'
     setup_adtnl_opts(adtnl_opts);
 	
 	//! set up eid
-	Info("h10looper_e1f::h10looper_e1f", "Setting up eid pars for dtyp=%s",_dtyp.Data());
-	setup_eid_cutpars(_dtyp);
+	if (_do_eid){
+		Info("h10looper_e1f::h10looper_e1f", "Setting up eid pars for dtyp=%s",_dtyp.Data());
+		setup_eid_cutpars(_dtyp);
+	}
 
 	//! set up pid
-	Info("h10looper_e1f::h10looper_e1f", "Setting up _pid_tool for dtyp=%s",_dtyp.Data());
-	_pid_tool=new Pid(_dtyp);
+	if (_do_pid){
+		Info("h10looper_e1f::h10looper_e1f", "Setting up _pid_tool for dtyp=%s",_dtyp.Data());
+		_pid_tool=new Pid(_dtyp);
+	}
 
 	//! set up _pcorr
-	Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr");
-	TString ws=getenv("WORKSPACE");;
-	TString fpcorr=TString::Format("%s/ana2pi/MomCorr",ws.Data());
-	_pcorr=new MomCorr_e1f((char *)fpcorr.Data());
+	if (_do_pcorr){
+		Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr");
+		TString ws=getenv("WORKSPACE");;
+		TString fpcorr=TString::Format("%s/ana2pi/MomCorr",ws.Data());
+		_pcorr=new MomCorr_e1f((char *)fpcorr.Data());
+	}
 
 
 	//! output objects
@@ -91,8 +95,9 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_hevt->GetXaxis()->SetBinLabel(EVT_2PI,"2pi event");
 		_hevt->SetMinimum(0);
 	}
-	if (_seq=="recon"){
-		//! EID
+	
+	//! EID
+	if (_do_eid){
 		_fout->mkdir("eid")->cd();
 		_heid=new TH1D("heid","EID statistics",NUM_EID_STATS,0.5,NUM_EID_STATS+0.5);
 		_heid->GetXaxis()->SetBinLabel(EID_TRG,"trgr");
@@ -110,8 +115,9 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_heid->GetXaxis()->SetBinLabel(EID_ZVTX,"pass zvrtx");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
 		_heid->GetXaxis()->SetBinLabel(EID_E,"e found");
-		
-		//! EFID
+	}
+	//! EFID
+	if (_do_efid){
 		_fout->mkdir("efid")->cd();
 		_hefid=new TH1D("hefid","EFID statistics",NUM_EFID_STATS,0.5,NUM_EFID_STATS+0.5);
 		_hefid->GetXaxis()->SetBinLabel(EFID_TOT,"total");
@@ -124,14 +130,18 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 			else if (i==1) name_sfx="pstc";
 			_hefid_e[i]  = new TH2F(TString::Format("h_e_phiVtheta_%s",name_sfx.Data()),  "#phi vs. #theta for e-",  100,0,60,  100,-30,330);
 		}
-		//! pcorr
+	}
+	//! pcorr
+	if (_do_pcorr){
 		_fout->mkdir("pcorr")->cd();
 		_hpcorr_dpVp=new TH2D("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
 		_hpcorr_dcx=new TH1D("hdcx", "#Deltacx",60,-0.01,0.01);
 		_hpcorr_dcy=new TH1D("hdcy", "#Deltacy",60,-0.01,0.01);
 		_hpcorr_dcz=new TH1D("hdcz", "#Deltacz",60,-0.01,0.01);
 		_hpcorr_dp=new TH1D("hdp", "#Deltap", 160,-0.08,0.08);
-		//! PID
+	}
+	//! PID
+	if (_do_pid){
 		_fout->mkdir("pid")->cd();
 		_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
 		_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
@@ -141,7 +151,7 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p + #pi^{+}");
 	}
 	//! delast
-	if (_rctn=="elast"){
+	if (_do_evtsel_elast){
 		_fout->mkdir("delast")->cd();
 		_hW=new TH1D("hW","hW",250,0,5);
 		_helast=new TH1D("helast","helast",100,0.7,1.2);
@@ -179,22 +189,36 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	Info("","fout=%s",_fout->GetName());
 	Info("","nentries_to_proc=%llu",_nentries_to_proc);
 	Info("","Beam momentum and energy=%.3f,%.3f",_lvE0.Pz(),_lvE0.E());
-	Info("","*** eid-cut pars ***");
-	Info("","P_MIN_ECTH=%.3f",_p_min_ECth);
-	for (int isctr=0;isctr<6;isctr++){
-		Info("","ECIN_MIN sctr%d=%.3f",isctr+1,_ECmin[isctr]);
-	}
-	Info("","UMIN=%.0f,UMAX=%.0f,VMIN=%.0f,VMAX=%.0f,WMIN=%.0f,WMAX=%.0f",
+	if (_do_eid){
+		Info("","*** eid-cut pars ***");
+		Info("","P_MIN_ECTH=%.3f",_p_min_ECth);
+		for (int isctr=0;isctr<6;isctr++){
+			Info("","ECIN_MIN sctr%d=%.3f",isctr+1,_ECmin[isctr]);
+		}
+		Info("","UMIN=%.0f,UMAX=%.0f,VMIN=%.0f,VMAX=%.0f,WMIN=%.0f,WMAX=%.0f",
 		      _Umin,_Umax,_Vmin,_Vmax,_Wmin,_Wmax);
-	for (int isctr=0;isctr<6;isctr++){
-		Info("","_z_vtx_min_sctr%d=%.2f",isctr+1,_z_vtx_min[isctr]);
-		Info("","_z_vtx_max_sctr%d=%.2f",isctr+1,_z_vtx_max[isctr]);
+		for (int isctr=0;isctr<6;isctr++){
+			Info("","_z_vtx_min_sctr%d=%.2f",isctr+1,_z_vtx_min[isctr]);
+			Info("","_z_vtx_max_sctr%d=%.2f",isctr+1,_z_vtx_max[isctr]);
+		}
+		for (int isctr=0;isctr<6;isctr++){
+			Info("","sf_low_sctr%d_pol3: %.5f,%.5f,%.5f,%.5f",
+				isctr+1,_sf_min[isctr]->GetParameter(0),_sf_min[isctr]->GetParameter(1),_sf_min[isctr]->GetParameter(2),_sf_min[isctr]->GetParameter(3));
+			Info("","sf_max_sctr%d_pol3: %.5f,%.5f,%.5f,%.5f",
+				isctr+1,_sf_max[isctr]->GetParameter(0),_sf_max[isctr]->GetParameter(1),_sf_max[isctr]->GetParameter(2),_sf_max[isctr]->GetParameter(3));
+		}
 	}
-	for (int isctr=0;isctr<6;isctr++){
-		Info("","sf_low_sctr%d_pol3: %.5f,%.5f,%.5f,%.5f",
-			isctr+1,_sf_min[isctr]->GetParameter(0),_sf_min[isctr]->GetParameter(1),_sf_min[isctr]->GetParameter(2),_sf_min[isctr]->GetParameter(3));
-		Info("","sf_max_sctr%d_pol3: %.5f,%.5f,%.5f,%.5f",
-			isctr+1,_sf_max[isctr]->GetParameter(0),_sf_max[isctr]->GetParameter(1),_sf_max[isctr]->GetParameter(2),_sf_max[isctr]->GetParameter(3));
+	if (_do_efid){
+		Info("","*** efid-cut pars ***");
+		Info("","Printing not implemented!");	
+	}
+	if (_do_pcorr){
+		Info("","*** pcorr pars ***");
+		Info("","Printing not implemented here, though they should be printed during setup");
+	}
+	if (_do_pid){
+		Info("","*** pid pars ***");
+		Info("","Printing not implemented here, though they should be printed during setup");
 	}
 	Info("","---------------------------------------");
 	Info("h10looper_e1f::h10looper_e1f","Done setting up h10looper_e1f\n");
@@ -231,6 +255,7 @@ h10looper_e1f::~h10looper_e1f()
    delete _helast;
    delete[] _hf;
    delete[] _hc;
+   delete _th10copy;
 
    delete _fout;
 
@@ -345,15 +370,15 @@ void h10looper_e1f::Loop(){
 		if (_seq=="recon"){
 			_hevt->Fill(EVT_TRG);
 			//! EID
-			_heid->Fill(EID_TRG);
+			if (_do_eid) _heid->Fill(EID_TRG);
 			if ( !_do_eid  || (_do_eid && pass_eid()) ){
-				_heid->Fill(EID_E);
+				if (_do_eid) _heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
-				_hefid->Fill(EFID_TOT);
+				if (_do_efid) _hefid->Fill(EFID_TOT);
 				if ( !_do_efid || (_do_efid && pass_efid()) ){
-					_hefid->Fill(EFID_IN);
+					if (_do_efid) _hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! PCORR
 					if (_do_pcorr){
@@ -361,9 +386,9 @@ void h10looper_e1f::Loop(){
 						set_ekin();
 					}
 					//! PID
-					_hpid->Fill(PID_TOT);
+					if (_do_pid) _hpid->Fill(PID_TOT);
 					if ( !_do_pid || (_do_pid && found_hadron("p")>=1) ){
-						_hpid->Fill(PID_P_FOUND);
+						if (_do_pid) _hpid->Fill(PID_P_FOUND);
 						if (!_do_evtsel_elast || (_do_evtsel_elast && _W>_W_CUT_MIN && _W<_W_CUT_MAX) ){
 							_hevt->Fill(EVT_ELSTC);
 							make_delast();
@@ -893,6 +918,7 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	_do_pfid=kFALSE;
 	_do_evtsel_2pi=kFALSE;
 	_do_evtsel_elast=kFALSE;
+	_do_copy_h10=kFALSE;
 
 	//! Now setup as per cutsncors
 	if (cutsncors.Contains("eid:"))          _do_eid=kTRUE;
@@ -902,6 +928,7 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	if (cutsncors.Contains("pfid:"))         _do_pfid=kTRUE;
 	if (cutsncors.Contains("evtsel_2pi:"))   _do_evtsel_2pi=kTRUE;
 	if (cutsncors.Contains("evtsel_elast:")) _do_evtsel_elast=kTRUE;
+	if (cutsncors.Contains("copy_h10:"))     _do_copy_h10=kTRUE;
 	
 	Info("h10looper_e1f::setup_cutsncors","The following cuts-n-corrections will be made:");
 	//! eid: new cuts and corrections
@@ -912,6 +939,7 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	if (_do_pfid)         Info("","do_pfid");
 	if (_do_evtsel_2pi)   Info("","do_evtsel_2pi");
 	if (_do_evtsel_elast) Info("","do_evtsel_elast");
+	if (_do_copy_h10)     Info("","do_copy_h10");
 	Info("","***********");
 }
 
@@ -930,6 +958,12 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	_use_ep_efid=kTRUE;
 	//! Evans's PFID
 	_use_ep_pfid=kTRUE;
+	//! Variable binning in Q2 
+	_use_Q2_var_binw_bng=kTRUE;
+	//! Topology t2(p,pip) [Default is to use t2'[p,pip,(pim)]]
+    _use_t2=kFALSE;
+    //! MM2_cut_EI
+	_use_MM2_cut_EI=kFALSE;
 
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
@@ -943,6 +977,9 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains("6:")) _use_dc_stat=kFALSE;
 	if (adtnl_opts.Contains("7:")) _use_ep_efid=kFALSE;
 	if (adtnl_opts.Contains("8:")) _use_ep_pfid=kFALSE;
+	if (adtnl_opts.Contains("9:")) _use_Q2_var_binw_bng=kFALSE;
+	if (adtnl_opts.Contains("10:")) _use_t2=kTRUE;
+	if (adtnl_opts.Contains("11:")) _use_MM2_cut_EI=kTRUE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
@@ -957,5 +994,11 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if(_use_ep_efid) Info("","use_ep_efid");
 	//! Evans's PFID
 	if(_use_ep_pfid) Info("","use_ep_pfid");
+	//! Variable binning in Q2 
+	if(_use_Q2_var_binw_bng) Info("","use_Q2_var_binw_bng");
+	//! Topology t2(p,pip) [Default is to use t2'[p,pip,(pim)]]
+	if(_use_t2) Info("","use_t2");
+	//! MM2_cut_EI
+	if(_use_MM2_cut_EI) Info("","use_MM2_cut_EI");
 	Info("","***********");
 }

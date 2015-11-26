@@ -16,7 +16,8 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 	Info("h10looper_2pi::h10looper_2pi","Setting up h10looper_2pi...\n");
 
 	//! output objects
-	if (_seq=="recon"){
+	//! pfid
+	if (_do_pfid){
 		_fout->mkdir("pfid")->cd();
 		_hpfid=new TH1D("hpfid","PFID statistics",NUM_PFID_STATS,0.5,NUM_PFID_STATS+0.5);
 		_hpfid->GetXaxis()->SetBinLabel(PFID_TOT,"total");
@@ -24,7 +25,6 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 		_hpfid->GetXaxis()->SetBinLabel(PFID_PIP_IN,"#pi^{+} infid");
 		_hpfid->GetXaxis()->SetBinLabel(PFID_P_AND_PIP_IN,"p + #pi^{+} infid");
 		_hpfid->SetMinimum(0);
-
 		//! phi vs. theta hists
 		_hpfid_p=new TH2F*[2];
 		_hpfid_pip=new TH2F*[2];
@@ -36,9 +36,19 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 			_hpfid_pip[i]= new TH2F(TString::Format("h_pip_phiVtheta_%s",name_sfx.Data()),"#phi vs. #theta for pip",100,0,120, 100,-30,330);
 		}
 	}
-
+	//! copy_h10
+	if(_do_copy_h10){
+		//! + h10 is created directly under fout:/ for technical reasons
+		//!   (since the program expects to find the h10 tree in the root dir.)
+		//! + Directory 'copyh10' is created only for book-keeping reasons
+		_fout->mkdir("copyh10");
+		_fout->cd();
+		_th10copy = (TTree*)fChain->GetTree()->CloneTree(0);
+	}
 	//! d2pi
-	setup_d2pi();
+	if (_do_evtsel_2pi){
+		setup_d2pi();
+	}
 
 	//! Hadron kinematics
 	//! Lab Frame
@@ -64,7 +74,14 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 	
 	Info("h10looper_2pi::h10looper_2pi","Following information was setup:");
 	Info("","---------------------------------------");
-	Info("","_mm2ppip_l=%f,_mm2ppip_h=%f",_mm2ppip_l,_mm2ppip_h);
+	if (_do_pfid){
+		Info("","*** pfid pars ***");
+		Info("","Printing not implemented here!");
+	}
+	if (_do_evtsel_2pi){
+		Info("","*** evtsel_2pi pars ***");
+		Info("","_mm2ppip_l=%f,_mm2ppip_h=%f",_mm2ppip_l,_mm2ppip_h);
+	}
 	Info("","---------------------------------------");
 	Info("h10looper_2pi::h10looper_2pi","Done setting up h10looper_2pi\n");
 	
@@ -120,41 +137,58 @@ void h10looper_2pi::Loop(){
 		if (_seq=="recon"){
 			_hevt->Fill(EVT_TRG);
 			//! EID
-			_heid->Fill(EID_TRG);
+			if (_do_eid)_heid->Fill(EID_TRG);
+			//std::cout<<"eid"<<std::endl;
 			if ( !_do_eid  || (_do_eid && pass_eid()) ){
-				_heid->Fill(EID_E);
+				if (_do_eid)_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
 				//! EFID
-				_hefid->Fill(EFID_TOT);
+				if (_do_efid) _hefid->Fill(EFID_TOT);
+				//std::cout<<"efid"<<std::endl;
 				if ( !_do_efid || (_do_efid && pass_efid()) ){
-					_hefid->Fill(EFID_IN);
+					if (_do_efid) _hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
 					//! pcorr
 					if (_do_pcorr){
 						mom_corr_electron();
+						//std::cout<<"pcorr"<<std::endl;
 						set_ekin();
 					}
 					//! PID (top2')
-					_hpid->Fill(PID_TOT);
+					if (_do_pid)_hpid->Fill(PID_TOT);
+					//std::cout<<"pid"<<std::endl;
 					int h10idx_p=0,h10idx_pip=0;
 					if ( !_do_pid || (_do_pid && pass_pid(h10idx_p,h10idx_pip)) ){
-						_hpid->Fill(PID_P_AND_PIP_FOUND);
+						if(_do_pid) _hpid->Fill(PID_P_AND_PIP_FOUND);
 						_hevt->Fill(EVT_P_PIP);
 						set_hkin(h10idx_p, h10idx_pip);
 						//! PFID (top2')
-						_hpfid->Fill(PFID_TOT);
+						if (_do_pfid) _hpfid->Fill(PFID_TOT);
+						//std::cout<<"pfid"<<std::endl;
 						if ( !_do_pfid || (_do_pfid && proton_infid() && pip_infid()) ){
-							_hpfid->Fill(PFID_P_AND_PIP_IN);
+							if (_do_pfid) _hpfid->Fill(PFID_P_AND_PIP_IN);
 							_hevt->Fill(EVT_P_PIP_INFID);
 							
+							if (_do_copy_h10){
+								_th10copy->Fill();
+								continue;
+							}
+
 							//! Event selection
+
 							//! Q2-W kinematic cut
 							_hq2w_prec->Fill(_W,_Q2);
-							if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
+							//! [11-23-15] see h8_bng.h for details if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
+							if (!(_Q2>=_Q2_MIN && _Q2<_Q2_MAX && _W>_W_MIN && _W<_W_MAX)) continue;
 							_hq2w_pstc->Fill(_W,_Q2);
 							_hevt->Fill(EVT_Q2W_KIN_PASS);
 
+							//! Topology selection
+							//! + Till this point, pid is done for t2'
+							//! + If _use_t2 is True, then t2' -> t2 i.e. exclusive p,pip,pim_missing
+							if (_use_t2 && found_hadron("pim")>=1) continue;
+			
 							//! MM cut
 							//! + NOTE that _lvPim is recons'd with no knowledge of pim!
 							//!    + _lvPim=_lvW-(_lvP+_lvPip)
@@ -189,7 +223,7 @@ void h10looper_2pi::Loop(){
 
 			//! Q2-W kinematic cut
 			_hq2w_prec->Fill(_W,_Q2);
-			if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
+			if (!(_Q2>=_Q2_MIN && _Q2<_Q2_MAX && _W>_W_MIN && _W<_W_MAX)) continue;
 			_hevt->Fill(EVT_Q2W_KIN_PASS);
 			_hq2w_pstc->Fill(_W,_Q2);
 
@@ -610,6 +644,8 @@ void h10looper_2pi::setup_d2pi(){
 		_h8[iw][0] = new THnSparseF(TString::Format("h8_%d_%d",iw+1,1), 
 		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{#pi^{-}}, #phi_{#pi^{-}}, #alpha_{[p^{'}#pi^{+}][p#pi^{-}]}", 
 		hdim, bins1, xmin1, xmax1);
+		//! If so specified, make variable Q2-binning
+		if (_use_Q2_var_binw_bng)_h8[iw][0]->GetAxis(1)->Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG);
 		_h8[iw][0]->Sumw2();
 		gDirectory->Append(_h8[iw][0]);
 		
@@ -621,6 +657,8 @@ void h10looper_2pi::setup_d2pi(){
 		_h8[iw][1] = new THnSparseF(TString::Format("h8_%d_%d",iw+1,2), 
 		"h, Q^{2}, W, M_{p#pi^{+}}, M_{#pi^{+}#pi^{-}}, #theta_{p}, #phi_{p}, #alpha_{[#pi^{+}#pi^{-}][pp^{'}]}", 
 		hdim, bins2, xmin2, xmax2);
+		//! If so specified, make variable Q2-binning
+		if (_use_Q2_var_binw_bng)_h8[iw][1]->GetAxis(1)->Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG);
 		_h8[iw][1]->Sumw2();
 		gDirectory->Append(_h8[iw][1]);
 			
@@ -632,15 +670,23 @@ void h10looper_2pi::setup_d2pi(){
 		_h8[iw][2] = new THnSparseF(TString::Format("h8_%d_%d",iw+1,3), 
 		"h, Q^{2}, W, M_{p#pi^{+}}, M_{p#pi^{-}}, #theta_{#pi^{+}}, #phi_{#pi^{+}}, #alpha_{[p^{'}#pi^{-}][p#pi^{+}]}", 
 		hdim, bins3, xmin3, xmax3);
+		//! If so specified, make variable Q2-binning
+		if (_use_Q2_var_binw_bng)_h8[iw][2]->GetAxis(1)->Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG);
 		_h8[iw][2]->Sumw2();
 		gDirectory->Append(_h8[iw][2]);
 	}
-
+	//! Q2,W cut values 
+	_Q2_MIN=1.50,_Q2_MAX=5.00,_W_MIN=1.400,_W_MAX=2.125;
 	//!MMcut values
-	if (_expt=="e1f"){
-		_mm2ppip_l=-0.04,_mm2ppip_h=0.06; //0,0.04
+	/*if (_expt=="e1f"){
+		_mm2ppip_l=-0.00,_mm2ppip_h=0.04; //0,0.04
 	}else if (_expt=="e16"){
 		_mm2ppip_l=-0.04,_mm2ppip_h=0.06;
+	}*/
+	if (_use_MM2_cut_EI){
+		_mm2ppip_l=-0.04,_mm2ppip_h=0.06; 
+	}else{
+		_mm2ppip_l=-0.00,_mm2ppip_h=0.04;
 	}
 }
 

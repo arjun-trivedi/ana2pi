@@ -3,7 +3,7 @@ from proc_h8 import ProcH8
 import sys,time
 
 """
-ph8 [obsdir] [simnum=siml] [q2min=1.25] [q2min=3.25] [wmin=1.400] [wmax=2.125] [acc_rel_err_cut=-1] [usehel=False] [dbg=False]
+ph8 [obsdir] [simnum=siml] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [acc_rel_err_cut=-1] [usehel=False] [dbg=False]
 """
 if len(sys.argv)<3:
 	sys.exit("Not all parameters entered. obsdir and dtyps are required")
@@ -24,12 +24,12 @@ else:
 if len(sys.argv)>3:#i.e. q2min entered by user
 	q2min=float(sys.argv[3])
 else:
-        q2min=1.25
+        q2min=1.50
 
 if len(sys.argv)>4:#i.e. q2max entered by user
         q2max=float(sys.argv[4])
 else:
-        q2max=3.25
+        q2max=5.00
 
 if len(sys.argv)>5:#i.e. wmin entered by user
         wmin=float(sys.argv[5])

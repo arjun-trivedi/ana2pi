@@ -47,7 +47,7 @@ do
     <Command><![CDATA[
       ah2root_e16
       check_e16_h10lst
-      proc_h10_lite -i h10.lst -t e16:exp:2pi:recon -c eid:efid:pid:pfid:evtsel_2pi: -o d2pi.root
+      proc_h10_lite -i h10.lst -t e16:exp:2pi:recon -c eid:efid:pid:pfid:evtsel_2pi: -o d2pi.root 11:
     ]]></Command>
 
     <Job>

@@ -50,7 +50,7 @@ for simnum in "${simlist[@]}"; do
     <Track name=\"analysis\"/>
     <TimeLimit unit=\"minutes\" time=\"1440\"/>
     <Command><![CDATA[
-      proc_h10_lite -i h10.lst -t  -t e1f:sim:elast:thrown -o delastT.root
+      proc_h10_lite -i h10.lst -t  -t e1f:sim:elast:thrown -c evtsel_elast: -o delastT.root
     ]]></Command>
 
     <Job>

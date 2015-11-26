@@ -39,10 +39,28 @@ const Wbng WCRSBIN[NBINS_WCRS]={
 	{2.950,3.000}*/
 };
 
-//! 2. Q2 binning (see nb_h8_Q2-bng)
-const Int_t NBINS_Q2=8; //! 0.5 GeV^2/bin
-const Float_t XMIN_Q2=1.25;
-const Float_t XMAX_Q2=5.25;
+//! 2. Q2 binning (GeV^2)
+//! + Can be done using fixed bin width as I had originally used (2.1),
+//!   or use variable bin widths as chosen by Evgeny Isupov (2.2). 
+//! + Note that for 2.2., I have directly using EI's binning for Q2>=2.00
+//!   and below that I have adapted my original binning in 2.1
+
+//! 2.1. AT: From 1.50 to 5.00 using fixed width of 0.5
+//! NOTE that Q2 limits were changed from [1.25,5.25] -> [1.50,5.00] on [11-23-15]:
+//! + Low Q2 limit was increased from 1.25 --> 1.50 after observing that in 
+//!   E1F ER, Q2 of 1.25 was barely being populated. Therefore, for now, a more
+//!   conservative value of 1.500 is being used.
+//! + Upper Q2 limit decreased 5.25 -> 5.00. The main reason for this is the fact that
+//!   I found that in my Simulation, I had miscalculated the upper bound of my ST events,
+//!   to account for resolution effects, to 5.20, and this value is infact lower than 5.25! 
+//!   However, 5.20 will work for 5.00. 
+const Int_t NBINS_Q2=7; //! 0.5 GeV^2/bin
+const Float_t XMIN_Q2=1.50;
+const Float_t XMAX_Q2=5.00;
+
+//! 2.2. EI: From 1.25 to 5.00 using EI-variable width
+const Int_t NBINS_Q2_VAR_BINW_BNG=6;
+const Float_t  Q2_BINS_VAR_BINW_BNG[NBINS_Q2_VAR_BINW_BNG+1]={1.50,2.00,2.40,3.00,3.50,4.20,5.00};
 
 
 //! 3. W binning

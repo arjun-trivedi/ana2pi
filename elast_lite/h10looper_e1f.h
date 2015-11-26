@@ -52,6 +52,7 @@ public :
    bool _do_pfid;
    bool _do_evtsel_2pi;
    bool _do_evtsel_elast;
+   bool _do_copy_h10;
 
    //! fout
    TFile* _fout;
@@ -72,6 +73,12 @@ public :
    bool _use_ep_efid;//!7
    //! Evans's PFID
    bool _use_ep_pfid; //!8
+   //! Variable binning in Q2 
+   bool _use_Q2_var_binw_bng; //!9
+   //! Topology t2(p,pip) [Default is to use t2'[p,pip,(pim)]]
+   bool _use_t2; //!10
+   //! MM2_cut_EI 
+   bool _use_MM2_cut_EI; //! 11
    
    //! output objects
    //! + Only cuts-n-corrs objects common to 'elast' and '2pi':
@@ -153,6 +160,9 @@ public :
    //! elastic cut
    static const float _W_CUT_MIN=0.848;
    static const float _W_CUT_MAX=1.028;   
+
+   //! copy_h10
+   TTree* _th10copy;
 
    //! ekin
    TLorentzVector _lvE0;
