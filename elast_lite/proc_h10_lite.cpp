@@ -22,6 +22,9 @@ TString fout_name="";
 //!   'nentries==0?nentries_to_proc=nentries_chain:nentries_to_proc=nentries;'
 TString str_nentries="";
 Long64_t nentries=0;//[08-09-15]used to be 1B, till I cleaned up the "logic"
+//! [12-07-15] "special flag"
+//! + Currently, if set, this program will call h10looper_2pi::e16_ST_Loop_with_efid()
+bool special=kFALSE;
 
 //! cuts to be made in addition to 'dflt'
 //! syntax= 1:2:3:4: i.e. number followed by colon
@@ -66,6 +69,9 @@ int main(int argc,  char* const argv[])
 	}
 	Info("proc_h10_lite","h10lst=%s,h10type=%s,cutsncors=%s,fout_name=%s,nentries=%llu\n,adtnl_opts=%s",
 		h10lst.Data(),h10type.Data(),cutsncors.Data(),fout_name.Data(),nentries,adtnl_opts.Data());
+	if (special==kTRUE){
+		Info("proc_h10_lite","special=kTRUE\n");
+	}
 
 	//! Now setup h10looper and call h10looper::Loop()
 	//! h10chain
@@ -73,16 +79,23 @@ int main(int argc,  char* const argv[])
 	TFileCollection fc("fileList", "", h10lst.Data());
 	h10chain->AddFileInfoList((TCollection*) fc.GetList());
 	//! Set up h10looper	
-	if (rctn=="2pi"){
+	if (special==kFALSE){
+		if (rctn=="2pi"){
+			h10looper_2pi* h10lpr_2pi=new h10looper_2pi(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts);
+			h10lpr_2pi->Loop();
+			delete h10chain;
+			delete h10lpr_2pi;
+		}else if (rctn=="elast"){
+			h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts);
+			h10lpr_e1f->Loop();	
+			delete h10chain;
+			delete h10lpr_e1f;
+		}
+	}else if (special==kTRUE){
 		h10looper_2pi* h10lpr_2pi=new h10looper_2pi(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts);
-		h10lpr_2pi->Loop();
+		h10lpr_2pi->e16_ST_Loop_with_efid();
 		delete h10chain;
 		delete h10lpr_2pi;
-	}else if (rctn=="elast"){
-		h10looper_e1f* h10lpr_e1f=new h10looper_e1f(h10type,h10chain,cutsncors,fout_name,nentries,adtnl_opts);
-		h10lpr_e1f->Loop();	
-		delete h10chain;
-		delete h10lpr_e1f;
 	}
 	
 	return 0;
@@ -98,14 +111,15 @@ void parseArgs(int argc, char* const argv[]){
 	extern int optind, optopt, opterr;
 	int index;
 
-	while ((c = getopt(argc, argv, "hi:t:c:o:n:")) != -1) {
+	while ((c = getopt(argc, argv, "hsi:t:c:o:n:")) != -1) {
 		switch(c) {
 		case 'h':
-			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<rctn>:<seq> -c <cutsncors> -o <fout_name> -n <nevts> [adtnl_opts]\n");
+			printf("proc_h10_lite -i <h10.lst> -t <expt>:<dtyp>:<rctn>:<seq> -c <cutsncors> -o <fout_name> -n <nevts> [-s] [adtnl_opts]\n");
 			printf("<expt>=e1f/e16\n");
 			printf("<dtyp>=exp/sim\n");
 			printf("<rcnt>=2pi/elast\n");
 			printf("<seq>=recon/thrown\n");
+			printf("-s is optional. If used, special=kTRUE\n");
 			break;
 		case 'i':
 			h10lst = optarg;
@@ -121,6 +135,9 @@ void parseArgs(int argc, char* const argv[]){
 		case 'n':
 			str_nentries = optarg;
 			nentries = str_nentries.Atoll();
+			break;
+		case 's':
+			special=kTRUE;
 			break;
 		case ':':
 			printf("-%c without options\n", optopt);

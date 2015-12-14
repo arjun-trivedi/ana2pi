@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#-- First make dir to keep h10-d2pi-skim
+date=`date +%m%d%y`
+OUTDIR=$H10DIR_EXP/h10-d2pi-skim_$date
+mkdir -p $OUTDIR
+
+for h10lst in `ls $HOME/ongoing/e1f_goldenruns_h10lst_e_local/*.lst`;do
+  echo $h10lst
+  runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
+  echo $runnum
+  echo ">proc_h10_lite -i $h10lst -t e1f:exp:2pi:recon -c eid:efid:pid:pfid:copy_h10: -o $OUTDIR/$runnum.root"
+  proc_h10_lite -i $h10lst -t e1f:exp:2pi:recon -c eid:efid:pid:pfid:copy_h10: -o $OUTDIR/$runnum.root
+done

@@ -991,7 +991,7 @@ class DispObs:
 			#! Create output.root file
 			sfx=''
 			if acc_rel_err_cut>0:sfx="_acc_relerr_%s_%.2f"%(cut_type,acc_rel_err_cut)
-			fout=ROOT.TFile("%s/simstats%s.root"%(outdir,sfx),"RECREATE")
+			fout=ROOT.TFile("%s/simstats_q2wbin%s.root"%(outdir,sfx),"RECREATE")
 		else:#! interactive mode for particular q2wbin
 			q2wbinl=[q2wbin]
 			is_intrctv=True;

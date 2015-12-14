@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-0}
+proc_h10_lite -s -i h10.lst -t e16:sim:2pi:thrown -c evtsel_2pi: -o d2piT_w_efid.root -n $nentries 

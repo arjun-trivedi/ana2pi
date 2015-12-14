@@ -53,6 +53,8 @@ public :
    bool _do_evtsel_2pi;
    bool _do_evtsel_elast;
    bool _do_copy_h10;
+   bool _do_eff;
+   bool _do_scpd;
 
    //! fout
    TFile* _fout;
@@ -79,7 +81,25 @@ public :
    bool _use_t2; //!10
    //! MM2_cut_EI 
    bool _use_MM2_cut_EI; //! 11
-   
+   //! Reconcile
+   //! + [12-06-15]
+   //! + Till now the decision to Reconcile was based on 
+   //!   expt and dtyp, and thus was done for expt:dtyp=e16:exp
+   //! + However, after getting e16-sim-EI, I realize its needs to be Reconciled
+   //! + Since I do not want to complicate the code by adding another possible 
+   //!   value for dtyp other that exp and sim, I am going to use the following additional 
+   //!   option when working with sim-EI or any other data that needs Reconciling.
+   bool _do_reconcile; //! 12
+   //! gpart cut for PID
+   bool _use_gpart_pid;
+   //! hit SC for PID
+   bool _use_SChit_pid;
+   //! stat for PID
+   bool _use_stat_pid;
+   //! Q2,W limits used for analysis
+   bool _use_thesis_Q2W;
+
+
    //! output objects
    //! + Only cuts-n-corrs objects common to 'elast' and '2pi':
    //!    + Event-level,EID,EFID,pcorr,PID 
@@ -92,13 +112,13 @@ public :
    //!   are declared in h10looper_2pi.h
    
    //! Event level
-   enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID};
    //! Following used for _rcnt=elast
+   enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID};
    static const int NUM_EVT_STATS_ELAST=4;
    enum {EVT_ELSTC=4};
-   //! Following used if _rctn=2pi
-   static const int NUM_EVT_STATS_2PI=7;
-   enum {EVT_P_PIP=4, EVT_P_PIP_INFID, EVT_Q2W_KIN_PASS, EVT_2PI};
+   //! Following appended if _rctn=2pi
+   static const int NUM_EVT_STATS_2PI=9;
+   enum {EVT_P_PIP=4, EVT_P_PIP_INFID, EVT_INEFF, EVT_INSCPD,EVT_Q2W_KIN_PASS, EVT_2PI};
    //! common hist
    TH1D* _hevt;
    /*enum {EVT_NULL, EVT_TRG, EVT_E, EVT_E_INFID,EVT_ELSTC};
@@ -126,7 +146,9 @@ public :
       //! for z-vtx cut
    Float_t* _z_vtx_min;
    Float_t* _z_vtx_max;
-
+   //! _hsf[6][2], SF for each sector, before and after cut
+   TH2F*** _hsf;
+   
    //! EFID
    static const int NUM_EFID_STATS=2;
    enum {EFID_NULL, EFID_TOT, EFID_IN};
@@ -145,10 +167,34 @@ public :
 
    //! PID
    Pid* _pid_tool;
-   static const int NUM_PID_STATS=5;
-   enum {PID_NULL, PID_TOT, PID_P_FOUND, PID_PIP_FOUND, PID_PIM_FOUND, PID_P_AND_PIP_FOUND};
+   static const int NUM_PID_STATS=10;
+   enum {PID_NULL, PID_TOT, PID_GPART_PASS, PID_Q_PASS, PID_HIT_DC, PID_HIT_SC, PID_STAT_GT0,
+         PID_P_FOUND, PID_PIP_FOUND, PID_PIM_FOUND, PID_P_AND_PIP_FOUND};
    TH1D* _hpid;
-   
+   //! pid-cut prec and pstc hists (in each sector)
+   //! + PID is done for each track by
+   //!   1. Obtaining directly measured beta and mom.
+   //!   2. Calculating dt vs. mom. based on particle hypothesis
+   //!   3. Makeing cut on dt=0 for dt vs. mom. 
+   //! *** prec *** 
+   //! + beta vs. p for +tracks
+   //! + dt vs. p for each +track under p and pip hypothesis
+   //! + beta vs. p for -tracks
+   //! + dt vs. p for each -track under pim hypothesis
+   TH2D** _h_betaVp_pos;
+   TH2D** _h_dtVp_pos_p;
+   TH2D** _h_dtVp_pos_pip;
+   TH2D** _h_betaVp_neg;
+   TH2D** _h_dtVp_neg_pim;
+   //! *** pstc ***
+   //! + beta vs. p and dt vs. p for tracks after PID
+   TH2D** _h_betaVp_p;
+   TH2D** _h_dtVp_p;
+   TH2D** _h_betaVp_pip;
+   TH2D** _h_dtVp_pip;
+   TH2D** _h_betaVp_pim;
+   TH2D** _h_dtVp_pim;
+
    //! delast
    TH1D* _hW;
    TH1D* _helast;
@@ -174,6 +220,34 @@ public :
    float _W;
    float _theta_e;
    float _phi_e; //[-30,330]
+   float _p_e;
+   int _sector_e,_sc_pd_e;
+   
+   //! hadron kinematics
+   //! Lab frame
+   TLorentzVector _lvP;
+   TLorentzVector _lvPip;
+   TLorentzVector _lvPim;
+   //! Varsets
+   TLorentzVector _lvQCMS;
+   TLorentzVector _lvP0CMS;
+   TLorentzVector _lvPCMS;
+   TLorentzVector _lvPipCMS;
+   TLorentzVector _lvPimCMS;
+   //! Lab frame (phi=[-30,330])
+   float _p_p,_theta_p,_phi_p;
+   float _p_pip,_theta_pip,_phi_pip;
+   float _p_pim,_theta_pim,_phi_pim;
+   //! sector,paddle
+   int _sector_p,_sc_pd_p;
+   int _sector_pip,_sc_pd_pip;
+   int _sector_pim,_sc_pd_pim;
+   //! Varsets kinematics (phi=[0,360])
+   float _M_ppip,_M_ppim,_M_pippim;
+   float _p_cms_p,_theta_cms_p,_phi_cms_p;
+   float _p_cms_pip,_theta_cms_pip,_phi_cms_pip;
+   float _p_cms_pim,_theta_cms_pim,_phi_cms_pim;
+   float _alpha_1,_alpha_2,_alpha_3;
 
    // Declaration of leaf types
    static const int _MAX_PARTS=100;
@@ -459,11 +533,17 @@ public :
    bool pass_efid();
    void make_delast();
 
+   bool pass_theta_vs_p(TString prtcl_name);
+   bool is_scpd_bad(TString prtcl_name);
+
    void set_ekin();
    void reset_ekin();
+
    /*int found_proton();
    int found_pip();
    int found_pim();*/
+   void fill_pid_prec_hists();
+   void fill_pid_pstc_hists(int h10idx_p=-1, int h10idx_pip=-1);
    int found_hadron(TString hdrn_name);
    
    int get_sector(float phi); //! phi=[-30,330]
@@ -473,6 +553,14 @@ public :
    bool pass_ECfid();
    bool pass_zvtx();
    bool pass_sf();
+
+   //! Special functions to process sim-e16-EI
+   //! + EI obtains "acceptance" as ST-pass-efid/ST-fullPS
+   //!   and therefore, I need to implement code to do this step
+   //! + Since this step is not a part of my process, I did not want
+   //!   to disturb my code and therefore have implemented the following special
+   //!   functions
+   bool e16_ST_pass_efid(); 
 };
 
 #endif
@@ -547,7 +635,8 @@ void h10looper_e1f::Init(TTree *tree)
       //! + For my case, only some Branches for e16:exp are different.
       //! + The rest: e1f:exp,e1f:sim and e16:sim are same
       //! + For detailed notes see at-h10/formats/README
-      if (_expt=="e16" && _dtyp=="exp"){//! SEB' = Branches that differ for e16:exp
+      if ( _do_reconcile || (_expt=="e16" && _dtyp=="exp") ){//! SEB' = Branches that differ for e16:exp
+         std::cout<<"BINDING to tmpVars"<<std::endl;
          fChain->SetBranchAddress("id", tmpVars.id, &b_id);
          fChain->SetBranchAddress("stat", tmpVars.stat, &b_stat);
          fChain->SetBranchAddress("dc", tmpVars.dc, &b_dc);
@@ -559,6 +648,7 @@ void h10looper_e1f::Init(TTree *tree)
          fChain->SetBranchAddress("dc_stat", tmpVars.dc_stat, &b_dc_stat);
          fChain->SetBranchAddress("ec_stat", tmpVars.ec_stat, &b_ec_stat);
          fChain->SetBranchAddress("ec_sect", tmpVars.ec_sect, &b_ec_sect);
+         fChain->SetBranchAddress("sc_sect", tmpVars.sc_sect, &b_sc_sect);
          fChain->SetBranchAddress("sc_pd", tmpVars.sc_pd, &b_sc_pd);
          fChain->SetBranchAddress("sc_stat", tmpVars.sc_stat, &b_sc_stat);
          fChain->SetBranchAddress("cc_sect", tmpVars.cc_sect, &b_cc_sect);
@@ -575,6 +665,7 @@ void h10looper_e1f::Init(TTree *tree)
          fChain->SetBranchAddress("dc_stat", dc_stat, &b_dc_stat);
          fChain->SetBranchAddress("ec_stat", ec_stat, &b_ec_stat);
          fChain->SetBranchAddress("ec_sect", ec_sect, &b_ec_sect);
+         fChain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
          fChain->SetBranchAddress("sc_pd", sc_pd, &b_sc_pd);
          fChain->SetBranchAddress("sc_stat", sc_stat, &b_sc_stat);
          fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
@@ -638,7 +729,6 @@ void h10looper_e1f::Init(TTree *tree)
       fChain->SetBranchAddress("ec_m4", ec_m4, &b_ec_m4);
       fChain->SetBranchAddress("ec_c2", ec_c2, &b_ec_c2);
       fChain->SetBranchAddress("sc_part", &sc_part, &b_sc_part);
-      fChain->SetBranchAddress("sc_sect", sc_sect, &b_sc_sect);
       fChain->SetBranchAddress("sc_hit", sc_hit, &b_sc_hit);
       
       fChain->SetBranchAddress("edep", edep, &b_edep);
@@ -703,6 +793,12 @@ void h10looper_e1f::Reconcile() {
       sc[i] = tmpVars.sc[i];
       ec[i] = tmpVars.ec[i];
       q[i] = tmpVars.q[i];
+      /*std::cout<<"*** i="<<i<<"***"<<std::endl;
+      std::cout<<"tmpvars.q="<<tmpVars.q[i]<<std::endl;
+      std::cout<<"q="<<q[i]<<std::endl;
+      if(q[i]==-1){
+         std::cout<<"q[i]==-1"<<std::endl;
+      }*/
    }
    for (int i = 0; i < dc_part; i++) {
       dc_sect[i] = tmpVars.dc_sect[i];
@@ -720,6 +816,9 @@ void h10looper_e1f::Reconcile() {
    for (int i = 0; i < cc_part; i++) {
       cc_sect[i] = tmpVars.cc_sect[i];
       nphe[i] = tmpVars.nphe[i];
+      /*std::cout<<"*** i="<<i<<"***"<<std::endl;
+      std::cout<<"tmpVars.nphe="<<tmpVars.nphe[i]<<std::endl;
+      std::cout<<"nphe="<<nphe[i]<<std::endl;*/
    }
 }
 #endif // #ifdef h10looper_e1f_cxx

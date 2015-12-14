@@ -1,14 +1,53 @@
 #!/bin/bash
-##-----------------------------------------------##
-# Usage submit.h10_2_d2piR-sim sim1 sim2 ... simX
-##-----------------------------------------------##
+###################################################
+# [12-14-15]
+# + Usage updated to take inputs of 'cutncors' and 'adtnl_opts':
+#   >submit.h10_2_d2piR-sim-e16 cutsncors adtnl_opts sim1 sim2 ... simX
+###################################################
+
+#! Get cutsncors,adtnl_opts from user 
+usage="./submit.h10_2_d2piR-sim-e16 cutsncors=dflt/dflt_eff_scpd adtnl_opts=dflt/<:X:Y:ZZ:>"
+cutsncors=$1
+adtnl_opts=$2
+if [[ -z $cutsncors ]]; then
+    echo "cutsncors not specified"
+    echo "$usage"
+    exit
+fi
+if [[ -z $adtnl_opts ]]; then
+    echo "adtnl_opts not specified"
+    echo "$usage"
+    exit
+fi
+
+#! cutncors -> cutsncors_code
+if [[ $cutsncors == "dflt" ]];then
+  cutsncors_code=eid:efid:pid:pfid:evtsel_2pi
+elif [[ $cutsncors == "dflt_eff_scpd" ]];then
+  cutsncors_code=eid:efid:pid:pfid:eff:scpd:evtsel_2pi
+else
+  echo "cutsncors=$cutsncors not valid"
+  echo $usage
+  exit
+fi
+#! adtnl_opts -> adtnl_opts_code
+if [[ $adtnl_opts == "dflt" ]];then
+  adtnl_opts_code=:11:
+else
+  adtnl_opts_code=$adtnl_opts
+fi
+
+echo "cutsncors=$cutsncors"
+echo "cutsncors_code=$cutsncors_code"
+echo "adtnl_opts=$adtnl_opts"
+echo "adtnl_opts_code=$adtnl_opts_code"
 
 ##-- Get list of simnum from user
-simlist=("$@")
-echo "Going to submit h10_2_d2piR-sim-e16 for the following"
-for simnum in "${simlist[@]}"; do
-   echo "$simnum"
-done
+args=( $@ )
+len=${#args[@]}
+simlist=("${args[@]:2:$((len-1))}")
+echo "Going to submit h10_2_d2piR-sim-e16 for the following sims:"
+echo "${simlist[@]}"
 
 ##-- Now submit jobs for each simnum
 for simnum in "${simlist[@]}"; do
@@ -18,7 +57,7 @@ for simnum in "${simlist[@]}"; do
   mkdir -p $OUTDIR
 
   date=`date +%m%d%y`
-  JSUBFILE=${SUBDIR}/job_$date.sub
+  JSUBFILE=${SUBDIR}/job_$cutsncors"_"$adtnl_opts"_"$date.sub
   if [ -f "${JSUBFILE}" ]; then
     echo "$JSUBFILE exists. Will delete it before creating new one."
     rm $JSUBFILE
@@ -34,14 +73,14 @@ for simnum in "${simlist[@]}"; do
     <Track name=\"analysis\"/>
     <TimeLimit unit=\"minutes\" time=\"4320\"/>
     <Command><![CDATA[
-      proc_h10_lite -i h10.lst -t e16:sim:2pi:recon -c eid:efid:pid:pfid:evtsel_2pi: -o d2piR.root 11:
+      proc_h10_lite -i h10.lst -t e16:sim:2pi:recon -c $cutsncors_code -o d2piR.root $adtnl_opts_code
     ]]></Command>
 
     <Job>
       <Input src=\"$OUTDIR/h10.lst\" dest=\"h10.lst\" />
-      <Output src=\"d2piR.root\" dest=\"$OUTDIR/d2piR_$date.root\"/>
-      <Output src=\"job.out\" dest=\"$OUTDIR/jobR_$date.out\"/>
-      <Output src=\"job.err\" dest=\"$OUTDIR/jobR_$date.err\"/>
+      <Output src=\"d2piR.root\" dest=\"$OUTDIR/d2piR_$cutsncors"_"$adtnl_opts"_"$date.root\"/>
+      <Output src=\"job.out\" dest=\"$OUTDIR/jobR_$cutsncors"_"$adtnl_opts"_"$date.out\"/>
+      <Output src=\"job.err\" dest=\"$OUTDIR/jobR_$cutsncors"_"$adtnl_opts"_"$date.err\"/>
     </Job>
 
   </Request>

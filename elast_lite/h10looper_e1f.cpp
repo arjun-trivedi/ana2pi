@@ -9,6 +9,8 @@
 #include "mom_corr.cpp"
 #include "fidfuncs.C"         //! EP_EFID
 #include "wrpr_cut_fid_e16.h" //! EI_EFID
+#include "wrpr_cut_theta_vs_p_e16.h" //! [12-10-15] EI's theta_vs_p cuts
+#include "wrpr_cut_sc_pd_e16.h" //! [12-11-15] EI's sc_pd cuts
 #include "pid.h"
 
 h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
@@ -24,6 +26,13 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	_dtyp = h10type_tokens->At(1)->GetName();
 	_rctn = h10type_tokens->At(2)->GetName();
 	_seq  = h10type_tokens->At(3)->GetName();
+
+	//! aditional analysis options
+	//! +[12-06-15] 
+	//! + This used to follow 'setup_cutsncors'
+	//! + However, after making '_do_reconcile' a user input dependent variable, which affects
+	//!   the binding of the h10chain, I moved it here.
+    setup_adtnl_opts(adtnl_opts);
 
 	//! Setup h10chain
 	Init(h10chain);
@@ -41,8 +50,8 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	//! cutsncors
 	setup_cutsncors(cutsncors);
 	
-	//! cuts to be made in addition to 'dflt'
-    setup_adtnl_opts(adtnl_opts);
+	/*//! cuts to be made in addition to 'dflt'
+    setup_adtnl_opts(adtnl_opts);*/
 	
 	//! set up eid
 	if (_do_eid){
@@ -91,6 +100,8 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_hevt->GetXaxis()->SetBinLabel(EVT_E_INFID,"e^{-} infid");
 		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP,"p+pip");
 		_hevt->GetXaxis()->SetBinLabel(EVT_P_PIP_INFID,"p+pip infid");
+		_hevt->GetXaxis()->SetBinLabel(EVT_INEFF,"e+p+pip ineff");
+		_hevt->GetXaxis()->SetBinLabel(EVT_INSCPD,"e+p+pip inscpd");
 		_hevt->GetXaxis()->SetBinLabel(EVT_Q2W_KIN_PASS,"Q2W cut pass");
 		_hevt->GetXaxis()->SetBinLabel(EVT_2PI,"2pi event");
 		_hevt->SetMinimum(0);
@@ -115,6 +126,18 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_heid->GetXaxis()->SetBinLabel(EID_ZVTX,"pass zvrtx");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
 		_heid->GetXaxis()->SetBinLabel(EID_E,"e found");
+		//! sf hists
+		_hsf=new TH2F**[6];
+		for (int i=0;i<6;i++){
+			_hsf[i]=new TH2F*[2];
+			for (int j=0;j<2;j++){
+				TString name_sfx;
+				if      (j==0) name_sfx="prec";
+				else if (j==1) name_sfx="pstc";
+				TString name=TString::Format("sf_s%d_%s",i+1,name_sfx.Data());
+				_hsf[i][j]=new TH2F(name,name,160,0,5,100,0,0.5);
+			}
+		}
 	}
 	//! EFID
 	if (_do_efid){
@@ -142,13 +165,56 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	}
 	//! PID
 	if (_do_pid){
-		_fout->mkdir("pid")->cd();
+		TDirectory* dir_pid=_fout->mkdir("pid");
+		dir_pid->cd();
 		_hpid=new TH1D("hpid","PID statistics",NUM_PID_STATS,0.5,NUM_PID_STATS+0.5);
 		_hpid->GetXaxis()->SetBinLabel(PID_TOT,"total");
+		_hpid->GetXaxis()->SetBinLabel(PID_GPART_PASS,"pass gpart");
+		_hpid->GetXaxis()->SetBinLabel(PID_Q_PASS,"pass chrg");
+		_hpid->GetXaxis()->SetBinLabel(PID_HIT_DC,"hitDC");
+		_hpid->GetXaxis()->SetBinLabel(PID_HIT_SC,"hitSC");
+		_hpid->GetXaxis()->SetBinLabel(PID_STAT_GT0,"stat>0");
 		_hpid->GetXaxis()->SetBinLabel(PID_P_FOUND,"p found");
 		_hpid->GetXaxis()->SetBinLabel(PID_PIP_FOUND,"#pi^{+} found");
 		_hpid->GetXaxis()->SetBinLabel(PID_PIM_FOUND,"#pi^{-} found");
 		_hpid->GetXaxis()->SetBinLabel(PID_P_AND_PIP_FOUND, "p + #pi^{+}");
+		//! prec and pstc hists
+		//! prec
+		TDirectory* dir_pid_prec=dir_pid->mkdir("prec");
+		_h_betaVp_pos=  new TH2D* [6];
+   		_h_dtVp_pos_p=  new TH2D* [6];
+   		_h_dtVp_pos_pip=new TH2D* [6];
+   		_h_betaVp_neg=  new TH2D* [6];
+   		_h_dtVp_neg_pim=new TH2D* [6];
+   		//! pstc
+   		TDirectory* dir_pid_pstc=dir_pid->mkdir("pstc");
+   		_h_betaVp_p=  new TH2D* [6];
+   		_h_dtVp_p=    new TH2D* [6];
+   		_h_betaVp_pip=new TH2D* [6];
+   		_h_dtVp_pip=  new TH2D* [6];
+   		_h_betaVp_pim=new TH2D* [6];
+   		_h_dtVp_pim=  new TH2D* [6];
+		for (int i=0;i<6;i++){
+			//dir_pid_prec->cd();
+			dir_pid_prec->mkdir(TString::Format("sector%d",i+1))->cd();
+			_h_betaVp_pos[i]=   new TH2D(TString::Format("h_betaVp_pos_s%d",i+1),  TString::Format("h_betaVp_pos_s%d",i+1),  100,0,5,100,0,1.2);
+			_h_dtVp_pos_p[i]=   new TH2D(TString::Format("h_dtVp_pos_p_s%d",i+1),  TString::Format("h_dtVp_pos_p_s%d",i+1),  100,0,5,250,-5,5);
+			_h_dtVp_pos_pip[i]= new TH2D(TString::Format("h_dtVp_pos_pip_s%d",i+1),TString::Format("h_dtVp_pos_pip_s%d",i+1),100,0,5,250,-5,5);
+
+			_h_betaVp_neg[i]=  new TH2D(TString::Format("h_betaVp_neg_s%d",i+1),  TString::Format("h_betaVp_neg_s%d",i+1),  100,0,5,100,0,1.2);
+			_h_dtVp_neg_pim[i]=new TH2D(TString::Format("h_dtVp_neg_pim_s%d",i+1),TString::Format("h_dtVp_neg_pim_s%d",i+1),100,0,5,250,-5,5);
+
+			//dir_pid_pstc->cd();
+			dir_pid_pstc->mkdir(TString::Format("sector%d",i+1))->cd();
+			_h_betaVp_p[i]=new TH2D(TString::Format("h_betaVp_p_s%d",i+1),TString::Format("h_betaVp_p_s%d",i+1),100,0,5,100,0,1.2);
+			_h_dtVp_p[i]=  new TH2D(TString::Format("h_dtVp_p_s%d",i+1),  TString::Format("h_dtVp_p_s%d",i+1),  100,0,5,250,-5,5);
+
+			_h_betaVp_pip[i]=new TH2D(TString::Format("h_betaVp_pip_s%d",i+1),TString::Format("h_betaVp_pip_s%d",i+1),100,0,5,100,0,1.2);
+			_h_dtVp_pip[i]=  new TH2D(TString::Format("h_dtVp_pip_s%d",i+1),  TString::Format("h_dtVp_pip_s%d",i+1),  100,0,5,250,-5,5);
+
+			_h_betaVp_pim[i]=new TH2D(TString::Format("h_betaVp_pim_s%d",i+1),TString::Format("h_betaVp_pim_s%d",i+1),100,0,5,100,0,1.2);
+			_h_dtVp_pim[i]=  new TH2D(TString::Format("h_dtVp_pim_s%d",i+1),  TString::Format("h_dtVp_pim_s%d",i+1),  100,0,5,250,-5,5);
+		}
 	}
 	//! delast
 	if (_do_evtsel_elast){
@@ -181,7 +247,7 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	_lvQ.SetXYZT(0,0,0,0);
 	_lvW.SetXYZT(0,0,0,0);
 	_Q2=_W=0;
-	_theta_e=_phi_e=0;
+	_theta_e=_phi_e=_p_e=0;
 
 	Info("h10looper_e1f::h10looper_e1f","Following information was setup:");
 	Info("","---------------------------------------");
@@ -240,12 +306,24 @@ h10looper_e1f::~h10looper_e1f()
 	delete _ECmin;
 	delete _z_vtx_min;
 	delete _z_vtx_max;
+	delete[] _hsf;
 	
 	delete _hevt;
 	delete _heid;
 	delete _hefid;
 	delete[] _hefid_e;
 	delete _hpid;
+	delete[] _h_betaVp_pos;
+	delete[] _h_dtVp_pos_p;
+	delete[] _h_dtVp_pos_pip;
+	delete[] _h_betaVp_neg;
+	delete[] _h_dtVp_neg_pim;
+	delete[] _h_betaVp_p;
+	delete[] _h_dtVp_p;
+	delete[] _h_betaVp_pip;
+	delete[] _h_dtVp_pip;
+	delete[] _h_betaVp_pim;
+	delete[] _h_dtVp_pim;
 	delete _hpcorr_dpVp;
 	delete _hpcorr_dcx;
    delete _hpcorr_dcy;
@@ -279,11 +357,21 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 
 	//! ECin cut pars
 	//! + pars obtained from constants.h
-	//! + NOTE, same for E1F and E16
 	_ECmin=new Float_t[6];
 	for (int isctr=0;isctr<6;isctr++){
-		if      (dtyp=="exp") _ECmin[isctr]=E1F::ECIN_MIN_EXP[isctr];
-		else if (dtyp=="sim") _ECmin[isctr]=E1F::ECIN_MIN_SIM[isctr];
+		if (dtyp=="exp"){
+			if (_expt=="e1f"){
+				_ECmin[isctr]=E1F::ECIN_MIN_EXP[isctr];
+			}else if (_expt=="e16"){
+				_ECmin[isctr]=E16::ECIN_MIN_EXP[isctr];
+			}
+		}else if (dtyp=="sim"){
+			if (_expt=="e1f"){
+				_ECmin[isctr]=E1F::ECIN_MIN_SIM[isctr];
+			}else if (_expt=="e16"){
+				_ECmin[isctr]=E16::ECIN_MIN_SIM[isctr];
+			}
+		}
 	}
 
 	//! EC fid cut pars (as per MG and EP, and therefore as per "E1F run group"?)
@@ -312,11 +400,21 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 	_z_vtx_max=new Float_t[6];
 	for (int isctr=0;isctr<6;isctr++){
 		if(dtyp=="exp"){
-			_z_vtx_min[isctr]=E1F::ZVTX_MIN_EXP[isctr];
-			_z_vtx_max[isctr]=E1F::ZVTX_MAX_EXP[isctr];
+			if (_expt=="e1f"){
+				_z_vtx_min[isctr]=E1F::ZVTX_MIN_EXP[isctr];
+				_z_vtx_max[isctr]=E1F::ZVTX_MAX_EXP[isctr];
+			}else if ("e16"){
+				_z_vtx_min[isctr]=E16::ZVTX_MIN_EXP[isctr];
+				_z_vtx_max[isctr]=E16::ZVTX_MAX_EXP[isctr];
+			}
 		}else if (dtyp=="sim"){
-			_z_vtx_min[isctr]=E1F::ZVTX_MIN_SIM[isctr];
-			_z_vtx_max[isctr]=E1F::ZVTX_MAX_SIM[isctr];
+			if (_expt=="e1f"){
+				_z_vtx_min[isctr]=E1F::ZVTX_MIN_SIM[isctr];
+				_z_vtx_max[isctr]=E1F::ZVTX_MAX_SIM[isctr];
+			}else if ("e16"){
+				_z_vtx_min[isctr]=E16::ZVTX_MIN_SIM[isctr];
+				_z_vtx_max[isctr]=E16::ZVTX_MAX_SIM[isctr];
+			}
 		} 
 	}
 
@@ -361,7 +459,9 @@ void h10looper_e1f::Loop(){
 		}
 
 		//! Reconcile h10 Branch binding for e16:exp
-		if (_expt=="e16" && _dtyp=="exp") {
+		//! or
+		//! if _do_reconcile specified by user (for example for sim-e16-EI)
+		if (_do_reconcile || (_expt=="e16" && _dtyp=="exp")) {
 			Reconcile();
 		}
 
@@ -430,6 +530,7 @@ bool h10looper_e1f::pass_eid(){
 	int idxDC=dc[0]-1,idxCC=cc[0]-1,idxSC=sc[0]-1,idxEC=ec[0]-1;
 	int stt=stat[0], dc_stt=dc_stat[idxDC];
 	
+	//std::cout<<"charge="<<chrg<<std::endl;
 	bool pass_lvl_1=kFALSE;
 	if (gprt>0){
 		_heid->Fill(EID_GPART0);
@@ -508,6 +609,21 @@ bool h10looper_e1f::pass_efid(){
 	return ret;
 }
 
+bool h10looper_e1f::e16_ST_pass_efid(){
+	Int_t id=ELECTRON;
+	bool ret=kFALSE;
+
+	//!prec
+	_hefid_e[0]->Fill(_theta_e,_phi_e);
+
+	ret=Fiducial_e16_elctrn(id,_p_e,_theta_e,_phi_e);
+	if (ret==kTRUE){
+		//!pstc
+		_hefid_e[1]->Fill(_theta_e,_phi_e);
+	}
+	return ret;
+}
+
 void h10looper_e1f::mom_corr_electron(){
 	//! First store uncorr mom
 	float p_uncorr=_lvE1.P();
@@ -569,6 +685,9 @@ void h10looper_e1f::set_ekin(){
 	_theta_e=_lvE1.Theta()*TMath::RadToDeg();
 	float phi=_lvE1.Phi()*TMath::RadToDeg();// [-180,180]
 	_phi_e=phi<-30?phi+360:phi; // [-30,330]
+	_p_e=_lvE1.P();
+	_sector_e=get_sector(_phi_e);
+	_sc_pd_e=100*dc_sect[dc[0]-1]+sc_pd[sc[0]-1];
 }
 
 /*
@@ -722,44 +841,162 @@ int h10looper_e1f::found_hadron(TString hdrn_name){
 		bool hitDC=dc[i]>0,hitSC=sc[i]>0;
 		int stt=stat[i], dc_stt=dc_stat[dc[i]-1];
 
-		if(chrg==hdrn_chrg && hitDC && hitSC){
-			//! Get time of flight for track
-			float t=sc_t[sc[i]-1];
+		if(chrg==hdrn_chrg){
+			_hpid->Fill(PID_Q_PASS);
+			if (hitDC){
+				_hpid->Fill(PID_HIT_DC);
+				if (!_use_SChit_pid || (_use_SChit_pid && hitSC) ){
+					_hpid->Fill(PID_HIT_SC);
+					if (!_use_stat_pid || (_use_stat_pid && stt>0) ){
+						_hpid->Fill(PID_STAT_GT0);
+						//! Get time of flight for track
+						float t=sc_t[sc[i]-1];
 
-			//! Now calculate dt using :
-			//! + length of track and 
-			//! + beta of track under assumption that it is a proton
-			//! that particle is a proton
-			float l=sc_r[sc[i]-1];
-			//! Calculate beta under assumption that particle is proton
-			float mom=p[i];
-			float beta=TMath::Sqrt((mom*mom)/(hdrn_mass*hdrn_mass+mom*mom));
-			//! Now calculate dt
-			float dt=l/(beta*SOL)+t_off- t;
+						//! Now calculate dt using :
+						//! + length of track and 
+						//! + beta of track under assumption that it is a proton
+						//! that particle is a proton
+						float l=sc_r[sc[i]-1];
+						//! Calculate beta under assumption that particle is proton
+						float mom=p[i];
+						float beta=TMath::Sqrt((mom*mom)/(hdrn_mass*hdrn_mass+mom*mom));
+						//! Now calculate dt
+						float dt=l/(beta*SOL)+t_off- t;
 
-			//! Using dt and p, identify particle
-			if (hdrn_name=="p"){
-				if (_pid_tool->is_proton(dt,mom)){
-					_hpid->Fill(PID_P_FOUND);
-					ret=i;
-					break;
-				}
-			}else if (hdrn_name=="pip"){
-				if (_pid_tool->is_pip(dt,mom)){
-					_hpid->Fill(PID_PIP_FOUND);
-					ret=i;
-					break;
-				}
-			}else if (hdrn_name=="pim"){
-				if (_pid_tool->is_pim(dt,mom)){
-					_hpid->Fill(PID_PIM_FOUND);
-					ret=i;
-					break;
-				}
+						//! Using dt and p, identify particle
+						if (hdrn_name=="p"){
+							if (_pid_tool->is_proton(dt,mom)){
+								_hpid->Fill(PID_P_FOUND);
+								ret=i;
+								break;
+							}
+						}else if (hdrn_name=="pip"){
+							if (_pid_tool->is_pip(dt,mom)){
+								_hpid->Fill(PID_PIP_FOUND);
+								ret=i;
+								break;
+							}
+						}else if (hdrn_name=="pim"){
+							if (_pid_tool->is_pim(dt,mom)){
+								_hpid->Fill(PID_PIM_FOUND);
+								ret=i;
+								break;
+							}
+						}
+					}//!stat>0
+				}//!hitSC
+			}//!hitDC
+		}//!charg
+	}
+	return ret;
+}
+
+void h10looper_e1f::fill_pid_prec_hists(){
+	//Info("h10looper_e1f::fill_pid_prec_hists()","");
+
+	//! Directly measured electron quantities
+	Float_t l_e=sc_r[sc[0]-1];
+	Float_t t_e=sc_t[sc[0]-1];
+	Float_t t_off=t_e-(l_e/SOL);
+
+	for (Int_t i=1;i<gpart;i++) {
+		if (q[i]==1 || q[i]==-1){
+			//! Directly measured quantities
+			Int_t chrg=q[i];
+			Int_t hitDC=dc[i];
+			Int_t hitSC=sc[i];
+			Float_t mom=p[i];
+			Float_t l=sc_r[sc[i]-1];
+			Float_t t=sc_t[sc[i]-1];
+			Float_t b=( l/(t-t_off) )/SOL; 
+			Int_t sector=sc_sect[sc[i]-1];
+			Int_t pdgid=id[i];
+
+			//! For now, till I figure out why this is happening
+			//! + sector==0 for: E1F:ER. Maybe for all even, but should be OK for prec?
+			if (sector==0) {
+				//Info("h10looper_e1f::fill_pid_prec_hists()","sector==0 for track");
+				continue;
+			}
+			//! Quantities under particle assumption
+			Float_t b_p  =TMath::Sqrt((mom*mom)/(MASS_P*MASS_P+mom*mom));
+			Float_t b_pip=TMath::Sqrt((mom*mom)/(MASS_PIP*MASS_PIP+mom*mom));
+			Float_t b_pim=TMath::Sqrt((mom*mom)/(MASS_PIM*MASS_PIM+mom*mom));
+
+			Float_t dt_p  =l/(b_p*SOL)+t_off- t;
+			Float_t dt_pip=l/(b_pip*SOL)+t_off-t;
+			Float_t dt_pim=l/(b_pim*SOL)+t_off-t;
+
+			if (chrg==1){
+				//std::cout<<"chrg=1: enter"<<std::endl;
+				//std::cout<<"sector="<<sector<<std::endl;
+				_h_betaVp_pos[sector-1]->Fill(mom,b);
+				_h_dtVp_pos_p[sector-1]->Fill(mom,dt_p);
+				_h_dtVp_pos_pip[sector-1]->Fill(mom,dt_pip);
+				//std::cout<<"chrg=1: leave"<<std::endl;
+			}else if (chrg==-1){
+				//std::cout<<"chrg=-1: enter"<<std::endl;
+				//std::cout<<"sector="<<sector<<std::endl;
+				_h_betaVp_neg[sector-1]->Fill(mom,b);
+				_h_dtVp_neg_pim[sector-1]->Fill(mom,dt_pim);
+				//std::cout<<"chrg=-1: enter"<<std::endl;
 			}
 		}
 	}
-	return ret;
+	return;
+}
+
+void h10looper_e1f::fill_pid_pstc_hists(int h10idx_p/*=-1*/, int h10idx_pip/*=-1*/){
+	//! Directly measured electron quantities
+	Float_t l_e=sc_r[sc[0]-1];
+	Float_t t_e=sc_t[sc[0]-1];
+	Float_t t_off=t_e-(l_e/SOL);
+
+	Float_t mom,l,t,b,dt=0;
+	Int_t sector=0;
+	
+	//! for proton
+	//! Directly measured quantities
+	mom=p[h10idx_p];
+	l=sc_r[sc[h10idx_p]-1];
+	t=sc_t[sc[h10idx_p]-1];
+	b=( l/(t-t_off) )/SOL;
+	sector=sc_sect[sc[h10idx_p]-1];
+	//! Quantities under particle assumption
+	Float_t b_p=TMath::Sqrt((mom*mom)/(MASS_P*MASS_P+mom*mom)); 
+	dt=l/(b_p*SOL)+t_off- t;
+	//! Fill hists
+	//! For now, till I figure out why this is happening
+	//! + sector==0 for: E16:SR
+	if (sector!=0){
+		_h_betaVp_p[sector-1]->Fill(mom,b);
+		_h_dtVp_p[sector-1]->Fill(mom,dt);
+	}else{
+		Info("h10looper_e1f::fill_pid_pstc_hists():for proton","sector==0 for track");
+	}
+	
+
+	//!for pip
+	//! Directly measured quantities
+	mom=p[h10idx_pip];
+	l=sc_r[sc[h10idx_pip]-1];
+	t=sc_t[sc[h10idx_pip]-1];
+	b=( l/(t-t_off) )/SOL; 
+	sector=sc_sect[sc[h10idx_pip]-1];
+	//! Quantities under particle assumption
+	Float_t b_pip=TMath::Sqrt((mom*mom)/(MASS_PIP*MASS_PIP+mom*mom)); 
+	dt=l/(b_pip*SOL)+t_off- t;
+	//! Fill hists
+	//! For now, till I figure out why this is happening
+	//! + sector==0 for: E16:ER
+	if (sector!=0){
+		_h_betaVp_pip[sector-1]->Fill(mom,b);
+		_h_dtVp_pip[sector-1]->Fill(mom,dt);
+	}else{
+		Info("h10looper_e1f::fill_pid_pstc_hists():for pip","sector==0 for track");
+	}
+	
+	return;
 }
 
 void h10looper_e1f::reset_ekin(){
@@ -767,7 +1004,8 @@ void h10looper_e1f::reset_ekin(){
 	_lvQ.SetXYZT(0,0,0,0);
 	_lvW.SetXYZT(0,0,0,0);
 	_Q2=_W=0;
-	_theta_e=_phi_e=0;
+	_theta_e=_phi_e=_p_e=0;
+	_sector_e=_sc_pd_e=0;
 }
 
 void h10looper_e1f::make_delast(){
@@ -857,11 +1095,14 @@ void h10looper_e1f::GetUVW(float xyz[3], float uvw[3]) {
 
 bool h10looper_e1f::pass_sf()
 {
+	bool ret=kFALSE;
+
 	//Info("h10looper_e1f::pass_sf()","");
 	//! Get info to make cut
 	float mom=p[0];
 	int idxEC=ec[0]-1;
 	int sctr=ec_sect[idxEC];
+
 	if (sctr==0) {//! [11-12-15] Found sctr=0, from EC and SC, in E16
 		Info("h10looper_e1f::pass_sf()","sctr for 1st particle=0. pass_sf=kFALSE");
 		return kFALSE;
@@ -871,11 +1112,19 @@ bool h10looper_e1f::pass_sf()
 		etot[idxEC]=etot[idxEC] > ec_ei[idxEC]+ec_eo[idxEC] ? etot[idxEC] : ec_ei[idxEC]+ec_eo[idxEC];
 	}
 	float sf=etot[idxEC]/mom;
+
+	//! prec
+	_hsf[sctr-1][0]->Fill(mom,sf);
 	
 	//! make cut
 	float sf_min=_sf_min[sctr-1]->Eval(mom);
 	float sf_max=_sf_max[sctr-1]->Eval(mom);
-	return ( sf>sf_min && sf<sf_max );
+	ret=sf>sf_min && sf<sf_max;
+	if (ret==kTRUE){
+		//! pstc
+		_hsf[sctr-1][1]->Fill(mom,sf);
+	}
+	return ret;
 }
 
 bool h10looper_e1f::pass_ECfid(){
@@ -919,6 +1168,8 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	_do_evtsel_2pi=kFALSE;
 	_do_evtsel_elast=kFALSE;
 	_do_copy_h10=kFALSE;
+	_do_eff=kFALSE;
+	_do_scpd=kFALSE;
 
 	//! Now setup as per cutsncors
 	if (cutsncors.Contains("eid:"))          _do_eid=kTRUE;
@@ -929,6 +1180,8 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	if (cutsncors.Contains("evtsel_2pi:"))   _do_evtsel_2pi=kTRUE;
 	if (cutsncors.Contains("evtsel_elast:")) _do_evtsel_elast=kTRUE;
 	if (cutsncors.Contains("copy_h10:"))     _do_copy_h10=kTRUE;
+	if (cutsncors.Contains("eff:"))          _do_eff=kTRUE;
+	if (cutsncors.Contains("scpd:"))         _do_scpd=kTRUE;
 	
 	Info("h10looper_e1f::setup_cutsncors","The following cuts-n-corrections will be made:");
 	//! eid: new cuts and corrections
@@ -940,6 +1193,8 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	if (_do_evtsel_2pi)   Info("","do_evtsel_2pi");
 	if (_do_evtsel_elast) Info("","do_evtsel_elast");
 	if (_do_copy_h10)     Info("","do_copy_h10");
+	if (_do_eff)          Info("","do_eff");
+	if (_do_scpd)         Info("","do_scpd");
 	Info("","***********");
 }
 
@@ -950,7 +1205,7 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     _use_cut_ECin_min=kFALSE;
 	_use_cut_ECfid=kFALSE;
 	_use_cut_zvtx=kFALSE;
-	_use_corr_sf_etot=kFALSE;
+	_use_corr_sf_etot=kTRUE;
 	//! eid: to match Isupov
 	_use_SChit=kTRUE;
 	_use_dc_stat=kTRUE;
@@ -964,22 +1219,37 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     _use_t2=kFALSE;
     //! MM2_cut_EI
 	_use_MM2_cut_EI=kFALSE;
+	//! Reconcile
+	_do_reconcile=kFALSE;
+	//! gpart for pid
+	_use_gpart_pid=kFALSE;
+	//! hitSC for pid
+	_use_SChit_pid=kTRUE;
+	//! stat for pid
+	_use_stat_pid=kFALSE;
+	//! Q2,W limits used for analysis
+	_use_thesis_Q2W=kTRUE;
 
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
 	
 	//! Now set as per adtnl_opts
-	if (adtnl_opts.Contains("1:")) _use_cut_ECin_min=kTRUE;
-	if (adtnl_opts.Contains("2:")) _use_cut_ECfid=kTRUE;
-	if (adtnl_opts.Contains("3:")) _use_cut_zvtx=kTRUE;
-	if (adtnl_opts.Contains("4:")) _use_corr_sf_etot=kTRUE;
-	if (adtnl_opts.Contains("5:")) _use_SChit=kFALSE;
-	if (adtnl_opts.Contains("6:")) _use_dc_stat=kFALSE;
-	if (adtnl_opts.Contains("7:")) _use_ep_efid=kFALSE;
-	if (adtnl_opts.Contains("8:")) _use_ep_pfid=kFALSE;
-	if (adtnl_opts.Contains("9:")) _use_Q2_var_binw_bng=kFALSE;
-	if (adtnl_opts.Contains("10:")) _use_t2=kTRUE;
-	if (adtnl_opts.Contains("11:")) _use_MM2_cut_EI=kTRUE;
+	if (adtnl_opts.Contains(":1:")) _use_cut_ECin_min=kTRUE;
+	if (adtnl_opts.Contains(":2:")) _use_cut_ECfid=kTRUE;
+	if (adtnl_opts.Contains(":3:")) _use_cut_zvtx=kTRUE;
+	if (adtnl_opts.Contains(":4:")) _use_corr_sf_etot=kTRUE;
+	if (adtnl_opts.Contains(":5:")) _use_SChit=kFALSE;
+	if (adtnl_opts.Contains(":6:")) _use_dc_stat=kFALSE;
+	if (adtnl_opts.Contains(":7:")) _use_ep_efid=kFALSE;
+	if (adtnl_opts.Contains(":8:")) _use_ep_pfid=kFALSE;
+	if (adtnl_opts.Contains(":9:")) _use_Q2_var_binw_bng=kFALSE;
+	if (adtnl_opts.Contains(":10:")) _use_t2=kTRUE;
+	if (adtnl_opts.Contains(":11:")) _use_MM2_cut_EI=kTRUE;
+	if (adtnl_opts.Contains(":12:")) _do_reconcile=kTRUE;
+	if (adtnl_opts.Contains(":13:")) _use_gpart_pid=kTRUE;
+	if (adtnl_opts.Contains(":14:")) _use_SChit_pid=kFALSE;
+	if (adtnl_opts.Contains(":15:")) _use_stat_pid=kTRUE;
+	if (adtnl_opts.Contains(":16:")) _use_thesis_Q2W=kFALSE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
@@ -988,8 +1258,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (_use_cut_zvtx) Info("","use_cut_zvtx");
 	if (_use_corr_sf_etot) Info("","use_corr_sf_etot");
 	//! eid: to match Isupov
-	if (!_use_SChit) Info("","not_use_SChit");
-	if (!_use_dc_stat) Info("","not_use_dc_stat");
+	if (_use_SChit) Info("","use_SChit");
+	if (_use_dc_stat) Info("","use_dc_stat");
 	//! Evans's EFID
 	if(_use_ep_efid) Info("","use_ep_efid");
 	//! Evans's PFID
@@ -1000,5 +1270,51 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if(_use_t2) Info("","use_t2");
 	//! MM2_cut_EI
 	if(_use_MM2_cut_EI) Info("","use_MM2_cut_EI");
+	//! Reconcile
+	if(_do_reconcile) Info("","do_reconcile");
+	//! gpart for pid
+	if(_use_gpart_pid) Info("","use_gpart_pid");
+	//! hit SC for pid
+	if(_use_SChit_pid) Info("","use_SChit_pid");
+	//! stat for pid
+	if(_use_stat_pid) Info("","use_stat_pid");  
+	//! Q2,W limits used for analysis
+	if(_use_thesis_Q2W) Info("","use_thesis_Q2W"); 
 	Info("","***********");
+}
+
+bool h10looper_e1f::pass_theta_vs_p(TString prtcl_name){
+	//Info("h10looper_e1f::pass_theta_vs_p()","");
+	bool ret=kFALSE;
+
+	if (_expt=="e1f"){
+		ret=kTRUE;
+	}else if (_expt=="e16"){
+		if (prtcl_name=="e") {
+			ret=theta_vs_p_e16_el(_sector_e,_theta_e,_p_e);
+		}else if (prtcl_name=="p") {
+			ret=theta_vs_p_e16_pr(_sector_p,_theta_p,_p_p);
+		}else if (prtcl_name=="pip") {
+			ret=theta_vs_p_e16_pip(_sector_pip,_theta_pip,_p_pip);
+		}
+	}
+	return ret;
+}
+
+bool h10looper_e1f::is_scpd_bad(TString prtcl_name){
+	//Info("h10looper_e1f::pass_scpd()","");
+	bool ret=kFALSE;
+	
+	if (_expt=="e1f"){
+		ret=kTRUE;
+	}else if (_expt=="e16"){
+		if (prtcl_name=="e") {
+			ret=is_scpd_bad_e16(_sc_pd_e);
+		}else if (prtcl_name=="p") {
+			ret=is_scpd_bad_e16(_sc_pd_p);
+		}else if (prtcl_name=="pip") {
+			ret=is_scpd_bad_e16(_sc_pd_pip);
+		}
+	}
+	return ret;
 }

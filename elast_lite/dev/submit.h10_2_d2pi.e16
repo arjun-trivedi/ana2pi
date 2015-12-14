@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#! --  Additional options. For full details see h10looper_e1f.h -- 
+#! + Default values on [12-14-15], in brackets, are toggled when any of the options are selected
+# 1:  ECin (OFF)
+# 2:  ECfid (OFF)
+# 3:  zvtx (OFF)
+# 4:  etot (ON)
+# 5:  hitSC (ON) 
+# 6:  dc_stat (ON)
+# 7:  ep_efid ( ON, only for E1F)
+# 8:  ep_pfid (ON, only for E1F)
+# 9:  Q2_var_binw_bng (ON)
+# 10: t2 (OFF)
+# 11: MM2_cut_EI (OFF)
+# 12: reconcile (OFF)
+# 13: gpart_pid (OFF)
+# 14: hitSC_pid (ON)
+# 15: stat_pid (OFF)
+# 16: thesis Q2W (ON)
+# ----
+
+#! Submit jobs for 
+#! + cutsncors = dflt(=eid:efid:pid:pfid:evtsel_2pi)
+#! + adtnl_opts= dflt(=:11:)
+./submit.h10_2_d2piT-sim-e16 sim4 sim5
+./submit.h10_2_d2piR-sim-e16 dflt dflt sim4 sim5
+./submit.h10_2_d2piR-exp-byRun-e16 dflt dflt
+
+#! Submit jobs for 
+#! + cutsncors = dflt_eff_scpd(=eid:efid:pid:pfid:eff:scpd:evtsel_2pi)
+#! + adtnl_opts= :11:1:2:3:13:14:15:
+./submit.h10_2_d2piT-sim-e16 sim4 sim5 
+./submit.h10_2_d2piR-sim-e16 dflt_eff_scpd :11:1:2:3:13:14:15: sim4 sim5
+./submit.h10_2_d2piR-exp-byRun-e16 dflt_eff_scpd :11:1:2:3:13:14:15:
+

@@ -20,13 +20,13 @@ F77OPT  += -ffixed-line-length-none -fno-second-underscore -DLinux
 obj/%.o: %.cpp
 	$(CXX) $(INCS) $(CXXFLAGS)  -c $< -o $@
 
-$(TARGET): lib_cut_fid_e16 obj/proc_h10_lite.o 
-	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/cut_fid_e16.o obj/proc_h10_lite.o $(INCS) $(LIBS) -L. $(LIBOUT)
+$(TARGET): lib_cut_fid_e16  lib_cut_theta_vs_p_e16 lib_cut_sc_pd_e16 lib_cut_sc_pd_e16 obj/proc_h10_lite.o 
+	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/cut_fid_e16.o obj/cut_theta_vs_p_e16.o obj/cut_sc_pd_e16.o obj/proc_h10_lite.o $(INCS) $(LIBS) -L. $(LIBOUT)
 
 all: $(OBJS) lib $(TARGET) 
 
 clean:
-	-rm -f $(OBJS) $(LIBOUT) obj/proc_h10_lite.o $(TARGET)
+	-rm -f $(OBJS) $(LIBOUT) obj/cut_fid_e16.o obj/cut_theta_vs_p_e16.o obj/cut_sc_pd_e16.o obj/proc_h10_lite.o $(TARGET)
 
 $(OBJS): | obj
 
@@ -38,6 +38,12 @@ sobj:
 
 lib_cut_fid_e16: cut_fid_e16.f
 	$(COMPILER) $(F77OPT) -c $< -o obj/cut_fid_e16.o
+
+lib_cut_theta_vs_p_e16: cut_theta_vs_p_e16.f
+	$(COMPILER) $(F77OPT) -c $< -o obj/cut_theta_vs_p_e16.o
+
+lib_cut_sc_pd_e16: cut_sc_pd_e16.f
+	$(COMPILER) $(F77OPT) -c $< -o obj/cut_sc_pd_e16.o
 
 lib:	sobj $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $(LIBOUT)

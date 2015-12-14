@@ -1,0 +1,96 @@
+#!/bin/bash
+
+#! --  Additional options. For full details see h10looper_e1f.h -- 
+# 1:  ECin
+# 2:  ECfid
+# 3:  zvtx
+# 4:  etot
+# 5:  no hitSC
+# 6:  no dc_stat
+# 7:  ep_efid
+# 8:  ep_pfid 
+# 9:  Q2_var_binw_bng
+# 10: t2
+# 11: MM2_cut_EI
+# ----
+
+#-- jobs book keeping -- 
+# ----
+adtnl_opts=("" 10: 11:)
+adtnl_opts_names=(dflt t2 MM2_cut_EI)
+date=`date +%m%d%y` #112715
+
+dtyps=(ER SR)
+ST_D2PI=$D2PIDIR_SIM/sim1/ST_112715/d2piT.root
+
+#-- 1. For all adtnl_opts do h10->d2pi[for ER,SR(sim1)]->Observables
+iadtnl_opt=0
+for adtnl_opt in "${adtnl_opts[@]}";do
+  adtnl_opt_name=${adtnl_opts_names[iadtnl_opt]}
+  jobtag=$adtnl_opt_name"_"$date
+
+  #-- 1. h10->d2pi[for ER,SR(sim1)] 
+  echo "*** h10->d2pi for ER,SR(sim1) for $adtnl_opt_name ***"
+  
+  outdir_ER=$D2PIDIR_EXP/$jobtag
+  h10lst_ER=$HOME/ongoing/h10lsts_local/e1f_exp_h10-d2pi-skim.lst
+  t_opt_ER=e1f:exp:2pi:recon
+  c_opt_ER=eid:efid:pcorr:pid:pfid:evtsel_2pi:
+  logdir_ER=/tmp/ana2pi.adtnl_opt/ER/$jobtag
+  #mkdir -p $outdir_ER
+  #mkdir -p $logdir_ER
+
+  outdir_SR=$D2PIDIR_SIM/sim1/$jobtag
+  h10lst_SR=$HOME/ongoing/h10lsts_local/e1f_sim_sim1_h10-d2pi-skim.lst
+  t_opt_SR=e1f:sim:2pi:recon
+  c_opt_SR=eid:efid:pid:pfid:evtsel_2pi:
+  logdir_SR=/tmp/ana2pi.adtnl_opt/SR/$jobtag
+  #mkdir -p $outdir_SR
+  #mkdir -p $logdir_SR
+
+  echo ">proc_h10_lite -i $h10lst_ER -t $t_opt_ER -c $c_opt_ER -o $outdir_ER/d2piR.root $adtnl_opt >& $logdir_ER/d2piR.log&"
+  #proc_h10_lite -i $h10lst_ER -t $t_opt_ER -c $c_opt_ER -o $outdir_ER/d2piR.root $adtnl_opt >& $logdir_ER/d2piR.log&
+  echo ">proc_h10_lite -i $h10lst_SR -t $t_opt_SR -c $c_opt_SR -o $outdir_SR/d2piR.root $adtnl_opt >& $logdir_SR/d2piR.log&"
+  #proc_h10_lite -i $h10lst_SR -t $t_opt_SR -c $c_opt_SR -o $outdir_SR/d2piR.root $adtnl_opt >& $logdir_SR/d2piR.log&
+  #- Wait for ER,SR to finish before moving on
+  #- (Used $HOME/ongoing/bin/track_mem_dR2 as reference for the following while loop)
+  while true; do
+    ret=`ps aux | grep "[p]roc_h10_lite" | awk '{print $4}'`
+    echo $ret
+    if [[ $ret == "" ]];then
+      break;
+    fi
+    sleep 5
+  done
+   echo "*** Done: h10->d2pi for ER,SR(sim1) for $adtnl_opt_name ***"
+  
+  #-- 2.  d2pi->Observables
+  echo "*** d2pi->Observables for $adtnl_opt_name ***"
+  logdir_obs=/tmp/ana2pi.adtnl_opt/obs/$jobtag
+  mkdir -p $logdir_obs
+
+  #-- Create and prepare obsdir
+  obsdir=$OBSDIR/obs_$jobtag
+  #rm -rf $obsdir
+  mkdir -p $obsdir/d2pi_exp
+  mkdir -p $obsdir/d2pi_sim/sim1
+
+  ln -s $outdir_ER/d2piR.root $obsdir/d2pi_exp/d2piR.root
+  ln -s $outdir_SR/d2piR.root $obsdir/d2pi_sim/sim1/d2piR.root
+  ln -s $ST_D2PI $obsdir/d2pi_sim/sim1/d2piT.root
+
+  #-- Now start to make Obervables
+  echo ">ph8 $obsdir sim1 1.50 5.00 1.400 2.125 >& $logdir_obs/ph8.log "
+  ph8 $obsdir sim1 1.50 5.00 1.400 2.125 >& $logdir_obs/ph8.log
+  echo ">dobs_1D $obsdir sim1 norm >& $logdir_obs/dobs_1D.log"
+  dobs_1D $obsdir sim1 norm >& $logdir_obs/dobs_1D.log
+  #-- simstats
+  echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
+  ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log
+  echo "ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log"
+  ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log
+   
+  echo "*** Done: d2pi->Observables for $adtnl_opt_name ***"
+  iadtnl_opt=$((iadtnl_opt + 1))
+  echo "***"
+done #! adtnl_opts loop

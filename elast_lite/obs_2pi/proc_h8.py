@@ -207,7 +207,7 @@ class ProcH8:
 				thntool.SetUnderOverFLowBinsToZero(h5['SA',vst])
 				#! for SA,SR SetBinContentsAboveRelBinErrThresholdToZero()
 				if (self.ACC_REL_ERR_CUT>0):
-					thntool.SetBinContentsAboveRelBinErrThresholdToZero(h5['SA',vst],h5['SR',vst],0.3)
+					thntool.SetBinContentsAboveRelBinErrThresholdToZero(h5['SA',vst],h5['SR',vst],self.ACC_REL_ERR_CUT)
 				#! SC
 				h5['SC',vst]=h5['SR',vst].Clone()
 				h5['SC',vst].Divide(h5['SA',vst])

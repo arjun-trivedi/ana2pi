@@ -123,6 +123,11 @@ namespace E16{
 	//! (as per EI analysis note)
 	const Float_t P_MIN_ECTH = 0.70;
 
+	//! ECin cut exp : taken from EI's analysis note and email of [12-11-15] 
+	const Float_t ECIN_MIN_EXP[6]={0.06,0.06,0.06,0.06,0.06,0.06};  
+	//! ECin cut sim : taken from EI's analysis note and email of [12-11-15] 
+	const Float_t ECIN_MIN_SIM[6]={0.06,0.06,0.06,0.06,0.06,0.06}; 
+
 	//! EC fid cut pars
 	//!(as per EI analysis note)
 	const Float_t UMIN=40; 
@@ -131,6 +136,18 @@ namespace E16{
 	const Float_t VMAX=360;
 	const Float_t WMIN=0;
 	const Float_t WMAX=390;
+
+	//! z-vertex cut
+	//! [12-13-15]
+	//! + sim: values as per EI; his note and email of [12-11-15]
+	//! + exp: currently not applied and set to same as sim, but will have to verified
+	//!        after apply z-vertex corrections
+	//!exp
+	const Float_t ZVTX_MIN_EXP[6]={-8.0,-8.0,-8.0,-8.0,-8.0,-8.0};
+	const Float_t ZVTX_MAX_EXP[6]={-0.8,-0.8,-0.8,-0.8,-0.8,-0.8};
+	//! sim
+	const Float_t ZVTX_MIN_SIM[6]={-8.0,-8.0,-8.0,-8.0,-8.0,-8.0};
+  	const Float_t ZVTX_MAX_SIM[6]={-0.8,-0.8,-0.8,-0.8,-0.8,-0.8};
 }
 
 #endif /* CONSTANTS_H_ */

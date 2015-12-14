@@ -10,13 +10,57 @@
 #     + 'ah2root_e16' is used to convert .rz to .root
 #     + The root/runnum.lst is the corresponding file with .root extensions and is used as
 #       h10.lst 
+#
+# [12-14-15]
+# + Usage updated to take inputs of 'cutncors' and 'adtnl_opts':
+#   >submit.h10_2_d2piR-exp-byRun-e16 cutsncors adtnl_opts 
+# 	+ See code below for valid cutsncors and adtnl_opts
 ###########################################################
+
+#! Get cutsncors,adtnl_opts from user 
+usage="./submit.h10_2_d2piR-exp-byRun-e16 cutsncors=dflt/dflt_eff_scpd adtnl_opts=dflt/<:X:Y:ZZ:>"
+cutsncors=$1
+adtnl_opts=$2
+if [[ -z $cutsncors ]]; then
+    echo "cutsncors not specified"
+    echo "$usage"
+    exit
+fi
+if [[ -z $adtnl_opts ]]; then
+    echo "adtnl_opts not specified"
+    echo "$usage"
+    exit
+fi
+
+#! cutncors -> cutsncors_code
+if [[ $cutsncors == "dflt" ]];then
+  cutsncors_code=eid:efid:pid:pfid:evtsel_2pi
+elif [[ $cutsncors == "dflt_eff_scpd" ]];then
+  cutsncors_code=eid:efid:pid:pfid:eff:scpd:evtsel_2pi
+else
+  echo "cutsncors=$cutsncors not valid"
+  echo $usage
+  exit
+fi
+#! adtnl_opts -> adtnl_opts_code
+if [[ $adtnl_opts == "dflt" ]];then
+  adtnl_opts_code=:11:
+else
+  adtnl_opts_code=$adtnl_opts
+fi
+
+echo "cutsncors=$cutsncors"
+echo "cutsncors_code=$cutsncors_code"
+echo "adtnl_opts=$adtnl_opts"
+echo "adtnl_opts_code=$adtnl_opts_code"
+
+#-- Now submit jobs
 date=`date +%m%d%y`
-SUBDIR=$BSUBDIR/e16/2pi/exp/h10_2_d2piR-exp-byRun_$date
+SUBDIR=$BSUBDIR/e16/2pi/exp/h10_2_d2piR-exp-byRun_$cutsncors"_"$adtnl_opts"_"$date
 if [[ ! -d ${SUBDIR} ]]; then
     mkdir -p $SUBDIR
 fi
-OUTDIR=$D2PIDIR_EXP_E16/byRun_$date
+OUTDIR=$D2PIDIR_EXP_E16/byRun_$cutsncors"_"$adtnl_opts"_"$date
 if [[ ! -d $OUTDIR ]]; then
     mkdir -p $OUTDIR
 fi
@@ -47,7 +91,7 @@ do
     <Command><![CDATA[
       ah2root_e16
       check_e16_h10lst
-      proc_h10_lite -i h10.lst -t e16:exp:2pi:recon -c eid:efid:pid:pfid:evtsel_2pi: -o d2pi.root 11:
+      proc_h10_lite -i h10.lst -t e16:exp:2pi:recon -c $cutsncors_code -o d2pi.root $adtnl_opts_code
     ]]></Command>
 
     <Job>

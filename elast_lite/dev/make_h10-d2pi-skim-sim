@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#-- First make dir to keep h10-d2pi-skim
+date=`date +%m%d%y`
+OUTDIR=$H10DIR_SIM/sim1_h10-d2pi-skim_$date/recon
+mkdir -p $OUTDIR
+
+#-- Create tmp directory to create and keep h10.lst for each job in sim
+mkdir /tmp/make_h10-d2pi-skim-sim_h10lst
+TMP_H10LSTDIR=/tmp/make_h10-d2pi-skim-sim_h10lst
+mkdir -p $TMP_H10LSTDIR
+
+njobs=0
+for rf in `ls $H10DIR_SIM/sim1/recon/*.root`;do
+  jobnum=$(echo $rf | awk -F/ '{print $9}' | awk -F. '{print $1}')
+  echo $jobnum
+  echo $rf > $TMP_H10LSTDIR/h10_$jobnum.lst
+  h10lst=$TMP_H10LSTDIR/h10_$jobnum.lst
+  echo ">proc_h10_lite -i $h10lst -t e1f:sim:2pi:recon -c eid:efid:pid:pfid:copy_h10: -o $OUTDIR/$jobnum.root"
+  proc_h10_lite -i $h10lst -t e1f:sim:2pi:recon -c eid:efid:pid:pfid:copy_h10: -o $OUTDIR/$jobnum.root
+  njobs=$((njobs+1))
+done
+echo "total njobs=$njobs"

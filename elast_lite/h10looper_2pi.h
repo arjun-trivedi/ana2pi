@@ -25,11 +25,15 @@ public :
    void reset_hkin();
    void set_hkin(int h10idx_p=-1, int h10idx_pip=-1); //! as per top2' logic
 
+   
    bool pass_pid(int& h10idx_p, int& h10idx_pip);
    
    bool pass_pfid();
    bool proton_infid();
    bool pip_infid();
+
+   bool pass_eff();
+   bool pass_scpd();
 
    void setup_d2pi();
    void fill_h8();
@@ -40,7 +44,22 @@ public :
    float invTan(float y, float x); //angle in radians: [0, 2pi]
    float getAlpha(TVector3 uv_Gf,TVector3 uv_Gp,TVector3 uv_Bf,TVector3 uv_Bp);
 
-   //! hadron kinematics
+   //! Special functions to process sim-e16-EI
+   //! + EI obtains "acceptance" as ST-pass-efid/ST-fullPS
+   //!   and therefore, I need to implement code to do this step
+   //! + Since this step is not a part of my process, I did not want
+   //!   to disturb my code and therefore have implemented the following special
+   //!   functions
+   void e16_ST_Loop_with_efid();
+
+   //![12-11-15]
+   //!+ Hadron kinematics moved to h10looper_e1f.h
+   //!  after implemeting pass_theta_vs_p() in h10looper_e1f,
+   //!  which needes access to hadron kinematics
+   //!+ Remember that h10looper_e1f/2pi are misnomers in a large sense;
+   //!   + h10looper_e1f is more like the Base Class 
+   //!   + h10looper_2pi uses h10looper_e1f
+   /*//! hadron kinematics
    //! Lab frame
    TLorentzVector _lvP;
    TLorentzVector _lvPip;
@@ -55,12 +74,17 @@ public :
    float _p_p,_theta_p,_phi_p;
    float _p_pip,_theta_pip,_phi_pip;
    float _p_pim,_theta_pim,_phi_pim;
+   //! sector
+   int _sector_p;
+   int _sector_pip;
+   int _sector_pim;
    //! Varsets kinematics (phi=[0,360])
    float _M_ppip,_M_ppim,_M_pippim;
    float _p_cms_p,_theta_cms_p,_phi_cms_p;
    float _p_cms_pip,_theta_cms_pip,_phi_cms_pip;
    float _p_cms_pim,_theta_cms_pim,_phi_cms_pim;
-   float _alpha_1,_alpha_2,_alpha_3;
+   float _alpha_1,_alpha_2,_alpha_3;*/
+
 
 
    //! output objects
@@ -94,6 +118,23 @@ public :
    float _Q2_MIN,_Q2_MAX,_W_MIN,_W_MAX;
    //! MMcut value
    float _mm2ppip_l,_mm2ppip_h;
+
+   //!EFF
+   static const int NUM_EFF_STATS=5;
+   enum {EFF_NULL, EFF_TOT, EFF_E_PASS, EFF_P_PASS, EFF_PIP_PASS, EFF_E_AND_P_AND_PIP_PASS};
+   TH1D* _heff;
+   //! _hthetavp[3][6][2] for e,p,pip:sector:prec,pstc
+   TString* _eff_prtcl_names;
+   TH2D**** _hthetavp;
+
+   //!SCPD
+   static const int NUM_SCPD_STATS=5;
+   enum {SCPD_NULL, SCPD_TOT, SCPD_E_PASS, SCPD_P_PASS, SCPD_PIP_PASS, SCPD_E_AND_P_AND_PIP_PASS};
+   TH1D* _hscpd;
+   //! _hscpd[3][2] for e,p,pip:prec,pstc
+   TString* _scpd_prtcl_names;
+   TH1D*** _hpdl;
+
    
    
 };
