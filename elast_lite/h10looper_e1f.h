@@ -52,7 +52,6 @@ public :
    bool _do_pfid;
    bool _do_evtsel_2pi;
    bool _do_evtsel_elast;
-   bool _do_copy_h10;
    bool _do_eff;
    bool _do_scpd;
 
@@ -63,6 +62,7 @@ public :
    Long64_t _nentries_to_proc;
 
    //! additional options
+   //! Numeric-coded options
    //! eid: new cuts and corrections
    bool _use_cut_ECin_min; //!1
    bool _use_cut_ECfid; //!2
@@ -91,13 +91,16 @@ public :
    //!   option when working with sim-EI or any other data that needs Reconciling.
    bool _do_reconcile; //! 12
    //! gpart cut for PID
-   bool _use_gpart_pid;
+   bool _use_gpart_pid; //! 13
    //! hit SC for PID
-   bool _use_SChit_pid;
+   bool _use_SChit_pid; //! 14
    //! stat for PID
-   bool _use_stat_pid;
+   bool _use_stat_pid; //! 15
    //! Q2,W limits used for analysis
-   bool _use_thesis_Q2W;
+   bool _use_thesis_Q2W; //!16
+
+   //! char-coded options
+   bool _make_h10_skim_e;//! eid+efid; for Reco events
 
 
    //! output objects
@@ -207,7 +210,8 @@ public :
    static const float _W_CUT_MIN=0.848;
    static const float _W_CUT_MAX=1.028;   
 
-   //! copy_h10
+   //! + Used for h10-skims
+   //! + Currently: _make_h10_skim_e 
    TTree* _th10copy;
 
    //! ekin

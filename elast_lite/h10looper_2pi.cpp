@@ -98,15 +98,6 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 			}
 		}
 	}
-	//! copy_h10
-	if(_do_copy_h10){
-		//! + h10 is created directly under fout:/ for technical reasons
-		//!   (since the program expects to find the h10 tree in the root dir.)
-		//! + Directory 'copyh10' is created only for book-keeping reasons
-		_fout->mkdir("copyh10");
-		_fout->cd();
-		_th10copy = (TTree*)fChain->GetTree()->CloneTree(0);
-	}
 	//! d2pi
 	if (_do_evtsel_2pi){
 		setup_d2pi();
@@ -219,6 +210,15 @@ void h10looper_2pi::Loop(){
 				if ( !_do_efid || (_do_efid && pass_efid()) ){
 					if (_do_efid) _hefid->Fill(EFID_IN);
 					_hevt->Fill(EVT_E_INFID);
+
+					//! make_h10_skim_e
+					if (_make_h10_skim_e){
+						//std::cout<<"h10-skim-e enter"<<std::endl;
+						_th10copy->Fill();
+						//std::cout<<"h10-skim-e leave"<<std::endl;
+						continue;
+					}
+
 					//! pcorr
 					if (_do_pcorr){
 						mom_corr_electron();
@@ -246,11 +246,6 @@ void h10looper_2pi::Loop(){
 							if (_do_pfid) _hpfid->Fill(PFID_P_AND_PIP_IN);
 							_hevt->Fill(EVT_P_PIP_INFID);
 							
-							if (_do_copy_h10){
-								_th10copy->Fill();
-								continue;
-							}
-
 							//! EFF (top2')
 							if (_do_eff) _heff->Fill(EFF_TOT);
 							if (!_do_eff || (_do_eff && pass_eff()) ){
@@ -264,39 +259,39 @@ void h10looper_2pi::Loop(){
 									_hevt->Fill(EVT_INSCPD);
 								
 									//! Event selection
-									//! Q2-W kinematic cut
-									_hq2w_prec->Fill(_W,_Q2);
-									//! [11-23-15] see h8_bng.h for details if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
-									if (!(_Q2>=_Q2_MIN && _Q2<_Q2_MAX && _W>_W_MIN && _W<_W_MAX)) continue;
-									_hq2w_pstc->Fill(_W,_Q2);
-									_hevt->Fill(EVT_Q2W_KIN_PASS);
+									if (_do_evtsel_2pi){
+										//! Q2-W kinematic cut
+										_hq2w_prec->Fill(_W,_Q2);
+										//! [11-23-15] see h8_bng.h for details if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
+										if (!(_Q2>=_Q2_MIN && _Q2<_Q2_MAX && _W>_W_MIN && _W<_W_MAX)) continue;
+										_hq2w_pstc->Fill(_W,_Q2);
+										_hevt->Fill(EVT_Q2W_KIN_PASS);
 
-									//! Topology selection
-									//! + Till this point, pid is done for t2'
-									//! + If _use_t2 is True, then t2' -> t2 i.e. exclusive p,pip,pim_missing
-									if (_use_t2 && found_hadron("pim")>=1) continue;
+										//! Topology selection
+										//! + Till this point, pid is done for t2'
+										//! + If _use_t2 is True, then t2' -> t2 i.e. exclusive p,pip,pim_missing
+										if (_use_t2 && found_hadron("pim")>=1) continue;
 			
-									//! MM cut
-									//! + NOTE that _lvPim is recons'd with no knowledge of pim!
-									//!    + _lvPim=_lvW-(_lvP+_lvPip)
-									//! + Therefore, its Mag2() and Mag() can be treated as MM2 and MM
-									float mm2ppip=_lvPim.Mag2();
-									float mmppip=_lvPim.Mag();
-									_hmm2_prec_fW->Fill(mm2ppip);
-									_hmm_prec_fW->Fill(mmppip);
-									int iw=GetCrsWBinIdx(_W);
-									_hmm2_prec[iw]->Fill(mm2ppip);
-									_hmm_prec[iw]->Fill(mmppip);
-
-									//! Apply MM cut
-									if ( !_do_evtsel_2pi || (_do_evtsel_2pi && mm2ppip>_mm2ppip_l && mm2ppip<_mm2ppip_h) ){
-										_hevt->Fill(EVT_2PI);
-										_hmm2_pstc_fW->Fill(mm2ppip);
-										_hmm_pstc_fW->Fill(mmppip);
-										_hmm2_pstc[iw]->Fill(mm2ppip);
-										_hmm_pstc[iw]->Fill(mmppip);
-										fill_h8();
-									}//! MM2
+										//! MM cut
+										//! + NOTE that _lvPim is recons'd with no knowledge of pim!
+										//!    + _lvPim=_lvW-(_lvP+_lvPip)
+										//! + Therefore, its Mag2() and Mag() can be treated as MM2 and MM
+										float mm2ppip=_lvPim.Mag2();
+										float mmppip=_lvPim.Mag();
+										_hmm2_prec_fW->Fill(mm2ppip);
+										_hmm_prec_fW->Fill(mmppip);
+										int iw=GetCrsWBinIdx(_W);
+										_hmm2_prec[iw]->Fill(mm2ppip);
+										_hmm_prec[iw]->Fill(mmppip);
+										if (mm2ppip>_mm2ppip_l && mm2ppip<_mm2ppip_h){
+											_hevt->Fill(EVT_2PI);
+											_hmm2_pstc_fW->Fill(mm2ppip);
+											_hmm_pstc_fW->Fill(mmppip);
+											_hmm2_pstc[iw]->Fill(mm2ppip);
+											_hmm_pstc[iw]->Fill(mmppip);
+											fill_h8();
+										}
+									}//! EVTSEL_2PI
 								}//!SCPD
 							}//!EFF
 						}//!PFID

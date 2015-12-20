@@ -1,0 +1,175 @@
+#!/bin/bash
+
+#####################################################################################
+# [11-29-15]
+# + Usage: submit.h10_2_h10-skim-e EXP(=e1f/e16) DTYP(=exp/sim) sim1 sim2 ... simX
+# + The following is the fully descriptive logic of this script
+#   E1F:exp:h10->h10-skim-e
+#   E1F:sim:{simx}:h10->h10-skim-e
+#   E16:exp:h10->h10-skim-e
+#   E16:sim:{simx}:h10->h10-skim-e
+#####################################################################################
+date=`date +%m%d%y`
+
+#! Get user input arguments 
+args=( $@ )
+lenargs=${#args[@]}
+#echo "${args[@]}"
+#echo ${args[0]}
+
+EXP=${args[0]}
+DTYP=${args[1]}
+if [[ -z "$EXP" ]]; then
+    echo "EXP(=e1f/e16) not specified. See usage."
+    exit
+fi
+if [[ -z "$DTYP" ]]; then
+    echo "DTYP(=exp/sim) not specified. See usage."
+    exit
+fi
+#- Setup SIMS
+#- + SIMS only makes sense for 'sim'
+#- + However, for the sake of unifying submission script for 'exp and 'sim',
+#-   it is also used for 'exp', but where its content is  set to ( "" ) 
+if [[ "$DTYP" == "sim" ]]; then
+  SIMS=("${args[@]:2:$((lenargs-1))}")
+elif [[ "$DTYP" == "exp" ]]; then
+  SIMS=( "" )
+fi
+echo "*** User input arguments: ***"
+echo "EXP=$EXP"
+echo "DTYP=$DTYP"
+echo "SIMS=${SIMS[@]}"
+echo "***"
+#! *********************************************************
+
+#- Setup information needed for jsub.xml and proc_h10_lite
+PROCORDER="eid:efid:"
+ADTNL_OPT=":h10-skim-e:"
+if [[ "$EXP" == "e1f" ]]; then
+    PROJECT_NAME="E1F"
+    if [[ "$DTYP" == "exp" ]]; then
+      MEMORY_SPACE="500"
+      TIME="10"
+      MSSDIR=$E1FD_E
+    elif [[ "$DTYP" == "sim" ]]; then
+      MEMORY_SPACE="500"
+      TIME="5" 
+    fi
+  elif [[ "$EXP" == "e16" ]]; then
+    PROJECT_NAME="E1-6a"
+    if [[ "$DTYP" == "exp" ]]; then #! needs more resources due to .rz->.root
+      MEMORY_SPACE="1500"
+      TIME="60"
+      MSSDIR=$E16D_EI
+    elif [[ "$DTYP" == "sim" ]]; then
+      MEMORY_SPACE="500"
+      TIME="5"
+    fi
+fi
+
+echo "*** Info setup for jsub.xml and proc_h10_lite ***"
+echo "PROCORDER=$PROCORDER"
+echo "ADTNL_OPT=$ADTNL_OPT"
+echo "PROJECT_NAME=$PROJECT_NAME"
+echo "MEMORY_SPACE=$MEMORY_SPACE"
+echo "TIME=$TIME"
+if [[ ! -z "$MSSDIR" ]]; then
+  echo "MSSDIR=$MSSDIR"
+fi
+echo "***"
+
+#! Submit h10->h10-skim-e jobs for each SIMS
+#! + Note that for DTYP='exp', SIMS = ( "")
+for simx in "${SIMS[@]}"; do
+  if [[ "$EXP" == "e1f" ]]; then
+    if [[ "$DTYP" == "exp" ]]; then
+      #-- for proc_h10_lite
+      SUBDIR=$BSUBDIR/e1f/2pi/exp/h10_2_h10-skim-e_$date
+      OUTDIR=$H10DIR_EXP/h10_2_h10-skim-e_$date
+      H10LSTDIR=${HOME}/ongoing/e1f_goldenruns_h10lst_e
+    elif [[ "$DTYP" == "sim" ]]; then
+      #-- for proc_h10_lite
+      SUBDIR=$BSUBDIR/e1f/2pi/sim/$simx"_"h10_2_h10-skim-e_$date
+      OUTDIR=$H10DIR_SIM/$simx"_"h10_2_h10-skim-e_$date
+      #H10LSTDIR=TBD
+    fi
+  elif [[ "$EXP" == "e16" ]]; then
+    if [[ "$DTYP" == "exp" ]]; then
+      #-- for proc_h10_lite
+      SUBDIR=$BSUBDIR/e16/2pi/exp/h10_2_h10-skim-e_$date
+      OUTDIR=$H10DIR_EXP_E16/h10_2_h10-skim-e_$date
+      H10LSTDIR_RZ=${HOME}/ongoing/e16_EI_lst/rz
+      H10LSTDIR_ROOT=${HOME}/ongoing/e16_EI_lst/root
+      H10LSTDIR=$H10LSTDIR_RZ
+    elif [[ "$DTYP" == "sim" ]]; then
+      #-- for proc_h10_lite
+      SUBDIR=$BSUBDIR/e16/2pi/sim/$simx"_"h10_2_h10-skim-e_$date
+      OUTDIR=$H10DIR_SIM_E16/$simx"_"h10_2_h10-skim-e_$date
+      #H10LSTDIR=TBD
+    fi
+  fi
+
+  echo "*** Info set up for simx=$simx job ***"
+  echo "SUBDIR=$SUBDIR"
+  echo "OUTDIR=$OUTDIR"
+  echo "H10LSTDIR=$H10LSTDIR"
+  echo "***"
+
+  exit
+
+  #mkdir -p $SUBDIR
+  #mkdir -p $OUTDIR
+
+  for h10lst in $(ls  $H10LSTDIR/*.lst);
+  do
+    if [[ "$EXP" == "e1f" ]]; then
+      runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
+    elif [[ "$EXP" == "e16" ]]; then
+      runnum=$(echo $h10lst | awk -F/ '{print $7}' | awk -F. '{print $1}')
+    fi
+    JSUBFILE=$SUBDIR/$runnum.sub
+    if [ -f "${JSUBFILE}" ]; then
+      echo $runnum".sub exists. Will delete it before creating new one."
+      rm $JSUBFILE
+    fi
+
+    echo "\
+    <Request>
+      <Name name=\"$EXP"_"h10_2_h10-skim-e_$runnum\"/>
+      <Project name=\"$PROJECT_NAME\"/>
+      <OS name=\"centos65\"/>
+      <DiskSpace space=\"500\" unit=\"MB\"/>
+      <Memory space=\"$MEMORY_SPACE\" unit=\"MB\"/>
+      <Track name=\"analysis\"/>
+      <TimeLimit unit=\"minutes\" time=\"$TIME\"/>
+      <Command><![CDATA[
+        `if [[ "$EXP" == "e16" && "$DTYP" == "exp" ]]; then
+          echo ah2root_e16
+          echo check_e16_h10lst
+        fi`
+        proc_h10_lite -i h10.lst -t $EXP:$DTYP:2pi:recon -c $PROCORDER -o d2pi.root $ADTNL_OPT
+      ]]></Command>
+
+      <Job>
+	 `if [[ "$DTYP" == "exp" ]]; then
+            if [[ "$EXP" == "e1f" ]]; then
+              echo \<Input src=\"$h10lst\" dest=\"h10.lst\" /\>
+            elif [[ "$EXP" == "e16" ]]; then
+              echo \<Input src=\"$H10LSTDIR_ROOT/$runnum.lst\" dest=\"h10.lst\" /\>
+            fi
+
+            for f in $(cat $h10lst)
+            do
+              echo \<Input src='"'mss:$MSSDIR/$f'"' dest='"'$f'"' /\> 
+            done
+          fi`
+          <Output src=\"d2pi.root\" dest=\"$OUTDIR/$runnum.root\"/>
+      </Job>
+
+    </Request>
+    " > $JSUBFILE 
+    echo "jsub -xml $JSUBFILE"
+    #jsub -xml $JSUBFILE
+  done #! h10lst loop
+done #!simx loop

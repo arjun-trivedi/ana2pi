@@ -31,7 +31,7 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	//! +[12-06-15] 
 	//! + This used to follow 'setup_cutsncors'
 	//! + However, after making '_do_reconcile' a user input dependent variable, which affects
-	//!   the binding of the h10chain, I moved it here.
+	//!   the binding of the h10chain and therefore affects the method 'Init(h10chain)', I moved it here.
     setup_adtnl_opts(adtnl_opts);
 
 	//! Setup h10chain
@@ -153,6 +153,14 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 			else if (i==1) name_sfx="pstc";
 			_hefid_e[i]  = new TH2F(TString::Format("h_e_phiVtheta_%s",name_sfx.Data()),  "#phi vs. #theta for e-",  100,0,60,  100,-30,330);
 		}
+	}
+	if(_make_h10_skim_e){
+		//! + h10 is created directly under 'fout:/' for technical reasons
+		//!   (since the program expects to find the h10 tree in the root dir.)
+		//! + Directory 'copyh10' is created only for book-keeping reasons
+		_fout->mkdir("copyh10");
+		_fout->cd();
+		_th10copy = (TTree*)fChain->GetTree()->CloneTree(0);
 	}
 	//! pcorr
 	if (_do_pcorr){
@@ -1167,7 +1175,6 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	_do_pfid=kFALSE;
 	_do_evtsel_2pi=kFALSE;
 	_do_evtsel_elast=kFALSE;
-	_do_copy_h10=kFALSE;
 	_do_eff=kFALSE;
 	_do_scpd=kFALSE;
 
@@ -1179,7 +1186,6 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	if (cutsncors.Contains("pfid:"))         _do_pfid=kTRUE;
 	if (cutsncors.Contains("evtsel_2pi:"))   _do_evtsel_2pi=kTRUE;
 	if (cutsncors.Contains("evtsel_elast:")) _do_evtsel_elast=kTRUE;
-	if (cutsncors.Contains("copy_h10:"))     _do_copy_h10=kTRUE;
 	if (cutsncors.Contains("eff:"))          _do_eff=kTRUE;
 	if (cutsncors.Contains("scpd:"))         _do_scpd=kTRUE;
 	
@@ -1192,7 +1198,6 @@ void h10looper_e1f::setup_cutsncors(TString cutsncors){
 	if (_do_pfid)         Info("","do_pfid");
 	if (_do_evtsel_2pi)   Info("","do_evtsel_2pi");
 	if (_do_evtsel_elast) Info("","do_evtsel_elast");
-	if (_do_copy_h10)     Info("","do_copy_h10");
 	if (_do_eff)          Info("","do_eff");
 	if (_do_scpd)         Info("","do_scpd");
 	Info("","***********");
@@ -1230,10 +1235,12 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	//! Q2,W limits used for analysis
 	_use_thesis_Q2W=kTRUE;
 
+	_make_h10_skim_e=kFALSE;
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
 	
 	//! Now set as per adtnl_opts
+	//! nummeric-coded options
 	if (adtnl_opts.Contains(":1:")) _use_cut_ECin_min=kTRUE;
 	if (adtnl_opts.Contains(":2:")) _use_cut_ECfid=kTRUE;
 	if (adtnl_opts.Contains(":3:")) _use_cut_zvtx=kTRUE;
@@ -1250,6 +1257,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":14:")) _use_SChit_pid=kFALSE;
 	if (adtnl_opts.Contains(":15:")) _use_stat_pid=kTRUE;
 	if (adtnl_opts.Contains(":16:")) _use_thesis_Q2W=kFALSE;
+	//! char-coded options
+	if (adtnl_opts.Contains(":h10-skim-e:")) _make_h10_skim_e=kTRUE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
@@ -1280,6 +1289,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if(_use_stat_pid) Info("","use_stat_pid");  
 	//! Q2,W limits used for analysis
 	if(_use_thesis_Q2W) Info("","use_thesis_Q2W"); 
+
+	if(_make_h10_skim_e) Info("","make_h10_skim_e");
 	Info("","***********");
 }
 
