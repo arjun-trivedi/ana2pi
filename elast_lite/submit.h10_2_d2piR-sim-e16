@@ -22,9 +22,9 @@ fi
 
 #! cutncors -> cutsncors_code
 if [[ $cutsncors == "dflt" ]];then
-  cutsncors_code=eid:efid:pid:pfid:evtsel_2pi
+  cutsncors_code=eid:efid:pid:pfid:evtsel_2pi:
 elif [[ $cutsncors == "dflt_eff_scpd" ]];then
-  cutsncors_code=eid:efid:pid:pfid:eff:scpd:evtsel_2pi
+  cutsncors_code=eid:efid:pid:pfid:eff:scpd:evtsel_2pi:
 else
   echo "cutsncors=$cutsncors not valid"
   echo $usage
@@ -71,7 +71,7 @@ for simnum in "${simlist[@]}"; do
     <DiskSpace space=\"5000\" unit=\"MB\"/>
     <Memory space=\"9500\" unit=\"MB\"/>
     <Track name=\"analysis\"/>
-    <TimeLimit unit=\"minutes\" time=\"4320\"/>
+    <TimeLimit unit=\"minutes\" time=\"480\"/>
     <Command><![CDATA[
       proc_h10_lite -i h10.lst -t e16:sim:2pi:recon -c $cutsncors_code -o d2piR.root $adtnl_opts_code
     ]]></Command>

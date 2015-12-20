@@ -34,9 +34,9 @@ fi
 
 #! cutncors -> cutsncors_code
 if [[ $cutsncors == "dflt" ]];then
-  cutsncors_code=eid:efid:pid:pfid:evtsel_2pi
+  cutsncors_code=eid:efid:pid:pfid:evtsel_2pi:
 elif [[ $cutsncors == "dflt_eff_scpd" ]];then
-  cutsncors_code=eid:efid:pid:pfid:eff:scpd:evtsel_2pi
+  cutsncors_code=eid:efid:pid:pfid:eff:scpd:evtsel_2pi:
 else
   echo "cutsncors=$cutsncors not valid"
   echo $usage
