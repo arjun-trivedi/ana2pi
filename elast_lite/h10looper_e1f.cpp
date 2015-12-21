@@ -161,6 +161,7 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_fout->mkdir("copyh10");
 		_fout->cd();
 		_th10copy = (TTree*)fChain->GetTree()->CloneTree(0);
+		set_h10_SEB_BranchStatus(_th10copy);
 	}
 	//! pcorr
 	if (_do_pcorr){
@@ -454,6 +455,11 @@ void h10looper_e1f::Loop(){
 	Info("h10looper_e1f::Loop()","");
 
 	if (fChain == 0) return;
+
+	//!set_h10_SEB_BranchStatus()
+	if (_seq=="recon"){
+		set_h10_SEB_BranchStatus(fChain);
+	}
 
 	Long64_t nbytes = 0, nb = 0;
 	for (Long64_t jentry=0; jentry<_nentries_to_proc;jentry++) {
@@ -1328,4 +1334,107 @@ bool h10looper_e1f::is_scpd_bad(TString prtcl_name){
 		}
 	}
 	return ret;
+}
+
+/*
+[12-21-15]
++ SetBranchStatus to "Process" for only selected SEB Branches.
++ Note, this is only done for SEB Branches, because for Thrown 
+  events, all MCTK(2pi) and PART(elast) Branches are used. 
+*/
+void h10looper_e1f::set_h10_SEB_BranchStatus(TTree* tr){
+	//! First disable all Branches
+	tr->SetBranchStatus("*", kFALSE); // disable all 
+	//! SEB Banks
+   	/*tr->SetBranchStatus("npart",1);
+   	tr->SetBranchStatus("evstat",1);
+   	tr->SetBranchStatus("evntid",1);
+   	tr->SetBranchStatus("evtype",1);
+   	tr->SetBranchStatus("evntclas",1);*/
+   	tr->SetBranchStatus("evthel",1);
+   	/*tr->SetBranchStatus("evntclas2",1);*/
+   	tr->SetBranchStatus("q_l",1);
+   	tr->SetBranchStatus("t_l",1);
+   	/*tr->SetBranchStatus("tr_time",1);
+   	tr->SetBranchStatus("rf_time1",1);
+   	tr->SetBranchStatus("rf_time2",1);*/
+   	tr->SetBranchStatus("gpart",1);
+   	tr->SetBranchStatus("id",1);//[gpart]
+   	tr->SetBranchStatus("stat",1);//[gpart]
+   	tr->SetBranchStatus("dc",1);//[gpart]
+   	tr->SetBranchStatus("cc",1);//[gpart]
+   	tr->SetBranchStatus("sc",1);//[gpart]
+   	tr->SetBranchStatus("ec",1);//[gpart]
+   	//tr->SetBranchStatus("lec",1);//[gpart]
+   	tr->SetBranchStatus("p",1);//[gpart]
+   	//tr->SetBranchStatus("m",1);//[gpart]
+   	tr->SetBranchStatus("q",1);//[gpart]
+   	//tr->SetBranchStatus("b",1);//[gpart]
+   	tr->SetBranchStatus("cx",1);//[gpart]
+   	tr->SetBranchStatus("cy",1);//[gpart]
+   	tr->SetBranchStatus("cz",1);//[gpart]
+   	tr->SetBranchStatus("vx",1);//[gpart]
+   	tr->SetBranchStatus("vy",1);//[gpart]
+   	tr->SetBranchStatus("vz",1);//[gpart]
+   	tr->SetBranchStatus("dc_part",1);
+   	tr->SetBranchStatus("dc_sect",1);//[dc_part]
+   	//tr->SetBranchStatus("dc_trk",1);//[dc_part]
+   	tr->SetBranchStatus("dc_stat",1);//[dc_part]
+   	/*tr->SetBranchStatus("dc_xsc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_ysc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_zsc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_cxsc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_cysc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_czsc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_xec",1);//[dc_part]
+   	tr->SetBranchStatus("dc_yec",1);//[dc_part]
+   	tr->SetBranchStatus("dc_zec",1);//[dc_part]
+   	tr->SetBranchStatus("dc_thcc",1);//[dc_part]
+   	tr->SetBranchStatus("dc_c2",1);//[dc_part]*/
+   	tr->SetBranchStatus("ec_part",1);
+   	//tr->SetBranchStatus("ec_stat",1);//[ec_part]
+   	tr->SetBranchStatus("ec_sect",1);//[ec_part]
+   	//tr->SetBranchStatus("ec_whol",1);//[ec_part]
+   	//tr->SetBranchStatus("ec_inst",1);//[ec_part]
+   	//tr->SetBranchStatus("ec_oust",1);//[ec_part]
+   	tr->SetBranchStatus("etot",1);//[ec_part]
+   	tr->SetBranchStatus("ec_ei",1);//[ec_part]
+   	tr->SetBranchStatus("ec_eo",1);//[ec_part]
+   	/*tr->SetBranchStatus("ec_t",1);//[ec_part]
+   	tr->SetBranchStatus("ec_r",1);//[ec_part]*/
+   	tr->SetBranchStatus("ech_x",1);//[ec_part]
+   	tr->SetBranchStatus("ech_y",1);//[ec_part]
+   	tr->SetBranchStatus("ech_z",1);//[ec_part]
+   	/*tr->SetBranchStatus("ec_m2",1);//[ec_part]
+   	tr->SetBranchStatus("ec_m3",1);//[ec_part]
+   	tr->SetBranchStatus("ec_m4",1);//[ec_part]
+   	tr->SetBranchStatus("ec_c2",1);//[ec_part]*/
+   	tr->SetBranchStatus("sc_part",1);
+   	tr->SetBranchStatus("sc_sect",1);//[sc_part]
+   	tr->SetBranchStatus("sc_hit",1);//[sc_part]
+   	tr->SetBranchStatus("sc_pd",1);//[sc_part]
+   	tr->SetBranchStatus("sc_stat",1);//[sc_part]
+   	//tr->SetBranchStatus("edep",1);//[sc_part]
+   	tr->SetBranchStatus("sc_t",1);//[sc_part]
+   	tr->SetBranchStatus("sc_r",1);//[sc_part]
+   	//tr->SetBranchStatus("sc_c2",1);//[sc_part]
+   	tr->SetBranchStatus("cc_part",1);
+   	tr->SetBranchStatus("cc_sect",1);//[cc_part]
+   	tr->SetBranchStatus("cc_hit",1);//[cc_part]
+   	tr->SetBranchStatus("cc_segm",1);//[cc_part]
+   	tr->SetBranchStatus("nphe",1);//[cc_part]
+   	//tr->SetBranchStatus("cc_t",1);//[cc_part]
+   	//tr->SetBranchStatus("cc_r",1);//[cc_part]
+   	//tr->SetBranchStatus("cc_c2",1);//[cc_part]
+   	/*tr->SetBranchStatus("lac_part",1);
+   	tr->SetBranchStatus("lec_sect",1);//[lac_part]
+   	tr->SetBranchStatus("lec_hit",1);//[lac_part]
+   	tr->SetBranchStatus("lec_stat",1);//[lac_part]
+   	tr->SetBranchStatus("lec_etot",1);//[lac_part]
+   	tr->SetBranchStatus("lec_t",1);//[lac_part]
+   	tr->SetBranchStatus("lec_r",1);//[lac_part]
+   	tr->SetBranchStatus("lec_x",1);//[lac_part]
+   	tr->SetBranchStatus("lec_y",1);//[lac_part]
+   	tr->SetBranchStatus("lec_z",1);//[lac_part]
+   	tr->SetBranchStatus("lec_c2",1);//[lac_part]*/
 }

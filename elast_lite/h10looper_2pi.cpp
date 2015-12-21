@@ -174,6 +174,11 @@ void h10looper_2pi::Loop(){
 
 	if (fChain == 0) return;
 
+	//!set_h10_SEB_BranchStatus()
+	if (_seq=="recon"){
+		set_h10_SEB_BranchStatus(fChain);
+	}
+
 	Long64_t nbytes = 0, nb = 0;
 	for (Long64_t jentry=0; jentry<_nentries_to_proc;jentry++) {
 		Long64_t ientry = LoadTree(jentry);

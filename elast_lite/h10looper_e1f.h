@@ -267,6 +267,11 @@ public :
    Float_t         pzpart[_MAX_PARTS];   //[nprt]
    Float_t         qpart[_MAX_PARTS];   //[nprt]
    Int_t           flagspart[_MAX_PARTS];   //[nprt]
+   //! The following PART bank data was found in E16:exp!
+   Int_t           Ipart10[_MAX_PARTS];   //[nprt]
+   Float_t         Rpart11[_MAX_PARTS];   //[nprt]
+   Float_t         Rpart12[_MAX_PARTS];   //[nprt]
+   Int_t           Ipart13[_MAX_PARTS];   //[nprt]
    //! MCTK Banks
    Int_t mcnentr;
    UChar_t mcnpart;
@@ -372,6 +377,35 @@ public :
    Float_t         lec_y[_MAX_PARTS];   //[lac_part]
    Float_t         lec_z[_MAX_PARTS];   //[lac_part]
    Float_t         lec_c2[_MAX_PARTS];   //[lac_part]
+   //! Addition SEB Branches in E16:exp
+   Float_t         rf_time;
+   Int_t           l2bit;
+   Int_t           l3bit;
+   Int_t           hlsc;
+   Int_t           intt;
+   Int_t           st[_MAX_PARTS];   //[gpart]
+   Int_t           tb_st[_MAX_PARTS];   //[dc_part]
+   Float_t         dc_vx[_MAX_PARTS];   //[dc_part]
+   Float_t         dc_vy[_MAX_PARTS];   //[dc_part]
+   Float_t         dc_vz[_MAX_PARTS];   //[dc_part]
+   Float_t         dc_vr[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_cx[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_cy[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_cz[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_x[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_y[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_z[_MAX_PARTS];   //[dc_part]
+   Float_t         tl1_r[_MAX_PARTS];   //[dc_part]
+   Float_t         lec_ein[_MAX_PARTS];   //[lac_part]
+   Int_t           nschit;
+   Int_t           scsect[_MAX_PARTS];   //[nschit]
+   Int_t           schid[_MAX_PARTS];   //[nschit]
+   Int_t           scpid[_MAX_PARTS];   //[nschit]
+   Float_t         sct[_MAX_PARTS];   //[nschit]
+   Float_t         sce[_MAX_PARTS];   //[nschit]
+   Float_t         scx[_MAX_PARTS];   //[nschit]
+   Float_t         scy[_MAX_PARTS];   //[nschit]
+   Float_t         scz[_MAX_PARTS];   //[nschit]
 
    //for some Branches of SEB' Banks that are different
    struct tmp{
@@ -405,7 +439,12 @@ public :
    TBranch        *b_pypart;   //!
    TBranch        *b_pzpart;   //!
    TBranch        *b_qpart;   //!
+   //! The following PART bank data was found in E16:exp!
    TBranch        *b_flagspart;   //!
+   TBranch        *b_Ipart10;  //
+   TBranch        *b_Rpart11;  //
+   TBranch        *b_Rpart12;  //
+   TBranch        *b_Ipart13;  //
    //! MCTK Bank's Branches 
    TBranch *b_mcnentr; //!
    TBranch *b_mcnpart; //!
@@ -511,6 +550,35 @@ public :
    TBranch        *b_lec_y;   //!
    TBranch        *b_lec_z;   //!
    TBranch        *b_lec_c2;   //!
+   //! Addition SEB Branches in E16:exp
+   TBranch        *b_rf_time;   //!
+   TBranch        *b_l2bit;   //!
+   TBranch        *b_l3bit;   //!
+   TBranch        *b_hlsc;   //!
+   TBranch        *b_intt;   //!
+   TBranch        *b_st;   //!
+   TBranch        *b_tb_st;   //!
+   TBranch        *b_dc_vx;   //!
+   TBranch        *b_dc_vy;   //!
+   TBranch        *b_dc_vz;   //!
+   TBranch        *b_dc_vr;   //!
+   TBranch        *b_tl1_cx;   //!
+   TBranch        *b_tl1_cy;   //!
+   TBranch        *b_tl1_cz;   //!
+   TBranch        *b_tl1_x;   //!
+   TBranch        *b_tl1_y;   //!
+   TBranch        *b_tl1_z;   //!
+   TBranch        *b_tl1_r;   //!
+   TBranch        *b_lec_ein;   //!
+   TBranch        *b_nschit;   //!
+   TBranch        *b_scsect;   //!
+   TBranch        *b_schid;   //!
+   TBranch        *b_scpid;   //!
+   TBranch        *b_sct;   //!
+   TBranch        *b_sce;   //!
+   TBranch        *b_scx;   //!
+   TBranch        *b_scy;   //!
+   TBranch        *b_scz;   //!
 
    h10looper_e1f(TString h10type,TChain* h10chain,
                  TString cutsncors, 
@@ -525,6 +593,7 @@ public :
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 
+   void set_h10_SEB_BranchStatus(TTree* tr);
    void Reconcile();
 
    void setup_cutsncors(TString cutsncors);
@@ -675,6 +744,56 @@ void h10looper_e1f::Init(TTree *tree)
          fChain->SetBranchAddress("cc_sect", cc_sect, &b_cc_sect);
          fChain->SetBranchAddress("nphe", nphe, &b_nphe);         
       }
+      //! Bind additional SEB branches and PART branches present in E16:exp
+      if (_expt=="e16" && _dtyp=="exp"){
+         //! additional SEB branches in E16:exp
+         fChain->SetBranchAddress("rf_time", &rf_time, &b_rf_time);
+         fChain->SetBranchAddress("l2bit", &l2bit, &b_l2bit);
+         fChain->SetBranchAddress("l3bit", &l3bit, &b_l3bit);
+         fChain->SetBranchAddress("hlsc", &hlsc, &b_hlsc);
+         fChain->SetBranchAddress("intt", &intt, &b_intt);
+         fChain->SetBranchAddress("st", st, &b_st);
+         fChain->SetBranchAddress("tb_st", tb_st, &b_tb_st);
+         fChain->SetBranchAddress("dc_vx", dc_vx, &b_dc_vx);
+         fChain->SetBranchAddress("dc_vy", dc_vy, &b_dc_vy);
+         fChain->SetBranchAddress("dc_vz", dc_vz, &b_dc_vz);
+         fChain->SetBranchAddress("dc_vr", dc_vr, &b_dc_vr);
+         fChain->SetBranchAddress("tl1_cx", tl1_cx, &b_tl1_cx);
+         fChain->SetBranchAddress("tl1_cy", tl1_cy, &b_tl1_cy);
+         fChain->SetBranchAddress("tl1_cz", tl1_cz, &b_tl1_cz);
+         fChain->SetBranchAddress("tl1_x", tl1_x, &b_tl1_x);
+         fChain->SetBranchAddress("tl1_y", tl1_y, &b_tl1_y);
+         fChain->SetBranchAddress("tl1_z", tl1_z, &b_tl1_z);
+         fChain->SetBranchAddress("tl1_r", tl1_r, &b_tl1_r);
+         fChain->SetBranchAddress("lec_ein", lec_ein, &b_lec_ein);
+         fChain->SetBranchAddress("nschit", &nschit, &b_nschit);
+         fChain->SetBranchAddress("scsect", sc_sect, &b_sc_sect);
+         fChain->SetBranchAddress("schid", schid, &b_schid);
+         fChain->SetBranchAddress("scpid", scpid, &b_scpid);
+         fChain->SetBranchAddress("sct", sct, &b_sct);
+         fChain->SetBranchAddress("sce", sce, &b_sce);
+         fChain->SetBranchAddress("scx", scx, &b_scx);
+         fChain->SetBranchAddress("scy", scy, &b_scy);
+         fChain->SetBranchAddress("scz", scz, &b_scz);
+         //! PART banks found in E16:exp
+         fChain->SetBranchAddress("nprt", &nprt, &b_nprt);
+         fChain->SetBranchAddress("pidpart", pidpart, &b_pidpart);
+         fChain->SetBranchAddress("xpart", xpart, &b_xpart);
+         fChain->SetBranchAddress("ypart", ypart, &b_ypart);
+         fChain->SetBranchAddress("zpart", zpart, &b_zpart);
+         fChain->SetBranchAddress("epart", epart, &b_epart);
+         fChain->SetBranchAddress("pxpart", pxpart, &b_pxpart);
+         fChain->SetBranchAddress("pypart", pypart, &b_pypart);
+         fChain->SetBranchAddress("pzpart", pzpart, &b_pzpart);
+         fChain->SetBranchAddress("qpart", qpart, &b_qpart);
+         fChain->SetBranchAddress("flagspart", flagspart, &b_flagspart); 
+         fChain->SetBranchAddress("Ipart10", Ipart10, &b_Ipart10); 
+         fChain->SetBranchAddress("Rpart11", Rpart11, &b_Rpart11);
+         fChain->SetBranchAddress("Rpart12", Rpart12, &b_Rpart12);
+         fChain->SetBranchAddress("Ipart13", Ipart13, &b_Ipart13);
+      }
+      //! SEB branches present in all data (expt:dtyp:seq:rctn) EXCEPT when
+      //! seq=="thrown"
       fChain->SetBranchAddress("npart", &npart, &b_npart);
       fChain->SetBranchAddress("evstat", &evstat, &b_evstat);
       fChain->SetBranchAddress("evntid", &evntid, &b_evntid);
