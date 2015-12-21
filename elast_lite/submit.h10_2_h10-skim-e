@@ -92,7 +92,7 @@ for simx in "${SIMS[@]}"; do
       #-- for proc_h10_lite
       SUBDIR=$BSUBDIR/e1f/2pi/sim/$simx"_"h10_2_h10-skim-e_$date
       OUTDIR=$H10DIR_SIM/$simx"_"h10_2_h10-skim-e_$date
-      #H10LSTDIR=TBD
+      H10LSTDIR=$EG3HOME/h10lsts_sim_vltl/e1f/$simx
     fi
   elif [[ "$EXP" == "e16" ]]; then
     if [[ "$DTYP" == "exp" ]]; then
@@ -106,7 +106,7 @@ for simx in "${SIMS[@]}"; do
       #-- for proc_h10_lite
       SUBDIR=$BSUBDIR/e16/2pi/sim/$simx"_"h10_2_h10-skim-e_$date
       OUTDIR=$H10DIR_SIM_E16/$simx"_"h10_2_h10-skim-e_$date
-      #H10LSTDIR=TBD
+      H10LSTDIR=$EG3HOME/h10lsts_sim_vltl/e16/$simx #! only for sim4, sim5
     fi
   fi
 
@@ -116,18 +116,24 @@ for simx in "${SIMS[@]}"; do
   echo "H10LSTDIR=$H10LSTDIR"
   echo "***"
 
-  exit
+  #exit
 
-  #mkdir -p $SUBDIR
-  #mkdir -p $OUTDIR
+  mkdir -p $SUBDIR
+  mkdir -p $OUTDIR
 
   for h10lst in $(ls  $H10LSTDIR/*.lst);
   do
-    if [[ "$EXP" == "e1f" ]]; then
-      runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
-    elif [[ "$EXP" == "e16" ]]; then
-      runnum=$(echo $h10lst | awk -F/ '{print $7}' | awk -F. '{print $1}')
+    #! + Get runnum (=jobnum for sim)
+    if [[ $DTYP == "exp" ]]; then
+      if [[ "$EXP" == "e1f" ]]; then
+        runnum=$(echo $h10lst | awk -F/ '{print $6}' | awk -F. '{print $1}')
+      elif [[ "$EXP" == "e16" ]]; then
+        runnum=$(echo $h10lst | awk -F/ '{print $7}' | awk -F. '{print $1}')
+      fi
+    elif  [[ $DTYP == "sim" ]]; then
+      runnum=$(echo $h10lst | awk -F/ '{print $9}' | awk -F. '{print $1}')      
     fi
+
     JSUBFILE=$SUBDIR/$runnum.sub
     if [ -f "${JSUBFILE}" ]; then
       echo $runnum".sub exists. Will delete it before creating new one."
@@ -136,7 +142,7 @@ for simx in "${SIMS[@]}"; do
 
     echo "\
     <Request>
-      <Name name=\"$EXP"_"h10_2_h10-skim-e_$runnum\"/>
+      <Name name=\"$EXP"_"h10_2_h10-skim-e_$simx"_"$runnum\"/>
       <Project name=\"$PROJECT_NAME\"/>
       <OS name=\"centos65\"/>
       <DiskSpace space=\"500\" unit=\"MB\"/>
@@ -154,15 +160,17 @@ for simx in "${SIMS[@]}"; do
       <Job>
 	 `if [[ "$DTYP" == "exp" ]]; then
             if [[ "$EXP" == "e1f" ]]; then
-              echo \<Input src=\"$h10lst\" dest=\"h10.lst\" /\>
+              echo \<Input src='"'$h10lst'"' dest='"'h10.lst'"' /\>
             elif [[ "$EXP" == "e16" ]]; then
-              echo \<Input src=\"$H10LSTDIR_ROOT/$runnum.lst\" dest=\"h10.lst\" /\>
+              echo \<Input src='"'$H10LSTDIR_ROOT/$runnum.lst'"' dest='"'h10.lst'"' /\>
             fi
 
             for f in $(cat $h10lst)
             do
               echo \<Input src='"'mss:$MSSDIR/$f'"' dest='"'$f'"' /\> 
             done
+          elif [[ "$DTYP" == "sim" ]]; then
+             echo \<Input src='"'$h10lst'"' dest='"'h10.lst'"' /\>
           fi`
           <Output src=\"d2pi.root\" dest=\"$OUTDIR/$runnum.root\"/>
       </Job>
@@ -170,6 +178,6 @@ for simx in "${SIMS[@]}"; do
     </Request>
     " > $JSUBFILE 
     echo "jsub -xml $JSUBFILE"
-    #jsub -xml $JSUBFILE
+    jsub -xml $JSUBFILE
   done #! h10lst loop
 done #!simx loop
