@@ -1,0 +1,255 @@
+#!/usr/bin/python
+from __future__ import division
+
+import os,sys,datetime,subprocess,time
+
+from collections import OrderedDict
+
+#! --  Additional options. For full details see h10looper_e1f.h -- 
+#! + Default values on [12-14-15], in brackets, are toggled when any of the options are selected
+# 1:  ECin (OFF)
+# 2:  ECfid (OFF)
+# 3:  zvtx (OFF)
+# 4:  etot (ON)
+# 5:  hitSC (ON) 
+# 6:  dc_stat (ON)
+# 7:  ep_efid ( ON, only for E1F)
+# 8:  ep_pfid (ON, only for E1F)
+# 9:  Q2_var_binw_bng (ON)
+# 10: t2 (OFF)
+# 11: MM2_cut_EI (OFF)
+# 12: reconcile (OFF)
+# 13: gpart_pid (OFF)
+# 14: hitSC_pid (ON)
+# 15: stat_pid (OFF)
+# 16: thesis Q2W (ON)
+# ----
+
+#! Submit jobs for 
+#! + cutsncors = dflt(=eid:efid:pid:pfid:evtsel_2pi)
+#! + adtnl_opts= dflt(=:11:)
+
+#! Submit jobs for 
+#! + cutsncors = dflt_eff_scpd(=eid:efid:pid:pfid:eff:scpd:evtsel_2pi)
+#! + adtnl_opts= :11:1:2:3:13:14:15:
+
+if len(sys.argv)<2:
+	sys.exit('usage: h10_2_obs expt=(e1f/e16)')
+expt=sys.argv[1]
+
+EXPTS=['e1f','e16']
+SEQS=['ER','SR','ST']
+SIMS={'e1f':['TBD'],'e16':['sim4','sim5']}
+print EXPTS,SEQS,SIMS
+
+H10PATH='/home/trivedia/ongoing/h10lsts_local'
+H10LSTS={
+('e1f','ER'):'TBD', 
+('e16','ER'):'%s/e16/exp/h10-skim-e_122115.lst'%(H10PATH),
+('e1f','SR','sim-TBD'):'TBD',
+('e16','SR','sim4'):'%s/e16/sim/sim4/h10-skim-e_122115.lst'%(H10PATH),
+('e16','SR','sim5'):'%s/e16/sim/sim5/h10-skim-e_122115.lst'%(H10PATH)
+}
+print H10LSTS
+
+#CUTSNCORS={('dflt','dflt'):['eid:efid:pid:pfid:evtsel_2pi:',':11:'],
+#          ('dflt_eff_scpd',':11:1:2:3:13:14:15:'):['eid:efid:pid:pfid:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+#}
+#CUTSNCORS={('dflt','dflt'):['eid:efid:pid:pfid:evtsel_2pi:',':11:']}
+
+CUTSNCORS=OrderedDict()
+#CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:evtsel_2pi:',':11:']
+CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+
+DATE=datetime.datetime.now().strftime('%m%d%g')
+for k in CUTSNCORS.keys():
+	cutsncors,adtnl_opts= k[0],k[1]
+    	cutsncors_code,adtnl_opts_code= CUTSNCORS[k][0],CUTSNCORS[k][1]
+	jobtag='%s_%s_%s'%(cutsncors,adtnl_opts,DATE)
+	print "h10->Obs for expt:cutsncors:adtnl_opts=(%s:%s:%s)"%(expt,cutsncors,adtnl_opts)
+	print "h10->Obs for expt:cutsncors_code:adtnl_opts_code=(%s:%s:%s)"%(expt,cutsncors_code,adtnl_opts_code)
+
+	logdir="/tmp/h10_2_Obs_logs/%s"%jobtag
+	if not os.path.exists(logdir):
+		os.makedirs(logdir)
+		
+	# #! 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi}
+	# print "*** 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi} ***"
+	# #! ER
+	# print "ER"
+	# sfx=''
+	# if expt=='e16':sfx='_E16'
+	# d2pidir_exp=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],jobtag)
+	# print 'd2pidir_exp=',d2pidir_exp
+	# if not os.path.exists(d2pidir_exp):
+	# 	os.makedirs(d2pidir_exp)
+	# h10lst=H10LSTS[expt,'ER']
+	# print 'h10lst=',h10lst
+	# cmd=["proc_h10_lite","-i","%s"%h10lst,"-t","%s:exp:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_exp, "%s"%adtnl_opts_code]
+ #    	#print ">>>%s\n"%cmd
+ #    	#subprocess.call(cmd)
+
+ #        print">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir)
+
+	# #logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
+ #        #p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.PIPE)
+
+	# #logfile='%s/h10_2_d2pi_ER.log'%logdir
+	# #tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+	# #tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
+
+	# logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
+	# tool_ER=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	# #tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
+
+	# #! SR
+	# print "SR"
+	# tool_SR=[0 for i in range(len(SIMS[expt]))]
+	# for i,sim in enumerate(SIMS[expt]):
+	# 	sfx=''
+ #        	if expt=='e16':sfx='_E16'
+ #        	d2pidir_sim=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag)
+	# 	if not os.path.exists(d2pidir_sim):
+ #                	os.makedirs(d2pidir_sim)
+	# 	h10lst=H10LSTS[expt,'SR',sim] 
+	# 	print 'sim=',sim
+	# 	print 'h10lst=',h10lst
+	# 	print 'd2pidir_sim=',d2pidir_sim
+	# 	cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
+ #        	#print ">>>%s\n"%cmd
+
+	# 	#logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
+ #        	#print">>>%s >& %s/h10_2_d2pi_SR.log\n"%(cmd,logdir)
+ #        	#p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.PIPE)
+
+	# 	#logfile='%s/h10_2_d2pi_SR_%s.log'%(logdir,sim)
+ #        	#tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+ #        	#tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
+
+	# 	logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
+ #                tool_SR[i]=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+ #                #tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
+
+	# #! ST (for each sim,should directly already have been made on the farm)
+
+	# #! Wait for h10->d2pi for ER,SR{sims} to finish before proceeding
+	# while True:
+	# 	#! Following command taken from $HOME/ongoing/bin/track_mem_dR2
+	# 	process=subprocess.Popen("ps aux | grep \"[p]roc_h10_lite\" | awk '{print $4}'",shell=True,stdout=subprocess.PIPE)
+	# 	out,err=process.communicate()
+	# 	#print out
+	# 	if out=="":
+	# 		break
+	# 	else:
+	# 		print "proc_h10_lite(s) still running"
+	# 		crnt_time=datetime.datetime.now().strftime('%H:%M:%S')
+	# 		print "%MEM usage (checked very 10s) of each running instance at HH:MM:SS",crnt_time,":"
+	# 		print out
+	# 		time.sleep(10)
+
+	# 	# done=False
+	# 	# done_ER=False
+	# 	# if tool_ER.wait()==0:
+	# 	# 	done_ER=True
+
+	# 	# done_SR=[False for i in range(len(SIMS[expt]))]
+ #  #       	for i,sim in enumerate(SIMS[expt]):
+	# 	# 	if tool_SR[i].wait==0: done_SR[i]=True
+		
+	# 	# if done_ER && all(done_SR):
+	# 	# 	break
+	# 	# else:
+	# 	# 	print "proc_h10_lite(s) still running"
+ #  #               	time=datetime.datetime.now().strftime('%H:%M:%S')
+ #  #               	print "%MEM usage (checked very 10s) of each running instance at HH:MM:SS",time,":"
+ #  #               	print out
+ #  #               	time.sleep(10)		
+		
+	#! Add d2piR/T from sims
+	print "hadd {sims}:d2piR.root, d2piT.root"
+	sim_total="_".join(SIMS[expt])
+	sfx=''
+	if expt=='e16':sfx='_E16'
+	d2pidir_sim_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total,jobtag)
+	if not os.path.exists(d2pidir_sim_total):
+		os.makedirs(d2pidir_sim_total)	
+	print "d2pidir_sim_total=",d2pidir_sim_total
+	tgtfl=['d2piR.root']#! TBD:'d2piT.root'
+	for f in tgtfl:
+		tgtf=os.path.join(d2pidir_sim_total,f)
+ 		srcfl=[]
+    		for sim in (SIMS[expt]):
+        		srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag,f))
+    		srcfl=sorted(srcfl)
+    		cmd=["hadd",tgtf]
+    		cmd+=srcfl
+		logfile=open('%s/hadd_SR_sim.log'%logdir,'w')
+                print">>>%s >& %s/hadd_SR_sim.log\n"%(cmd,logdir)
+		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		tool.wait()
+
+	#! 2. d2pi->Observables
+	print "*** 2. d2pi->Observables ***"
+	#! Create and prepare obsdir
+	sfx=''
+	if expt=='e16':sfx='_E16'
+	obsdir=os.path.join(os.environ['OBSDIR%s'%sfx],'obs_%s'%jobtag)
+	print "obsdir=",obsdir
+	if not os.path.exists(obsdir):
+		os.makedirs(obsdir)
+	if not os.path.exists(os.path.join(obsdir,'d2pi_exp')):
+		os.makedirs(os.path.join(obsdir,'d2pi_exp'))
+	if not os.path.exists(os.path.join(obsdir,'d2pi_sim',sim_total)):
+		os.makedirs(os.path.join(obsdir,'d2pi_sim',sim_total))
+	#logdir="/tmp/h10_2_Obs/%s"%jobtag
+	if not os.path.exists(logdir):
+                os.makedirs(logdir)
+
+	#! tmp (due to zombie-bug)
+	d2pidir_exp=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],jobtag) #! tmp
+
+	cmd=["ln", "-s", "%s/d2piR.root"%d2pidir_exp,"%s/d2pi_exp/d2piR.root"%(obsdir)]
+	print">>>%s\n"%cmd
+	subprocess.call(cmd)
+	cmd=(["ln", "-s", "%s/d2piR.root"%d2pidir_sim_total,"%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)])
+	print">>>%s\n"%cmd
+	subprocess.call(cmd)
+	#! ST:TBD in "proper way" once d2piT finish on the farm
+	cmd=["ln", "-s", "%s/sim4_sim5/d2piT_121615.root"%(os.environ['D2PIDIR_SIM%s'%sfx]),"%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)]
+	print">>>%s\n"%cmd
+	subprocess.call(cmd)
+
+	#! tmp (due to zombie-bug)
+	sfx=''
+	if expt=='e16':sfx='_E16'
+	obsdir=os.path.join(os.environ['OBSDIR%s'%sfx],'obs_%s'%jobtag)
+	sim_total="_".join(SIMS[expt])
+	
+	#-- Now start to make Obervables
+	#echo ">ph8 $obsdir $sim 2.00 3.00 1.400 2.125 >& $logdir_obs/ph8.log "
+	cmd=["ph8",obsdir,sim_total,'2.00','3.00','1.400','2.125']
+	logfile=open("%s/ph8.log"%logdir,'w')
+	print">>>%s >& %s/ph8.log\n"%(cmd,logdir)
+	tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	tool.wait();
+
+	#echo ">dobs_1D $obsdir $sim norm 2.00 3.00 1.400 2.125 >& $logdir_obs/dobs_1D.log"
+	cmd=["dobs_1D",obsdir,sim_total,"norm",'2.00','3.00','1.400','2.125',expt]
+	logfile=open("%s/dobs_1D.log"%logdir,'w')
+	print">>>%s >& %s/dobs_1D.log\n"%(cmd,logdir)
+        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	tool.wait()
+	#-- simstats
+	#echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
+	cmd=['ds_lite',obsdir,sim_total]
+	logfile=open('%s/ds_lite.log'%logdir,'w')
+	print">>>%s >& %s/ds_lite.log\n"%(cmd,logdir)
+        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	tool.wait()
+
+	#echo "ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log"
+	cmd=['ds_q2wbin_lite',obsdir,sim_total]
+	logfile=open('%s/ds_q2wbin_lite.log'%logdir,'w')
+	print">>>%s >& %s/ds_q2wbin_lite.log\n"%(cmd,logdir)
+        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	tool.wait()
