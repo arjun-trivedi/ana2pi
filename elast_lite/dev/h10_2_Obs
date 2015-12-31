@@ -25,14 +25,13 @@ from collections import OrderedDict
 # 16: thesis Q2W (ON)
 # ----
 
-#! Submit jobs for 
-#! + cutsncors = dflt(=eid:efid:pid:pfid:evtsel_2pi)
-#! + adtnl_opts= dflt(=:11:)
+'''
++ This program does h10->Observables and labels the output as per the CUTNCORS applied to {ER,ER} h10->d2pi (jobtag='%s_%s_%s'%(cutsncors,adtnl_opts,DATE))
++ ST h10->d2pi is independent of CUTSNCORS and is directly made on the farm. The DATE_ST variable should be correctly set so that the appropriate d2piT is used. 
 
-#! Submit jobs for 
-#! + cutsncors = dflt_eff_scpd(=eid:efid:pid:pfid:eff:scpd:evtsel_2pi)
-#! + adtnl_opts= :11:1:2:3:13:14:15:
-
++ Usage
+	>h10_2_Obs <expt=e1f/e16>
+'''
 if len(sys.argv)<2:
 	sys.exit('usage: h10_2_obs expt=(e1f/e16)')
 expt=sys.argv[1]
@@ -40,7 +39,7 @@ expt=sys.argv[1]
 EXPTS=['e1f','e16']
 SEQS=['ER','SR','ST']
 SIMS={'e1f':['TBD'],'e16':['sim4','sim5']}
-print EXPTS,SEQS,SIMS
+#print EXPTS,SEQS,SIMS
 
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
@@ -52,16 +51,13 @@ H10LSTS={
 }
 print H10LSTS
 
-#CUTSNCORS={('dflt','dflt'):['eid:efid:pid:pfid:evtsel_2pi:',':11:'],
-#          ('dflt_eff_scpd',':11:1:2:3:13:14:15:'):['eid:efid:pid:pfid:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
-#}
-#CUTSNCORS={('dflt','dflt'):['eid:efid:pid:pfid:evtsel_2pi:',':11:']}
-
 CUTSNCORS=OrderedDict()
-#CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:evtsel_2pi:',':11:']
+CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:evtsel_2pi:',':11:']
 CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
 
 DATE=datetime.datetime.now().strftime('%m%d%g')
+DATE_ST='122215'
+
 for k in CUTSNCORS.keys():
 	cutsncors,adtnl_opts= k[0],k[1]
     	cutsncors_code,adtnl_opts_code= CUTSNCORS[k][0],CUTSNCORS[k][1]
@@ -69,167 +65,188 @@ for k in CUTSNCORS.keys():
 	print "h10->Obs for expt:cutsncors:adtnl_opts=(%s:%s:%s)"%(expt,cutsncors,adtnl_opts)
 	print "h10->Obs for expt:cutsncors_code:adtnl_opts_code=(%s:%s:%s)"%(expt,cutsncors_code,adtnl_opts_code)
 
-	logdir="/tmp/h10_2_Obs_logs/%s"%jobtag
+	#logdir="/tmp/h10_2_Obs_logs/%s"%jobtag
+	logdir="/home/trivedia/tmp/h10_2_Obs_logs/%s"%jobtag
 	if not os.path.exists(logdir):
 		os.makedirs(logdir)
+	#! + While I can re-direct stdout/err of all subprocesses to logdir/<log> using Popen,
+	#!   I have to use a hack-ish method to redirect stdout (mainly from print messages)
+	#!   from the main program to logdir/main.log
+	#! + Using this method, the main.log is not updated in real-time but after the file is
+	#!   closed at the end of the program! Therefore, 'print' continue to accompany 'mainlog.write'
+	#!   to see real-time progress
+	mainlog=open("%s/main.log"%(logdir),'w')
+	print "All stdout from h10_2_Obs are in %s/%s"%(logdir,"main.log")
+
+	print "h10->Obs for expt:cutsncors:adtnl_opts=(%s:%s:%s)"%(expt,cutsncors,adtnl_opts)
+        print "h10->Obs for expt:cutsncors_code:adtnl_opts_code=(%s:%s:%s)"%(expt,cutsncors_code,adtnl_opts_code)
+	mainlog.write("h10->Obs for expt:cutsncors:adtnl_opts=(%s:%s:%s)\n"%(expt,cutsncors,adtnl_opts))
+	mainlog.write("h10->Obs for expt:cutsncors_code:adtnl_opts_code=(%s:%s:%s)\n"%(expt,cutsncors_code,adtnl_opts_code))
 		
-	# #! 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi}
-	# print "*** 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi} ***"
-	# #! ER
-	# print "ER"
-	# sfx=''
-	# if expt=='e16':sfx='_E16'
-	# d2pidir_exp=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],jobtag)
-	# print 'd2pidir_exp=',d2pidir_exp
-	# if not os.path.exists(d2pidir_exp):
-	# 	os.makedirs(d2pidir_exp)
-	# h10lst=H10LSTS[expt,'ER']
-	# print 'h10lst=',h10lst
-	# cmd=["proc_h10_lite","-i","%s"%h10lst,"-t","%s:exp:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_exp, "%s"%adtnl_opts_code]
- #    	#print ">>>%s\n"%cmd
- #    	#subprocess.call(cmd)
+	#! 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi}
+	print "*** 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi} ***"
+	mainlog.write("*** 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi} ***\n")
+	#! ER
+	print "ER"
+	mainlog.write("ER\n")
+	sfx=''
+	if expt=='e16':sfx='_E16'
+	d2pidir_exp=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],jobtag)
+	print 'd2pidir_exp=',d2pidir_exp
+	mainlog.write('d2pidir_exp=%s\n'%d2pidir_exp)
+	if not os.path.exists(d2pidir_exp):
+		os.makedirs(d2pidir_exp)
+	h10lst=H10LSTS[expt,'ER']
+	print 'h10lst=',h10lst
+	mainlog.write('h10lst=%s\n'%h10lst)
+	cmd=["proc_h10_lite","-i","%s"%h10lst,"-t","%s:exp:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_exp, "%s"%adtnl_opts_code]
+        print">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir)
+	mainlog.write(">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir))
+	logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
+	#! + Popen called below without keeping any references to the Popen objects
+	#!   (http://stackoverflow.com/questions/2760652/how-to-kill-or-avoid-zombie-processes-with-subprocess-module: ibz answered Aug 15 '11 at 9:53)
+	#! + This way no zombie child processes are left and this is important
+	#!   for the manner in which I am tracking and noting the completion of
+	#!   ER,SR{sims}}:h10->d2pi processes below
+	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 
- #        print">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir)
+	#! SR
+	print "SR"
+	mainlog.write("SR\n")
+	for i,sim in enumerate(SIMS[expt]):
+		sfx=''
+        	if expt=='e16':sfx='_E16'
+        	d2pidir_sim=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag)
+		if not os.path.exists(d2pidir_sim):
+                	os.makedirs(d2pidir_sim)
+		h10lst=H10LSTS[expt,'SR',sim] 
+		print 'sim=',sim
+		mainlog.write('sim=%s\n'%sim)
+		print 'h10lst=',h10lst
+		print 'd2pidir_sim=',d2pidir_sim
+		mainlog.write('h10lst=%s\n'%h10lst)
+		mainlog.write('d2pidir_sim=%s\n'%d2pidir_sim)
+		cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
+		print">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim)
+		mainlog.write(">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim))
+		logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
+		#! + Popen called below without keeping any references to the Popen objects
+        	#!   (http://stackoverflow.com/questions/2760652/how-to-kill-or-avoid-zombie-processes-with-subprocess-module: ibz answered Aug 15 '11 at 9:53)
+        	#! + This way no zombie child processes are left and this is important
+        	#!   for the manner in which I am tracking and noting the completion of
+        	#!   ER,SR{sims}}:h10->d2pi processes below
+		subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 
-	# #logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
- #        #p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.PIPE)
+	#! ST
+	#! + For each sim,should directly already have been made on the farm on DATE_ST
 
-	# #logfile='%s/h10_2_d2pi_ER.log'%logdir
-	# #tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-	# #tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
+	#! Wait for h10->d2pi for ER,SR{sims} to finish before proceeding
+	while True:
+		#! Following command taken from $HOME/ongoing/bin/track_mem_dR2
+		process=subprocess.Popen("ps aux | grep \"[p]roc_h10_lite\" | awk '{print $4}'",shell=True,stdout=subprocess.PIPE)
+		out,err=process.communicate()
+		#print out
+		if out=="":
+			break
+		else:
+			print "proc_h10_lite(s) still running"
+			mainlog.write("proc_h10_lite(s) still running\n")
+			crnt_time=datetime.datetime.now().strftime('%H:%M:%S')
+			print "%MEM usage (checked every 15min) of each running instance at",crnt_time,"(HH:MM:SS):"
+			mainlog.write("MEM percentage usage (checked every 15min) of each running instance at %s(HH:MM:SS)\n"%crnt_time)
+			print out
+			mainlog.write("%s\n"%out)
+			time.sleep(15*60)
 
-	# logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
-	# tool_ER=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	# #tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
-
-	# #! SR
-	# print "SR"
-	# tool_SR=[0 for i in range(len(SIMS[expt]))]
-	# for i,sim in enumerate(SIMS[expt]):
-	# 	sfx=''
- #        	if expt=='e16':sfx='_E16'
- #        	d2pidir_sim=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag)
-	# 	if not os.path.exists(d2pidir_sim):
- #                	os.makedirs(d2pidir_sim)
-	# 	h10lst=H10LSTS[expt,'SR',sim] 
-	# 	print 'sim=',sim
-	# 	print 'h10lst=',h10lst
-	# 	print 'd2pidir_sim=',d2pidir_sim
-	# 	cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
- #        	#print ">>>%s\n"%cmd
-
-	# 	#logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
- #        	#print">>>%s >& %s/h10_2_d2pi_SR.log\n"%(cmd,logdir)
- #        	#p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.PIPE)
-
-	# 	#logfile='%s/h10_2_d2pi_SR_%s.log'%(logdir,sim)
- #        	#tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
- #        	#tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
-
-	# 	logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
- #                tool_SR[i]=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
- #                #tee=subprocess.Popen(['tee', logfile], stdin=tool.stdout)
-
-	# #! ST (for each sim,should directly already have been made on the farm)
-
-	# #! Wait for h10->d2pi for ER,SR{sims} to finish before proceeding
-	# while True:
-	# 	#! Following command taken from $HOME/ongoing/bin/track_mem_dR2
-	# 	process=subprocess.Popen("ps aux | grep \"[p]roc_h10_lite\" | awk '{print $4}'",shell=True,stdout=subprocess.PIPE)
-	# 	out,err=process.communicate()
-	# 	#print out
-	# 	if out=="":
-	# 		break
-	# 	else:
-	# 		print "proc_h10_lite(s) still running"
-	# 		crnt_time=datetime.datetime.now().strftime('%H:%M:%S')
-	# 		print "%MEM usage (checked very 10s) of each running instance at HH:MM:SS",crnt_time,":"
-	# 		print out
-	# 		time.sleep(10)
-
-	# 	# done=False
-	# 	# done_ER=False
-	# 	# if tool_ER.wait()==0:
-	# 	# 	done_ER=True
-
-	# 	# done_SR=[False for i in range(len(SIMS[expt]))]
- #  #       	for i,sim in enumerate(SIMS[expt]):
-	# 	# 	if tool_SR[i].wait==0: done_SR[i]=True
-		
-	# 	# if done_ER && all(done_SR):
-	# 	# 	break
-	# 	# else:
-	# 	# 	print "proc_h10_lite(s) still running"
- #  #               	time=datetime.datetime.now().strftime('%H:%M:%S')
- #  #               	print "%MEM usage (checked very 10s) of each running instance at HH:MM:SS",time,":"
- #  #               	print out
- #  #               	time.sleep(10)		
 		
 	#! Add d2piR/T from sims
 	print "hadd {sims}:d2piR.root, d2piT.root"
+	mainlog.write("hadd {sims}:d2piR.root, d2piT.root\n")
 	sim_total="_".join(SIMS[expt])
 	sfx=''
 	if expt=='e16':sfx='_E16'
-	d2pidir_sim_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total,jobtag)
-	if not os.path.exists(d2pidir_sim_total):
-		os.makedirs(d2pidir_sim_total)	
-	print "d2pidir_sim_total=",d2pidir_sim_total
-	tgtfl=['d2piR.root']#! TBD:'d2piT.root'
+	d2pidir_SR_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total,jobtag)
+	d2pidir_ST_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total)
+	for drctry in [d2pidir_SR_total,d2pidir_ST_total]:
+		if not os.path.exists(drctry):
+			os.makedirs(drctry)	
+	tgtfl=['d2piR.root','d2piT_%s.root'%(DATE_ST)]
 	for f in tgtfl:
-		tgtf=os.path.join(d2pidir_sim_total,f)
+		#! First determine if adding d2piR or d2piT
+		addSR,addST=False,False
+		if   "R" in f: 
+			addSR=True
+			hadd_outdir=d2pidir_SR_total
+		elif "T" in f: 
+			addST=True
+			hadd_outdir=d2pidir_ST_total
+		#! Now hadd
+		#! + If d2piT_<DATE_ST> exists then continue
+		#! + Remember, d2piST depends only on date and not on jobtag defined by cuts-n-cors, applicable only to ER&SR
+		if addST and os.path.isfile(os.path.join(hadd_outdir,f)): 
+			print "Not going to addST since %s/%s exists"%(hadd_outdir,f)
+			mainlog.write("Not going to addST since %s/%s exists\n"%(hadd_outdir,f))
+			logfile=open('%s/%s'%(logdir,"hadd_ST_sim.log"),'w')
+			logfile.write("Not going to addST since %s/%s exists"%(hadd_outdir,f))
+			continue
+		tgtf=os.path.join(hadd_outdir,f)
  		srcfl=[]
     		for sim in (SIMS[expt]):
-        		srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag,f))
+			if addSR:
+        			srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag,f))
+			elif addST:
+				srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,f))
     		srcfl=sorted(srcfl)
-    		cmd=["hadd",tgtf]
+    		cmd=["hadd","-f",tgtf] #! hadd with -f since I often have to remake the same tgtf
     		cmd+=srcfl
-		logfile=open('%s/hadd_SR_sim.log'%logdir,'w')
-                print">>>%s >& %s/hadd_SR_sim.log\n"%(cmd,logdir)
+		logfilename=""
+		if   addSR: logfilename="hadd_SR_sim.log"
+		elif addST: logfilename="hadd_ST_sim.log"
+		logfile=open('%s/%s'%(logdir,logfilename),'w')
+                print">>>%s >& %s/%s\n"%(cmd,logdir,logfilename)
+		mainlog.write(">>>%s >& %s/%s\n"%(cmd,logdir,logfilename))
 		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 		tool.wait()
 
 	#! 2. d2pi->Observables
 	print "*** 2. d2pi->Observables ***"
+	mainlog.write("*** 2. d2pi->Observables ***\n")
 	#! Create and prepare obsdir
+	logfile=open("%s/prep_obsdir.log"%logdir,'w')
 	sfx=''
 	if expt=='e16':sfx='_E16'
 	obsdir=os.path.join(os.environ['OBSDIR%s'%sfx],'obs_%s'%jobtag)
 	print "obsdir=",obsdir
+	mainlog.write("obsdir=%s\n"%obsdir)
 	if not os.path.exists(obsdir):
 		os.makedirs(obsdir)
 	if not os.path.exists(os.path.join(obsdir,'d2pi_exp')):
 		os.makedirs(os.path.join(obsdir,'d2pi_exp'))
 	if not os.path.exists(os.path.join(obsdir,'d2pi_sim',sim_total)):
 		os.makedirs(os.path.join(obsdir,'d2pi_sim',sim_total))
-	#logdir="/tmp/h10_2_Obs/%s"%jobtag
-	if not os.path.exists(logdir):
-                os.makedirs(logdir)
-
-	#! tmp (due to zombie-bug)
-	d2pidir_exp=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],jobtag) #! tmp
 
 	cmd=["ln", "-s", "%s/d2piR.root"%d2pidir_exp,"%s/d2pi_exp/d2piR.root"%(obsdir)]
 	print">>>%s\n"%cmd
-	subprocess.call(cmd)
-	cmd=(["ln", "-s", "%s/d2piR.root"%d2pidir_sim_total,"%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)])
+	mainlog.write(">>>%s\n"%cmd)
+	#subprocess.call(cmd)
+	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	cmd=(["ln", "-s", "%s/d2piR.root"%d2pidir_SR_total,"%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)])
 	print">>>%s\n"%cmd
-	subprocess.call(cmd)
-	#! ST:TBD in "proper way" once d2piT finish on the farm
-	cmd=["ln", "-s", "%s/sim4_sim5/d2piT_121615.root"%(os.environ['D2PIDIR_SIM%s'%sfx]),"%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)]
+	mainlog.write(">>>%s\n"%cmd)
+	#subprocess.call(cmd)
+	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	cmd=(["ln", "-s", "%s/d2piT_%s.root"%(d2pidir_ST_total,DATE_ST),"%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)])
 	print">>>%s\n"%cmd
-	subprocess.call(cmd)
+	mainlog.write(">>>%s\n"%cmd)
+	#subprocess.call(cmd)
+	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 
-	#! tmp (due to zombie-bug)
-	sfx=''
-	if expt=='e16':sfx='_E16'
-	obsdir=os.path.join(os.environ['OBSDIR%s'%sfx],'obs_%s'%jobtag)
-	sim_total="_".join(SIMS[expt])
-	
 	#-- Now start to make Obervables
 	#echo ">ph8 $obsdir $sim 2.00 3.00 1.400 2.125 >& $logdir_obs/ph8.log "
 	cmd=["ph8",obsdir,sim_total,'2.00','3.00','1.400','2.125']
 	logfile=open("%s/ph8.log"%logdir,'w')
 	print">>>%s >& %s/ph8.log\n"%(cmd,logdir)
+	mainlog.write(">>>%s >& %s/ph8.log\n"%(cmd,logdir))
 	tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 	tool.wait();
 
@@ -237,6 +254,7 @@ for k in CUTSNCORS.keys():
 	cmd=["dobs_1D",obsdir,sim_total,"norm",'2.00','3.00','1.400','2.125',expt]
 	logfile=open("%s/dobs_1D.log"%logdir,'w')
 	print">>>%s >& %s/dobs_1D.log\n"%(cmd,logdir)
+	mainlog.write(">>>%s >& %s/dobs_1D.log\n"%(cmd,logdir))
         tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 	tool.wait()
 	#-- simstats
@@ -244,6 +262,7 @@ for k in CUTSNCORS.keys():
 	cmd=['ds_lite',obsdir,sim_total]
 	logfile=open('%s/ds_lite.log'%logdir,'w')
 	print">>>%s >& %s/ds_lite.log\n"%(cmd,logdir)
+	mainlog.write(">>>%s >& %s/ds_lite.log\n"%(cmd,logdir))
         tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 	tool.wait()
 
@@ -251,5 +270,8 @@ for k in CUTSNCORS.keys():
 	cmd=['ds_q2wbin_lite',obsdir,sim_total]
 	logfile=open('%s/ds_q2wbin_lite.log'%logdir,'w')
 	print">>>%s >& %s/ds_q2wbin_lite.log\n"%(cmd,logdir)
+	mainlog.write(">>>%s >& %s/ds_q2wbin_lite.log\n"%(cmd,logdir))
         tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 	tool.wait()
+
+	mainlog.close()
