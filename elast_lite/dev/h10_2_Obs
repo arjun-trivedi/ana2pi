@@ -26,37 +26,80 @@ from collections import OrderedDict
 # ----
 
 '''
-+ This program does h10->Observables and labels the output as per the CUTNCORS applied to {ER,ER} h10->d2pi (jobtag='%s_%s_%s'%(cutsncors,adtnl_opts,DATE))
-+ ST h10->d2pi is independent of CUTSNCORS and is directly made on the farm. The DATE_ST variable should be correctly set so that the appropriate d2piT is used. 
++ h10->Observables labelled by 'obs_jobtag', where jobtag='%s_%s_%s'%(cutsncors,adtnl_opts,DATE) applicable to {ER,SR}. {ST}h10->d2pi independent of 'jobtag'. Details:
+	+ cutsncors,adtnl_opts=CUTNCORS applied to {ER,SR}h10->d2pi on a particular DATE
+	+ {ST}h10->d2pi directly made on farm labelled by date and is independent of 'jobtag'. 
+		+ To use the appropriate d2piT_<date>.root, the DATE_ST(expt,sim) is used.   
 
 + Usage
-	>h10_2_Obs <expt=e1f/e16>
+	>h10_2_Obs expt<=e1f/e16> cumsiml[=SIMS[expt]] date_of_existing_jobtag[=today]
+	+ cumsiml: output created for every cumsim in cumsiml under obs_jobtag/cumsim
+	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that obs_jobtag is going to be updated with, currently for example, addition of new simulation
 '''
-if len(sys.argv)<2:
-	sys.exit('usage: h10_2_obs expt=(e1f/e16)')
-expt=sys.argv[1]
-
 EXPTS=['e1f','e16']
 SEQS=['ER','SR','ST']
-SIMS={'e1f':['TBD'],'e16':['sim4','sim5']}
+SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6']}
 #print EXPTS,SEQS,SIMS
 
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
-('e1f','ER'):'TBD', 
+('e1f','ER'):'TBD',
 ('e16','ER'):'%s/e16/exp/h10-skim-e_122115.lst'%(H10PATH),
 ('e1f','SR','sim-TBD'):'TBD',
 ('e16','SR','sim4'):'%s/e16/sim/sim4/h10-skim-e_122115.lst'%(H10PATH),
-('e16','SR','sim5'):'%s/e16/sim/sim5/h10-skim-e_122115.lst'%(H10PATH)
+('e16','SR','sim5'):'%s/e16/sim/sim5/h10-skim-e_122115.lst'%(H10PATH),
+('e16','SR','sim6'):'%s/e16/sim/sim6/h10-skim-e_122915.lst'%(H10PATH)
 }
-print H10LSTS
+#print H10LSTS
+DATE_ST={
+('e16','sim-TBD'):'TBD',
+('e16','sim4'):'122215',
+('e16','sim5'):'122215',
+('e16','sim6'):'122915'
+}
 
 CUTSNCORS=OrderedDict()
 CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:evtsel_2pi:',':11:']
 CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
 
-DATE=datetime.datetime.now().strftime('%m%d%g')
-DATE_ST='122215'
+if len(sys.argv)<2:
+	sys.exit('usage: h10_2_obs expt=(e1f/e16)')
+expt=sys.argv[1]
+
+CUMSIML=[]
+if len(sys.argv)>2:#i.e. CUMSIML entered by user
+	cumsims=sys.argv[2].split("_")
+	if len(cumsims)>0:
+		for cumsim in cumsims:
+			cumsim=cumsim.split(':')
+			print cumsim
+			#cumsim=map(int,cumsim)
+			for sim_user in cumsim:
+				sim_user_valid=False
+				for sim in SIMS[expt]:
+					print "sim_user=",sim_user
+					print "sim=",sim
+					if sim_user==sim:
+						sim_user_valid=True
+				if not sim_user_valid:
+					sys.exit("Please enter valid simX. %s for %s is not valid."%(sim_user,expt))
+			CUMSIML.append(cumsim)
+	else:
+		sys.exit("Please enter cumsiml as sim1_sim1:sim2_sim1:sim2:sim3")
+else:
+	CUMSIML.append(SIMS[expt])
+
+PROC_NEW_JOBTAG=True
+if len(sys.argv)>3: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
+        DATE=sys.argv[3]
+        PROC_NEW_JOBTAG=False
+else:
+        DATE=datetime.datetime.now().strftime('%m%d%y')
+
+print "Date=",DATE
+print "PROC_NEW_JOBTAG=",PROC_NEW_JOBTAG
+print "CUMSIML=",CUMSIML
+#sys.exit()
 
 for k in CUTSNCORS.keys():
 	cutsncors,adtnl_opts= k[0],k[1]
@@ -65,8 +108,11 @@ for k in CUTSNCORS.keys():
 	print "h10->Obs for expt:cutsncors:adtnl_opts=(%s:%s:%s)"%(expt,cutsncors,adtnl_opts)
 	print "h10->Obs for expt:cutsncors_code:adtnl_opts_code=(%s:%s:%s)"%(expt,cutsncors_code,adtnl_opts_code)
 
-	#logdir="/tmp/h10_2_Obs_logs/%s"%jobtag
-	logdir="/home/trivedia/tmp/h10_2_Obs_logs/%s"%jobtag
+	logdir=""
+	if PROC_NEW_JOBTAG:
+		logdir="/home/trivedia/h10_2_Obs_logs/%s"%jobtag
+	else:
+		logdir="/home/trivedia/h10_2_Obs_logs/%s_update_%s"%(jobtag,datetime.datetime.now().strftime('%m%d%y_%H%M%S'))
 	if not os.path.exists(logdir):
 		os.makedirs(logdir)
 	#! + While I can re-direct stdout/err of all subprocesses to logdir/<log> using Popen,
@@ -87,8 +133,8 @@ for k in CUTSNCORS.keys():
 	print "*** 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi} ***"
 	mainlog.write("*** 1. {ER,SR,ST}:{h10-skim-e->d2pi,h10->d2pi} ***\n")
 	#! ER
-	print "ER"
-	mainlog.write("ER\n")
+	print "*** ER *** "
+	mainlog.write("*** ER ***\n")
 	sfx=''
 	if expt=='e16':sfx='_E16'
 	d2pidir_exp=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],jobtag)
@@ -96,49 +142,66 @@ for k in CUTSNCORS.keys():
 	mainlog.write('d2pidir_exp=%s\n'%d2pidir_exp)
 	if not os.path.exists(d2pidir_exp):
 		os.makedirs(d2pidir_exp)
-	h10lst=H10LSTS[expt,'ER']
-	print 'h10lst=',h10lst
-	mainlog.write('h10lst=%s\n'%h10lst)
-	cmd=["proc_h10_lite","-i","%s"%h10lst,"-t","%s:exp:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_exp, "%s"%adtnl_opts_code]
-        print">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir)
-	mainlog.write(">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir))
-	logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
-	#! + Popen called below without keeping any references to the Popen objects
-	#!   (http://stackoverflow.com/questions/2760652/how-to-kill-or-avoid-zombie-processes-with-subprocess-module: ibz answered Aug 15 '11 at 9:53)
-	#! + This way no zombie child processes are left and this is important
-	#!   for the manner in which I am tracking and noting the completion of
-	#!   ER,SR{sims}}:h10->d2pi processes below
-	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	#! Process d2piR.root only if it does not exist OR if processing a non-existing jobtag 
+        if not os.path.isfile(os.path.join(d2pidir_exp,"d2piR.root")) or PROC_NEW_JOBTAG:
+		h10lst=H10LSTS[expt,'ER']
+		print 'h10lst=',h10lst
+		mainlog.write('h10lst=%s\n'%h10lst)
+		cmd=["proc_h10_lite","-i","%s"%h10lst,"-t","%s:exp:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_exp, "%s"%adtnl_opts_code]
+		#! For debug
+		#cmd=["proc_h10_lite","-i","%s"%h10lst,"-t","%s:exp:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_exp, "-n","10000","%s"%adtnl_opts_code]
+        	print">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir)
+		mainlog.write(">>>%s >& %s/h10_2_d2pi_ER.log.log\n"%(cmd,logdir))
+		logfile=open('%s/h10_2_d2pi_ER.log'%logdir,'w')
+		#! + Popen called below without keeping any references to the Popen objects
+		#!   (http://stackoverflow.com/questions/2760652/how-to-kill-or-avoid-zombie-processes-with-subprocess-module: ibz answered Aug 15 '11 at 9:53)
+		#! + This way no zombie child processes are left and this is important
+		#!   for the manner in which I am tracking and noting the completion of
+		#!   ER,SR{sims}}:h10->d2pi processes below
+		subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	else:
+		print os.path.join(d2pidir_exp,"d2piR.root"),"exists. Not making new one"
+                mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_exp,"d2piR.root"))	
 
 	#! SR
 	print "SR"
 	mainlog.write("SR\n")
-	for i,sim in enumerate(SIMS[expt]):
-		sfx=''
-        	if expt=='e16':sfx='_E16'
-        	d2pidir_sim=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag)
-		if not os.path.exists(d2pidir_sim):
-                	os.makedirs(d2pidir_sim)
-		h10lst=H10LSTS[expt,'SR',sim] 
-		print 'sim=',sim
-		mainlog.write('sim=%s\n'%sim)
-		print 'h10lst=',h10lst
-		print 'd2pidir_sim=',d2pidir_sim
-		mainlog.write('h10lst=%s\n'%h10lst)
-		mainlog.write('d2pidir_sim=%s\n'%d2pidir_sim)
-		cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
-		print">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim)
-		mainlog.write(">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim))
-		logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
-		#! + Popen called below without keeping any references to the Popen objects
-        	#!   (http://stackoverflow.com/questions/2760652/how-to-kill-or-avoid-zombie-processes-with-subprocess-module: ibz answered Aug 15 '11 at 9:53)
-        	#! + This way no zombie child processes are left and this is important
-        	#!   for the manner in which I am tracking and noting the completion of
-        	#!   ER,SR{sims}}:h10->d2pi processes below
-		subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+	for CUMSIM in CUMSIML:
+		print "*** SR for CUMSIM=%s***"%CUMSIM
+		mainlog.write("*** SR for CUMSIM=%s ****\n"%CUMSIM)
+		for i,sim in enumerate(CUMSIM): #enumerate(SIMS[expt]):
+			sfx=''
+        		if expt=='e16':sfx='_E16'
+        		d2pidir_sim=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag)
+			if not os.path.exists(d2pidir_sim):
+                		os.makedirs(d2pidir_sim)
+			#! Process d2piR.root only if it does not exist OR if processing a non-existing jobtag 
+			if not os.path.isfile(os.path.join(d2pidir_sim,"d2piR.root")) or PROC_NEW_JOBTAG:
+				h10lst=H10LSTS[expt,'SR',sim] 
+				print 'sim=',sim
+				mainlog.write('sim=%s\n'%sim)
+				print 'h10lst=',h10lst
+				print 'd2pidir_sim=',d2pidir_sim
+				mainlog.write('h10lst=%s\n'%h10lst)
+				mainlog.write('d2pidir_sim=%s\n'%d2pidir_sim)
+				cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
+				#! For debug
+				#cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "-n","10000","%s"%adtnl_opts_code]
+				print">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim)
+				mainlog.write(">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim))
+				logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
+				#! + Popen called below without keeping any references to the Popen objects
+        			#!   (http://stackoverflow.com/questions/2760652/how-to-kill-or-avoid-zombie-processes-with-subprocess-module: ibz answered Aug 15 '11 at 9:53)
+        			#! + This way no zombie child processes are left and this is important
+        			#!   for the manner in which I am tracking and noting the completion of
+        			#!   ER,SR{sims}}:h10->d2pi processes below
+				subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			else:
+				print os.path.join(d2pidir_sim,"d2piR.root"),"exists. Not making new one"
+				mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_sim,"d2piR.root"))
 
-	#! ST
-	#! + For each sim,should directly already have been made on the farm on DATE_ST
+			#! ST
+			#! + For each sim,should directly already have been made on the farm on DATE_ST
 
 	#! Wait for h10->d2pi for ER,SR{sims} to finish before proceeding
 	while True:
@@ -152,126 +215,192 @@ for k in CUTSNCORS.keys():
 			print "proc_h10_lite(s) still running"
 			mainlog.write("proc_h10_lite(s) still running\n")
 			crnt_time=datetime.datetime.now().strftime('%H:%M:%S')
-			print "%MEM usage (checked every 15min) of each running instance at",crnt_time,"(HH:MM:SS):"
+			print "%MEM usage (checked every 5min) of each running instance at",crnt_time,"(HH:MM:SS):"
 			mainlog.write("MEM percentage usage (checked every 15min) of each running instance at %s(HH:MM:SS)\n"%crnt_time)
 			print out
 			mainlog.write("%s\n"%out)
-			time.sleep(15*60)
+			time.sleep(5*60)
+			#! For debug
+			#time.sleep(60)
 
 		
 	#! Add d2piR/T from sims
-	print "hadd {sims}:d2piR.root, d2piT.root"
-	mainlog.write("hadd {sims}:d2piR.root, d2piT.root\n")
-	sim_total="_".join(SIMS[expt])
-	sfx=''
-	if expt=='e16':sfx='_E16'
-	d2pidir_SR_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total,jobtag)
-	d2pidir_ST_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total)
-	for drctry in [d2pidir_SR_total,d2pidir_ST_total]:
-		if not os.path.exists(drctry):
-			os.makedirs(drctry)	
-	tgtfl=['d2piR.root','d2piT_%s.root'%(DATE_ST)]
-	for f in tgtfl:
-		#! First determine if adding d2piR or d2piT
-		addSR,addST=False,False
-		if   "R" in f: 
-			addSR=True
-			hadd_outdir=d2pidir_SR_total
-		elif "T" in f: 
-			addST=True
-			hadd_outdir=d2pidir_ST_total
-		#! Now hadd
-		#! + If d2piT_<DATE_ST> exists then continue
-		#! + Remember, d2piST depends only on date and not on jobtag defined by cuts-n-cors, applicable only to ER&SR
-		if addST and os.path.isfile(os.path.join(hadd_outdir,f)): 
-			print "Not going to addST since %s/%s exists"%(hadd_outdir,f)
-			mainlog.write("Not going to addST since %s/%s exists\n"%(hadd_outdir,f))
-			logfile=open('%s/%s'%(logdir,"hadd_ST_sim.log"),'w')
-			logfile.write("Not going to addST since %s/%s exists"%(hadd_outdir,f))
-			continue
-		tgtf=os.path.join(hadd_outdir,f)
- 		srcfl=[]
-    		for sim in (SIMS[expt]):
-			if addSR:
-        			srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag,f))
-			elif addST:
-				srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,f))
-    		srcfl=sorted(srcfl)
-    		cmd=["hadd","-f",tgtf] #! hadd with -f since I often have to remake the same tgtf
-    		cmd+=srcfl
-		logfilename=""
-		if   addSR: logfilename="hadd_SR_sim.log"
-		elif addST: logfilename="hadd_ST_sim.log"
-		logfile=open('%s/%s'%(logdir,logfilename),'w')
-                print">>>%s >& %s/%s\n"%(cmd,logdir,logfilename)
-		mainlog.write(">>>%s >& %s/%s\n"%(cmd,logdir,logfilename))
-		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-		tool.wait()
+	#! NOTE:
+	#! + d2pidir_SR_total is dependent on jobgtag and therefore on CUTSNCORS applied to {ER,SR}h10->d2pi
+	#! 	+ d2pidir_SR_total=$D2PIDIR_SIM(_E16)/cumsim/jobtag
+	#! + d2pidir_ST_total is *independent* of jobgtag and {ST}h10->d2pi is directly made on farm and labelled by dates in DATE_ST
+	#! 	+ d2pidir_ST_total=$D2PIDIR_SIM(_E16)/cumsim/T_cumsim1-<DATE_ST(expt,cumsim1)>_cumsim2-<DATE_ST(expt,cumsim2)>_cumsimX-<DATE_ST(expt,cumsimX)>
+	for CUMSIM in CUMSIML:
+		print "*** hadd d2piR.root, d2piT.root for cumsim=%s"%CUMSIM
+		mainlog.write("*** hadd d2piR.root, d2piT.root for cumsim=%s ***\n"%CUMSIM)
+		sim_total="_".join(CUMSIM) #"_".join(SIMS[expt])
+		sfx=''
+		if expt=='e16':sfx='_E16'
+		#! d2pidir_SR_total
+		d2pidir_SR_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total,jobtag)
+		#! d2pidir_ST_total
+		d2pidir_ST_total=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim_total,'T')
+		d2pidir_ST_total_sfx=''
+		for i,sim in enumerate(CUMSIM):#enumerate(SIMS[expt]):
+    			#print sim,DATE_ST[expt,sim]
+    			d2pidir_ST_total_sfx+='_%s-%s'%(sim,DATE_ST[expt,sim])	
+		d2pidir_ST_total+=d2pidir_ST_total_sfx
+		#! create d2pidir_SR(ST)_total
+		for drctry in [d2pidir_SR_total,d2pidir_ST_total]:
+			if not os.path.exists(drctry):
+				os.makedirs(drctry)	
+		tgtfl=['d2piR.root','d2piT.root']
+		for f in tgtfl:
+			#! First determine if adding d2piR or d2piT
+			addSR,addST=False,False
+			logfilename=""
+			if   "R" in f: 
+				addSR=True
+				hadd_outdir=d2pidir_SR_total
+				logfilename="hadd_SR_sim_%s.log"%(sim_total)
+			elif "T" in f: 
+				addST=True
+				hadd_outdir=d2pidir_ST_total
+				logfilename="hadd_ST_sim_%s.log"%(sim_total)
+			#! Now hadd
+			if ( (addSR and len(CUMSIM)>1) and (not os.path.isfile(os.path.join(hadd_outdir,f)) or PROC_NEW_JOBTAG) ) or (addST and not  os.path.isfile(os.path.join(hadd_outdir,f))):
+				logfile=open('%s/%s'%(logdir,logfilename),'w')
+				tgtf=os.path.join(hadd_outdir,f)
+ 				srcfl=[]
+    				for sim in (CUMSIM):#(SIMS[expt]):
+					if addSR:
+						srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,jobtag,'d2piR.root'))
+					elif addST:
+						srcfl.append(os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],sim,'d2piT_%s.root'%DATE_ST[expt,sim]))
+    				srcfl=sorted(srcfl)
+    				cmd=["hadd","-f",tgtf] #! hadd with -f since I often have to remake the same tgtf
+    				cmd+=srcfl
+                		print">>>%s >& %s/%s\n"%(cmd,logdir,logfilename)
+				mainlog.write(">>>%s >& %s/%s\n"%(cmd,logdir,logfilename))
+				tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+				tool.wait()
+			else:
+				if addSR and len(CUMSIM)==1:
+					print "Not going to hadd since len(CUMSIM)==1 and therefore already %s/%s exists"%(hadd_outdir,f)
+                                	mainlog.write("Not going to hadd since len(CUMSIM)==1 and therefore %s/%s exists\n"%(hadd_outdir,f))
+				else:
+					print "Not going to hadd since %s/%s exists"%(hadd_outdir,f)
+                               		mainlog.write("Not going to hadd since %s/%s exists\n"%(hadd_outdir,f))
 
-	#! 2. d2pi->Observables
-	print "*** 2. d2pi->Observables ***"
-	mainlog.write("*** 2. d2pi->Observables ***\n")
-	#! Create and prepare obsdir
-	logfile=open("%s/prep_obsdir.log"%logdir,'w')
-	sfx=''
-	if expt=='e16':sfx='_E16'
-	obsdir=os.path.join(os.environ['OBSDIR%s'%sfx],'obs_%s'%jobtag)
-	print "obsdir=",obsdir
-	mainlog.write("obsdir=%s\n"%obsdir)
-	if not os.path.exists(obsdir):
-		os.makedirs(obsdir)
-	if not os.path.exists(os.path.join(obsdir,'d2pi_exp')):
-		os.makedirs(os.path.join(obsdir,'d2pi_exp'))
-	if not os.path.exists(os.path.join(obsdir,'d2pi_sim',sim_total)):
-		os.makedirs(os.path.join(obsdir,'d2pi_sim',sim_total))
+		#! 2. d2pi->Observables
+		print "*** 2. d2pi->Observables for %s***"%CUMSIM
+		mainlog.write("*** 2. d2pi->Observables for %s ***\n"%CUMSIM)
+		#! Create and prepare obsdir
+		#logfile=open("%s/prep_obsdir_%s.log"%(logdir,sim_total),'w')
+		sfx=''
+		if expt=='e16':sfx='_E16'
+		obsdir=os.path.join(os.environ['OBSDIR%s'%sfx],'obs_%s'%jobtag)
+		print "obsdir=",obsdir
+		mainlog.write("obsdir=%s\n"%obsdir)
+		if not os.path.exists(obsdir):
+			os.makedirs(obsdir)
+		if not os.path.exists(os.path.join(obsdir,'d2pi_exp')):
+			os.makedirs(os.path.join(obsdir,'d2pi_exp'))
+		if not os.path.exists(os.path.join(obsdir,'d2pi_sim',sim_total)):
+			os.makedirs(os.path.join(obsdir,'d2pi_sim',sim_total))
 
-	cmd=["ln", "-s", "%s/d2piR.root"%d2pidir_exp,"%s/d2pi_exp/d2piR.root"%(obsdir)]
-	print">>>%s\n"%cmd
-	mainlog.write(">>>%s\n"%cmd)
-	#subprocess.call(cmd)
-	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	cmd=(["ln", "-s", "%s/d2piR.root"%d2pidir_SR_total,"%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)])
-	print">>>%s\n"%cmd
-	mainlog.write(">>>%s\n"%cmd)
-	#subprocess.call(cmd)
-	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	cmd=(["ln", "-s", "%s/d2piT_%s.root"%(d2pidir_ST_total,DATE_ST),"%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)])
-	print">>>%s\n"%cmd
-	mainlog.write(">>>%s\n"%cmd)
-	#subprocess.call(cmd)
-	subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		#! Link files into obsdir/d2pi_exp(_sim)
+		if not os.path.isfile(os.path.join(obsdir,"d2pi_exp/d2piR.root")) or PROC_NEW_JOBTAG:
+			logfile=open("%s/prep_obsdir_%s.log"%(logdir,sim_total),'a')
+			#! First unlink any existing link
+			cmd=["unlink","%s/d2pi_exp/d2piR.root"%(obsdir)]
+			print">>>%s\n"%cmd
+                        mainlog.write(">>>%s\n"%cmd)
+                        subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			#! Recreate link
+			cmd=["ln", "-s", "%s/d2piR.root"%d2pidir_exp,"%s/d2pi_exp/d2piR.root"%(obsdir)]
+			print">>>%s\n"%cmd
+			mainlog.write(">>>%s\n"%cmd)
+			subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		else:
+			print os.path.join(obsdir,"d2pi_exp/d2piR.root"),"exists. Not making new one"
+			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,"d2pi_exp/d2piR.root"))
+	
+		if not os.path.isfile(os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root")) or PROC_NEW_JOBTAG:
+			logfile=open("%s/prep_obsdir_%s.log"%(logdir,sim_total),'a')
+			#! First unlink any existing link
+			cmd=["unlink","%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)]
+                        print">>>%s\n"%cmd
+                        mainlog.write(">>>%s\n"%cmd)
+                        subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			#! Recreate link
+			cmd=(["ln", "-s", "%s/d2piR.root"%d2pidir_SR_total,"%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)])
+			print">>>%s\n"%cmd
+			mainlog.write(">>>%s\n"%cmd)
+			subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		else:
+			print os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root"),"exists. Not making new one"
+			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root"))
 
-	#-- Now start to make Obervables
-	#echo ">ph8 $obsdir $sim 2.00 3.00 1.400 2.125 >& $logdir_obs/ph8.log "
-	cmd=["ph8",obsdir,sim_total,'2.00','3.00','1.400','2.125']
-	logfile=open("%s/ph8.log"%logdir,'w')
-	print">>>%s >& %s/ph8.log\n"%(cmd,logdir)
-	mainlog.write(">>>%s >& %s/ph8.log\n"%(cmd,logdir))
-	tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	tool.wait();
+		if not os.path.isfile(os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root")) or PROC_NEW_JOBTAG:
+			logfile=open("%s/prep_obsdir_%s.log"%(logdir,sim_total),'a')
+			#! First unlink any existing link
+                        cmd=["unlink","%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)]
+                        print">>>%s\n"%cmd
+                        mainlog.write(">>>%s\n"%cmd)
+                        subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+                        #! Recreate link
+			cmd=(["ln", "-s", "%s/d2piT.root"%(d2pidir_ST_total),"%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)])
+			print">>>%s\n"%cmd
+			mainlog.write(">>>%s\n"%cmd)
+			subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		else:
+			print os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root"),"exists. Not making new one"
+			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root"))
 
-	#echo ">dobs_1D $obsdir $sim norm 2.00 3.00 1.400 2.125 >& $logdir_obs/dobs_1D.log"
-	cmd=["dobs_1D",obsdir,sim_total,"norm",'2.00','3.00','1.400','2.125',expt]
-	logfile=open("%s/dobs_1D.log"%logdir,'w')
-	print">>>%s >& %s/dobs_1D.log\n"%(cmd,logdir)
-	mainlog.write(">>>%s >& %s/dobs_1D.log\n"%(cmd,logdir))
-        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	tool.wait()
-	#-- simstats
-	#echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
-	cmd=['ds_lite',obsdir,sim_total]
-	logfile=open('%s/ds_lite.log'%logdir,'w')
-	print">>>%s >& %s/ds_lite.log\n"%(cmd,logdir)
-	mainlog.write(">>>%s >& %s/ds_lite.log\n"%(cmd,logdir))
-        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	tool.wait()
+		#-- Now start to make Obervables
+		#echo ">ph8 $obsdir $sim 2.00 3.00 1.400 2.125 >& $logdir_obs/ph8.log "
+		if not os.path.isfile(os.path.join(obsdir,sim_total,"yield.root")) or PROC_NEW_JOBTAG:
+			cmd=["ph8",obsdir,sim_total,'2.00','3.00','1.400','2.125']
+			logfile=open("%s/ph8_%s.log"%(logdir,sim_total),'w')
+			print">>>%s >& %s/ph8_%s.log\n"%(cmd,logdir,sim_total)
+			mainlog.write(">>>%s >& %s/ph8_%s.log\n"%(cmd,logdir,sim_total))
+			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			tool.wait();
+		else:
+			print os.path.join(obsdir,sim_total,"yield.root"),"exists. Not making new one"
+                	mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"yield.root")) 
 
-	#echo "ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log"
-	cmd=['ds_q2wbin_lite',obsdir,sim_total]
-	logfile=open('%s/ds_q2wbin_lite.log'%logdir,'w')
-	print">>>%s >& %s/ds_q2wbin_lite.log\n"%(cmd,logdir)
-	mainlog.write(">>>%s >& %s/ds_q2wbin_lite.log\n"%(cmd,logdir))
-        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-	tool.wait()
+		#echo ">dobs_1D $obsdir $sim norm 2.00 3.00 1.400 2.125 >& $logdir_obs/dobs_1D.log"
+		if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_1D_norm")) or PROC_NEW_JOBTAG:
+			cmd=["dobs_1D",obsdir,sim_total,"norm",'2.00','3.00','1.400','2.125',expt]
+			logfile=open("%s/dobs_1D_%s.log"%(logdir,sim_total),'w')
+			print">>>%s >& %s/dobs_1D_%s.log\n"%(cmd,logdir,sim_total)
+			mainlog.write(">>>%s >& %s/dobs_1D_%s.log\n"%(cmd,logdir,sim_total))
+        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			tool.wait()
+		else:
+			print os.path.join(obsdir,sim_total,"Obs_1D_norm"),"exists. Not making new one"
+                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_1D_norm"))
+
+		#-- simstats
+		#echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
+		if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats.root")) or PROC_NEW_JOBTAG:
+			cmd=['ds_lite',obsdir,sim_total]
+			logfile=open('%s/ds_lite_%s.log'%(logdir,sim_total),'w')
+			print">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total)
+			mainlog.write(">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total))
+        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			tool.wait()
+		else:
+			print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
+                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats.root"))
+
+		#echo "ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log"
+		if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root")) or PROC_NEW_JOBTAG:
+			cmd=['ds_q2wbin_lite',obsdir,sim_total]
+			logfile=open('%s/ds_q2wbin_lite_%s.log'%(logdir,sim_total),'w')
+			print">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total)
+			mainlog.write(">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total))
+        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			tool.wait()
+		else:
+			print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
+                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root"))
 
 	mainlog.close()
