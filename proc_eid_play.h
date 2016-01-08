@@ -21,6 +21,18 @@ using namespace AnalysisConstants;
 the Sampling Fraction (SF) cut can be determined. Therefore, currently all electron cuts -- even nphe-cut -- are 
 applied except for the SF cut.
 
++ [01-06-16] 
++ Hitherto _eidTool was being initialized only for e1f-{ER,SR} and e16-{SR}. However, since I need 
+  this code to study e16-ER SF also, the code is being adapted to initialize _eidTool irrespective of
+  {expt}*{dtyp}.
+  	+ The flipside is that _eidTool is optmized only for e1f data. However, that should not make 
+  	  difference because in eidplay SF cut is *not* applied, but used to to *study* it. The only cuts
+  	  applied using _eidTool here are:
+  	  	+ Minimum momentum cut for electrons
+  	  	+ EC fiducial cuts
+  	  and these are more or less similar for both experiments, and additionally, should have no significant
+  	  impact on the study of SF cut.
+
 */
 
 class ProcEidPlay : public EpProcessor
@@ -61,12 +73,12 @@ ProcEidPlay::ProcEidPlay(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
   	path=getenv("WORKSPACE");
   	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
-	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else  Info("ProcEidPlay::ProcEidPlay()", "_eidTool not initialized");//for e1-6 exp.
+	else  Info("ProcEidPlay::ProcEidPlay()", "_eidTool not initialized");//for e1-6 exp.*/
 
-    if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
+	/*if (_eidTool->eidParFileFound) {
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
     }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
@@ -74,9 +86,21 @@ ProcEidPlay::ProcEidPlay(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
     }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
+    }*/
+
+	//! [01-06-16] Initialize _eidTool independent of expt (For details see comments on top of file)
+	Info("ProcEidPlay::ProcEidPlay()", "Going to initialize_eidTool with e1f pars (even if expt=e16)");
+	if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+	else  Info("ProcEidPlay::ProcEidPlay()", "_eidTool not initialized");
+
+	if (_eidTool->eidParFileFound) {
+    	Info("ProcEidPlay::ProcEidPlay()", "eidParFileFound=true. Will use goodE()"); 
+    }else if (!_eidTool->eidParFileFound) {
+    	Info("ProcEidPlay::ProcEidPlay()", "eidParFileFound=false. Will use goodE_bos()");
     }
-	
-	_make_tree=make_tree;
+
+    _make_tree=make_tree;
 	_dirmon=NULL;
 	_dircut=NULL;
 
@@ -129,12 +153,12 @@ ProcEidPlay::ProcEidPlay(DataH10* dataH10, DataAna* dataAna)
   	path=getenv("WORKSPACE");
   	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
-	if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else  Info("ProcEidPlay::ProcEidPlay()", "_eidTool not initialized");//for e1-6 exp.
+	else  Info("ProcEidPlay::ProcEidPlay()", "_eidTool not initialized");//for e1-6 exp.*/
 
-    if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
+	/*if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
     }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
@@ -142,6 +166,18 @@ ProcEidPlay::ProcEidPlay(DataH10* dataH10, DataAna* dataAna)
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
     }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
     	Info("ProcEidPlay::ProcEidPlay()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
+    }*/
+
+	//! [01-06-16] Initialize _eidTool independent of expt (For details see comments on top of file)
+	Info("ProcEidPlay::ProcEidPlay()", "Going to initialize_eidTool with e1f pars (even if expt=e16)");
+	if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+	else  Info("ProcEidPlay::ProcEidPlay()", "_eidTool not initialized");
+
+	if (_eidTool->eidParFileFound) {
+    	Info("ProcEidPlay::ProcEidPlay()", "eidParFileFound=true. Will use goodE()"); 
+    }else if (!_eidTool->eidParFileFound) {
+    	Info("ProcEidPlay::ProcEidPlay()", "eidParFileFound=false. Will use goodE_bos()");
     }
 }
 
@@ -170,11 +206,15 @@ void ProcEidPlay::handle() {
 	//! Cut	
 	Bool_t gE = kFALSE;
 
-    if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE_play();
+   /* if      (dH10->expt=="e1f" && _eidTool->eidParFileFound)  gE =  goodE_play();
     else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  (dH10->id[0]==ELECTRON);
     else if (dH10->expt=="e16" && _eidTool->eidParFileFound) gE =  goodE_play();
-    else if (dH10->expt=="e16")                               gE =  (dH10->id[0]==ELECTRON); //pars for e1-6 not yet obtained
-    
+    else if (dH10->expt=="e16")                               gE =  (dH10->id[0]==ELECTRON); //pars for e1-6 not yet obtained*/
+
+    //! [01-06-16] Initialize _eidTool independent of expt (For details see comments on top of file)
+    if      (_eidTool->eidParFileFound)  gE =  goodE_play();
+    else if (!_eidTool->eidParFileFound) gE =  (dH10->id[0]==ELECTRON);
+        
 	if (gE) {	
 		dAna->fillHistsEid(hists[CUTMODE][EVTINC]);
 		dAna->fillHistsEkin(histsEkin[CUTMODE][EVTINC]);

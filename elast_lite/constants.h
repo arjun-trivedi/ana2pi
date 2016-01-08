@@ -148,6 +148,34 @@ namespace E16{
 	//! sim
 	const Float_t ZVTX_MIN_SIM[6]={-8.0,-8.0,-8.0,-8.0,-8.0,-8.0};
   	const Float_t ZVTX_MAX_SIM[6]={-0.8,-0.8,-0.8,-0.8,-0.8,-0.8};
+
+  	//! SF-exp
+  	//! [01-08-16]
+  	//! + Note that in comparison to E1F, SF_LOW/HIGH are directly entered
+  	//! + This is because that in the new procedure to obtain SF cuts (sub_studies/study_eid/study_SF),
+  	//!   fh(fl)=fmu+3*fsg(-3*fsg) are calculated and fitted. 
+  	//! + In comparison, E1F pars were obtained very early on in my PhD. experience (~2011?) 
+  	//!   where I was fitting fmu,fsg and using them to obtain fh(fl)=fmu+3*fsg(-3*fsg).
+  	//! + While fitting fmu,fsg and using them to obtain fh,fl is ideal (it allows obtaining fh,fl with variable x*sg),
+  	//!   given that 3-sigma cut is standard, using the linearity of the relationship between mu,sg and fh,fl, one can
+  	//!   be obtained from the other
+	const Float_t SF_HIGH[6][4]={
+		{0.380401, -0.019463, 0.004609, -0.000359},
+		{0.428533, -0.047554, 0.016350, -0.001938},
+		{0.420563, -0.064622, 0.025420, -0.003105},
+		{0.411866, -0.062074, 0.022444, -0.002734},
+		{0.383041, -0.020678, 0.007576, -0.000897},
+		{0.394516, -0.023219, 0.010402, -0.001431}
+	};
+	const Float_t SF_LOW[6][4]={
+		{0.141603, 0.063643, -0.012677, 0.000918},
+		{0.149598, 0.053507, -0.007504, 0.000323},
+		{0.172657, 0.038093, -0.002066, -0.000355},
+		{0.149623, 0.060981, -0.012957, 0.001054},
+		{0.099589, 0.102036, -0.028452, 0.002751},
+		{0.117104, 0.097765, -0.023769, 0.002149}
+	};
+	//! SF-sim (same as E1F)
 }
 
 #endif /* CONSTANTS_H_ */

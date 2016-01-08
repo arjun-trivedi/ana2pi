@@ -9,10 +9,34 @@ from collections import OrderedDict
 
 import numpy as np
 
+'''
+Usage: obtain_SFvp_cuts.py expt=<e1f/e16> [any gibberish(!) for debug] 
+'''
 #! Get args from user
+if len(sys.argv)<2:
+	sys.exit("Enter expt=e1f/e16")
+else:
+	expt=sys.argv[1]
+	if expt!="e1f"and expt!="e16":
+		sys.exit("Valid type for expt=e1f/e16 only")
+
 DEBUG=False
-if len(sys.argv)==2:
+if len(sys.argv)==3:
 	DEBUG=True
+
+print "Going to study SF for expt=",expt
+if expt=="e1f":
+	INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP'],"data_SF_100115")
+	INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM'],"data_SF_100115")
+	OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
+elif expt=="e16":
+	INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP_E16'],"data_SF_010516")
+        INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM_E16'],"data_SF_010516")
+	OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_E16_DATADIR']
+print "INDIR_EXP",INDIR_EXP
+print "INDIR_SIM",INDIR_SIM
+print "OUTDIR=",OUTDIR
+#sys.exit()
 
 PBINW=0.100 #! 100 MeV
 # if len(sys.argv)>=2:
@@ -41,17 +65,23 @@ NSCTR=6
 def make_fout_SFvp_pre_fits():
 	FIN_2pi=[0,0]
 	T_2pi=[0,0]
-	FIN_2pi[EXP]=ROOT.TFile("%s/data_SF_100115/dSF_2pi.root"%os.environ['D2PIDIR_EXP'])
-	FIN_2pi[SIM]=ROOT.TFile("%s/data_SF_100115/dSF_2pi.root"%os.environ['D2PIDIR_SIM'])
+	FIN_2pi[EXP]=ROOT.TFile("%s/dSF_2pi.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
+	FIN_2pi[SIM]=ROOT.TFile("%s/dSF_2pi.root"%INDIR_SIM)#os.environ['D2PIDIR_SIM'])
 	T_2pi[EXP]=FIN_2pi[EXP].Get("d2piR/tR")
 	T_2pi[SIM]=FIN_2pi[SIM].Get("d2piR/tR")
-	
-	FIN_elast=[0,0]
-	T_elast=[0,0]
-	FIN_elast[EXP]=ROOT.TFile("%s/data_SF_100115/dSF_elast.root"%os.environ['D2PIDIR_EXP'])
-	FIN_elast[SIM]=ROOT.TFile("%s/data_SF_100115/dSF_elast.root"%os.environ['D2PIDIR_SIM'])
-	T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
-	T_elast[SIM]=FIN_elast[SIM].Get("delast/cut/t")
+
+	if expt=="e1f":
+		FIN_elast=[0,0]
+		T_elast=[0,0]
+		FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
+		FIN_elast[SIM]=ROOT.TFile("%s/dSF_elast.root"%INDIR_SIM)#os.environ['D2PIDIR_SIM'])
+		T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
+		T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
+	elif expt=="e16": #! no elast sim  and therefore no elast data for e16
+		FIN_elast=[0]
+                T_elast=[0]
+		FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
+		T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
 
 	#! Make hSFvp[NDTYP][NSCTR]
 	draw_cmd="etot/p:p>>hdcmd(100,0,5,100,0,0.5)"
@@ -67,11 +97,12 @@ def make_fout_SFvp_pre_fits():
 			hname="h_%s_s%d"%(DTYP_NAME[idtyp],isctr+1)
 			hSFvp[idtyp][isctr]=htmp.Clone(hname)
 
-			#! Now draw hist from elast data
-			T_elast[idtyp].Draw(draw_cmd,cut_sector,"colz",NENTRIES)
-			#! Add hist to already created hSFvp[NDTYP][NSCTR]
-			htmp=ROOT.gDirectory.Get("hdcmd")
-			hSFvp[idtyp][isctr].Add(htmp)
+			if expt=="e1f" or (expt=="e16" and idtyp==0):
+				#! Now draw hist from elast data
+				T_elast[idtyp].Draw(draw_cmd,cut_sector,"colz",NENTRIES)
+				#! Add hist to already created hSFvp[NDTYP][NSCTR]
+				htmp=ROOT.gDirectory.Get("hdcmd")
+				hSFvp[idtyp][isctr].Add(htmp)
 			
 
 	#! Plot and write hSFvp[NDTYP][NSCTR] to file
@@ -218,10 +249,13 @@ def obtain_SFcut_pars():
 					#! Now get fit pars
 					for imthd in range(NMTHD):
 						ff=hSF.GetFunction(gf[imthd].GetName());
-						mu=ff.GetParameter(1);
-						sg=ff.GetParameter(2);
-						mu_err=ff.GetParError(1);
-						sg_err=ff.GetParError(2);
+						if ff==None:
+							mu,sg,mu_err,sg_err=0,0,0,0
+						else:
+							mu=ff.GetParameter(1);
+							sg=ff.GetParameter(2);
+							mu_err=ff.GetParError(1);
+							sg_err=ff.GetParError(2);
 						cut_h=mu+3*sg;
 						cut_l=mu-3*sg;
 						cut_h_err=np.sqrt(np.power(mu_err,2)+np.power(3*sg_err,2))
@@ -248,8 +282,10 @@ def obtain_SFcut_pars():
 					#! Get fit funcs and draw them
 					gfF=hSF.GetFunction(gf[F].GetName())
 					gfP=hSF.GetFunction(gf[P].GetName())
-					gfF.Draw("same")
-					gfP.Draw("same")
+					if gfF!=None:
+						gfF.Draw("same")
+					if gfP!=None:
+						gfP.Draw("same")
 					#! legend
 					l=ROOT.TLegend(0.1,0.3,0.3,0.4)#,"","NDC");
 					l.AddEntry(gfF,MTHD_NAME[F])
@@ -319,7 +355,7 @@ def obtain_SFcut_pars():
 
 #! Start of main program
 #OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF']
-OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
+#OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
 #! 'touch' OUTDIR to show it has been worked upon

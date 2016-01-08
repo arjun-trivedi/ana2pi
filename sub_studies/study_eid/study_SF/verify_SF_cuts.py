@@ -9,6 +9,42 @@ from collections import OrderedDict
 
 import numpy as np
 
+"""
+Usage: verify_SFvp_cuts.py  expt=<e1f/e16>
+
+Obtain, from file, parameters for function to make SF cut, for each DTYP and in each SCTR:
+fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR], where
++ NMTHD=number of different ways SF cuts pars in be obtained. Currently 3:
+        1. Fit full range of SF in each pbin
+        2. Fit around peak of SF in each pin
+        3. "current" pars (already being used for analysis)
++ NFNC=Number of functions: SF-high,-low and -mean
++ NPAR=number of parameters of the fit function. Current 4 since fit function = pol3
+"""
+#! Get args from user
+if len(sys.argv)<2:
+        sys.exit("Enter expt=e1f/e16")
+else:
+        expt=sys.argv[1]
+        if expt!="e1f"and expt!="e16":
+                sys.exit("Valid type for expt=e1f/e16 only")
+
+if expt=="e1f":
+        INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP'],"data_SF_100115")
+        INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM'],"data_SF_100115")
+	DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF_DATADIR']
+	OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
+elif expt=="e16":
+        INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP_E16'],"data_SF_010516")
+        INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM_E16'],"data_SF_010516")
+	DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF_E16_DATADIR']
+	OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_E16_DATADIR']
+print "INDIR_EXP",INDIR_EXP
+print "INDIR_SIM",INDIR_SIM
+print "DATADIR=",DATADIR
+print "OUTDIR=",OUTDIR
+#sys.exit()
+
 NDTYP=2
 EXP,SIM=range(2)
 DTYP_NAME=['exp','sim']
@@ -25,28 +61,23 @@ NPBIN=len(PBIN_LE)
 #! The trees are used when testing SF cut
 FIN_2pi=[0,0]
 T_2pi=[0,0]
-FIN_2pi[EXP]=ROOT.TFile("%s/data_SF_100115/dSF_2pi.root"%os.environ['D2PIDIR_EXP'])
-FIN_2pi[SIM]=ROOT.TFile("%s/data_SF_100115/dSF_2pi.root"%os.environ['D2PIDIR_SIM'])
+FIN_2pi[EXP]=ROOT.TFile("%s/dSF_2pi.root"%INDIR_EXP)
+FIN_2pi[SIM]=ROOT.TFile("%s/dSF_2pi.root"%INDIR_SIM)
 T_2pi[EXP]=FIN_2pi[EXP].Get("d2piR/tR")
 T_2pi[SIM]=FIN_2pi[SIM].Get("d2piR/tR")
-	
-FIN_elast=[0,0]
-T_elast=[0,0]
-FIN_elast[EXP]=ROOT.TFile("%s/data_SF_100115/dSF_elast.root"%os.environ['D2PIDIR_EXP'])
-FIN_elast[SIM]=ROOT.TFile("%s/data_SF_100115/dSF_elast.root"%os.environ['D2PIDIR_SIM'])
-T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
-T_elast[SIM]=FIN_elast[SIM].Get("delast/cut/t")
 
-"""
-Obtain, from file, parameters for function to make SF cut, for each DTYP and in each SCTR:
-fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR], where
-+ NMTHD=number of different ways SF cuts pars in be obtained. Currently 3:
-	1. Fit full range of SF in each pbin
-	2. Fit around peak of SF in each pin
-	3. "current" pars (already being used for analysis)
-+ NFNC=Number of functions: SF-high,-low and -mean
-+ NPAR=number of parameters of the fit function. Current 4 since fit function = pol3
-"""
+if expt=="e1f":	
+	FIN_elast=[0,0]
+	T_elast=[0,0]
+	FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)
+	FIN_elast[SIM]=ROOT.TFile("%s/dSF_elast.root"%INDIR_SIM)
+	T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
+	T_elast[SIM]=FIN_elast[SIM].Get("delast/cut/t")
+elif expt=="e16": #! no elast sim  and therefore no elast data for e16
+	FIN_elast=[0]
+	T_elast=[0]
+	FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
+	T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
 
 #! Create data structure fpSFvp: fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR]
 NMTHD=3 #! fit (1) Full, (2) peak of SF in each pbin and (3) "current" pars
@@ -67,7 +98,7 @@ fpSFvp=[[[[[0 for ipar in range(NPAR)] for icut in range(NFNC)] for imthd in ran
 
 #! Read files and fill in data structure
 #DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF']
-DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF_DATADIR']
+#DATADIR="%s/results_SFvp/cutpars"%os.environ['STUDY_EID_SF_DATADIR']
 for idtyp in range(NDTYP):
 	for imthd in range(NMTHD):
 		fname="%s/%s_%s.txt"%(DATADIR,DTYP_NAME[idtyp],MTHD_NAME[imthd])
@@ -135,7 +166,7 @@ for idtyp in range(NDTYP):
 #! + Now various plots will be made
 #! + Create fout to store plots
 #OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF']
-OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
+#OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
 fout=ROOT.TFile("%s/verify_SF_cuts.root"%OUTDIR,"RECREATE")
 #! Now draw cut functions
 c=[0,0]
@@ -190,7 +221,10 @@ for idtyp in range(NDTYP):
 				hSFvp_pass[idtyp][isctr][imthd]=ROOT.TH2F(hname,hname,100,0,5,100,0,0.5)
 #! Now fill hSFvp_pass[NDTYP][NSCTR][NMTHD]
 for idtyp in range(NDTYP):
-	trees=[T_2pi[idtyp],T_elast[idtyp]]
+	if expt=="e1f" or (expt=="e16" and idtyp==0):
+		trees=[T_2pi[idtyp],T_elast[idtyp]]
+	else:
+		trees=[T_2pi[idtyp]]
 	for tr in trees:
 		print "Going to iterate over tree-name,dtyp=",tr.GetName(),",",DTYP_NAME[idtyp]
 		for i,ev in enumerate(tr):

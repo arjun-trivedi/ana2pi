@@ -8,6 +8,11 @@
 #include <TMath.h>
 
 using namespace TMath;
+/*
++[01-06-16]
++ Added capability to make e16:efid-cut (hitherto only e1f:efid-cut[EP] was implemented)
+
+*/
 
 class ProcEFidNew : public EpProcessor {
 
@@ -72,7 +77,12 @@ void ProcEFidNew::handle()
 		
 	//! Cut mode
 	//dAna->efid.fidE = inFid();
-	dAna->efid.fidE = inFid(dAna->efid.p,dAna->efid.theta,dAna->efid.phi,dAna->efid.sector);
+	if (dH10->expt=="e1f"){
+		dAna->efid.fidE = inFid(dAna->efid.p,dAna->efid.theta,dAna->efid.phi,dAna->efid.sector);
+	}else if (dH10->expt=="e16"){
+		int id=11;
+		dAna->efid.fidE = Fiducial_e16_elctrn(id,dAna->efid.p,dAna->efid.theta,dAna->efid.phi);
+	}
 	if (dAna->efid.fidE)
 	{
 		hevtsum->Fill(EVT_PASS);
