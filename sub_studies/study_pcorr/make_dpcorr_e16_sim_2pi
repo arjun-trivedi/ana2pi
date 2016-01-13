@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-0}
+$ANA2PI/sub_studies/study_pcorr/make_dpcorr e16 sim 2pi npcorr $nentries

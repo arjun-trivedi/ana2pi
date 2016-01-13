@@ -267,13 +267,37 @@ void DataAna::makeHistsMomCor(TObjArray** hists, TDirectory* dirout)
 		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
 			
-		hists[iSector] = new TObjArray(5);
+		/*hists[iSector] = new TObjArray(5);
 		
 		hists[iSector]->Add(new TH2F("hdpVp",TString::Format("#Deltap vs. p(sector%d)", iSector),550,0,5.5,160,-0.08,0.08));
 		hists[iSector]->Add(new TH1F("hdcx", TString::Format("#Deltacx(sector%d)", iSector),60,-0.01,0.01));
 		hists[iSector]->Add(new TH1F("hdcy", TString::Format("#Deltacy(sector%d)", iSector), 60,-0.01,0.01));
 		hists[iSector]->Add(new TH1F("hdcz", TString::Format("#Deltacz(sector%d)(sector%d)", iSector), 60,-0.01,0.01));
-		hists[iSector]->Add(new TH1F("hdp", TString::Format("#Deltap(sector%d)(sector%d)", iSector), 160,-0.08,0.08));
+		hists[iSector]->Add(new TH1F("hdp", TString::Format("#Deltap(sector%d)(sector%d)", iSector), 160,-0.08,0.08));*/
+
+		//! + After adding e16:pcorr:{e,pip,p}
+		//! 	+ (Note: e1f:pcorr:e i.e. hists for e1f:pcorr:{pip,p} are unused)
+		hists[iSector] = new TObjArray(15);
+		
+		hists[iSector]->Add(new TH2F("hdpVp_e",TString::Format("#Deltap vs. p(sector%d) for e", iSector),550,0,5.5,160,-0.08,0.08));
+		hists[iSector]->Add(new TH1F("hdcx_e", TString::Format("#Deltacx(sector%d) for e", iSector),60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdcy_e", TString::Format("#Deltacy(sector%d) for e", iSector), 60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdcz_e", TString::Format("#Deltacz(sector%d)(sector%d) for e", iSector), 60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdp_e", TString::Format("#Deltap(sector%d)(sector%d) for e", iSector), 160,-0.08,0.08));
+
+		hists[iSector]->Add(new TH2F("hdpVp_pip",TString::Format("#Deltap vs. p(sector%d) for pip", iSector),550,0,5.5,160,-0.08,0.08));
+		hists[iSector]->Add(new TH1F("hdcx_pip", TString::Format("#Deltacx(sector%d) for pip", iSector),60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdcy_pip", TString::Format("#Deltacy(sector%d) for pip", iSector), 60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdcz_pip", TString::Format("#Deltacz(sector%d)(sector%d) for pip", iSector), 60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdp_pip", TString::Format("#Deltap(sector%d)(sector%d) for pip", iSector), 160,-0.08,0.08));
+
+		hists[iSector]->Add(new TH2F("hdpVp_p",TString::Format("#Deltap vs. p(sector%d) for p", iSector),550,0,5.5,160,-0.08,0.08));
+		hists[iSector]->Add(new TH1F("hdcx_p", TString::Format("#Deltacx(sector%d) for p", iSector),60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdcy_p", TString::Format("#Deltacy(sector%d) for p", iSector), 60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdcz_p", TString::Format("#Deltacz(sector%d)(sector%d) for p", iSector), 60,-0.01,0.01));
+		hists[iSector]->Add(new TH1F("hdp_p", TString::Format("#Deltap(sector%d)(sector%d) for p", iSector), 160,-0.08,0.08));
+
+
 	}
 	//return ret;
 	return;
@@ -895,7 +919,7 @@ void DataAna::fillHistsMomCor(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		if ( (iSector == 0) || (iSector == mom.sector) ) {
 		
-			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			/*TH2* h1 = (TH2*)hists[iSector]->At(0);
 			h1->Fill(mom.p, mom.dp);
 	
 			TH1* h2 = (TH1*)hists[iSector]->At(1);
@@ -908,7 +932,43 @@ void DataAna::fillHistsMomCor(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 			h4->Fill(mom.dcz);
 	
 			TH1* h5 = (TH1*)hists[iSector]->At(4);
+			h5->Fill(mom.dp);*/
+
+			//! + After adding e16:pcorr:{e,pip,p}
+			//! 	+ (Note: e1f:pcorr:e i.e. hists for e1f:pcorr:{pip,p} are unused)
+
+			TH2* h1 = (TH2*)hists[iSector]->At(0);
+			h1->Fill(mom.p, mom.dp);
+			TH1* h2 = (TH1*)hists[iSector]->At(1);
+			h2->Fill(mom.dcx);
+			TH1* h3 = (TH1*)hists[iSector]->At(2);
+			h3->Fill(mom.dcy);
+			TH1* h4 = (TH3*)hists[iSector]->At(3);
+			h4->Fill(mom.dcz);
+			TH1* h5 = (TH1*)hists[iSector]->At(4);
 			h5->Fill(mom.dp);
+
+			TH2* h6 = (TH2*)hists[iSector]->At(5);
+			h6->Fill(mom.p_pip, mom.dp_pip);
+			TH1* h7 = (TH1*)hists[iSector]->At(6);
+			h7->Fill(mom.dcx_pip);
+			TH1* h8 = (TH1*)hists[iSector]->At(7);
+			h8->Fill(mom.dcy_pip);
+			TH1* h9 = (TH3*)hists[iSector]->At(8);
+			h9->Fill(mom.dcz_pip);
+			TH1* h10 = (TH1*)hists[iSector]->At(9);
+			h10->Fill(mom.dp_pip);
+
+			TH2* h11 = (TH2*)hists[iSector]->At(10);
+			h11->Fill(mom.p_p, mom.dp_p);
+			TH1* h12 = (TH1*)hists[iSector]->At(11);
+			h12->Fill(mom.dcx_p);
+			TH1* h13 = (TH1*)hists[iSector]->At(12);
+			h13->Fill(mom.dcy_p);
+			TH1* h14 = (TH3*)hists[iSector]->At(13);
+			h14->Fill(mom.dcz_p);
+			TH1* h15 = (TH1*)hists[iSector]->At(14);
+			h15->Fill(mom.dp_p);
 		}
 	}
 }

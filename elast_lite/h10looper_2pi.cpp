@@ -224,12 +224,13 @@ void h10looper_2pi::Loop(){
 						continue;
 					}
 
-					//! pcorr
+					/*//! pcorr
 					if (_do_pcorr){
-						mom_corr_electron();
+						//mom_corr_electron();
+						do_pcorr();
 						//std::cout<<"pcorr"<<std::endl;
 						set_ekin();
-					}
+					}*/
 					//! PID (top2')
 					if (_do_pid){
 						_hpid->Fill(PID_TOT);
@@ -262,6 +263,15 @@ void h10looper_2pi::Loop(){
 								if (!_do_scpd || (_do_scpd && pass_scpd()) ){
 									if (_do_scpd) _hscpd->Fill(SCPD_E_AND_P_AND_PIP_PASS);
 									_hevt->Fill(EVT_INSCPD);
+
+									//! pcorr
+									if (_do_pcorr){
+										//mom_corr_electron();
+										do_pcorr();
+										//std::cout<<"pcorr"<<std::endl;
+										set_ekin();
+										set_hkin(h10idx_p, h10idx_pip);
+									}
 								
 									//! Event selection
 									if (_do_evtsel_2pi){
@@ -350,6 +360,8 @@ void h10looper_2pi::reset_hkin(){
     _p_cms_pip=_theta_cms_pip=_phi_cms_pip=0;
     _p_cms_pim=_theta_cms_pim=_phi_cms_pim=0;
     _alpha_1=_alpha_2=_alpha_3=0;
+    //! h10idx
+    _h10idx_p=_h10idx_pip=_h10idx_pim=-1;
 }
 
 /*
@@ -497,6 +509,10 @@ void h10looper_2pi::set_hkin(int h10idx_p/*=-1*/, int h10idx_pip/*=-1*/){
 	B_p=G_p;
 	_alpha_3=getAlpha(G_f,G_p,B_f,B_p);
 
+	//! h10idx
+	_h10idx_p=h10idx_p;
+	_h10idx_pip=h10idx_pip;
+	//_h10idx_pim=TBD;
 }
 
 //! PID only for top2':

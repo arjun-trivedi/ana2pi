@@ -1,0 +1,49 @@
+#!/bin/bash
+expt=$1
+dtyp=$2
+rctn=$3
+corr=$4
+nentries=${5:-0}
+
+#! Check if input data is ok
+if [ $expt != 'e1f' ] && [ $expt != 'e16' ];then
+  echo "expt=$expt is not valid"
+  exit
+fi
+if [ $dtyp != 'exp' ] && [ $dtyp != 'sim' ];then
+  echo "dtyp=$dtyp is not valid"
+  exit
+fi
+if [ $rctn != '2pi' ] && [ $rctn != 'elast' ];then
+  echo "rctn=$rctn is not valid"
+  exit
+fi
+if [ $corr != 'wpcorr' ] && [ $corr != 'npcorr' ];then
+  echo "corr=$corr is not valid"
+  exit
+fi
+
+
+if [ $rctn == '2pi' ]; then
+  if [ $corr == 'wpcorr' ]; then
+    procorder='eid:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree_BG'
+  elif [ $corr == 'npcorr' ]; then
+    procorder='eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG'
+  fi
+elif [ $rctn == 'elast' ]; then
+  if [ $corr == 'wpcorr' ]; then
+    procorder='eid:efidnew:mom:delastR_tree'
+  elif [ $corr == 'npcorr' ]; then
+    procorder='eid:efidnew:delastR_tree'
+  fi
+fi
+
+echo "expt=",$expt
+echo "dtyp=",$dtyp
+echo "rctn=",$rctn
+echo "corr=",$corr
+echo "procorder=",$procorder
+echo "nentries=",$nentries
+
+echo ">proc_h10 -i h10.lst -t $expt:$dtyp:$rctn  -p $procorder -o d"$rctn"R_"$corr".root -n $nentries"
+proc_h10 -i h10.lst -t $expt:$dtyp:$rctn  -p $procorder -o d"$rctn"R_"$corr".root -n $nentries

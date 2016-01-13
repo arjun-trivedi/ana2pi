@@ -11,6 +11,9 @@
 #include "wrpr_cut_fid_e16.h" //! EI_EFID
 #include "wrpr_cut_theta_vs_p_e16.h" //! [12-10-15] EI's theta_vs_p cuts
 #include "wrpr_cut_sc_pd_e16.h" //! [12-11-15] EI's sc_pd cuts
+#include "wrpr_e_corr_sub.h" //! [01-13-16] For e16:pcorr:e
+#include "wrpr_pi_corr_sub.h" //! [01-13-16] For e16:pcorr:pip
+#include "wrpr_pr.h" //! [01-13-16] For e16:pcorr:p (actually eloss, not pcorr)
 #include "pid.h"
 
 h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
@@ -65,12 +68,14 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_pid_tool=new Pid(_dtyp);
 	}
 
-	//! set up _pcorr
+	//! set up _pcorr_tool_e1f (No such tool needs to be set up for e16 since they are direct function calls)
 	if (_do_pcorr){
-		Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr");
-		TString ws=getenv("WORKSPACE");;
-		TString fpcorr=TString::Format("%s/ana2pi/MomCorr",ws.Data());
-		_pcorr=new MomCorr_e1f((char *)fpcorr.Data());
+		if (_expt=="e1f"){
+			Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr_tool_e1f");
+			TString ws=getenv("WORKSPACE");;
+			TString fpcorr=TString::Format("%s/ana2pi/MomCorr",ws.Data());
+			_pcorr_tool_e1f=new MomCorr_e1f((char *)fpcorr.Data());
+		}
 	}
 
 
@@ -165,12 +170,25 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	}
 	//! pcorr
 	if (_do_pcorr){
+		_pcorr_prtcl_names=new TString[3];
+		_pcorr_prtcl_names[0]="e";
+		_pcorr_prtcl_names[1]="p";
+		_pcorr_prtcl_names[2]="pip";
+
 		_fout->mkdir("pcorr")->cd();
-		_hpcorr_dpVp=new TH2D("hdpVp","#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
-		_hpcorr_dcx=new TH1D("hdcx", "#Deltacx",60,-0.01,0.01);
-		_hpcorr_dcy=new TH1D("hdcy", "#Deltacy",60,-0.01,0.01);
-		_hpcorr_dcz=new TH1D("hdcz", "#Deltacz",60,-0.01,0.01);
-		_hpcorr_dp=new TH1D("hdp", "#Deltap", 160,-0.08,0.08);
+		_hpcorr_dpVp=new TH2D*[3];
+		_hpcorr_dcx=new TH1D*[3];
+		_hpcorr_dcy=new TH1D*[3];
+		_hpcorr_dcz=new TH1D*[3];
+		_hpcorr_dp=new TH1D*[3];
+		for (int i=0;i<3;i++){
+			TString sfx=_pcorr_prtcl_names[i].Data();
+			_hpcorr_dpVp[i]=new TH2D(TString::Format("hdpVp_%s",sfx.Data()),"#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
+			_hpcorr_dcx[i]=new TH1D(TString::Format("hdcx_%s",sfx.Data()), "#Deltacx",60,-0.01,0.01);
+			_hpcorr_dcy[i]=new TH1D(TString::Format("hdcy_%s",sfx.Data()), "#Deltacy",60,-0.01,0.01);
+			_hpcorr_dcz[i]=new TH1D(TString::Format("hdcz_%s",sfx.Data()), "#Deltacz",60,-0.01,0.01);
+			_hpcorr_dp[i]=new TH1D(TString::Format("hdp_%s",sfx.Data()), "#Deltap", 160,-0.08,0.08);
+		}
 	}
 	//! PID
 	if (_do_pid){
@@ -307,7 +325,7 @@ h10looper_e1f::~h10looper_e1f()
 	delete fChain->GetCurrentFile();
 
 	delete _pid_tool;
-	delete _pcorr;
+	
 
 	delete[] _sf_mean;
 	delete[] _sf_min;
@@ -333,11 +351,15 @@ h10looper_e1f::~h10looper_e1f()
 	delete[] _h_dtVp_pip;
 	delete[] _h_betaVp_pim;
 	delete[] _h_dtVp_pim;
-	delete _hpcorr_dpVp;
-	delete _hpcorr_dcx;
-   delete _hpcorr_dcy;
-   delete _hpcorr_dcz;
-   delete _hpcorr_dp;
+
+	delete _pcorr_tool_e1f;
+	delete[] _pcorr_prtcl_names;
+	delete[] _hpcorr_dpVp;
+	delete[] _hpcorr_dcx;
+   delete[] _hpcorr_dcy;
+   delete[] _hpcorr_dcz;
+   delete[] _hpcorr_dp;
+
    delete _hW;
    delete _helast;
    delete[] _hf;
@@ -506,7 +528,8 @@ void h10looper_e1f::Loop(){
 					_hevt->Fill(EVT_E_INFID);
 					//! PCORR
 					if (_do_pcorr){
-						mom_corr_electron();
+						//mom_corr_electron();
+						do_pcorr();
 						set_ekin();
 					}
 					//! PID
@@ -648,6 +671,112 @@ bool h10looper_e1f::e16_ST_pass_efid(){
 	return ret;
 }
 
+/*
+[01-13-16] Works for {e1f,e16}*{2pi:top2',elast}
+*/
+void h10looper_e1f::do_pcorr(){
+	if (_rctn=="elast"){//! only to e
+		do_pcorr_helper("e");
+	}else if (_rctn=="2pi"){//! to e,p,pip
+		do_pcorr_helper("e");
+		do_pcorr_helper("p");
+		do_pcorr_helper("pip");
+	}else{
+		Info("h10looper_e1f::do_pcorr()","_rctn=%s not recognized. Not doing pcorr",_rctn.Data());
+	}
+	return;
+}
+
+void h10looper_e1f::do_pcorr_helper(TString prtcl_name){
+	//! Get all relevant information needed by function
+	TLorentzVector lv0;
+	int q;
+	int id;
+	int h10idx;
+	int monhistidx;//! must match array indices in _pcorr_prtcl_names
+	int mass;
+	if (prtcl_name=="e"){
+		lv0=_lvE1;
+		q=-1;
+		id=ELECTRON;
+		h10idx=_h10idx_e;
+		monhistidx=0;
+		mass=MASS_E;
+	}else if (prtcl_name=="p"){
+		lv0=_lvP;
+		q=1;
+		id=PROTON;
+		h10idx=_h10idx_p;
+		monhistidx=1;
+		mass=MASS_P;
+	}else if (prtcl_name=="pip"){
+		lv0=_lvPip;
+		q=1;
+		id=PIP;
+		h10idx=_h10idx_pip;
+		monhistidx=2;
+		mass=MASS_PIP;
+	}else{
+		Info("h10looper_e1f::do_pcorr_helper()","prtcl_name=%s not recognized. Not doing pcorr_helper",prtcl_name.Data());
+		return;
+	}
+
+
+	//! First store uncorr mom
+	float p0=lv0.P();
+	float cx0=lv0.Px()/lv0.P();
+	float cy0=lv0.Py()/lv0.P();
+	float cz0=lv0.Pz()/lv0.P();
+
+	//! + Ignore cases where pcorr is not implemented
+	//! + e1f:pcorr:{p,pip}
+	if (_expt=="e1f" && (prtcl_name=="p" || prtcl_name=="pip")) return;
+
+	//! Now correct
+	TLorentzVector lv1;
+	if (_expt=="e1f"){
+		if (prtcl_name=="e"){
+			lv1=_pcorr_tool_e1f->PcorN(lv0,q,id);
+		}
+	}else if (_expt=="e16"){
+		//! Re-obtain phi=[-180,180] since that is the valid phi range for e16 .f subroutines
+		float phi=lv0.Phi()*TMath::RadToDeg(); 
+		//! Setup torcur
+		float torcur=3375;
+		//! + Prepare to call .f routines
+		//! + Note for p 'eloss' is done and therefore theta_corr=theta
+		//!   i.e. theta is not corrected
+		float theta_corr=0;
+		float p_corr=0;
+		if (prtcl_name=="e"){
+			e_corr_sub(_theta_e,phi,_p_e,torcur,_sector_e,theta_corr,p_corr);
+		}else if (prtcl_name=="pip"){
+			pi_corr_sub(_theta_pip,phi,_p_pip,torcur,_sector_pip,theta_corr,p_corr);
+		}else if (prtcl_name=="p"){
+			preloss(_p_p,_theta_p,p_corr);
+			theta_corr=_theta_p;
+		}
+		//! Set lv1
+		float px_corr=p_corr*TMath::Sin(theta_corr*TMath::DegToRad())*TMath::Cos(phi*TMath::DegToRad());
+		float py_corr=p_corr*TMath::Sin(theta_corr*TMath::DegToRad())*TMath::Sin(phi*TMath::DegToRad());
+		float pz_corr=p_corr*TMath::Cos(theta_corr*TMath::DegToRad());
+		lv1.SetPxPyPzE(px_corr,py_corr,pz_corr,TMath::Sqrt(p_corr*p_corr+mass*mass));
+	}
+	
+	//! update h10 data
+	p[h10idx]=lv1.P();
+	cx[h10idx]=lv1.Px()/lv1.P();
+	cy[h10idx]=lv1.Py()/lv1.P();
+	cz[h10idx]=lv1.Pz()/lv1.P();
+	//! update pcorr monitorign histograms
+	_hpcorr_dpVp[monhistidx]->Fill(p[h10idx],p[h10idx]-p0);
+	_hpcorr_dcx[monhistidx]->Fill(cx[h10idx]-cx0);
+	_hpcorr_dcy[monhistidx]->Fill(cy[h10idx]-cy0);
+	_hpcorr_dcz[monhistidx]->Fill(cz[h10idx]-cz0);
+	_hpcorr_dp[monhistidx]->Fill(p[h10idx]-p0);
+	
+}
+
 void h10looper_e1f::mom_corr_electron(){
 	//! First store uncorr mom
 	float p_uncorr=_lvE1.P();
@@ -657,18 +786,18 @@ void h10looper_e1f::mom_corr_electron(){
 	//! Now correct
 	int q=-1;
 	int id=ELECTRON;
-	TLorentzVector pcorr=_pcorr->PcorN(_lvE1,q,id);
+	TLorentzVector pcorr=_pcorr_tool_e1f->PcorN(_lvE1,q,id);
 	//! update h10 data
 	p[0]=pcorr.P();
 	cx[0]=pcorr.Px()/pcorr.P();
 	cy[0]=pcorr.Py()/pcorr.P();
 	cz[0]=pcorr.Pz()/pcorr.P();
 	//! update pcorr objects
-	_hpcorr_dpVp->Fill(p[0],p[0]-p_uncorr);
-	_hpcorr_dcx->Fill(cx[0]-cx_uncorr);
-	_hpcorr_dcy->Fill(cy[0]-cy_uncorr);
-	_hpcorr_dcz->Fill(cz[0]-cz_uncorr);
-	_hpcorr_dp->Fill(p[0]-p_uncorr);
+	_hpcorr_dpVp[0]->Fill(p[0],p[0]-p_uncorr);
+	_hpcorr_dcx[0]->Fill(cx[0]-cx_uncorr);
+	_hpcorr_dcy[0]->Fill(cy[0]-cy_uncorr);
+	_hpcorr_dcz[0]->Fill(cz[0]-cz_uncorr);
+	_hpcorr_dp[0]->Fill(p[0]-p_uncorr);
 }
 
 void h10looper_e1f::set_ekin(){
@@ -712,6 +841,7 @@ void h10looper_e1f::set_ekin(){
 	_p_e=_lvE1.P();
 	_sector_e=get_sector(_phi_e);
 	_sc_pd_e=100*dc_sect[dc[0]-1]+sc_pd[sc[0]-1];
+	_h10idx_e=0;
 }
 
 /*
@@ -1030,6 +1160,7 @@ void h10looper_e1f::reset_ekin(){
 	_Q2=_W=0;
 	_theta_e=_phi_e=_p_e=0;
 	_sector_e=_sc_pd_e=0;
+	_h10idx_e=-1;
 }
 
 void h10looper_e1f::make_delast(){

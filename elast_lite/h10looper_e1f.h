@@ -159,14 +159,15 @@ public :
    //! _hefid_e[2], before and after cut
    TH2F** _hefid_e;
    
-   //! mom corr
-   TH2D* _hpcorr_dpVp;
-   TH1D* _hpcorr_dcx;
-   TH1D* _hpcorr_dcy;
-   TH1D* _hpcorr_dcz;
-   TH1D* _hpcorr_dp;
-   //! for mom corr
-   MomCorr_e1f* _pcorr;
+   //! pcorr objects[3] for e,p,pip
+   TString* _pcorr_prtcl_names;
+   TH2D** _hpcorr_dpVp;
+   TH1D** _hpcorr_dcx;
+   TH1D** _hpcorr_dcy;
+   TH1D** _hpcorr_dcz;
+   TH1D** _hpcorr_dp;
+   //! for e1f:pcorr:e (currently e1f pcorr only for e)
+   MomCorr_e1f* _pcorr_tool_e1f;
 
    //! PID
    Pid* _pid_tool;
@@ -226,6 +227,7 @@ public :
    float _phi_e; //[-30,330]
    float _p_e;
    int _sector_e,_sc_pd_e;
+   int _h10idx_e;
    
    //! hadron kinematics
    //! Lab frame
@@ -252,6 +254,8 @@ public :
    float _p_cms_pip,_theta_cms_pip,_phi_cms_pip;
    float _p_cms_pim,_theta_cms_pim,_phi_cms_pim;
    float _alpha_1,_alpha_2,_alpha_3;
+   //! h10idx
+   int _h10idx_p,_h10idx_pip,_h10idx_pim;
 
    // Declaration of leaf types
    static const int _MAX_PARTS=100;
@@ -602,12 +606,15 @@ public :
    void setup_adtnl_opts(TString adtnl_opts);
 
    bool pass_eid();
-   void mom_corr_electron();
    bool pass_efid();
    void make_delast();
 
    bool pass_theta_vs_p(TString prtcl_name);
    bool is_scpd_bad(TString prtcl_name);
+
+   void do_pcorr(); //![01-13-16] Works for {e1f,e16}*{2pi:top2',elast}
+   void do_pcorr_helper(TString prtcl_name);
+   void mom_corr_electron(); //! [01-13-16] Obsolete after do_pcorr 
 
    void set_ekin();
    void reset_ekin();

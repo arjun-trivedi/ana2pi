@@ -1,0 +1,14 @@
+#--
+setenv STUDY_PCORR "${ANA2PI}/sub_studies/study_pcorr"
+alias study_pcorr 'cd ${STUDY_PCORR}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_PCORR}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_PCORR}"
+
+##- Set up STUDY_BG_DATADIR
+setenv STUDY_PCORR_E1F_DATADIR "/data/trivedia/e1f/study_pcorr/"
+setenv STUDY_PCORR_E16_DATADIR "/data/trivedia/e16/study_pcorr/"
+
