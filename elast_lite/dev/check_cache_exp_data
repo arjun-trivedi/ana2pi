@@ -1,0 +1,37 @@
+#!/bin/bash
+#! usage: check_cache_exp_data exp=<e1f/e16> [touch] 
+
+EXP=$1
+while [[ ! $EXP == "e1f" && ! $EXP == "e16" ]]; do
+    echo "e1f or e16? "
+    read EXP
+done
+
+if [[ $EXP == "e1f" ]]; then
+  CACHEDIR=/cache/$E1FD_E
+  NFMSS=12357
+elif [[ $EXP == "e16" ]]; then
+  CACHEDIR=/cache/$E16D_EI
+  NFMSS=9392
+fi
+
+echo "EXP="$EXP
+echo "CACHEDIR="$CACHEDIR
+echo "NFMSS="NFMSS
+
+#! Check number of files in CACHEDIR 
+echo '>nfcch=$(ls $CACHEDIR |wc -l)'
+nfcch=$(ls $CACHEDIR |wc -l)
+diff=$((NFMSS-nfcch))
+echo "NFMSS:nfcch:diff=$NFMSS:$nfcch:$diff"
+echo "***" 
+
+#! 'touch' is so asked by the user
+if [[ -n $2 && $2 == "touch" ]]; then
+  echo "*** Going to touch simuluation data in $CACHEDIR ***"
+  for f in `ls $CACHEDIR`;do
+    echo ">touch $CACHEDIR/$f"
+    touch $CACHEDIR/$f
+  done
+  echo "***"
+fi

@@ -5,17 +5,27 @@
 #! sim3:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112315
 #! sim4:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112715
 #! sim5:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_120915
+#! sim6:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_121815
+#! sim7:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216
 
-simnamel=(2pi_200M_051815 2pi_300M_052015 2pi_500M_112315 2pi_500M_112715 2pi_500M_120915)
+simnamel=(2pi_200M_051815 2pi_300M_052015 2pi_500M_112315 2pi_500M_112715 2pi_500M_120915 2pi_1B_121815 2pi_1B_010216)
 #! Following list obtained by ls /mss-path-to-sim/recon/*.root |grep -v ana |wc -l 
 #! (Information matches what I originally noted in at-sim/README for each simulation)
-sim_nfmssl=(1991 2987 4980 4358 4981)
+sim_nfmssl=(1991 2987 4980 4358 4981 9957 9963)
+#! After deleting from volatile sim1.1,sim2,sim3
+#simnamel=(2pi_500M_112715 2pi_500M_120915 2pi_1B_121815 2pi_1B_010216)
+#sim_nfmssl=(4358 4981 9957 9963)
 
 isim=0
 for simname in "${simnamel[@]}";do
   nfmss=${sim_nfmssl[isim]}
-  echo "Processing simnum:simname=$((isim + 1)):$simname"
-
+  echo "*** Processing simnum:simname=$((isim + 1)):$simname ***"
+  if [[ $((isim + 1)) < 4 ]];then #! After deleting from volatile sim1.1,sim2,sim3
+     echo "Not checking simnum:simname=$((isim + 1)):$simname"
+     echo "***"
+     isim=$((isim + 1))
+     continue
+  fi 
   #! Check number .root files in $H10DIR_SIM/recon/
   echo '>nfvltl=$(ls $H10DIR_SIM_E16/$simname/recon/*.root |wc -l)'
   nfvltl=$(ls $H10DIR_SIM_E16/$simname/recon/*.root |wc -l)
@@ -29,6 +39,11 @@ if [[ -n $1 && $1 == "touch" ]]; then
   echo "Going to touch simuluation data in /volatile"
   isim=0
   for simname in "${simnamel[@]}";do
+    if [[ $((isim + 1)) < 4 ]];then #! After deleting from volatile sim1.1,sim2,sim3
+      echo "Not touching simnum:simname=$((isim + 1)):$simname"
+      isim=$((isim + 1))
+      continue
+    fi
     echo "touching simnum:simname=$((isim + 1)):$simname"
     for f in `ls $H10DIR_SIM_E16/$simname/recon/*.root`;do
       echo ">touch $f"
