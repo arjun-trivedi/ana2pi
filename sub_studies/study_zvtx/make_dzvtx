@@ -1,0 +1,29 @@
+#!/bin/bash
+expt=$1
+dtyp=$2
+nentries=${3:-0}
+
+#! Check if input data is ok
+if [ $expt != 'e1f' ] && [ $expt != 'e16' ];then
+  echo "expt=$expt is not valid"
+  exit
+fi
+if [ $dtyp != 'exp' ] && [ $dtyp != 'sim' ];then
+  echo "dtyp=$dtyp is not valid"
+  exit
+fi
+
+#! Setup procorder=f(expt,dtyp)
+if [ $dtyp == 'exp' ]; then
+  procorder='eid:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree_BG'
+elif [ $dtyp == 'sim' ]; then
+  procorder='eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG'
+fi
+
+echo "expt=",$expt
+echo "dtyp=",$dtyp
+echo "procorder=",$procorder
+echo "nentries=",$nentries
+
+echo ">proc_h10 -i h10.lst -t $expt:$dtyp:2pi  -p $procorder -o d2piR.root -n $nentries"
+proc_h10 -i h10.lst -t $expt:$dtyp:2pi  -p $procorder -o d2piR.root -n $nentries

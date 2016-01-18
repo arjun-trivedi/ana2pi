@@ -11,6 +11,13 @@
 #include <TObjArray.h>
 #include <TMath.h>
 #include <stdio.h>
+#include "wrpr_vertex_e16.h" //! [01-15-16] for zvtx corr
+
+/*
+[01-17-16]
++ Added corr_zvtx() which is currently on setup to work for e16:ER and therefore
+  is called in handle() only if h10->expt=="e16" and h10->dtyp=="exp" 
+*/
 
 using namespace TMath;
 using namespace ParticleConstants;
@@ -32,6 +39,7 @@ public:
 	void updateEkin(Bool_t useMc=kFALSE,Bool_t McHasPARTBanks=kFALSE);
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 	void GetUVW(float xyz[3], float uvw[3]);
+	void corr_zvtx();
 		
 protected:
 	Eid* _eidTool;
@@ -118,6 +126,11 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 		dAna->addBranches_DataEkin(_t[CUTMODE]);
 		dAna->addBranches_DataEid(_t[CUTMODE]);
 	}
+
+	//! [01-17-16] if e16:ER then corr_zvtx() 
+    if (dH10->expt=="e16" and dH10->dtyp=="exp") {
+    	Info("ProcEid::ProcEid()", "expt:exp=e16:ER and therefore will do corr_zvtx()");
+    }
 }
 
 ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
@@ -145,6 +158,11 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
     //![11-17-15] Use same eid-cut pars for E16 and E1F
     if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+
+	//! [01-17-16] if e16:ER then corr_zvtx() 
+    if (dH10->expt=="e16" and dH10->dtyp=="exp") {
+    	Info("ProcEid::ProcEid()", "expt:exp=e16:ER and therefore will do corr_zvtx()");
+    }
 }
 
 ProcEid::~ProcEid(){
@@ -176,6 +194,10 @@ void ProcEid::handle() {
     else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) gE =  goodE_bos();
     else if (dH10->expt=="e16" && _eidTool->eidParFileFound) gE =  goodE();
     else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained*/
+
+    //! [01-17-16] if e16:ER then corr_zvtx() 
+    if (dH10->expt=="e16" and dH10->dtyp=="exp") corr_zvtx();
+
     gE=goodE();
     
 	if (gE) {	
@@ -479,5 +501,31 @@ void ProcEid::GetUVW(float xyz[3], float uvw[3]) {
   uvw[U] = (yi - ylow) / sinrho;
   uvw[V] = (yhi - ylow) / tgrho - xi + (yhi - yi) / tgrho;
   uvw[W] = ((yhi-ylow)/tgrho+xi+(yhi-yi)/tgrho)/2./cosrho;
+}
+
+/*
+[01-17-16] 
+Currently only for e16:ER
+*/
+void ProcEid::corr_zvtx(){
+	//! Get all required quanties 
+	float p = dH10->p[0];
+	float cx = dH10->cx[0];
+	float cy = dH10->cy[0];
+	float cz = dH10->cz[0];
+	float px = p*cx;
+	float py = p*cy;
+	float pz = p*cz;
+	float vx= dH10->vx[0];
+	float vy= dH10->vy[0];
+	float vz= dH10->vz[0];
+	//! + Prepare to call .f routines
+	float vx_corr=0, vy_corr=0,vz_corr=0;
+	vertex_e16(px,py,pz,vx,vy,vz,vx_corr,vy_corr,vz_corr);
+	//! Update dH10
+	dH10->vx[0]=vx_corr;
+	dH10->vy[0]=vy_corr;
+	dH10->vz[0]=vz_corr;
+	return;
 }
 #endif // PROCEID_H

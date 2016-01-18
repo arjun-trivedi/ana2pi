@@ -146,9 +146,12 @@ public :
    TF1** _sf_mean;
    TF1** _sf_min;
    TF1** _sf_max;
-      //! for z-vtx cut
+   //! _hzvtxcorr[6][2] for zvtxcorr monitoring, before and after cut
+   TH1F*** _hzvtxcorr;
+   //! for z-vtx cut
    Float_t* _z_vtx_min;
    Float_t* _z_vtx_max;
+   TH1F*** _hzvtxcut; //!_hzvtxcut[6][2]
    //! _hsf[6][2], SF for each sector, before and after cut
    TH2F*** _hsf;
    
@@ -615,6 +618,8 @@ public :
    void do_pcorr(); //![01-13-16] Works for {e1f,e16}*{2pi:top2',elast}
    void do_pcorr_helper(TString prtcl_name);
    void mom_corr_electron(); //! [01-13-16] Obsolete after do_pcorr 
+
+   void do_zvtxcorr();
 
    void set_ekin();
    void reset_ekin();

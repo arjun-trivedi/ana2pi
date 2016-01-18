@@ -15,6 +15,7 @@
 #include "wrpr_pi_corr_sub.h" //! [01-13-16] For e16:pcorr:pip
 #include "wrpr_pr.h" //! [01-13-16] For e16:pcorr:p (actually eloss, not pcorr)
 #include "pid.h"
+#include "wrpr_vertex_e16.h" //! [01-17-16] for zvtx corr
 
 h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
                              TString cutsncors,
@@ -114,7 +115,9 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	
 	//! EID
 	if (_do_eid){
-		_fout->mkdir("eid")->cd();
+		//_fout->mkdir("eid")->cd();
+		TDirectory* dir_eid=_fout->mkdir("eid");
+		dir_eid->cd();
 		_heid=new TH1D("heid","EID statistics",NUM_EID_STATS,0.5,NUM_EID_STATS+0.5);
 		_heid->GetXaxis()->SetBinLabel(EID_TRG,"trgr");
 		_heid->GetXaxis()->SetBinLabel(EID_GPART0,"gpart>0");
@@ -141,6 +144,32 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 				else if (j==1) name_sfx="pstc";
 				TString name=TString::Format("sf_s%d_%s",i+1,name_sfx.Data());
 				_hsf[i][j]=new TH2F(name,name,160,0,5,100,0,0.5);
+			}
+		}
+		//! _hzvtxcut hists
+		dir_eid->mkdir("zvtxcut")->cd();
+		_hzvtxcut=new TH1F**[6];
+		for (int i=0;i<6;i++){
+			_hzvtxcut[i]=new TH1F*[2];
+			for (int j=0;j<2;j++){
+				TString name_sfx;
+				if      (j==0) name_sfx="prec";
+				else if (j==1) name_sfx="pstc";
+				TString name=TString::Format("zvtxcut_s%d_%s",i+1,name_sfx.Data());
+				_hzvtxcut[i][j]=new TH1F(name,name,100,-12,6);
+			}
+		}
+		//! _hzvtxcorr hists
+		dir_eid->mkdir("zvtxcorr")->cd();
+		_hzvtxcorr=new TH1F**[6];
+		for (int i=0;i<6;i++){
+			_hzvtxcorr[i]=new TH1F*[2];
+			for (int j=0;j<2;j++){
+				TString name_sfx;
+				if      (j==0) name_sfx="prec";
+				else if (j==1) name_sfx="pstc";
+				TString name=TString::Format("zvtxcorr_s%d_%s",i+1,name_sfx.Data());
+				_hzvtxcorr[i][j]=new TH1F(name,name,100,-12,6);
 			}
 		}
 	}
@@ -334,6 +363,8 @@ h10looper_e1f::~h10looper_e1f()
 	delete _z_vtx_min;
 	delete _z_vtx_max;
 	delete[] _hsf;
+	delete[] _hzvtxcorr;
+	delete[] _hzvtxcut;
 	
 	delete _hevt;
 	delete _heid;
@@ -606,6 +637,12 @@ bool h10looper_e1f::pass_eid(){
 	} 
 
 	if (pass_lvl_1){
+
+		//![01-17-16]
+		//! + if '_use_cut_zvtx' and expt:dtyp=e16:ER then 'do_zvtxcorr()'
+		//!   before moving on to apply the lvl_2 cuts
+		if (_use_cut_zvtx && _expt=="e16" && _dtyp=="exp") do_zvtxcorr();
+
 		if (pass_p_min_ECth()){
 			_heid->Fill(EID_P_MIN_ECTH);
 			if ( (!_use_cut_ECin_min) || (_use_cut_ECin_min && pass_ECin_min()) ){
@@ -1305,11 +1342,23 @@ bool h10looper_e1f::pass_ECin_min(){
 }
 
 bool h10looper_e1f::pass_zvtx(){
-	float zvtx=vz[0];
+	bool ret=kFALSE;
+
+	//! prec monitoring
 	int idxEC=ec[0]-1;
 	int sctr=ec_sect[idxEC];
+	_hzvtxcut[sctr-1][0]->Fill(vz[0]);
 	
-	return (zvtx>_z_vtx_min[sctr-1] && zvtx<_z_vtx_max[sctr-1]);
+	float zvtx=vz[0];
+	//int idxEC=ec[0]-1;
+	//int sctr=ec_sect[idxEC];
+	
+	ret=zvtx>_z_vtx_min[sctr-1] && zvtx<_z_vtx_max[sctr-1];
+
+	if (ret==kTRUE){
+		_hzvtxcut[sctr-1][1]->Fill(vz[0]);
+	}
+	return ret;
 }
 
 void h10looper_e1f::setup_cutsncors(TString cutsncors){
@@ -1578,4 +1627,55 @@ void h10looper_e1f::set_h10_SEB_BranchStatus(TTree* tr){
    	tr->SetBranchStatus("lec_y",1);//[lac_part]
    	tr->SetBranchStatus("lec_z",1);//[lac_part]
    	tr->SetBranchStatus("lec_c2",1);//[lac_part]*/
+}
+
+/*
+[01-17-16] 
+Currently only for e16:ER
+*/
+void h10looper_e1f::do_zvtxcorr(){
+	//! prec monitoring
+	int idxEC=ec[0]-1;
+	int sctr=ec_sect[idxEC];
+	//! [01-18-16]
+	//! + Make sure sector!=0, though this should not be relevant if called after checking
+	//!   that the track has a hit in the SC, which is the case for electrons. 
+	//! + Therefore, this checking here, for the case of electrons is redundant, but is kept
+	//!   just in case it will be used for hadrons, where one of the cut selections (cutsel2)
+	//!   require not to require candidate hadron tracks to have a hit in the SC
+	if (sctr!=0){
+		_hzvtxcorr[sctr-1][0]->Fill(vz[0]);
+	}/*else{
+		Info("h10looper_e1f::do_zvtxcorr()","sector==0 for candidate track");
+	}*/
+
+	//! Get all required quanties 
+	float px=p[0]*cx[0];
+	float py=p[0]*cy[0];
+	float pz=p[0]*cz[0];
+	float vx0=vx[0];
+	float vy0=vy[0];
+	float vz0=vz[0];
+	//! + Prepare to call .f routines
+	float vx1=0,vy1=0,vz1=0;
+	vertex_e16(px,py,pz,vx0,vy0,vz0,vx1,vy1,vz1);
+	//! Update dH10
+	vx[0]=vx1;
+	vy[0]=vy1;
+	vz[0]=vz1;
+
+	//! pstc monitoring
+	//! [01-18-16]
+	//! + Make sure sector!=0, though this should not be relevant if called after checking
+	//!   that the track has a hit in the SC, which is the case for electrons. 
+	//! + Therefore, this checking here, for the case of electrons is redundant, but is kept
+	//!   just in case it will be used for hadrons, where one of the cut selections (cutsel2)
+	//!   require not to require candidate hadron tracks to have a hit in the SC
+	if (sctr!=0){
+		_hzvtxcorr[sctr-1][1]->Fill(vz[0]);
+	}/*else{
+		Info("h10looper_e1f::do_zvtxcorr()","sector==0 for candidate track");
+	}*/
+
+	return;
 }

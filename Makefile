@@ -22,13 +22,13 @@ F77OPT  += -ffixed-line-length-none -fno-second-underscore -DLinux
 obj/%.o: %.cpp
 	$(CXX) $(INCS) $(CXXFLAGS)  -c $< -o $@
 
-$(TARGET): lib_cut_fid_e16 lib_e_corr_sub lib_pi_corr_sub lib_pr obj/proc_h10.o 
-	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/cut_fid_e16.o obj/e_corr_sub.o obj/pi_corr_sub.o obj/pr.o obj/proc_h10.o $(INCS) $(LIBS) -L. $(LIBOUT)
+$(TARGET): lib_cut_fid_e16 lib_e_corr_sub lib_pi_corr_sub lib_pr lib_vertex_e16 obj/proc_h10.o 
+	$(CXX) -o $(TARGET) $(CXXFLAGS) obj/cut_fid_e16.o obj/e_corr_sub.o obj/pi_corr_sub.o obj/pr.o obj/vertex_e16.o obj/proc_h10.o $(INCS) $(LIBS) -L. $(LIBOUT)
 
 all: dict lib $(TARGET) 
 
 clean:
-	-rm -f $(OBJS) $(LIBOUT) obj/cut_fid_e16.o obj/e_corr_sub.o obj/pi_corr_sub.o obj/pr.o obj/proc_h10.o proc_h10
+	-rm -f $(OBJS) $(LIBOUT) obj/cut_fid_e16.o obj/e_corr_sub.o obj/pi_corr_sub.o obj/pr.o obj/vertex_e16.o obj/proc_h10.o proc_h10
 
 $(OBJS): | obj
 
@@ -52,6 +52,9 @@ lib_pi_corr_sub: pi_corr_sub.f
 
 lib_pr: pr.f
 	$(COMPILER) $(F77OPT) -c $< -o obj/pr.o
+
+lib_vertex_e16: vertex_e16.f
+	$(COMPILER) $(F77OPT) -c $< -o obj/vertex_e16.o
 
 dict: data_h10.h data_ana.h data_eid.h data_efid.h data_eeff.h data_skim_q.h data_skim_q_elast.h data_mom.h data_pid.h data_pid_new.h data_peff.h data_pid_elast.h data_pid_elast_new.h data_ekin.h data_2pi.h h10looper.h particle_constants.h data_elastic.h
 	-rm ep_dict.*
