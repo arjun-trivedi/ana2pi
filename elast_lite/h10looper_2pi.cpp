@@ -251,6 +251,15 @@ void h10looper_2pi::Loop(){
 						if ( !_do_pfid || (_do_pfid && proton_infid() && pip_infid()) ){
 							if (_do_pfid) _hpfid->Fill(PFID_P_AND_PIP_IN);
 							_hevt->Fill(EVT_P_PIP_INFID);
+
+							//! pcorr
+							if (_do_pcorr){
+								//mom_corr_electron();
+								do_pcorr();
+								//std::cout<<"pcorr"<<std::endl;
+								set_ekin();
+								set_hkin(h10idx_p, h10idx_pip);
+							}
 							
 							//! EFF (top2')
 							if (_do_eff) _heff->Fill(EFF_TOT);
@@ -264,14 +273,14 @@ void h10looper_2pi::Loop(){
 									if (_do_scpd) _hscpd->Fill(SCPD_E_AND_P_AND_PIP_PASS);
 									_hevt->Fill(EVT_INSCPD);
 
-									//! pcorr
+									/*//! pcorr
 									if (_do_pcorr){
 										//mom_corr_electron();
 										do_pcorr();
 										//std::cout<<"pcorr"<<std::endl;
 										set_ekin();
 										set_hkin(h10idx_p, h10idx_pip);
-									}
+									}*/
 								
 									//! Event selection
 									if (_do_evtsel_2pi){
