@@ -32,7 +32,7 @@ for simnum in "${simlist[@]}"; do
     <DiskSpace space=\"5000\" unit=\"MB\"/>
     <Memory space=\"9500\" unit=\"MB\"/>
     <Track name=\"analysis\"/>
-    <TimeLimit unit=\"minutes\" time=\"480\"/>
+    <TimeLimit unit=\"minutes\" time=\"600\"/>
     <Command><![CDATA[
       proc_h10_lite -i h10.lst -t e16:sim:2pi:thrown -c evtsel_2pi: -o d2piT.root
     ]]></Command>

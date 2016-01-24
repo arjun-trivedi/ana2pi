@@ -49,21 +49,21 @@ ADTNL_OPT=":h10-skim-e:"
 if [[ "$EXP" == "e1f" ]]; then
     PROJECT_NAME="E1F"
     if [[ "$DTYP" == "exp" ]]; then
-      MEMORY_SPACE="500"
+      MEMORY_SPACE="1000"
       TIME="10"
       MSSDIR=$E1FD_E
     elif [[ "$DTYP" == "sim" ]]; then
-      MEMORY_SPACE="500"
+      MEMORY_SPACE="1000"
       TIME="5" 
     fi
   elif [[ "$EXP" == "e16" ]]; then
     PROJECT_NAME="E1-6a"
     if [[ "$DTYP" == "exp" ]]; then #! needs more resources due to .rz->.root
-      MEMORY_SPACE="1500"
+      MEMORY_SPACE="2000"
       TIME="60"
       MSSDIR=$E16D_EI
     elif [[ "$DTYP" == "sim" ]]; then
-      MEMORY_SPACE="500"
+      MEMORY_SPACE="1000"
       TIME="5"
     fi
 fi
