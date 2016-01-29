@@ -38,7 +38,8 @@ void Data2pi::Clear()
 	theta_cms_p = theta_cms_pip = theta_cms_pim = 0;
 	phi_cms_p   = phi_cms_pip   = phi_cms_pim   = 0;
 	alpha_1     = alpha_2       = alpha_3       = 0;
-
+	//! [01-27-16] Added to study scpd
+	sc_pd_e=sc_pd_p=sc_pd_pip=sc_pd_pim=0;
 	/*varset1.M1 = varset1.M2 = varset1.theta_cms = varset1.phi_ = varset1.alpha = 0;
 	varset2.M1 = varset2.M2 = varset2.theta_cms = varset2.phi_ = varset2.alpha = 0;
 	varset3.M1 = varset3.M2 = varset3.theta_cms = varset3.phi_ = varset3.alpha = 0;*/

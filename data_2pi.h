@@ -76,6 +76,11 @@ public:
 	Float_t alpha_1;
 	Float_t alpha_2;
 	Float_t alpha_3;
+	//! [01-27-16] Added to study scpd
+	Int_t sc_pd_e;
+	Int_t sc_pd_p;
+	Int_t sc_pd_pip;
+	Int_t sc_pd_pim;
 
     /*struct vars{
 		Float_t M1;

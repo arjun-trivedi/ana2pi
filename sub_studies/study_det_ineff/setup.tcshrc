@@ -1,0 +1,14 @@
+#--
+setenv STUDY_DET_INEFF "${ANA2PI}/sub_studies/study_det_ineff"
+alias study_pcorr 'cd ${STUDY_DET_INEFF}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_DET_INEFF}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_DET_INEFF}"
+
+##- Set up STUDY_DET_INEFF
+#! e1f-TBD setenv STUDY_DET_INEFF_E1F "/data/trivedia/e1f/study_data_ineff/"
+setenv STUDY_DET_INEFF_E16 "/data/trivedia/e16/study_det_ineff/"
+

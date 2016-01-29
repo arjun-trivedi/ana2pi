@@ -1,0 +1,9 @@
+#dobs_1D $OBSDIR_E16/obs_dflt_dflt_010116/ sim4_sim5_sim6 norm 2.00 3.00 1.400 2.125 e16
+#dobs_1D $OBSDIR_E16/obs_dflt_dflt_fix_ER_SF_011816 sim4_sim5_sim6 norm 2.00 3.00 1.400 2.125 e16
+#dobs_1D $OBSDIR_E16/obs_dflt_dflt_add_ER_pcorr_011916 sim4_sim5_sim6 norm 2.00 3.00 1.400 2.125 e16
+
+#dobs_1D $OBSDIR_E16/obs_dflt_eff_scpd_:11:1:2:3:13:14:15:_010116 sim4_sim5_sim6 norm 2.00 3.00 1.400 2.125 e16
+#dobs_1D $OBSDIR_E16/obs_dflt_eff_scpd_:11:1:2:3:13:14:15:_fix_ER_SF_011816 sim4_sim5_sim6 norm 2.00 3.00 1.400 2.125 e16
+#dobs_1D $OBSDIR_E16/obs_dflt_eff_scpd_:11:1:2:3:13:14:15:_add_ER_pcorr_011916 sim4_sim5_sim6 norm 2.00 3.00 1.400 2.125 e16
+
+dobs_1D $OBSDIR_E16/obs_dflt_dflt_highQ2_012716 sim9 norm 3.00 5.00 1.400 2.125 e16

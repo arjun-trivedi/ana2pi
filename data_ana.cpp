@@ -1451,6 +1451,11 @@ void DataAna::addBranches_Data2pi(TTree* t, Bool_t useMc/*=kFALSE*/){
 	t->Branch("alpha_1",&tp->alpha_1);
 	t->Branch("alpha_2",&tp->alpha_2);
 	t->Branch("alpha_3",&tp->alpha_3);
+	//! scpd
+	t->Branch("sc_pd_e",&tp->sc_pd_e);
+	t->Branch("sc_pd_p",&tp->sc_pd_p);
+	t->Branch("sc_pd_pip",&tp->sc_pd_pip);
+	t->Branch("sc_pd_pim",&tp->sc_pd_pim);
 }
 
 void DataAna::addBranches_DataElastic(TTree* t, Bool_t useMc/*=kFALSE*/){

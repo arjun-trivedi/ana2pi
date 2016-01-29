@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-0}
+$ANA2PI/sub_studies/study_det_ineff/make_ddetineff e16 SR 2pi $nentries

@@ -26,59 +26,118 @@ from collections import OrderedDict
 # ----
 
 '''
-+ h10->Observables labelled by 'obs_jobtag', where jobtag='%s_%s_%s'%(cutsncors,adtnl_opts,DATE) applicable to {ER,SR}. {ST}h10->d2pi independent of 'jobtag'. Details:
-	+ cutsncors,adtnl_opts=CUTNCORS applied to {ER,SR}h10->d2pi on a particular DATE
-	+ {ST}h10->d2pi directly made on farm labelled by date and is independent of 'jobtag'. 
++ h10->Observables labelled by 'obs_jobtag', where jobtag='%s_%s_%s_%s'%(cutsncors,adtnl_opts,IDTFR,DATE) applicable to {ER,SR}. {ST}h10->d2pi independent of 'jobtag'. Details:
+	+ cutsncors,adtnl_opts=CUTNCORS applied to {ER,SR}h10->d2pi
+	+ IDTFR,DATE=way for user to tag the result
+	+ {ST}h10->d2pi directly made on farm labelled by DATE_ST and is independent of 'jobtag'. 
 		+ To use the appropriate d2piT_<date>.root, the DATE_ST(expt,sim) is used.   
 
 + Usage
-	>h10_2_Obs expt<=e1f/e16> cumsiml[=SIMS[expt]] date_of_existing_jobtag[=today]
+	>h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[expt]] date_of_existing_jobtag[=today's MMDDYY]
+	+ idtfr: string used to describe the job; can be entered as ""
 	+ cumsiml: output created for every cumsim in cumsiml under obs_jobtag/cumsim
-	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that obs_jobtag is going to be updated with, currently for example, addition of new simulation
+	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that obs_jobtag is going to be updated with, as set up currently in the code,for example, addition of a new simulation.
 '''
+USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[expt]] date_of_existing_jobtag[=today's MMDDYY]"
+
 EXPTS=['e1f','e16']
 SEQS=['ER','SR','ST']
-SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6']}
+SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9']}
 #print EXPTS,SEQS,SIMS
 
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
 ('e1f','ER'):'TBD',
-('e16','ER'):'%s/e16/exp/h10-skim-e_122115.lst'%(H10PATH),
+('e16','ER'):'%s/e16/exp/h10-skim-e_010816.lst'%(H10PATH), #! h10-skim-e_122115.lst w/o ER:SF fix
 ('e1f','SR','sim-TBD'):'TBD',
 ('e16','SR','sim4'):'%s/e16/sim/sim4/h10-skim-e_122115.lst'%(H10PATH),
 ('e16','SR','sim5'):'%s/e16/sim/sim5/h10-skim-e_122115.lst'%(H10PATH),
-('e16','SR','sim6'):'%s/e16/sim/sim6/h10-skim-e_122915.lst'%(H10PATH)
+('e16','SR','sim6'):'%s/e16/sim/sim6/h10-skim-e_122915.lst'%(H10PATH),
+('e16','SR','sim7'):'%s/e16/sim/sim7/h10-skim-e_010816.lst'%(H10PATH),
+('e16','SR','sim8'):'%s/e16/sim/sim8/h10-skim-e_012416.lst'%(H10PATH),
+('e16','SR','sim9'):'%s/e16/sim/sim9/h10-skim-e_012416.lst'%(H10PATH)
 }
 #print H10LSTS
 DATE_ST={
-('e16','sim-TBD'):'TBD',
+('e1f','sim-TBD'):'TBD',
 ('e16','sim4'):'122215',
 ('e16','sim5'):'122215',
-('e16','sim6'):'122915'
+('e16','sim6'):'122915',
+('e16','sim7'):'010816',
+('e16','sim8'):'012416',
+('e16','sim9'):'012416'
 }
 
 CUTSNCORS=OrderedDict()
-CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:evtsel_2pi:',':11:']
-CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:']
+CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+
+#! See affect of each additional cutsncor on top of 'dflt_dflt' that together give 'cuts-EI'
+#CUTSNCORS[('dflt_eff_scpd','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
+#CUTSNCORS[('dflt','dflt_ECin-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:1:']
+#CUTSNCORS[('dflt','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
+#CUTSNCORS[('dflt','dflt_zvtx-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:3:']
+#CUTSNCORS[('dflt','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:']
+#CUTSNCORS[('dflt','dflt_hitSC-PID-off')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:']
+#CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:15:']
+
+#! [01-24-16]Investigation of what cutsncors cause increase in cross-section going from dflt to EI-cuts, escpecially
+#! for Q2=[2.0,2.4]; for Q2=[2.4,3.0] there may actually be a slight reduction
+#! + cutsncors that increase xsec: eff_scpd(Q2=[2.0,2.4]),ECfid-on(Q2=[2.0,2.4]),stat-PID-on(both Q2) 
+#! + cutsncors that decrease xsec: gpart-PID-on(both Q2))
+
+#! cutsncors that increase xsec 
+#CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:15:']
+#! what does gpart counter-act?
+#! 1. dflt_eff_scpd?
+#CUTSNCORS[('dflt_eff_scpd','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:13:']
+#! 2. ECfid?
+#CUTSNCORS[('dflt','dflt_ECfid-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:13:']
+#! 3. stat-PID? (Hypothesis)
+#CUTSNCORS[('dflt','dflt_stat-PID-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:15:']
+#! If 1. is correct, then total increase should be due to ECfid-on,stat-PID-on
+#CUTSNCORS[('dflt','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:15:']
+#! If 2. is correct, then total increase should be due to eff_scpd,stat-PID-on
+#CUTSNCORS[('dflt_eff_scpd','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:15:']
+#! If 3. (Hypothesis) is correct, then total increase should be due to eff_scpd,ECfid-on and that too only for Q2=[2.0,2.4]
+#CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
+
 
 if len(sys.argv)<2:
-	sys.exit('usage: h10_2_obs expt=(e1f/e16)')
+	sys.exit("Please enter expt as per usage: %s"%USAGE)
 expt=sys.argv[1]
 
+Q2MIN=""
+if len(sys.argv)>2:#i.e. Q2MIN entered by user
+        Q2MIN=sys.argv[2]
+else:
+	sys.exit("Please enter Q2MIN as per usage: %s"%USAGE)
+
+Q2MAX=""
+if len(sys.argv)>3:#i.e. Q2MAX entered by user
+        Q2MAX=sys.argv[3]
+else:
+        sys.exit("Please enter Q2MAX as per usage: %s"%USAGE)
+
+IDTFR=""
+if len(sys.argv)>4:#i.e. IDTFR entered by user
+	IDTFR=sys.argv[4]
+else:
+	sys.exit("Please enter IDTFR as per usage: %s"%USAGE)
+
 CUMSIML=[]
-if len(sys.argv)>2:#i.e. CUMSIML entered by user
-	cumsims=sys.argv[2].split("_")
+if len(sys.argv)>5:#i.e. CUMSIML entered by user
+	cumsims=sys.argv[5].split("_")
 	if len(cumsims)>0:
 		for cumsim in cumsims:
 			cumsim=cumsim.split(':')
-			print cumsim
+			#print cumsim
 			#cumsim=map(int,cumsim)
 			for sim_user in cumsim:
 				sim_user_valid=False
 				for sim in SIMS[expt]:
-					print "sim_user=",sim_user
-					print "sim=",sim
+					#print "sim_user=",sim_user
+					#print "sim=",sim
 					if sim_user==sim:
 						sim_user_valid=True
 				if not sim_user_valid:
@@ -90,13 +149,17 @@ else:
 	CUMSIML.append(SIMS[expt])
 
 PROC_NEW_JOBTAG=True
-if len(sys.argv)>3: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
-        DATE=sys.argv[3]
+if len(sys.argv)>6: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
+	DATE=sys.argv[6]
         PROC_NEW_JOBTAG=False
 else:
         DATE=datetime.datetime.now().strftime('%m%d%y')
 
-print "Date=",DATE
+print "expt=",expt
+print "Q2MIN=",Q2MIN
+print "Q2MAX=",Q2MAX
+print "IDTFR=",IDTFR
+print "DATE=",DATE
 print "PROC_NEW_JOBTAG=",PROC_NEW_JOBTAG
 print "CUMSIML=",CUMSIML
 #sys.exit()
@@ -104,9 +167,12 @@ print "CUMSIML=",CUMSIML
 for k in CUTSNCORS.keys():
 	cutsncors,adtnl_opts= k[0],k[1]
     	cutsncors_code,adtnl_opts_code= CUTSNCORS[k][0],CUTSNCORS[k][1]
-	jobtag='%s_%s_%s'%(cutsncors,adtnl_opts,DATE)
+	#! For SR, remove ':pcorr' from cutsncor_code
+	cutsncors_code_SR=cutsncors_code.replace(':pcorr','')
+	jobtag='%s_%s_%s_%s'%(cutsncors,adtnl_opts,IDTFR,DATE)
+	print "h10->Obs for jobtag=%s"%jobtag
 	print "h10->Obs for expt:cutsncors:adtnl_opts=(%s:%s:%s)"%(expt,cutsncors,adtnl_opts)
-	print "h10->Obs for expt:cutsncors_code:adtnl_opts_code=(%s:%s:%s)"%(expt,cutsncors_code,adtnl_opts_code)
+	print "h10->Obs for expt:cutsncors_code:cutsncors_code_SR:adtnl_opts_code=(%s:%s:%s:%s)"%(expt,cutsncors_code,cutsncors_code_SR,adtnl_opts_code)
 
 	logdir=""
 	if PROC_NEW_JOBTAG:
@@ -184,9 +250,9 @@ for k in CUTSNCORS.keys():
 				print 'd2pidir_sim=',d2pidir_sim
 				mainlog.write('h10lst=%s\n'%h10lst)
 				mainlog.write('d2pidir_sim=%s\n'%d2pidir_sim)
-				cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
+				cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code_SR, "-o","%s/d2piR.root"%d2pidir_sim, "%s"%adtnl_opts_code]
 				#! For debug
-				#cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code, "-o","%s/d2piR.root"%d2pidir_sim, "-n","10000","%s"%adtnl_opts_code]
+				#cmd=["proc_h10_lite","-i", "%s"%h10lst,"-t","%s:sim:2pi:recon"%expt,"-c","%s"%cutsncors_code_SR, "-o","%s/d2piR.root"%d2pidir_sim, "-n","10000","%s"%adtnl_opts_code]
 				print">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim)
 				mainlog.write(">>>%s >& %s/h10_2_d2pi_SR_%s.log.log\n"%(cmd,logdir,sim))
 				logfile=open('%s/h10_2_d2pi_SR_%s.log'%(logdir,sim),'w')
@@ -356,7 +422,7 @@ for k in CUTSNCORS.keys():
 		#-- Now start to make Obervables
 		#echo ">ph8 $obsdir $sim 2.00 3.00 1.400 2.125 >& $logdir_obs/ph8.log "
 		if not os.path.isfile(os.path.join(obsdir,sim_total,"yield.root")) or PROC_NEW_JOBTAG:
-			cmd=["ph8",obsdir,sim_total,'2.00','3.00','1.400','2.125']
+			cmd=["ph8",obsdir,sim_total,Q2MIN,Q2MAX,'1.400','2.125']
 			logfile=open("%s/ph8_%s.log"%(logdir,sim_total),'w')
 			print">>>%s >& %s/ph8_%s.log\n"%(cmd,logdir,sim_total)
 			mainlog.write(">>>%s >& %s/ph8_%s.log\n"%(cmd,logdir,sim_total))
@@ -368,7 +434,7 @@ for k in CUTSNCORS.keys():
 
 		#echo ">dobs_1D $obsdir $sim norm 2.00 3.00 1.400 2.125 >& $logdir_obs/dobs_1D.log"
 		if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_1D_norm")) or PROC_NEW_JOBTAG:
-			cmd=["dobs_1D",obsdir,sim_total,"norm",'2.00','3.00','1.400','2.125',expt]
+			cmd=["dobs_1D",obsdir,sim_total,"norm",Q2MIN,Q2MAX,'1.400','2.125',expt]
 			logfile=open("%s/dobs_1D_%s.log"%(logdir,sim_total),'w')
 			print">>>%s >& %s/dobs_1D_%s.log\n"%(cmd,logdir,sim_total)
 			mainlog.write(">>>%s >& %s/dobs_1D_%s.log\n"%(cmd,logdir,sim_total))

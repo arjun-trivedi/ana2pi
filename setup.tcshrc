@@ -51,3 +51,5 @@ source ${ANA2PI}/sub_studies/study_BG/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_pcorr/setup.tcshrc
 #-- [01-11-16]study_zvtx
 source ${ANA2PI}/sub_studies/study_zvtx/setup.tcshrc
+#-- [01-24-16]
+source ${ANA2PI}/sub_studies/study_det_ineff/setup.tcshrc

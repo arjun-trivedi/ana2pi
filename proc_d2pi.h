@@ -757,6 +757,14 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->varset3.phi = getPhi(_lvPipCMS);
 	//tp->varset1.alpha = getAlpha(_lvPipCMS);
 	tp->varset3.alpha = 180;*/
+
+	//! [01-27-16] Added to study scpd
+	if(!ismc){
+		tp->sc_pd_e=  100*dH10->dc_sect[dH10->dc[dAna->h10idxE]-1]  +dH10->sc_pd[dH10->sc[dAna->h10idxE]-1];
+		tp->sc_pd_p=  100*dH10->dc_sect[dH10->dc[dAna->h10idxP]-1]  +dH10->sc_pd[dH10->sc[dAna->h10idxP]-1];
+		tp->sc_pd_pip=100*dH10->dc_sect[dH10->dc[dAna->h10idxPip]-1]+dH10->sc_pd[dH10->sc[dAna->h10idxPip]-1];
+		tp->sc_pd_pim=100*dH10->dc_sect[dH10->dc[dAna->h10idxPim]-1]+dH10->sc_pd[dH10->sc[dAna->h10idxPim]-1];
+	}
 }
 
 /*void ProcD2pi::AddBranches(TTree* t, Bool_t ismc/*=kFALSE*///){

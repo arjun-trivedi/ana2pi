@@ -496,7 +496,14 @@ class DispObs:
 					if   self.VIEW=="norm": 
 						h1p[k].SetYTitle("#sigma[#mub]")
 						h1p[k].SetMinimum(0)
-						h1p[k].SetMaximum(15)
+						if htitle=="itg_xsec Q2=[3.00,3.50)":
+							h1p[k].SetMaximum(5.0)
+						elif htitle=="itg_xsec Q2=[3.50,4.20)":
+							h1p[k].SetMaximum(3.5)
+						elif htitle=="itg_xsec Q2=[4.20,5.00)":
+							h1p[k].SetMaximum(2.5)
+						else:
+							h1p[k].SetMaximum(10)#15
 					elif self.VIEW=="ERyield": h1p[k].SetYTitle("counts")
 					
 					clr=clrd[vst,var]
@@ -546,6 +553,11 @@ class DispObs:
 				#gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				pad_l.cd()
 				l.Draw()
+				# #! [01-19-16] !DispObs does not know about jobtag! Add additional label for jobtag
+				# pt=ROOT.TPaveText(.05,.90,.95,.95,"NDC")
+				# pt.AddText("%s"%jobtag)
+				# pt.Draw()
+				#! Save canvas
 				c.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj,iq2bin+1))
 
 			elif self.VIEW=="fullana": 
