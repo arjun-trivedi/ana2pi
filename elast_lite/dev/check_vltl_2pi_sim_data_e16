@@ -9,18 +9,20 @@
 #! sim7:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216
 #! sim8:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010316
 #! sim9:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011216
+#! sim10:  /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011916
 
-simnamel=(2pi_200M_051815 2pi_300M_052015 2pi_500M_112315 2pi_500M_112715 2pi_500M_120915 2pi_1B_121815 2pi_1B_010216 2pi_1B_010316 2pi_1B_011216)
+simnamel=(2pi_200M_051815 2pi_300M_052015 2pi_500M_112315 2pi_500M_112715 2pi_500M_120915 2pi_1B_121815 2pi_1B_010216 2pi_1B_010316 2pi_1B_011216 2pi_1B_011916)
 #! Following list obtained by ls /mss-path-to-sim/recon/*.root |grep -v ana |wc -l 
 #! (Information matches what I originally noted in at-sim/README for each simulation)
-sim_nfmssl=(1991 2987 4980 4358 4981 9957 9963 7318 9860)
+sim_nfmssl=(1991 2987 4980 4358 4981 9957 9963 7318 9860 5199)
 
 isim=0
 for simname in "${simnamel[@]}";do
   nfmss=${sim_nfmssl[isim]}
-  echo "*** Processing simnum:simname=$((isim + 1)):$simname ***"
-  if [[ $((isim + 1)) < 4 ]];then #! After deleting from volatile sim1.1,sim2,sim3
-     echo "Not checking simnum:simname=$((isim + 1)):$simname"
+  simnum=$((isim + 1))
+  echo "*** Processing simnum:simname=$simnum:$simname ***"
+  if [ $simnum -lt 4 ];then #! After deleting from volatile sim1.1,sim2,sim3
+     echo "Not checking simnum:simname=$simnum:$simname"
      echo "***"
      isim=$((isim + 1))
      continue
@@ -29,7 +31,7 @@ for simname in "${simnamel[@]}";do
   echo '>nfvltl=$(ls $H10DIR_SIM_E16/$simname/recon/*.root |wc -l)'
   nfvltl=$(ls $H10DIR_SIM_E16/$simname/recon/*.root |wc -l)
   diff=$((nfmss-nfvltl))
-  echo "simnum:simname:nfmss:nfvltl:diff=$((isim + 1)):$simname:$nfmss:$nfvltl:$diff"
+  echo "simnum:simname:nfmss:nfvltl:diff=$simnum:$simname:$nfmss:$nfvltl:$diff"
   echo "***" 
   isim=$((isim + 1))
 done
@@ -38,12 +40,13 @@ if [[ -n $1 && $1 == "touch" ]]; then
   echo "Going to touch simuluation data in /volatile"
   isim=0
   for simname in "${simnamel[@]}";do
-    if [[ $((isim + 1)) < 4 ]];then #! After deleting from volatile sim1.1,sim2,sim3
-      echo "Not touching simnum:simname=$((isim + 1)):$simname"
+    simnum=$((isim + 1))
+    if [ $simnum -lt 4 ];then #! After deleting from volatile sim1.1,sim2,sim3
+      echo "Not touching simnum:simname=$simnum:$simname"
       isim=$((isim + 1))
       continue
     fi
-    echo "touching simnum:simname=$((isim + 1)):$simname"
+    echo "touching simnum:simname=$simnum:$simname"
     for f in `ls $H10DIR_SIM_E16/$simname/recon/*.root`;do
       echo ">touch $f"
       touch $f

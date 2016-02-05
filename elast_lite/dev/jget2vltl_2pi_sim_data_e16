@@ -9,8 +9,9 @@
 #! sim7:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216
 #! sim8:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010316
 #! sim9:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011216
+#! sim10:  /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011916
 
-simoutdirl=(/mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_200M_051815 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_300M_052015 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112315 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112715 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_120915 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_121815 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010316 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011216)
+simoutdirl=(/mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_200M_051815 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_300M_052015 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112315 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112715 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_120915 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_121815 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010316 /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011216 2pi_1B_011916)
 
 isim=0
 for simoutdir in "${simoutdirl[@]}";do

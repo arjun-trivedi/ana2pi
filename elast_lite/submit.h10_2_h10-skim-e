@@ -53,8 +53,8 @@ if [[ "$EXP" == "e1f" ]]; then
       TIME="10"
       MSSDIR=$E1FD_E
     elif [[ "$DTYP" == "sim" ]]; then
-      MEMORY_SPACE="1000"
-      TIME="5" 
+      MEMORY_SPACE="1500"
+      TIME="6" 
     fi
   elif [[ "$EXP" == "e16" ]]; then
     PROJECT_NAME="E1-6a"
@@ -63,8 +63,8 @@ if [[ "$EXP" == "e1f" ]]; then
       TIME="60"
       MSSDIR=$E16D_EI
     elif [[ "$DTYP" == "sim" ]]; then
-      MEMORY_SPACE="1000"
-      TIME="5"
+      MEMORY_SPACE="1500"
+      TIME="6"
     fi
 fi
 
