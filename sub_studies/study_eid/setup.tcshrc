@@ -7,3 +7,7 @@ alias study_eid 'cd ${STUDY_EID}'
 
 ##- modify PYTHONPATH
 #setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI_STUDY_EID}"
+
+##- Set up STUDY_EID_(E1F/E16)
+#! e1f-TBD setenv STUDY_EID_E1F "TBD"
+setenv STUDY_EID_E16 "/data/trivedia/e16/study_eid"
