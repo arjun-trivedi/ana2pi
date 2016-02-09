@@ -12,6 +12,9 @@ import numpy as np
 
 import math
 
+from cuts_theta_vs_p_e16 import NCUTLNS,H,L,CUT
+print "NCUTLNS,H,L=",NCUTLNS,H,L
+
 '''
 + {e1f,e16}*{"Q2,W"}*(sector}*{prtcl}*{"plots"}*{AT-cuts,EI-cuts}, where
 	+ "Q2,W":
@@ -26,9 +29,9 @@ import math
 		+ SC paddles
 		+ paddle vs. theta vs. p (how to visualize this?)
 
-+ Usage: study_det_ineff.py expt=<e1f/e16> top=[2] make_plots[=True] stdy_bad_sc_pd_theta_vs_p_crltn[=False] debug[=False]
++ Usage: study_det_ineff.py expt=<e1f/e16> top=[2] make_kin_plots[=True] stdy_bad_sc_pd_theta_vs_p_crltn[=False] debug[=False]
 '''
-USAGE="study_det_ineff.py expt=<e1f/e16> top=[2] make_plots[=True] stdy_bad_sc_pd_theta_vs_p_crltn[=False] debug[=False]"
+USAGE="study_det_ineff.py expt=<e1f/e16> top=[2] make_kin_plots[=True] stdy_bad_sc_pd_theta_vs_p_crltn[=False] debug[=False]"
 #! *** Get arguments from user *** #!
 if len(sys.argv)<2:
 		sys.exit('usage: %s'%USAGE)
@@ -47,15 +50,15 @@ if TOP<1 or TOP>4:
 	sys.exit("Valid tops=1,2,3 or 4")
 print "TOP=",TOP
 
-MAKE_PLOTS=True
-if len(sys.argv)>3: #! i.e. make_plots entered by user
+MAKE_KIN_PLOTS=True
+if len(sys.argv)>3: #! i.e. make_kin_plots entered by user
         if sys.argv[3]=="True":
-                MAKE_PLOTS=True
+                MAKE_KIN_PLOTS=True
         elif sys.argv[3]=="False":
-                MAKE_PLOTS=False
+                MAKE_KIN_PLOTS=False
         else:
-                sys.exit("Please enter make_plots as True/False only.")
-print "MAKE_PLOTS=",MAKE_PLOTS
+                sys.exit("Please enter make_kin_plots as True/False only.")
+print "MAKE_KIN_PLOTS=",MAKE_KIN_PLOTS
 
 STDY_BAD_SC_PD_THETA_VS_P_CRLTN=False
 if len(sys.argv)>4: #! i.e. stdy_bad_sc_pd_theta_vs_p_crltn entered by user
@@ -244,20 +247,14 @@ if not os.path.exists(outdir):
 cut_top=ROOT.TCut("top==%d"%TOP)
 #! ***
 
-#! First create structure to store h for "plots"
+#! First create structure to store hkin
 if Q2Wdomain=="Q2-W": #! Create h[dtyp][q2-w][sctr][prtcl][nplt]
-	h=[[[[[[]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL)*len(WBIN_LEL))]for i in range(NDTYP)]
+	hkin=[[[[[[]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL)*len(WBIN_LEL))]for i in range(NDTYP)]
 elif Q2Wdomain=="Q2": #! Create h[dtyp][q2][sctr][prtcl][nplt]
-	h=[[[[[[]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL))]for i in range(NDTYP)]
+	hkin=[[[[[[]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL))]for i in range(NDTYP)]
 
-if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
-	#! First create structure to store h
-	#if Q2Wdomain=="Q2-W": #! Create h[dtyp][q2-w][sctr][prtcl][nplt]
-	#		h=[[[[[[]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL)*len(WBIN_LEL))]for i in range(NDTYP)]
-	#elif Q2Wdomain=="Q2": #! Create h[dtyp][q2][sctr][prtcl][nplt]
-	#		h=[[[[[[]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL))]for i in range(NDTYP)]
-
-	#! Now fill h
+if MAKE_KIN_PLOTS:
+	#! Now fill hkin
 	for iq2wb,q2wbin_le in enumerate(DLE):
 		if DEBUG and iq2wb>0: continue #! debug
 		q2min,q2max=q2wbin_le[0],DUE[iq2wb][0]
@@ -284,9 +281,9 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 				#! Store histogram
 				#ROOT.gStyle.SetOptStat("ne")
 				htmp=ROOT.gDirectory.Get("hcmd")
-				h[idtyp][iq2wb][isctr][iprtcl][iplt]=htmp.Clone()
-				h[idtyp][iq2wb][isctr][iprtcl][iplt].SetName("h_%s_%s_%s_s%d"%(dtyp,prtcl,plt,sctr))
-				h[idtyp][iq2wb][isctr][iprtcl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(prtcl,plt,q2min,q2max,wmin,wmax))
+				hkin[idtyp][iq2wb][isctr][iprtcl][iplt]=htmp.Clone()
+				hkin[idtyp][iq2wb][isctr][iprtcl][iplt].SetName("h_%s_%s_%s_s%d"%(dtyp,prtcl,plt,sctr))
+				hkin[idtyp][iq2wb][isctr][iprtcl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(prtcl,plt,q2min,q2max,wmin,wmax))
 			else:
 				print "TTree name=",T[idtyp].GetName()
 				print "TTree entries=",T[idtyp].GetEntries()
@@ -295,7 +292,7 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 	#! Plot on TCanvas and save h:
 	#! + Directly as .png
 	#! + in .root file
-	fname="theta_vs_p"
+	fname="kinematics"
 	if DEBUG:
                 fname+="_dbg"
 	fout_root=ROOT.TFile("%s/%s.root"%(outdir,fname),"RECREATE")
@@ -309,11 +306,11 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 		if Q2Wdomain=="Q2-W": wmin,wmax=q2wbin_le[1],DUE[iq2wb][1]
 		elif Q2Wdomain=="Q2": wmin,wmax=WMIN,WMAX
 		q2wbin="%.2f-%.2f"%(q2min,q2max)
-		outdir_q2w="%s/%s"%(outdir,q2wbin) #! for .png
+		#outdir_q2w="%s/%s"%(outdir,q2wbin) #! for .png
+		#if not os.path.exists(outdir_q2w):
+                #        os.makedirs(outdir_q2w)
 		q2wbindir_root=fout_root.mkdir(q2wbin)#! for .root
 		q2wbindir_root.cd()
-		if not os.path.exists(outdir_q2w):
-			os.makedirs(outdir_q2w)
 		dl=[range(NDTYP),range(NPRTCL),range(NPLT)]
 		d=list(itertools.product(*dl))
 		for r in d:
@@ -331,38 +328,38 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					#l=ROOT.TLegend(0.1,0.3,0.3,0.4)#,"","NDC");
 					#! Draw hists
 					c.cd(isctr+1)
-					h[ER][iq2wb][isctr][iprtcl][iplt].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-					h[SR][iq2wb][isctr][iprtcl][iplt].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
-					h[ST][iq2wb][isctr][iprtcl][iplt].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
-					h[ER][iq2wb][isctr][iprtcl][iplt].Draw()
-					h[ER][iq2wb][isctr][iprtcl][iplt].Draw("sames %s"%draw_opt) #! Note only "sames" seems to work here (with "same" statbox with name=hxx is drawn?!)
+					hkin[ER][iq2wb][isctr][iprtcl][iplt].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+					hkin[SR][iq2wb][isctr][iprtcl][iplt].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+					hkin[ST][iq2wb][isctr][iprtcl][iplt].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
+					hkin[ER][iq2wb][isctr][iprtcl][iplt].Draw()
+					hkin[ER][iq2wb][isctr][iprtcl][iplt].Draw("sames %s"%draw_opt) #! Note only "sames" seems to work here (with "same" statbox with name=hxx is drawn?!)
 					#! obtain max_ER(=max height of distribution) used to scale SR,ST 
-					max_ER=h[ER][iq2wb][isctr][iprtcl][iplt].GetMaximum()
+					max_ER=hkin[ER][iq2wb][isctr][iprtcl][iplt].GetMaximum()
 					if max_ER==0:max_ER=1
 					#! scale SR and draw
-					max_SR=h[SR][iq2wb][isctr][iprtcl][iplt].GetMaximum()
+					max_SR=hkin[SR][iq2wb][isctr][iprtcl][iplt].GetMaximum()
 					if max_SR==0:max_SR=1
 					scl_fctr_SR=max_ER/max_SR
 					if scl_fctr_SR==0:scl_fctr_SR=1
-					h[SR][iq2wb][isctr][iprtcl][iplt].Scale(scl_fctr_SR)
-					h[SR][iq2wb][isctr][iprtcl][iplt].Draw("sames %s"%draw_opt)
+					hkin[SR][iq2wb][isctr][iprtcl][iplt].Scale(scl_fctr_SR)
+					hkin[SR][iq2wb][isctr][iprtcl][iplt].Draw("sames %s"%draw_opt)
 					#! scale ST and draw
 					if plt!="sc_pd":
-						max_ST=h[ST][iq2wb][isctr][iprtcl][iplt].GetMaximum()
+						max_ST=hkin[ST][iq2wb][isctr][iprtcl][iplt].GetMaximum()
 						if max_ST==0:max_ST=1
 						scl_fctr_ST=max_ER/max_ST
 						if scl_fctr_ST==0:scl_fctr_ST=1
-						h[ST][iq2wb][isctr][iprtcl][iplt].Scale(scl_fctr_ST)
-						h[ST][iq2wb][isctr][iprtcl][iplt].Draw("sames %s"%draw_opt)
+						hkin[ST][iq2wb][isctr][iprtcl][iplt].Scale(scl_fctr_ST)
+						hkin[ST][iq2wb][isctr][iprtcl][iplt].Draw("sames %s"%draw_opt)
 						
 					#! Adjust statbox
 					#c.Update()
 					ROOT.gPad.Update()
 					#! statbox for ER
-					pt_ER=h[ER][iq2wb][isctr][iprtcl][iplt].GetListOfFunctions().FindObject("stats")
+					pt_ER=hkin[ER][iq2wb][isctr][iprtcl][iplt].GetListOfFunctions().FindObject("stats")
 					pt_ER.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
 					#! statbox for SR
-					pt_SR=h[SR][iq2wb][isctr][iprtcl][iplt].GetListOfFunctions().FindObject("stats")
+					pt_SR=hkin[SR][iq2wb][isctr][iprtcl][iplt].GetListOfFunctions().FindObject("stats")
 					pt_SR.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
 					diff=pt_ER.GetY2NDC()-pt_ER.GetY1NDC()
 					y2=pt_ER.GetY1NDC()
@@ -373,7 +370,7 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					ROOT.gPad.Update()
 					#! statbox for ST
 					if plt!="sc_pd":
-						pt_ST=h[ST][iq2wb][isctr][iprtcl][iplt].GetListOfFunctions().FindObject("stats")
+						pt_ST=hkin[ST][iq2wb][isctr][iprtcl][iplt].GetListOfFunctions().FindObject("stats")
 						pt_ST.SetTextColor(ROOT.gROOT.ProcessLine("kGreen"))
 						diff=pt_ER.GetY2NDC()-pt_ER.GetY1NDC()
 						y2=pt_SR.GetY1NDC()
@@ -386,7 +383,7 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					#l.AddEntry(hmm[ER][i][iprtcl][iplt],'ER')
 					#l.AddEntry(hmm[ER][i][iprtcl][iplt],'SR')
 					#l.Draw()
-					c.SaveAs("%s/%s.png"%(outdir_q2w,cname))#! for .png
+					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))#! for .png
 					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 			elif plt=="theta_vs_p" or plt=="theta_vs_phi": #! draw ER and ER on separate canvases
 					cname="c_%s_%s_ER"%(prtcl,plt)
@@ -394,8 +391,8 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					c.Divide(3,2)
 					for isctr in range(NSCTR):
 						c.cd(isctr+1)
-						h[ER][iq2wb][isctr][iprtcl][iplt].Draw("colz")
-					c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
+						hkin[ER][iq2wb][isctr][iprtcl][iplt].Draw("colz")
+					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
 					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 
 					cname="c_%s_%s_SR"%(prtcl,plt)
@@ -403,8 +400,8 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					c.Divide(3,2)
 					for isctr in range(NSCTR):
 						c.cd(isctr+1)
-						h[SR][iq2wb][isctr][iprtcl][iplt].Draw("colz")
-					c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
+						hkin[SR][iq2wb][isctr][iprtcl][iplt].Draw("colz")
+					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
 					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 
 					cname="c_%s_%s_ST"%(prtcl,plt)
@@ -412,8 +409,8 @@ if MAKE_PLOTS:#not STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					c.Divide(3,2)
 					for isctr in range(NSCTR):
 						c.cd(isctr+1)
-						h[ST][iq2wb][isctr][iprtcl][iplt].Draw("colz")
-					c.SaveAs("%s/%s.png"%(outdir_q2w,cname)) #! for .png
+						hkin[ST][iq2wb][isctr][iprtcl][iplt].Draw("colz")
+					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname)) #! for .png
 					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 	fout_root.Close()					
 #! ***
@@ -424,11 +421,37 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 	if not os.path.exists(outdir_sc_pd_theta_vs_p):
 		os.makedirs(outdir_sc_pd_theta_vs_p)
 
-	#! Define some functions to sector and paddle from sc_pd_code
+	#! Define some functions to get sector and paddle from sc_pd_code
 	def get_sector(sc_pd_code):
 			return (sc_pd_code-(sc_pd_code%100))/100
 	def get_paddle(sc_pd_code):
 			return sc_pd_code%100 
+	#! Define some other functions used below
+	def found_hist_on_tpad(pad):
+		ret=False
+		next=ROOT.TIter(pad.GetListOfPrimitives())
+                while(1):
+                	obj=next()
+                        if obj==None: break
+                        print "Reading",obj.GetName()
+                        if obj.InheritsFrom("TH1"):
+                        	print "histo:",obj.GetName()
+                                ret=True
+				break
+		return ret
+	
+	def draw_EI_theta_vs_p_cuts(iprtcl,isctr,pad):
+        	if CUT[H][iprtcl][isctr]!=None:
+			print "Going to draw EI's theta_vs_p cuts for prtcl,sctr=",PRTCL_NAME[iprtcl],isctr+1
+			#! setup draw opt
+			if found_hist_on_tpad(pad): draw_opt="same"
+                	else:                       draw_opt=""
+			#! ***
+                	for cuth,cutl in zip(CUT[H][iprtcl][isctr],CUT[L][iprtcl][isctr]):
+                        	cuth.Draw(draw_opt)
+                                cutl.Draw("same")
+		else:
+			print "Skip (since not cut exists) Going to draw EI's theta_vs_p cuts for prtcl,sctr=",PRTCL_NAME[iprtcl],isctr+1
 
 	#! Make list of bad_sc_pd_code[NPRTCL][NDTYP]; NPRTCL=(E,P,PIP),NDTYP=(ER,SR)
 	#! + Truly, if a paddle is bad, it is bad for for all particles. 
@@ -489,10 +512,10 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 	#! Now using good_sc_pd_list, make plots for correlated dips in theta_vs_p for bad_sc_pd_list
 	#! First create structure to store h
 	NPDL=70 #! actually less than 70, but just to be safe
-	if Q2Wdomain=="Q2-W": #! Create hh[dtyp][q2-w][sctr][prtcl][plt][pd]
-		hh=[[[[[[[]for n in range(NPDL)]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL)*len(WBIN_LEL))]for i in range(NDTYP)]
-	elif Q2Wdomain=="Q2": #! Create hh[dtyp][q2][sctr][prtcl][plt]
-		hh=[[[[[[[]for n in range(NPDL)]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL))]for i in range(NDTYP)]
+	if Q2Wdomain=="Q2-W": #! Create h_bad_sc_pd[dtyp][q2-w][sctr][prtcl][plt][pd]
+		h_bad_sc_pd=[[[[[[[]for n in range(NPDL)]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL)*len(WBIN_LEL))]for i in range(NDTYP)]
+	elif Q2Wdomain=="Q2": #! Create h_bad_sc_pd[dtyp][q2][sctr][prtcl][plt]
+		h_bad_sc_pd=[[[[[[[]for n in range(NPDL)]for m in range(NPLT)]for l in range(NPRTCL)]for k in range(NSCTR)]for j in range(len(Q2BIN_LEL))]for i in range(NDTYP)]
 	 
 	#! Now fill h
 	for iq2wb,q2wbin_le in enumerate(DLE):
@@ -555,27 +578,27 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 							#! Store histogram
 							#ROOT.gStyle.SetOptStat("ne")
 							htmp=ROOT.gDirectory.Get("hcmd")#(draw_cmd_hst_name[idtyp][isctr][icorr])
-							hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]=htmp.Clone()#"hmm_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
-							hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].SetName("h_%s_%s_%s_pd%d_s%d"%(dtyp,prtcl,plt,pd,sctr))
-							hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f pd%d s_%d"%(prtcl,plt,q2min,q2max,wmin,wmax,pd,sctr))#("%s"%cut.GetTitle())
-							print "histogram entries=",hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].GetEntries()
+							h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]=htmp.Clone()#"hmm_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
+							h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].SetName("h_%s_%s_%s_pd%d_s%d"%(dtyp,prtcl,plt,pd,sctr))
+							h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f pd%d s_%d"%(prtcl,plt,q2min,q2max,wmin,wmax,pd,sctr))#("%s"%cut.GetTitle())
+							print "histogram entries=",h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].GetEntries()
 						else:
 							print "TTree name=",T[idtyp].GetName()
 							print "TTree entries=",T[idtyp].GetEntries()
 							sys.exit("TTree has no entries. Because of what appears to be a bug in ROOT, this can lead, ina subtle manner, to deeper problems: TTree::Draw() should return a Null pointer in this case, however, it seems that ROOT returns the pointer to the previous histogram draw by TTree::Draw and therefore I end up referencing the wrong histogram. A workaround could be to use unique names for the histograms in the 'draw_cmd'. However, for now, this will have to do. ")
 					else:
 						print "TTree::Draw() for q2min,q2max,wmin,wmax,dtyp,prtcl,plt,pd,sctr,good_sctrl,good_pdcodel=",q2min,q2max,wmin,wmax,dtyp,prtcl,plt,pd,sctr,good_sctrl,good_pd_codel,":Skip(because sctr in good_sctrl)"
-						hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]=None
+						h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]=None
 
-	#print "test",  hh[ER][0][5][PIP][0][31].GetEntries()
-	#print "test2", hh[0][0][5][2][0][31].GetEntries()
+	#print "test",  h_bad_sc_pd[ER][0][5][PIP][0][31].GetEntries()
+	#print "test2", h_bad_sc_pd[0][0][5][2][0][31].GetEntries()
 	#c2=ROOT.TCanvas("c2","c2")
-	#hh[0][0][5][2][0][31].Draw("colz")
+	#h_bad_sc_pd[0][0][5][2][0][31].Draw("colz")
 	#c2.SaveAs("/tmp/canvas/testw.png")
 
 	#! Plot on TCanvas and save h:
 	fname="bad_sc_pd_theta_vs_p"
-	if MAKE_PLOTS:
+	if MAKE_KIN_PLOTS:
 		fname="bad_good_sc_pd_theta_vs_p"
 	if DEBUG:
 		fname+="_dbg"
@@ -589,11 +612,11 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 		if   Q2Wdomain=="Q2-W": wmin,wmax=q2wbin_le[1],DUE[iq2wb][1]
 		elif Q2Wdomain=="Q2":   wmin,wmax=WMIN,WMAX
 		q2wbin="%.2f-%.2f"%(q2min,q2max)
-		outdir_q2w="%s/%s"%(outdir_sc_pd_theta_vs_p,q2wbin) #! for .png
+		#outdir_q2w="%s/%s"%(outdir_sc_pd_theta_vs_p,q2wbin) #! for .png
+		#if not os.path.exists(outdir_q2w):
+                #       os.makedirs(outdir_q2w)
 		q2wbindir_root=fout_root.mkdir(q2wbin)#! for .root
 		q2wbindir_root.cd()
-		if not os.path.exists(outdir_q2w):
-			os.makedirs(outdir_q2w)
 		dl=[range(NDTYP),range(NPRTCL),range(NPLT)]
 		d=list(itertools.product(*dl))
 		for r in d:
@@ -612,15 +635,22 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 				pd_all_dir_root=q2wbindir_root.mkdir(pd_all_dir_name)
 			else:
                         	pd_all_dir_root=q2wbindir_root.GetDirectory(pd_all_dir_name)
-			#! Make canvas for plot from all pd
+			#! Make canvas for plot for all pd
 			cname_pd_all="c_%s_%s_pdall_%s"%(prtcl,plt,dtyp)
                         c_pd_all=ROOT.TCanvas(cname_pd_all,cname_pd_all,CWDTH,CHGHT)
                         c_pd_all.Divide(3,2)
-			if MAKE_PLOTS:	
-				for isctr in range(NSCTR):
-					sctr=isctr+1
-					c_pd_all.cd(sctr)
-                               		h[idtyp][iq2wb][isctr][iprtcl][iplt].Draw("colz")
+			htmp=[]
+			for isctr in range(NSCTR):
+				sctr=isctr+1
+                                c_pd_all.cd(sctr)
+				if MAKE_KIN_PLOTS:
+					hkin[idtyp][iq2wb][isctr][iprtcl][iplt].Draw("colz")
+				else: #! then make histogram first because then that will provide TF1::Draw the axes to draw on
+					hname="%s_%s_s%d"%(plt,prtcl,sctr) 
+                                	nbinsx,xmin,xmax=BNG[plt,prtcl][0],BNG[plt,prtcl][1],BNG[plt,prtcl][2]
+                               		nbinsy,ymin,ymax=BNG[plt,prtcl][3],BNG[plt,prtcl][4],BNG[plt,prtcl][5]
+                               		htmp.append(ROOT.TH2F(hname,hname,nbinsx,xmin,xmax,nbinsy,ymin,ymax))
+                                  	htmp[isctr].Draw()
 
 			#! Now loop over paddles
 			for pd in good_sc_pd_list[iprtcl][idtyp].keys():
@@ -638,47 +668,45 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 				for isctr in range(NSCTR):
 					sctr=isctr+1
 					print "Going to plot for q2min,q2max,wmin,wmax,dtyp,prtcl,plt,pd,sctr",q2min,q2max,wmin,wmax,dtyp,prtcl,plt,pd,sctr
+					#! First make plots on canvas for individual paddle
 					c_pd.cd(sctr)
 					#! First draw h
-					if MAKE_PLOTS:
-						h[idtyp][iq2wb][isctr][iprtcl][iplt].Draw("colz")
-					#! Now superimpose hh
-					#! This condition should not be met: if len(hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd])==0: continue
-					if hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]==None: #!good_sc_pd:[isctr] not plotted
-						print "hh==None"
-						continue
+					if MAKE_KIN_PLOTS:
+						hkin[idtyp][iq2wb][isctr][iprtcl][iplt].Draw("colz")
+					#! Now superimpose h_bad_sc_pd
+					#! This condition should not be met: if len(h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd])==0: continue
+					if h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]!=None: #!good_sc_pd:[isctr] not plotted
+						print "h_bad_sc_pd!=None -> Plot"
+						if MAKE_KIN_PLOTS: draw_opt="sames"
+						else:          draw_opt="colz"
+						h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw(draw_opt)
 					else:
-						print "hh!=None"
-					if MAKE_PLOTS:
-						hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw("sames")
-					else:	
-						hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw("colz")
+						print "h_bad_sc_pd==None -> Skip Plot"
 					
-					#! all pds together	
+					#! Now make plots on canvas for all paddles
 					pad=c_pd_all.cd(sctr)
-					if MAKE_PLOTS:
-                                                hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw("sames")
-                                        else:
-						#! First determine if any hist is already drawn on the canvas
-						found_hist=False
-						next=ROOT.TIter(pad.GetListOfPrimitives())
-						while(1):
-							obj=next()
-							if obj==None: break
-							print "Reading",obj.GetName()
-							if obj.InheritsFrom("TH1"):
-								print "histo:",obj.GetName()
-								found_hist=True		
-						#! Now draw as per found_hist
-						if found_hist:
-                                                	hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw("colz sames")
+					if MAKE_KIN_PLOTS: #! hkin[idtyp][iq2wb][isctr][iprtcl][iplt] already plotted earlier!
+						if h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]!=None: #!good_sc_pd:[isctr] not plotted
+							print "h_bad_sc_pd!=None -> Plot"
+                                                	h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw("sames")
 						else:
-							hh[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw("colz")
-					
-
-					
+							print "h_bad_sc_pd==None -> Skip Plot"
+                                        else:
+						if h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd]!=None: #!good_sc_pd:[isctr] not plotted
+							print "h_bad_sc_pd!=None -> Plot"
+							if found_hist_on_tpad(pad): draw_opt="colz sames"
+							else:                       draw_opt="colz"
+							h_bad_sc_pd[idtyp][iq2wb][isctr][iprtcl][iplt][ipd].Draw(draw_opt)
+						else:
+							print "h_bad_sc_pd==None -> Skip Plot"
 				#c.SaveAs("/tmp/canvas/%s.png"%(cname))
 				c_pd.Write("%s_%s"%(cname_pd,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycl
+			#! On canvas for all paddles, superimpose EI's theta_vs_p cuts
+			for isctr in range(NSCTR):
+                        	sctr=isctr+1
+                                pad=c_pd_all.cd(sctr)
+                                #! Superimpose EI's theta_vs_p cuts
+                                draw_EI_theta_vs_p_cuts(iprtcl,isctr,pad)
 			pd_all_dir_root.cd()
 			c_pd_all.Write("%s_%s"%(cname_pd_all,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycl
 	fout_root.Close()

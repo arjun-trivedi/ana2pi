@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from cut_theta_vs_p_e16 import NCUTLNS,H,L,CUT
+from cuts_theta_vs_p_e16 import NCUTLNS,H,L,CUT
 print "NCUTLNS,H,L=",NCUTLNS,H,L
 #print "CUT=",CUT
 
