@@ -293,7 +293,7 @@ void ProcD2pi::handle() {
 						
 		//! Make final top selection cut
 		Bool_t t1b=TMath::Abs(mm2ppippim) < 0.0005;
-		Bool_t t2b=mm2ppip>0 && mm2ppip<0.04;//0.16
+		Bool_t t2b=mm2ppip>-0.04 && mm2ppip<0.06;//AT:(0.00,0.04),EI:(-0.04,0.06)
 		Bool_t t3b=mm2ppim>0 && mm2ppim<0.04;//0.16;
 		Bool_t t4b=mm2pippim>0.8 && mm2pippim<1.00;//mm2pippim>0.0 && mm2pippim<1.25;
 

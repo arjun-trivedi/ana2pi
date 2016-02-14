@@ -283,7 +283,7 @@ if MAKE_KIN_PLOTS:
 				htmp=ROOT.gDirectory.Get("hcmd")
 				hkin[idtyp][iq2wb][isctr][iprtcl][iplt]=htmp.Clone()
 				hkin[idtyp][iq2wb][isctr][iprtcl][iplt].SetName("h_%s_%s_%s_s%d"%(dtyp,prtcl,plt,sctr))
-				hkin[idtyp][iq2wb][isctr][iprtcl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(prtcl,plt,q2min,q2max,wmin,wmax))
+				hkin[idtyp][iq2wb][isctr][iprtcl][iplt].SetTitle("%s_%s_%s %.2f-%.2f_%.3f-%.3f"%(prtcl,plt,dtyp,q2min,q2max,wmin,wmax))
 			else:
 				print "TTree name=",T[idtyp].GetName()
 				print "TTree entries=",T[idtyp].GetEntries()
@@ -298,8 +298,8 @@ if MAKE_KIN_PLOTS:
 	fout_root=ROOT.TFile("%s/%s.root"%(outdir,fname),"RECREATE")
 
 	#! CWDTH,CHGHT defined as per 3,2 TCanvas
-	CWDTH=600
-	CHGHT=400
+	CWDTH=500
+	CHGHT=300
 	for iq2wb,q2wbin_le in enumerate(DLE):
 		if DEBUG and iq2wb>0: continue #! debug
 		q2min,q2max=q2wbin_le[0],DUE[iq2wb][0]
@@ -321,7 +321,7 @@ if MAKE_KIN_PLOTS:
 			if plt=="theta" or plt=="p" or plt=="sc_pd":#! then draw on same canvas
 				draw_opt=""
 				if plt=="sc_pd": draw_opt="hist"
-				cname="c_%s_%s"%(prtcl,plt)
+				cname="c_%s_%s_%s"%(prtcl,plt,q2wbin)
 				c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 				c.Divide(3,2)
 				for isctr in range(NSCTR):
@@ -384,34 +384,34 @@ if MAKE_KIN_PLOTS:
 					#l.AddEntry(hmm[ER][i][iprtcl][iplt],'SR')
 					#l.Draw()
 					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))#! for .png
-					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+					c.Write("%s"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 			elif plt=="theta_vs_p" or plt=="theta_vs_phi": #! draw ER and ER on separate canvases
-					cname="c_%s_%s_ER"%(prtcl,plt)
+					cname="c_%s_%s_ER_%s"%(prtcl,plt,q2wbin)
 					c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 					c.Divide(3,2)
 					for isctr in range(NSCTR):
 						c.cd(isctr+1)
 						hkin[ER][iq2wb][isctr][iprtcl][iplt].Draw("colz")
 					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
-					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+					c.Write("%s"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 
-					cname="c_%s_%s_SR"%(prtcl,plt)
+					cname="c_%s_%s_SR_%s"%(prtcl,plt,q2wbin)
 					c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 					c.Divide(3,2)
 					for isctr in range(NSCTR):
 						c.cd(isctr+1)
 						hkin[SR][iq2wb][isctr][iprtcl][iplt].Draw("colz")
 					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
-					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+					c.Write("%s"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 
-					cname="c_%s_%s_ST"%(prtcl,plt)
+					cname="c_%s_%s_ST_%s"%(prtcl,plt,q2wbin)
 					c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 					c.Divide(3,2)
 					for isctr in range(NSCTR):
 						c.cd(isctr+1)
 						hkin[ST][iq2wb][isctr][iprtcl][iplt].Draw("colz")
 					#c.SaveAs("%s/%s.png"%(outdir_q2w,cname)) #! for .png
-					c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+					c.Write("%ss"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 	fout_root.Close()					
 #! ***
 #! Now study bad_sc_pd and theta_vs_p dip correlation
@@ -457,11 +457,27 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 	#! + Truly, if a paddle is bad, it is bad for for all particles. 
 	#! + However, given the kinematics of each particle, every paddle is not accessible to each particle.
 	#! + Therefore, a comprehensive list of bad pad paddles is identified by looking at each particle separately 
+	#bad_sc_pd_code_list=[
+	#[[],[311,505]], #!E
+	#[[],[311,324,520]], #!P
+	#[[145,340,342,345,346,347,632,633,634,635,636,637,638,639],[145,311,324,336,337,340,342,434,520,532,540,542,636,637,644]] #! PIP
+	#]
+	#! [02-14-15] Paddles and added from above list after a closer look at sc_pd histograms prompted by the first observations of output from this script (there may be some other changes related to arraning the paddles in numerical order where they were not so ordered)
+	#! Paddles removed:
+	#! + pip
+	#! 1. SR:340
+	#! 2. SR:336
+	#! Paddles added:
+	#! + p
+	#! ER:324
+	#! + pip
+	#! ER:245,337,338,324,434,542,644
+	#! SR:338
 	bad_sc_pd_code_list=[
-	[[],[311,505]], #!E
-	[[],[311,324,520]], #!P
-	[[145,340,342,345,346,347,632,633,634,635,636,637,638,639],[145,311,324,336,337,340,342,434,520,532,540,542,636,637,644]] #! PIP
-	]
+        [[],[311,505]], #!E
+        [[324],[311,324,520]], #!P
+        [[145,245,324,337,338,340,342,345,346,347,434,542,632,633,634,635,636,637,638,639,644],[145,311,324,337,338,342,434,520,532,540,542,636,637,644]] #! PIP
+        ]
 
 	#! Now make bad_sc_pd_list[NPRTCL][DTYP]{pd:[sctrl]}
 	bad_sc_pd_list=[[[]for j in range(NDTYP-1)]for i in range(NPRTCL-1)]
@@ -604,8 +620,8 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 		fname+="_dbg"
 	fout_root=ROOT.TFile("%s/%s.root"%(outdir_sc_pd_theta_vs_p,fname),"RECREATE")
 	#! CWDTH,CHGHT defined as per 3,2 TCanvas
-	CWDTH=600
-	CHGHT=400
+	CWDTH=500
+	CHGHT=300
 	for iq2wb,q2wbin_le in enumerate(DLE):
 		if DEBUG and iq2wb>0: continue #! debug
 		q2min,q2max=q2wbin_le[0],DUE[iq2wb][0]
@@ -636,7 +652,7 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 			else:
                         	pd_all_dir_root=q2wbindir_root.GetDirectory(pd_all_dir_name)
 			#! Make canvas for plot for all pd
-			cname_pd_all="c_%s_%s_pdall_%s"%(prtcl,plt,dtyp)
+			cname_pd_all="c_%s_%s_pdall_%s_%s"%(prtcl,plt,dtyp,q2wbin)
                         c_pd_all=ROOT.TCanvas(cname_pd_all,cname_pd_all,CWDTH,CHGHT)
                         c_pd_all.Divide(3,2)
 			htmp=[]
@@ -662,7 +678,7 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 					pddir_root=q2wbindir_root.GetDirectory(pddir_name)
 				pddir_root.cd()
 
-				cname_pd="c_%s_%s_pd%d_%s"%(prtcl,plt,pd,dtyp)
+				cname_pd="c_%s_%s_pd%d_%s_%s"%(prtcl,plt,pd,dtyp,q2wbin)
 				c_pd=ROOT.TCanvas(cname_pd,cname_pd,CWDTH,CHGHT)
 				c_pd.Divide(3,2)
 				for isctr in range(NSCTR):
@@ -700,7 +716,7 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 						else:
 							print "h_bad_sc_pd==None -> Skip Plot"
 				#c.SaveAs("/tmp/canvas/%s.png"%(cname))
-				c_pd.Write("%s_%s"%(cname_pd,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycl
+				c_pd.Write("%s"%cname_pd,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycl
 			#! On canvas for all paddles, superimpose EI's theta_vs_p cuts
 			for isctr in range(NSCTR):
                         	sctr=isctr+1
@@ -708,7 +724,7 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
                                 #! Superimpose EI's theta_vs_p cuts
                                 draw_EI_theta_vs_p_cuts(iprtcl,isctr,pad)
 			pd_all_dir_root.cd()
-			c_pd_all.Write("%s_%s"%(cname_pd_all,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycl
+			c_pd_all.Write("%s"%cname_pd_all,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycl
 	fout_root.Close()
 
 #! If wanting to keep TCanvas open till program exits				

@@ -695,22 +695,22 @@ void h10looper_2pi::setup_d2pi(){
 	if (_seq=="recon"){
 		TDirectory* dir_MM=dir_d2pi->mkdir("MM");
 		dir_MM->mkdir("pre_cut")->cd();
-		_hmm2_prec_fW=new TH1F("hmm2ppip_prec_fW", "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);//0.16));
-    	_hmm_prec_fW =new TH1F("hmmppip_prec_fW",  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);//0.40));
+		_hmm2_prec_fW=new TH1F("hmm2ppip_prec_fW", "Missing Mass2 of p,#pi^{+}", 100,-0.50,1.00);//0.16));
+    	_hmm_prec_fW =new TH1F("hmmppip_prec_fW",  "Missing Mass of p,#pi^{+}",  100,-0.50,1.00);//0.40));
 		_hmm2_prec=new TH1F*[NBINS_WCRS];
 		_hmm_prec =new TH1F*[NBINS_WCRS];
 		for(int iw=0;iw<NBINS_WCRS;iw++){
-			_hmm2_prec[iw]=new TH1F(TString::Format("hmm2ppip_prec_%d",iw+1), "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);
-			_hmm_prec[iw]= new TH1F(TString::Format("hmmppip_prec_%d",iw+1),  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);
+			_hmm2_prec[iw]=new TH1F(TString::Format("hmm2ppip_prec_%d",iw+1), "Missing Mass2 of p,#pi^{+}", 100,-0.50,1.00);
+			_hmm_prec[iw]= new TH1F(TString::Format("hmmppip_prec_%d",iw+1),  "Missing Mass of p,#pi^{+}",  100,-0.50,1.00);
 		}
 		dir_MM->mkdir("pst_cut")->cd();
-		_hmm2_pstc_fW=new TH1F("hmm2ppip_pstc_fW", "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);//0.16));
-    	_hmm_pstc_fW =new TH1F("hmmppip_pstc_fW",  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);//0.40));
+		_hmm2_pstc_fW=new TH1F("hmm2ppip_pstc_fW", "Missing Mass2 of p,#pi^{+}", 100,-0.50,1.00);//0.16));
+    	_hmm_pstc_fW =new TH1F("hmmppip_pstc_fW",  "Missing Mass of p,#pi^{+}",  100,-0.50,1.00);//0.40));
 		_hmm2_pstc=new TH1F*[NBINS_WCRS];
 		_hmm_pstc =new TH1F*[NBINS_WCRS];
 		for(int iw=0;iw<NBINS_WCRS;iw++){
-			_hmm2_pstc[iw]=new TH1F(TString::Format("hmm2ppip_pstc_%d",iw+1), "Missing Mass2 of p,#pi^{+}", 100,-0.02,1.00);
-			_hmm_pstc[iw]= new TH1F(TString::Format("hmmppip_pstc_%d",iw+1),  "Missing Mass of p,#pi^{+}",  100, 0.00,1.00);
+			_hmm2_pstc[iw]=new TH1F(TString::Format("hmm2ppip_pstc_%d",iw+1), "Missing Mass2 of p,#pi^{+}", 100,-0.50,1.00);
+			_hmm_pstc[iw]= new TH1F(TString::Format("hmmppip_pstc_%d",iw+1),  "Missing Mass of p,#pi^{+}",  100,-0.50,1.00);
 		}
 	}
 

@@ -68,39 +68,68 @@ DATE_ST={
 ('e16','sim9'):'012416'
 }
 
+#! The two sets of cutncors that I am currently applying and that in the commented out parts below, I am systematically testing for their respective effects on the cross section
 CUTSNCORS=OrderedDict()
-CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:']
-CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+#CUTSNCORS[('dflt','dflt')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:']
+#CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
 
-#! See affect of each additional cutsncor on top of 'dflt_dflt' that together give 'cuts-EI'
-#CUTSNCORS[('dflt_eff_scpd','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
-#CUTSNCORS[('dflt','dflt_ECin-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:1:']
-#CUTSNCORS[('dflt','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
-#CUTSNCORS[('dflt','dflt_zvtx-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:3:']
-#CUTSNCORS[('dflt','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:']
-#CUTSNCORS[('dflt','dflt_hitSC-PID-off')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:']
-#CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:15:']
+#! ##################
+#! Systematic study 1
+#! Observe affect of each additional cutsncor on top of 'dflt_dflt' that together give 'cuts-EI'. Generally it is observed that:
+#! + Q2=[2.0,2.4]: EI-cuts>dflt 
+#! + Q2=[2.4,3.0]: EI-cuts`=dflt
 
-#! [01-24-16]Investigation of what cutsncors cause increase in cross-section going from dflt to EI-cuts, escpecially
-#! for Q2=[2.0,2.4]; for Q2=[2.4,3.0] there may actually be a slight reduction
-#! + cutsncors that increase xsec: eff_scpd(Q2=[2.0,2.4]),ECfid-on(Q2=[2.0,2.4]),stat-PID-on(both Q2) 
-#! + cutsncors that decrease xsec: gpart-PID-on(both Q2))
+#! Results (for full details see handwritten notes):
+#! It was found that some of the additional cutsncors increase the cross-section, while some reduce it, while other not 
+#! below have no effect:
+#! + cutsncors that increase xsec:
+#! 			Q2=[2.0,2.4]	Q2=[2.4,3.0]
+#! i.   eff_scpd	V		V(slight effect)			
+#! ii.  ECfid-on	V		X
+#! iii. stat-PID-on	V		V
+#! + cutsncors that decrease xsec: 
+#! 			Q2=[2.0,2.4]	Q2=[2.4,3.0]
+#! i. gpart-PID-on	V		V
+#! ##################
+CUTSNCORS[('dflt_eff_scpd','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
+CUTSNCORS[('dflt','dflt_ECin-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:1:']
+CUTSNCORS[('dflt','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
+CUTSNCORS[('dflt','dflt_zvtx-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:3:']
+CUTSNCORS[('dflt','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:']
+CUTSNCORS[('dflt','dflt_hitSC-PID-off')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:']
+CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:15:']
 
-#! cutsncors that increase xsec 
+#! ##################
+#! [01-24-16] Systemtatic study 2
+#! In this study the goal is to further investigate the results of study-1 to answer questions like:
+#! + What cutsncors are responsible for the ultimate systematic effect in each Q2 bin, noted in study 1? 
+#!    + For example, does the increase caused by one cutncor cancel with the decrease caused by another?
+#!    + A hypothesis tested below is that any total increase in cross-section is caused by 'eff_scpd' and
+#!      the increase caused by 'stat-PID-on' in cancelled by the decrease caused by 'gpart-PID-on'
+
+#! Results (for full details see handwritten notes):
+#! The hypothesis under test i.e. that any total increase in cross-section is caused by 'eff_scpd' and 
+#! the increase caused by 'stat-PID-on' in cancelled by the decrease caused by 'gpart-PID-on' was found to be true:
+#! + eff_scpd    + ECfid-on     => + : total increase
+#! + stat-PID-on - gpart-PID-on => 0 : No net effect
+#!   
+#! ################## 
+
+#! + cutsncors that increase xsec 
 #CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:15:']
-#! what does gpart counter-act?
+#! + what does the decrease caused by gpart counter-act?
 #! 1. dflt_eff_scpd?
-#CUTSNCORS[('dflt_eff_scpd','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:13:']
+CUTSNCORS[('dflt_eff_scpd','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:13:']
 #! 2. ECfid?
-#CUTSNCORS[('dflt','dflt_ECfid-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:13:']
+CUTSNCORS[('dflt','dflt_ECfid-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:13:']
 #! 3. stat-PID? (Hypothesis)
-#CUTSNCORS[('dflt','dflt_stat-PID-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:15:']
+CUTSNCORS[('dflt','dflt_stat-PID-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:15:']
 #! If 1. is correct, then total increase should be due to ECfid-on,stat-PID-on
-#CUTSNCORS[('dflt','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:15:']
+CUTSNCORS[('dflt','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:15:']
 #! If 2. is correct, then total increase should be due to eff_scpd,stat-PID-on
-#CUTSNCORS[('dflt_eff_scpd','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:15:']
+CUTSNCORS[('dflt_eff_scpd','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:15:']
 #! If 3. (Hypothesis) is correct, then total increase should be due to eff_scpd,ECfid-on and that too only for Q2=[2.0,2.4]
-#CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
+CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
 
 
 if len(sys.argv)<2:

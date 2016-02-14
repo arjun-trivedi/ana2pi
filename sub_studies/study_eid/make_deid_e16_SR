@@ -1,1 +1,3 @@
-proc_h10 -i h10_e16_SR.lst -t e16:sim:elast -p eid_tree:efid:pidnewmon:pfidnew:d2piR_tree:eid_tree -o deid.root -n 1000000
+#!/bin/bash
+nentries=${1:-0}
+proc_h10 -i h10_e16_SR.lst -t e16:sim:elast -p eid_tree:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree:eid_tree -o deid.root -n $nentries

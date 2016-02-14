@@ -473,8 +473,8 @@ TObjArray* DataAna::makeHistsMM()
 	TObjArray *ret = new TObjArray(16);
 	ret->Add(new TH1F("hmm2ppippim","Missing Mass2 of p,#pi^{+},#pi^{-}",600,   -0.003,0.003));
 	ret->Add(new TH1F("hmmppippim", "Missing Mass of p,#pi^{+},#pi^{-}", 20000, -0.10,  0.1));
-	ret->Add(new TH1F("hmm2ppip",   "Missing Mass2 of p,#pi^{+}",        100,   -0.02, 1.00));//0.16));
-	ret->Add(new TH1F("hmmppip",    "Missing Mass of p,#pi^{+}",         100,    0.00, 1.00));//0.40));
+	ret->Add(new TH1F("hmm2ppip",   "Missing Mass2 of p,#pi^{+}",        100,   -0.50, 1.00));//0.16));
+	ret->Add(new TH1F("hmmppip",    "Missing Mass of p,#pi^{+}",         100,   -0.50, 1.00));//0.40));
 	ret->Add(new TH1F("hmm2ppim",   "Missing Mass2 of p,#pi^{-}",        100,   -0.02, 1.00));//0.16));
 	ret->Add(new TH1F("hmmppim",    "Missing Mass of p,#pi^{-}",         100,    0.00, 1.00));//0.40));
 	ret->Add(new TH1F("hmm2pippim", "Missing Mass2 of #pi^{+},#pi^{-}",  100,    0.80,  1.2));
@@ -1511,6 +1511,7 @@ void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("nphe",&eid.nphe);
 	t->Branch("cc_segm",&eid.cc_segm);
 	t->Branch("cc_theta",&eid.cc_theta);
+	t->Branch("top",&d2pi.top);
 }
 
 void DataAna::addBranches_DataEkin(TTree* t,Bool_t useMc/*=kFALSE*/){

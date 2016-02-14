@@ -35,9 +35,9 @@ import math
 			+ theta_vs_seg 
 			+ nphe
 
-+ Usage: study_eid.py expt=<e1f/e16> debug[=False]
++ Usage: study_eid.py expt=<e1f/e16> top[=2] debug[=False]
 '''
-USAGE="study_eid.py expt=<e1f/e16> debug[=False]"
+USAGE="study_eid.py expt=<e1f/e16> top[=2] debug[=False]"
 #! *** Get arguments from user *** #!
 if len(sys.argv)<2:
 		sys.exit('usage: %s'%USAGE)
@@ -49,11 +49,18 @@ print "expt=",expt
 if expt=="e1f":
 	sys.exit("Not implemented for e1f yet")
 
+TOP=2
+if len(sys.argv)>2: #! i.e. top entered by user
+        TOP=int(sys.argv[2])
+if TOP<1 or TOP>4:
+        sys.exit("Valid tops=1,2,3 or 4")
+print "TOP=",TOP
+
 DEBUG=False
-if len(sys.argv)>2: #! i.e. debug entered by user
-        if sys.argv[2]=="True":
+if len(sys.argv)>3: #! i.e. debug entered by user
+        if sys.argv[3]=="True":
                 DEBUG=True
-        elif sys.argv[2]=="False":
+        elif sys.argv[3]=="False":
                 DEBUG=False
         else:
                 sys.exit("Please enter debug as True/False only.")
@@ -130,7 +137,7 @@ for idtyp,icutlvl in zip(range(NDTYP),range(NCUTLVL)):
 
 	T[idtyp][MON]=FIN[idtyp].Get("eid/monitor/t")
 	T[idtyp][CUT]=FIN[idtyp].Get("eid/cut/t")
-	T[idtyp][EVT]=FIN[idtyp].Get("eid/cut/t")
+	T[idtyp][EVT]=FIN[idtyp].Get("eid2/cut/t")
 #print FIN[ER].GetName()
 #print FIN[SR].GetName()
 #print T[SR][MON].GetName()
@@ -196,7 +203,7 @@ for r in d:
 #! ***
 
 #! outdir
-outdir=os.path.join(DATADIR_OUTPUT,"results")
+outdir=os.path.join(DATADIR_OUTPUT,"results_top%d"%TOP)
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 #! ***
@@ -204,7 +211,7 @@ if not os.path.exists(outdir):
 #! Define any global TCuts
 #! top==2
 #TOP=2
-#cut_top=ROOT.TCut("top==%d"%TOP)
+cut_top=ROOT.TCut("top==%d"%TOP)
 #! ***
 
 #! First create structure to store heid
@@ -236,20 +243,20 @@ for iq2wb,q2wbin_le in enumerate(DLE):
 		cut_sctr=ROOT.TCut("sector==%d"%sctr)
                 cut+=cut_sctr
 		#! Add cut_top defined globally
-		#if cutlvl=="evt":
-		#	cut+=cut_top #! cut_top defined earlier
+		if cutlvl=="evt":
+			cut+=cut_top #! cut_top defined earlier
 		#! Now plot
 		print "TTree::Draw() for q2min,q2max,wmin,wmax,sctr,dtyp,cutlvl,plt=",q2min,q2max,wmin,wmax,sctr,dtyp,cutlvl,plt
 		if T[idtyp][icutlvl].GetEntries()>0:
-			#print "draw_cmd=",draw_cmd[isctr][iplt]
-			#print "cut=",cut
+			print "draw_cmd=",draw_cmd[isctr][iplt]
+			print "cut=",cut
 			T[idtyp][icutlvl].Draw(draw_cmd[isctr][iplt],cut,"",NENTRIES)
 			#! Store histogram
 			#ROOT.gStyle.SetOptStat("ne")
 			htmp=ROOT.gDirectory.Get("hcmd")
 			heid[idtyp][iq2wb][isctr][icutlvl][iplt]=htmp.Clone()
 			heid[idtyp][iq2wb][isctr][icutlvl][iplt].SetName("h_%s_%s_%s_s%d"%(dtyp,cutlvl,plt,sctr))
-			heid[idtyp][iq2wb][isctr][icutlvl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(cutlvl,plt,q2min,q2max,wmin,wmax))
+			#heid[idtyp][iq2wb][isctr][icutlvl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(cutlvl,plt,q2min,q2max,wmin,wmax))
 		else:
 			print "TTree name=",T[idtyp][icutlvl].GetName()
 			print "TTree entries=",T[idtyp][icutlvl].GetEntries()
@@ -290,7 +297,7 @@ for iq2wb,q2wbin_le in enumerate(DLE):
 		if plt_dim==1:#plt=="ecU" or plt=="ecV" or plt=="ecW":#! then draw on same canvas
 			draw_opt=""
 			if plt=="ecU" or plt=="ecV" or plt=="ecW": draw_opt="hist"
-			cname="c_%s_%s"%(cutlvl,plt)
+			cname="c_%s_%s_%s"%(cutlvl,plt,q2wbin)
 			c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 			c.Divide(3,2)
 			for isctr in range(NSCTR):
@@ -333,26 +340,26 @@ for iq2wb,q2wbin_le in enumerate(DLE):
 				#l.AddEntry(hmm[ER][i][icutlvl][iplt],'SR')
 				#l.Draw()
 				#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))#! for .png
-				c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+				c.Write("%s"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 		else: #! if 2D plots
 		#elif plt=="ec_eo_vs_ec_ei": #! draw ER and ER on separate canvases
-			cname="c_%s_%s_ER"%(cutlvl,plt)
+			cname="c_%s_%s_ER_%s"%(cutlvl,plt,q2wbin)
 			c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 			c.Divide(3,2)
 			for isctr in range(NSCTR):
 				c.cd(isctr+1)
 				heid[ER][iq2wb][isctr][icutlvl][iplt].Draw("colz")
 			#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
-			c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+			c.Write("%s"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 
-			cname="c_%s_%s_SR"%(cutlvl,plt)
+			cname="c_%s_%s_SR_%s"%(cutlvl,plt,q2wbin)
 			c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 			c.Divide(3,2)
 			for isctr in range(NSCTR):
 				c.cd(isctr+1)
 				heid[SR][iq2wb][isctr][icutlvl][iplt].Draw("colz")
 			#c.SaveAs("%s/%s.png"%(outdir_q2w,cname))
-			c.Write("%s_%s"%(cname,q2wbin),ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
+			c.Write("%s"%cname,ROOT.gROOT.ProcessLine("TObject::kOverwrite"))#! for .root; latest namecycle
 
 fout_root.Close()					
 #! ***
