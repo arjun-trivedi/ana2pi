@@ -76,17 +76,21 @@ CUTSNCORS=OrderedDict()
 #! ##################
 #! Systematic study 1
 #! Observe affect of each additional cutsncor on top of 'dflt_dflt' that together give 'cuts-EI'. Generally it is observed that:
-#! + Q2=[2.0,2.4]: EI-cuts>dflt 
-#! + Q2=[2.4,3.0]: EI-cuts`=dflt
+#! + Q2=[2.0,2.4]: EI-cuts>dflt (W<1.7:dflt>EI; W>1.7:dflt~=EI) 
+#! + Q2=[2.4,3.0]: EI-cuts~=dflt (dflt~=EI)
+#! In the following bins my hypothesis is that because of low simstats, dflt appears slightly higher than EI-cuts, but keeping that in mind:
+#! + Q2=[3.0,3.5]: EI-cuts~=dflt (dflt~=EI)
+#! + Q2=[3.5,4.2]: EI-cuts~=dflt (dflt~=EI)
+#! + Q2=[4.2,5.0]: EI-cuts~=dflt (EI-cuts~=EI)
 
 #! Results (for full details see handwritten notes):
 #! It was found that some of the additional cutsncors increase the cross-section, while some reduce it, while other not 
 #! below have no effect:
 #! + cutsncors that increase xsec:
-#! 			Q2=[2.0,2.4]	Q2=[2.4,3.0]
-#! i.   eff_scpd	V		V(slight effect)			
-#! ii.  ECfid-on	V		X
-#! iii. stat-PID-on	V		V
+#! 			Q2=[2.0,2.4]	Q2=[2.4,3.0]	Q2=[3.0,3.5](LS)		Q2=[3.5,4.2](LS)	Q2=[4.2,5.0](LS)
+#! i.   eff_scpd	V		V(slightly)	V(slightly for W>3rd res)	?(maybe)		?(maybe)		
+#! ii.  ECfid-on	V		X		X				X			X
+#! iii. stat-PID-on	V		V		V				V			V
 #! + cutsncors that decrease xsec: 
 #! 			Q2=[2.0,2.4]	Q2=[2.4,3.0]
 #! i. gpart-PID-on	V		V
@@ -104,19 +108,27 @@ CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':
 #! In this study the goal is to further investigate the results of study-1 to answer questions like:
 #! + What cutsncors are responsible for the ultimate systematic effect in each Q2 bin, noted in study 1? 
 #!    + For example, does the increase caused by one cutncor cancel with the decrease caused by another?
-#!    + A hypothesis tested below is that any total increase in cross-section is caused by 'eff_scpd' and
+#!    + A hypothesis (#3. below) tested below is that any total increase in cross-section is caused by 'eff_scpd' and
 #!      the increase caused by 'stat-PID-on' in cancelled by the decrease caused by 'gpart-PID-on'
 
 #! Results (for full details see handwritten notes):
-#! The hypothesis under test i.e. that any total increase in cross-section is caused by 'eff_scpd' and 
-#! the increase caused by 'stat-PID-on' in cancelled by the decrease caused by 'gpart-PID-on' was found to be true:
+#! + For the two lowest Q2bin
+#! The hypothesis under test i.e. that any total increase in cross-section is caused by 'eff_scpd' and 'ECfid-on', and 
+#! the increase caused by 'stat-PID-on' in cancelled by the decrease caused by 'gpart-PID-on' was found to be true for
+#! the two lowest Q2 bins:
 #! + eff_scpd    + ECfid-on     => + : total increase
-#! + stat-PID-on - gpart-PID-on => 0 : No net effect
+#! + stat-PID-on + gpart-PID-on => 0 : No net effect
+#!
+#! + [02-16-16] For the highQ2 bins
+#! While these bins are still given to biases and statistical fluctuations due to low simstats, it appears that the results for the two lowest Q2bins hold here too
+#! in that:
+#! + eff_scpd                   => + : total increase (Note, ECfid-on has no effect)
+#! + stat-PID-on + gpart-PID-on => 0 : No net effect 
 #!   
 #! ################## 
 
 #! + cutsncors that increase xsec 
-#CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:15:']
+CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:15:']
 #! + what does the decrease caused by gpart counter-act?
 #! 1. dflt_eff_scpd?
 CUTSNCORS[('dflt_eff_scpd','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:13:']

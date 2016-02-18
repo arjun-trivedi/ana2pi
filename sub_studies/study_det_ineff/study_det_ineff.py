@@ -462,7 +462,8 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 	#[[],[311,324,520]], #!P
 	#[[145,340,342,345,346,347,632,633,634,635,636,637,638,639],[145,311,324,336,337,340,342,434,520,532,540,542,636,637,644]] #! PIP
 	#]
-	#! [02-14-15] Paddles and added from above list after a closer look at sc_pd histograms prompted by the first observations of output from this script (there may be some other changes related to arraning the paddles in numerical order where they were not so ordered)
+
+	#! [02-14-16] Paddles and added from above list after a closer look at sc_pd histograms prompted by the first observations of output from this script (there may be some other changes related to arraning the paddles in numerical order where they were not so ordered)
 	#! Paddles removed:
 	#! + pip
 	#! 1. SR:340
@@ -473,10 +474,17 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 	#! + pip
 	#! ER:245,337,338,324,434,542,644
 	#! SR:338
+	#bad_sc_pd_code_list=[
+        #[[],[311,505]], #!E
+        #[[324],[311,324,520]], #!P
+        #[[145,245,324,337,338,340,342,345,346,347,434,542,632,633,634,635,636,637,638,639,644],[145,311,324,337,338,342,434,520,532,540,542,636,637,644]] #! PIP
+        #]
+
+	#! [02-16-16] The list on [02-14-16] makes note of bad paddles exlusively in exp and sim, respective. The list below, is made keepign in mind that when the bad pd cuts are finally applied, if a paddle is removed in exp, it will also have to be removed in sim and viceversa, i.e. the list below is compiled keeping in mind the final cut display that will be required in my thesis. Basically, in the following list, both exp and sim will have a union of the list of paddles that were identfied exclusively for each.
 	bad_sc_pd_code_list=[
-        [[],[311,505]], #!E
-        [[324],[311,324,520]], #!P
-        [[145,245,324,337,338,340,342,345,346,347,434,542,632,633,634,635,636,637,638,639,644],[145,311,324,337,338,342,434,520,532,540,542,636,637,644]] #! PIP
+        [[311,505],[311,505]], #!E
+        [[311,324,520],[311,324,520]], #!P
+        [[145,245,311,324,337,338,340,342,345,346,347,434,520,532,540,542,632,633,634,635,636,637,638,639,644],[145,245,311,324,337,338,340,342,345,346,347,434,520,532,540,542,632,633,634,635,636,637,638,639,644]] #! PIP
         ]
 
 	#! Now make bad_sc_pd_list[NPRTCL][DTYP]{pd:[sctrl]}

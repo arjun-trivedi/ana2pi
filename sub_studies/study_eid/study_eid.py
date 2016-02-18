@@ -256,7 +256,7 @@ for iq2wb,q2wbin_le in enumerate(DLE):
 			htmp=ROOT.gDirectory.Get("hcmd")
 			heid[idtyp][iq2wb][isctr][icutlvl][iplt]=htmp.Clone()
 			heid[idtyp][iq2wb][isctr][icutlvl][iplt].SetName("h_%s_%s_%s_s%d"%(dtyp,cutlvl,plt,sctr))
-			#heid[idtyp][iq2wb][isctr][icutlvl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(cutlvl,plt,q2min,q2max,wmin,wmax))
+			heid[idtyp][iq2wb][isctr][icutlvl][iplt].SetTitle("%s_%s %.2f-%.2f_%.3f-%.3f"%(cutlvl,plt,q2min,q2max,wmin,wmax))
 		else:
 			print "TTree name=",T[idtyp][icutlvl].GetName()
 			print "TTree entries=",T[idtyp][icutlvl].GetEntries()
@@ -273,8 +273,8 @@ if DEBUG:
 fout_root=ROOT.TFile("%s/%s.root"%(outdir,fname),"RECREATE")
 
 #! CWDTH,CHGHT defined as per 3,2 TCanvas
-CWDTH=600
-CHGHT=400
+CWDTH=500
+CHGHT=300
 for iq2wb,q2wbin_le in enumerate(DLE):
 	if DEBUG and iq2wb>0: continue #! debug
 	q2min,q2max=q2wbin_le[0],DUE[iq2wb][0]

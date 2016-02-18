@@ -79,8 +79,16 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
     }*/
 
     //![11-17-15] Use same eid-cut pars for E16 and E1F
+    //![02-17-16]
+    //! + same eid-cut pars for sim:{e16,e1f}
+   	//! + For exp:e16, I created eid.exp.e16.out where I have updated the SFpars from 
+    //!   'study_eid/study_SF/results_SFvp_e16/cutpars/exp_peakSF.txt' 
+    //!   (Used study_eid/study_SF/dev/SFpars_H-L_2_MU-SG.py to convert pars in above file from cut_h/l to mean/sgma)
     if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+	else if (dH10->dtyp=="exp") {
+		if      (dH10->expt=="e1f") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+		else if (dH10->expt=="e16") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
+	}
 	
 	_make_tree=make_tree;
 	_dirmon=NULL;
@@ -156,8 +164,16 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
     }*/
 
     //![11-17-15] Use same eid-cut pars for E16 and E1F
+    //![02-17-16]
+    //! + same eid-cut pars for sim:{e16,e1f}
+   	//! + For exp:e16, I created eid.exp.e16.out where I have updated the SFpars from 
+    //!   'study_eid/study_SF/results_SFvp_e16/cutpars/exp_peakSF.txt' 
+    //!   (Used study_eid/study_SF/dev/SFpars_H-L_2_MU-SG.py to convert pars in above file from cut_h/l to mean/sgma)
     if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+	else if (dH10->dtyp=="exp") {
+		if      (dH10->expt=="e1f") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
+		else if (dH10->expt=="e16") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
+	}
 
 	//! [01-17-16] if e16:ER then corr_zvtx() 
     if (dH10->expt=="e16" and dH10->dtyp=="exp") {

@@ -159,6 +159,8 @@ namespace E16{
   	//! + While fitting fmu,fsg and using them to obtain fh,fl is ideal (it allows obtaining fh,fl with variable x*sg),
   	//!   given that 3-sigma cut is standard, using the linearity of the relationship between mu,sg and fh,fl, one can
   	//!   be obtained from the other
+  	//! [02-17-16]
+  	//! + pars taken from 'sub_studies/study_eid/study_SF/results_SFvp_e16/cutpars/exp_fullSF.txt'
 	const Float_t SF_HIGH[6][4]={
 		{0.380401, -0.019463, 0.004609, -0.000359},
 		{0.428533, -0.047554, 0.016350, -0.001938},
