@@ -98,6 +98,10 @@ public :
    bool _use_stat_pid; //! 15
    //! Q2,W limits used for analysis
    bool _use_thesis_Q2W; //!16
+   //! eff_scpd_at_mod //! 17
+   bool _use_eff_scpd_at_mod;
+   //! use_cut_ECfid_at_mod //! 18
+   bool _use_cut_ECfid_at_mod;
 
    //! char-coded options
    bool _make_h10_skim_e;//! eid+efid; for Reco events

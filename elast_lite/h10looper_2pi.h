@@ -134,6 +134,8 @@ public :
    //! _hscpd[3][2] for e,p,pip:prec,pstc
    TString* _scpd_prtcl_names;
    TH1D*** _hpdl;
+   //! _hthetavp[3][6][2] for e,p,pip:sector:prec,pstc
+   TH2D**** _hthetavp2;
 
    
    

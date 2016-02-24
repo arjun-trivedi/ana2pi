@@ -23,6 +23,8 @@ from collections import OrderedDict
 # 14: hitSC_pid (ON)
 # 15: stat_pid (OFF)
 # 16: thesis Q2W (ON)
+# 17: eff_scpd_at_mod (OFF)
+# 18: ECfid_at_mod (OFF) (option #2 i.e. ECfid has to be ON for this to take effect)
 # ----
 
 '''
@@ -95,13 +97,13 @@ CUTSNCORS=OrderedDict()
 #! 			Q2=[2.0,2.4]	Q2=[2.4,3.0]
 #! i. gpart-PID-on	V		V
 #! ##################
-CUTSNCORS[('dflt_eff_scpd','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
-CUTSNCORS[('dflt','dflt_ECin-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:1:']
-CUTSNCORS[('dflt','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
-CUTSNCORS[('dflt','dflt_zvtx-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:3:']
-CUTSNCORS[('dflt','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:']
-CUTSNCORS[('dflt','dflt_hitSC-PID-off')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:']
-CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:15:']
+#CUTSNCORS[('dflt_eff_scpd','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
+#CUTSNCORS[('dflt','dflt_ECin-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:1:']
+#CUTSNCORS[('dflt','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
+#CUTSNCORS[('dflt','dflt_zvtx-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:3:']
+#CUTSNCORS[('dflt','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:']
+#CUTSNCORS[('dflt','dflt_hitSC-PID-off')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:']
+#CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:15:']
 
 #! ##################
 #! [01-24-16] Systemtatic study 2
@@ -128,20 +130,51 @@ CUTSNCORS[('dflt','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':
 #! ################## 
 
 #! + cutsncors that increase xsec 
-CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:15:']
+#CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:15:']
 #! + what does the decrease caused by gpart counter-act?
 #! 1. dflt_eff_scpd?
-CUTSNCORS[('dflt_eff_scpd','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:13:']
+#CUTSNCORS[('dflt_eff_scpd','dflt_gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:13:']
 #! 2. ECfid?
-CUTSNCORS[('dflt','dflt_ECfid-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:13:']
+#CUTSNCORS[('dflt','dflt_ECfid-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:13:']
 #! 3. stat-PID? (Hypothesis)
-CUTSNCORS[('dflt','dflt_stat-PID-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:15:']
+#CUTSNCORS[('dflt','dflt_stat-PID-on-gpart-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:13:15:']
 #! If 1. is correct, then total increase should be due to ECfid-on,stat-PID-on
-CUTSNCORS[('dflt','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:15:']
+#CUTSNCORS[('dflt','dflt_ECfid-on-stat-PID-on')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:15:']
 #! If 2. is correct, then total increase should be due to eff_scpd,stat-PID-on
-CUTSNCORS[('dflt_eff_scpd','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:15:']
+#CUTSNCORS[('dflt_eff_scpd','dflt_stat-PID-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:15:']
 #! If 3. (Hypothesis) is correct, then total increase should be due to eff_scpd,ECfid-on and that too only for Q2=[2.0,2.4]
-CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
+#CUTSNCORS[('dflt_eff_scpd','dflt_ECfid-on')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
+
+#! ##################
+#! [02-22-16] Systemtatic study 3 (SS3)
+#! From SS1 and SS2, the 4 cuts that are found to have the biggest systematic effects -- in comparing 'dflt' with 'EI-cuts' --   are (see hand-written notes for full details):
+#! 1. eff_scpd
+#! 2. ECfid-on
+#! 3. gpart-PID-on
+#! 4. stat-PID-on
+
+#! While I have not studied the possible causes for this in 3. and 4. (gpart-PID-on and stat-PID-on), which in some cases seem to have an equal and opposite effect, I was able to study in detail 1. and 2. (eff_scpd and ECfid-on) and was able to identify "possible reasons" (see handwritten notes) why these cuts have their particular systematic effects. Therefore in this study, I re-obtain the cross-sections after accounting for these "possible reasons" (code tagged by 'at_mod') to see if they indeed cause the mentioned systematic effects to go away.
+
+#! For reasons of sanity check, some known results are re-obtained to make sure that nothing there changed after code changes for these "possible reasons" of systematic effects
+
+#! Results:
+#! 1. eff_scpd: (for details see handwritten notes) While eff_scpd is expected to increase the xsec, the increase, especially in Q2=[2.0,2.4] was found to be too much (this was one of the reasons that 'EI-cuts' xsecs for this bin were far in excess of 'EI') and on investigating, I found that eff_scpd as determined by EI was not complete especially for cases when certain paddles that are bad in the Simulation, but good in the Experiment, were not being cut away in 'eff_scpd', and cases like this for electrons was leading to increased cross-sections. These changes in 'eff_scpd_atmod', aside from replacing some of EI-kin cuts with simply removing paddles, now cause the increase in xsec to generally agree with 'EI' ('EI-cuts_atmod' now generally agree with 'EI')
+#! 2. ECfid-on: (for details see handwritten notes) ECfid cuts as determined by EI does not take into account the differences between the U,V,W distributions for Exp and Sim, and his cut, especially in Q2=[2.0,2.4] causes an increase in xsec which I think is primarily due the cut cutting away relatively more events in Sim and causing an increase in the Acceptance.  
+#! ##################
+
+#! + For sanity check re-obtain xsec with 'dflt' and 'EI-cuts' and ensure that nothing has changed here
+CUTSNCORS[('dflt','dflt')]                        =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',         ':11:']
+CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+#! + To 'dflt' add 'eff_scpd' with and without (for sanity check) 'at_mod' ('at_mod'=accounts for possible sources of systematic effects)
+CUTSNCORS[('dflt_eff_scpd','dflt')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
+CUTSNCORS[('dflt_eff_scpd_at_mod','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:17:']
+#! + To 'dflt' add ECfid-on with and without (for sanity check) 'at_mod' ('at_mod'=accounts for possible sources of systematic effects)
+CUTSNCORS[('dflt','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
+CUTSNCORS[('dflt','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:18:']
+#! + To 'EI-cuts' add 'at_mod' = 'EI-cuts_at_mod'
+CUTSNCORS[('dflt_eff_scpd_at_mod',':11:1:2:3:13:14:15:_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:17:18:']
+
+
 
 
 if len(sys.argv)<2:

@@ -62,7 +62,7 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 
 					TString name=TString::Format("thetavp_%s_s%d_%s",
 						                         _eff_prtcl_names[i].Data(),j+1,name_cut_lvl.Data());
-					if      (_eff_prtcl_names[i]=="e")   _hthetavp[i][j][k]=new TH2D(name,name,100,1,5,100,0,60);
+					if      (_eff_prtcl_names[i]=="e")   _hthetavp[i][j][k]=new TH2D(name,name,100,0,5,100,0,60);
 					else if (_eff_prtcl_names[i]=="p")   _hthetavp[i][j][k]=new TH2D(name,name,100,0,4,100,0,60);
 					else if (_eff_prtcl_names[i]=="pip") _hthetavp[i][j][k]=new TH2D(name,name,100,0,3,100,0,120);	
 				}
@@ -95,6 +95,25 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 				TString name=TString::Format("pdl_%s_%s",
 					                         _scpd_prtcl_names[i].Data(),name_cut_lvl.Data());
 				_hpdl[i][j]=new TH1D(name,name,700,0,700);
+			}
+		}
+		//! _hthetavp2[3][6][2] for e,p,pip:sector:prec,pstc
+		_hthetavp2=new TH2D***[3]; //!e,p,pip
+		for (int i=0;i<3;i++){
+			_hthetavp2[i]=new TH2D**[6]; //!sector
+			for (int j=0;j<6;j++){
+				_hthetavp2[i][j]=new TH2D*[2];//prec,pstc
+				for (int k=0;k<2;k++){
+					TString name_cut_lvl;
+					if      (k==0) name_cut_lvl="prec";
+					else if (k==1) name_cut_lvl="pstc";
+
+					TString name=TString::Format("thetavp2_%s_s%d_%s",
+						                         _scpd_prtcl_names[i].Data(),j+1,name_cut_lvl.Data());
+					if      (_eff_prtcl_names[i]=="e")   _hthetavp2[i][j][k]=new TH2D(name,name,100,0,5,100,0,60);
+					else if (_eff_prtcl_names[i]=="p")   _hthetavp2[i][j][k]=new TH2D(name,name,100,0,4,100,0,60);
+					else if (_eff_prtcl_names[i]=="pip") _hthetavp2[i][j][k]=new TH2D(name,name,100,0,3,100,0,120);	
+				}
 			}
 		}
 	}
@@ -153,6 +172,7 @@ h10looper_2pi::~h10looper_2pi()
 	delete _hscpd;
 	delete[] _scpd_prtcl_names;
 	delete[] _hpdl;
+	delete[] _hthetavp2;
 
 	delete _hq2w_prec;
 	delete _hq2w_pstc;
@@ -968,13 +988,17 @@ bool h10looper_2pi::pass_scpd(){
 	_hpdl[0][0]->Fill(_sc_pd_e);
 	_hpdl[1][0]->Fill(_sc_pd_p);
 	_hpdl[2][0]->Fill(_sc_pd_pip);
-	
+	_hthetavp2[0][_sector_e-1][0]->Fill(_p_e,_theta_e);
+	_hthetavp2[1][_sector_p-1][0]->Fill(_p_p,_theta_p);
+	_hthetavp2[2][_sector_pip-1][0]->Fill(_p_pip,_theta_pip);
+
 	//! check if e- inscpd
 	//Info("h10looper_2pi::pass_scpd()","sc_pd_e=%d",_sc_pd_e);
 	if (!is_scpd_bad("e")){
 		_hscpd->Fill(SCPD_E_PASS);
 		e_inscpd=kTRUE;
 		_hpdl[0][1]->Fill(_sc_pd_e);
+		_hthetavp2[0][_sector_e-1][1]->Fill(_p_e,_theta_e);
 	}
 	//! check if p inscpd
 	//Info("h10looper_2pi::pass_scpd()","sc_pd_p=%d",_sc_pd_p);
@@ -982,6 +1006,7 @@ bool h10looper_2pi::pass_scpd(){
 		_hscpd->Fill(SCPD_P_PASS);
 		p_inscpd=kTRUE;
 		_hpdl[1][1]->Fill(_sc_pd_p);
+		_hthetavp2[1][_sector_p-1][1]->Fill(_p_p,_theta_p);
 	}
 	//! check if pip inscpd
 	//Info("h10looper_2pi::pass_scpd()","sc_pd_pip=%d",_sc_pd_pip);
@@ -989,6 +1014,7 @@ bool h10looper_2pi::pass_scpd(){
 		_hscpd->Fill(SCPD_PIP_PASS);
 		pip_inscpd=kTRUE;
 		_hpdl[2][1]->Fill(_sc_pd_pip);
+		_hthetavp2[2][_sector_pip-1][1]->Fill(_p_pip,_theta_pip);
 	}
 
 	ret=e_inscpd && p_inscpd && pip_inscpd;

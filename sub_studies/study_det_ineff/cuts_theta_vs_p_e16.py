@@ -39,7 +39,7 @@ for sctr in [1,2,3,4,5,6]:
 	CUT[H][E][isctr]=CUT[L][E][isctr]=None
 
 #! Sector 2
-#! Remove: The following 3 cuts replaced as they were deemed unnecessary
+#! Remove: The following 3 cuts removed as they were deemed unnecessary
 #CUT[H][E][1]=[]
 #CUT[L][E][1]=[]
 #! cut1
@@ -63,7 +63,7 @@ CUT[H][E][4].append(ROOT.TF1("H","26.3",2.40,3.40))
 CUT[L][E][4].append(ROOT.TF1("L","24.7",2.40,3.40))
 
 #! Sector 6
-#! Remove: The following 3 cuts replaced as they were deemed unnecessary
+#! Remove: The following 3 cuts removed as they were deemed unnecessary
 #CUT[H][E][5]=[]
 #CUT[L][E][5]=[]
 #! cut1

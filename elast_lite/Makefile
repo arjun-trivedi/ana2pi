@@ -8,7 +8,7 @@ CXXFLAGS =      -O2 -fPIC -w -fmessage-length=0 $(shell root-config --cflags) -W
 INCS =          -I$(CLAS6INC) -I$(HOME)/include -I. -I$(shell root-config --incdir)
 SRC = pid.cpp h10looper_e1f.cpp h10looper_2pi.cpp 
 OBJS = $(patsubst %.cpp,obj/%.o,$(SRC)) 
-LIBS =          $(shell root-config --glibs)
+LIBS =          $(shell root-config --glibs) -lgfortran
 LIBOUT =        $(ELAST_LITE)/sobj/lib_proc_h10_lite.so
 TARGET = proc_h10_lite
 

@@ -146,19 +146,6 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 				_hsf[i][j]=new TH2F(name,name,160,0,5,100,0,0.5);
 			}
 		}
-		//! _hzvtxcut hists
-		dir_eid->mkdir("zvtxcut")->cd();
-		_hzvtxcut=new TH1F**[6];
-		for (int i=0;i<6;i++){
-			_hzvtxcut[i]=new TH1F*[2];
-			for (int j=0;j<2;j++){
-				TString name_sfx;
-				if      (j==0) name_sfx="prec";
-				else if (j==1) name_sfx="pstc";
-				TString name=TString::Format("zvtxcut_s%d_%s",i+1,name_sfx.Data());
-				_hzvtxcut[i][j]=new TH1F(name,name,100,-12,6);
-			}
-		}
 		//! _hzvtxcorr hists
 		dir_eid->mkdir("zvtxcorr")->cd();
 		_hzvtxcorr=new TH1F**[6];
@@ -170,6 +157,19 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 				else if (j==1) name_sfx="pstc";
 				TString name=TString::Format("zvtxcorr_s%d_%s",i+1,name_sfx.Data());
 				_hzvtxcorr[i][j]=new TH1F(name,name,100,-12,6);
+			}
+		}
+		//! _hzvtxcut hists
+		dir_eid->mkdir("zvtxcut")->cd();
+		_hzvtxcut=new TH1F**[6];
+		for (int i=0;i<6;i++){
+			_hzvtxcut[i]=new TH1F*[2];
+			for (int j=0;j<2;j++){
+				TString name_sfx;
+				if      (j==0) name_sfx="prec";
+				else if (j==1) name_sfx="pstc";
+				TString name=TString::Format("zvtxcut_s%d_%s",i+1,name_sfx.Data());
+				_hzvtxcut[i][j]=new TH1F(name,name,100,-12,6);
 			}
 		}
 	}
@@ -436,7 +436,7 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 		}
 	}
 
-	//! EC fid cut pars (as per MG and EP, and therefore as per "E1F run group"?)
+	//! EC fid cut pars 
 	//! + pars obtained from constants.h
 	//! + NOTE, (slightly) different for E1F and E16
 	if (_expt=="e1f"){
@@ -447,12 +447,21 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 		_Wmin=E1F::WMIN;
 		_Wmax=E1F::WMAX;
 	}else if ("e16"){
-		_Umin=E16::UMIN;
-		_Umax=E16::UMAX;
-		_Vmin=E16::VMIN;
-		_Vmax=E16::VMAX;
-		_Wmin=E16::WMIN;
-		_Wmax=E16::WMAX;
+		if (_use_cut_ECfid_at_mod){
+			_Umin=E1F::UMIN;
+			_Umax=E1F::UMAX;
+			_Vmin=E1F::VMIN;
+			_Vmax=E1F::VMAX;
+			_Wmin=E1F::WMIN;
+			_Wmax=E1F::WMAX;
+		}else{ //! use EI's ECfid cut
+			_Umin=E16::UMIN;
+			_Umax=E16::UMAX;
+			_Vmin=E16::VMIN;
+			_Vmax=E16::VMAX;
+			_Wmin=E16::WMIN;
+			_Wmax=E16::WMAX;
+		}
 	}
 
 	//! z-vertex cut
@@ -1430,6 +1439,10 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	_use_stat_pid=kFALSE;
 	//! Q2,W limits used for analysis
 	_use_thesis_Q2W=kTRUE;
+	//! eff_scpd_at_mod 
+    _use_eff_scpd_at_mod=kFALSE;
+    //! use_cut_ECfid_at_mod
+    _use_cut_ECfid_at_mod=kFALSE;
 
 	_make_h10_skim_e=kFALSE;
 
@@ -1453,6 +1466,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":14:")) _use_SChit_pid=kFALSE;
 	if (adtnl_opts.Contains(":15:")) _use_stat_pid=kTRUE;
 	if (adtnl_opts.Contains(":16:")) _use_thesis_Q2W=kFALSE;
+	if (adtnl_opts.Contains(":17:")) _use_eff_scpd_at_mod=kTRUE;
+	if (adtnl_opts.Contains(":18:")) _use_cut_ECfid_at_mod=kTRUE;
 	//! char-coded options
 	if (adtnl_opts.Contains(":h10-skim-e:")) _make_h10_skim_e=kTRUE;
 	
@@ -1485,6 +1500,10 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if(_use_stat_pid) Info("","use_stat_pid");  
 	//! Q2,W limits used for analysis
 	if(_use_thesis_Q2W) Info("","use_thesis_Q2W"); 
+	//! eff_scpd_at_mod 
+    if(_use_eff_scpd_at_mod) Info("","use_eff_scpd_at_mod");
+    //! use_cut_ECfid_at_mod 
+    if(_use_cut_ECfid_at_mod) Info("","use_cut_ECfid_at_mod");
 
 	if(_make_h10_skim_e) Info("","make_h10_skim_e");
 	Info("","***********");
@@ -1497,12 +1516,15 @@ bool h10looper_e1f::pass_theta_vs_p(TString prtcl_name){
 	if (_expt=="e1f"){
 		ret=kTRUE;
 	}else if (_expt=="e16"){
+		int at_mod=0;
+		if (_use_eff_scpd_at_mod) at_mod=1;
+
 		if (prtcl_name=="e") {
-			ret=theta_vs_p_e16_el(_sector_e,_theta_e,_p_e);
+			ret=theta_vs_p_e16_el(_sector_e,_theta_e,_p_e,at_mod);
 		}else if (prtcl_name=="p") {
-			ret=theta_vs_p_e16_pr(_sector_p,_theta_p,_p_p);
+			ret=theta_vs_p_e16_pr(_sector_p,_theta_p,_p_p,at_mod);
 		}else if (prtcl_name=="pip") {
-			ret=theta_vs_p_e16_pip(_sector_pip,_theta_pip,_p_pip);
+			ret=theta_vs_p_e16_pip(_sector_pip,_theta_pip,_p_pip,at_mod);
 		}
 	}
 	return ret;
@@ -1515,12 +1537,15 @@ bool h10looper_e1f::is_scpd_bad(TString prtcl_name){
 	if (_expt=="e1f"){
 		ret=kTRUE;
 	}else if (_expt=="e16"){
+		int at_mod=0;
+		if (_use_eff_scpd_at_mod) at_mod=1;
+
 		if (prtcl_name=="e") {
-			ret=is_scpd_bad_e16(_sc_pd_e);
+			ret=is_scpd_bad_e16(_sc_pd_e,at_mod);
 		}else if (prtcl_name=="p") {
-			ret=is_scpd_bad_e16(_sc_pd_p);
+			ret=is_scpd_bad_e16(_sc_pd_p,at_mod);
 		}else if (prtcl_name=="pip") {
-			ret=is_scpd_bad_e16(_sc_pd_pip);
+			ret=is_scpd_bad_e16(_sc_pd_pip,at_mod);
 		}
 	}
 	return ret;
