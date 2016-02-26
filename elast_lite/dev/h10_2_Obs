@@ -159,24 +159,36 @@ CUTSNCORS=OrderedDict()
 
 #! Results:
 #! 1. eff_scpd: (for details see handwritten notes) While eff_scpd is expected to increase the xsec, the increase, especially in Q2=[2.0,2.4] was found to be too much (this was one of the reasons that 'EI-cuts' xsecs for this bin were far in excess of 'EI') and on investigating, I found that eff_scpd as determined by EI was not complete especially for cases when certain paddles that are bad in the Simulation, but good in the Experiment, were not being cut away in 'eff_scpd', and cases like this for electrons was leading to increased cross-sections. These changes in 'eff_scpd_atmod', aside from replacing some of EI-kin cuts with simply removing paddles, now cause the increase in xsec to generally agree with 'EI' ('EI-cuts_atmod' now generally agree with 'EI')
+
 #! 2. ECfid-on: (for details see handwritten notes) ECfid cuts as determined by EI does not take into account the differences between the U,V,W distributions for Exp and Sim, and his cut, especially in Q2=[2.0,2.4] causes an increase in xsec which I think is primarily due the cut cutting away relatively more events in Sim and causing an increase in the Acceptance.  
+
+	#!+ [02-25-26] Update on ECfid-on
+	#! After dicussing results with Gothe, I realized that my hypothesis for increase in xsec due to ECfid cut (as determined by EI), in the lowest Q2-bin,
+	#! arising due to taking into account differences between Exp Sim for U,V,W may not be correct. In the discuss with RG we noted that the differences in
+	#! the U,V,W coords between Exp and Sim could be due to inefficiences in the other parts of the detector, which are addressed in 'eff_scpd_at_mod'.
+	#! Therefore, the correct test for systematic differences between the two ECfid cuts, ECfid and ECfid_at_mod, can only be seen when 'eff_scpd_at_mod' are applied.
+	#! => Results: After running the above test, I still see a systematic difference between ECfid and ECfid_at_mod in the lowest Q2-bin: the former seems to increase
+	#! the xsec in this bin by ~11%.
 #! ##################
 
 #! + For sanity check re-obtain xsec with 'dflt' and 'EI-cuts' and ensure that nothing has changed here
-CUTSNCORS[('dflt','dflt')]                        =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',         ':11:']
-CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+#CUTSNCORS[('dflt','dflt')]                        =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',         ':11:']
+#CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
 #! + To 'dflt' add 'eff_scpd' with and without (for sanity check) 'at_mod' ('at_mod'=accounts for possible sources of systematic effects)
-CUTSNCORS[('dflt_eff_scpd','dflt')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
-CUTSNCORS[('dflt_eff_scpd_at_mod','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:17:']
+#CUTSNCORS[('dflt_eff_scpd','dflt')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
+#CUTSNCORS[('dflt_eff_scpd_at_mod','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:17:']
 #! + To 'dflt' add ECfid-on with and without (for sanity check) 'at_mod' ('at_mod'=accounts for possible sources of systematic effects)
-CUTSNCORS[('dflt','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
-CUTSNCORS[('dflt','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:18:']
+#CUTSNCORS[('dflt','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
+#CUTSNCORS[('dflt','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:18:']
 #! + To 'EI-cuts' add 'at_mod' = 'EI-cuts_at_mod'
-CUTSNCORS[('dflt_eff_scpd_at_mod',':11:1:2:3:13:14:15:_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:17:18:']
+#CUTSNCORS[('dflt_eff_scpd_at_mod',':11:1:2:3:13:14:15:_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:17:18:']
+#! [02-25-16] Updated test for checking systematic effect of ECfid (see note of [02-25-16]in Results for details)
+#CUTSNCORS[('dflt_eff_scpd_at_mod','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
+#CUTSNCORS[('dflt_eff_scpd_at_mod','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:18:']
 
+if len(CUTSNCORS)==0: sys.exit("len(CUTSNCORS)==0. Exiting")
 
-
-
+#! *** Get input arguments from user ***
 if len(sys.argv)<2:
 	sys.exit("Please enter expt as per usage: %s"%USAGE)
 expt=sys.argv[1]
@@ -237,6 +249,7 @@ print "DATE=",DATE
 print "PROC_NEW_JOBTAG=",PROC_NEW_JOBTAG
 print "CUMSIML=",CUMSIML
 #sys.exit()
+#! ******
 
 for k in CUTSNCORS.keys():
 	cutsncors,adtnl_opts= k[0],k[1]
