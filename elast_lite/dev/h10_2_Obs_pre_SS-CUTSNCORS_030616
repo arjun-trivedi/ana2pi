@@ -25,6 +25,7 @@ from collections import OrderedDict
 # 16: thesis Q2W (ON)
 # 17: eff_scpd_at_mod (OFF)
 # 18: ECfid_at_mod (OFF) (option #2 i.e. ECfid has to be ON for this to take effect)
+# 19: MM2_cut_SS (OFF)
 # ----
 
 '''
@@ -35,12 +36,14 @@ from collections import OrderedDict
 		+ To use the appropriate d2piT_<date>.root, the DATE_ST(expt,sim) is used.   
 
 + Usage
-	>h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[expt]] date_of_existing_jobtag[=today's MMDDYY]
+	>h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[expt]] proc_h10_lite_type[=serial] date_of_existing_jobtag[=today's MMDDYY]
 	+ idtfr: string used to describe the job; can be entered as ""
 	+ cumsiml: output created for every cumsim in cumsiml under obs_jobtag/cumsim
 	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that obs_jobtag is going to be updated with, as set up currently in the code,for example, addition of a new simulation.
 '''
-USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[expt]] date_of_existing_jobtag[=today's MMDDYY]"
+print "h10_2_Obs start time",datetime.datetime.now().strftime('%H:%M:%S')
+
+USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[expt]] proc_h10_lite_type[serial] date_of_existing_jobtag[=today's MMDDYY]"
 
 EXPTS=['e1f','e16']
 SEQS=['ER','SR','ST']
@@ -50,14 +53,14 @@ SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9']}
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
 ('e1f','ER'):'TBD',
-('e16','ER'):'%s/e16/exp/h10-skim-e_010816.lst'%(H10PATH), #! h10-skim-e_122115.lst w/o ER:SF fix
+('e16','ER'):'%s/e16/exp/h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
 ('e1f','SR','sim-TBD'):'TBD',
-('e16','SR','sim4'):'%s/e16/sim/sim4/h10-skim-e_122115.lst'%(H10PATH),
-('e16','SR','sim5'):'%s/e16/sim/sim5/h10-skim-e_122115.lst'%(H10PATH),
-('e16','SR','sim6'):'%s/e16/sim/sim6/h10-skim-e_122915.lst'%(H10PATH),
-('e16','SR','sim7'):'%s/e16/sim/sim7/h10-skim-e_010816.lst'%(H10PATH),
-('e16','SR','sim8'):'%s/e16/sim/sim8/h10-skim-e_012416.lst'%(H10PATH),
-('e16','SR','sim9'):'%s/e16/sim/sim9/h10-skim-e_012416.lst'%(H10PATH)
+('e16','SR','sim4'):'%s/e16/sim/sim4/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
+('e16','SR','sim5'):'%s/e16/sim/sim5/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
+('e16','SR','sim6'):'%s/e16/sim/sim6/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122915.lst
+('e16','SR','sim7'):'%s/e16/sim/sim7/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst 
+('e16','SR','sim8'):'%s/e16/sim/sim8/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_012416.lst
+('e16','SR','sim9'):'%s/e16/sim/sim9/h10_2_h10-skim-SS_030116.lst'%(H10PATH)  #! h10-skim-e_012416.lst
 }
 #print H10LSTS
 DATE_ST={
@@ -172,19 +175,19 @@ CUTSNCORS=OrderedDict()
 #! ##################
 
 #! + For sanity check re-obtain xsec with 'dflt' and 'EI-cuts' and ensure that nothing has changed here
-#CUTSNCORS[('dflt','dflt')]                        =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',         ':11:']
-#CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
+CUTSNCORS[('dflt','dflt')]                        =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',         ':11:']
+CUTSNCORS[('dflt_eff_scpd',':11:1:2:3:13:14:15:')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:']
 #! + To 'dflt' add 'eff_scpd' with and without (for sanity check) 'at_mod' ('at_mod'=accounts for possible sources of systematic effects)
-#CUTSNCORS[('dflt_eff_scpd','dflt')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
-#CUTSNCORS[('dflt_eff_scpd_at_mod','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:17:']
+CUTSNCORS[('dflt_eff_scpd','dflt')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:']
+CUTSNCORS[('dflt_eff_scpd_at_mod','dflt')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:17:']
 #! + To 'dflt' add ECfid-on with and without (for sanity check) 'at_mod' ('at_mod'=accounts for possible sources of systematic effects)
-#CUTSNCORS[('dflt','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
-#CUTSNCORS[('dflt','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:18:']
+CUTSNCORS[('dflt','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:']
+CUTSNCORS[('dflt','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:2:18:']
 #! + To 'EI-cuts' add 'at_mod' = 'EI-cuts_at_mod'
-#CUTSNCORS[('dflt_eff_scpd_at_mod',':11:1:2:3:13:14:15:_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:17:18:']
+CUTSNCORS[('dflt_eff_scpd_at_mod',':11:1:2:3:13:14:15:_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:1:2:3:13:14:15:17:18:']
 #! [02-25-16] Updated test for checking systematic effect of ECfid (see note of [02-25-16]in Results for details)
-#CUTSNCORS[('dflt_eff_scpd_at_mod','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
-#CUTSNCORS[('dflt_eff_scpd_at_mod','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:18:']
+CUTSNCORS[('dflt_eff_scpd_at_mod','dflt_ECfid-on')]       =['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:']
+CUTSNCORS[('dflt_eff_scpd_at_mod','dflt_ECfid-on_at_mod')]=['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:',':11:2:18:']
 
 if len(CUTSNCORS)==0: sys.exit("len(CUTSNCORS)==0. Exiting")
 
@@ -234,9 +237,16 @@ if len(sys.argv)>5:#i.e. CUMSIML entered by user
 else:
 	CUMSIML.append(SIMS[expt])
 
+if len(sys.argv)>6:#i.e. PROC_H10_LITE_TYPE entered by user
+        PROC_H10_LITE_TYPE=sys.argv[6]
+else:
+	PROC_H10_LITE_TYPE="serial"
+if PROC_H10_LITE_TYPE!="parallel" and PROC_H10_LITE_TYPE!="serial":
+        sys.exit("Please enter PROC_H10_LITE_TYPE as either parallel or serial")
+
 PROC_NEW_JOBTAG=True
-if len(sys.argv)>6: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
-	DATE=sys.argv[6]
+if len(sys.argv)>7: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
+	DATE=sys.argv[7]
         PROC_NEW_JOBTAG=False
 else:
         DATE=datetime.datetime.now().strftime('%m%d%y')
@@ -245,9 +255,10 @@ print "expt=",expt
 print "Q2MIN=",Q2MIN
 print "Q2MAX=",Q2MAX
 print "IDTFR=",IDTFR
+print "CUMSIML=",CUMSIML
+print "PROC_H10_LITE_TYPE=",PROC_H10_LITE_TYPE
 print "DATE=",DATE
 print "PROC_NEW_JOBTAG=",PROC_NEW_JOBTAG
-print "CUMSIML=",CUMSIML
 #sys.exit()
 #! ******
 
@@ -311,7 +322,11 @@ for k in CUTSNCORS.keys():
 		#! + This way no zombie child processes are left and this is important
 		#!   for the manner in which I am tracking and noting the completion of
 		#!   ER,SR{sims}}:h10->d2pi processes below
-		subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		if PROC_H10_LITE_TYPE=="parallel": 
+			subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		elif PROC_H10_LITE_TYPE=="serial":
+			p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			p.wait()
 	else:
 		print os.path.join(d2pidir_exp,"d2piR.root"),"exists. Not making new one"
                 mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_exp,"d2piR.root"))	
@@ -348,7 +363,11 @@ for k in CUTSNCORS.keys():
         			#! + This way no zombie child processes are left and this is important
         			#!   for the manner in which I am tracking and noting the completion of
         			#!   ER,SR{sims}}:h10->d2pi processes below
-				subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+				if PROC_H10_LITE_TYPE=="parallel":
+					subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+				elif PROC_H10_LITE_TYPE=="serial":
+					p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+					p.wait()
 			else:
 				print os.path.join(d2pidir_sim,"d2piR.root"),"exists. Not making new one"
 				mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_sim,"d2piR.root"))
@@ -557,3 +576,4 @@ for k in CUTSNCORS.keys():
                         mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root"))
 
 	mainlog.close()
+print "h10_2_Obs end time",datetime.datetime.now().strftime('%H:%M:%S')

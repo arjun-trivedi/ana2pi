@@ -121,6 +121,51 @@ h10looper_2pi::h10looper_2pi(TString h10type, TChain* h10chain,
 	if (_do_evtsel_2pi){
 		setup_d2pi();
 	}
+	if(_make_h10_skim_SS){
+		//! + h10 is created directly under 'fout:/' for technical reasons
+		//!   (since the program expects to find the h10 tree in the root dir.)
+		//! + Directory 'copyh10' is created only for book-keeping reasons
+		_fout->mkdir("copyh10");
+		_fout->cd();
+		_th10copy = (TTree*)fChain->GetTree()->CloneTree(0);
+		set_h10_SEB_BranchStatus(_th10copy);
+
+		/* 
+		[02-28-16] hack-pcorr for '_make_h10_skim_SS'
+		+ 'pcorr' is not a part of proc-chain when making h10_skim_SS: its usage is reserved
+		   for when the h10 variables are to be updated with the corrected momenta which are
+		   then used to updated electron and hadron kinematics via 'set_ekin()' and 'set_hkin()'
+		+ However since in 'evtsel', that is used in the proc-chain, the corrected momenta have
+		  to be used but h10 is not updated, I had to hack 'pcorr' in a manner defined under the header 
+		  "hack-pcorr for '_make_h10_skim_SS'" in h10looper_e1f(2pi).h
+		+ In this hack-pcorr method, 'pcorr' is put inside the 'd2pi' folder  
+		*/
+
+		if (_dtyp=="exp"){
+			_pcorr_prtcl_names=new TString[3];
+			_pcorr_prtcl_names[0]="e";
+			_pcorr_prtcl_names[1]="p";
+			_pcorr_prtcl_names[2]="pip";
+
+			TDirectory* dir_d2pi=_fout->GetDirectory("d2pi");
+			dir_d2pi->mkdir("pcorr")->cd();
+			_hpcorr_dpVp=new TH2D*[3];
+			_hpcorr_dcx=new TH1D*[3];
+			_hpcorr_dcy=new TH1D*[3];
+			_hpcorr_dcz=new TH1D*[3];
+			_hpcorr_dp=new TH1D*[3];
+			for (int i=0;i<3;i++){
+				TString sfx=_pcorr_prtcl_names[i].Data();
+				_hpcorr_dpVp[i]=new TH2D(TString::Format("hdpVp_%s",sfx.Data()),"#Deltap vs. p",550,0,5.5,160,-0.08,0.08);
+				_hpcorr_dcx[i]=new TH1D(TString::Format("hdcx_%s",sfx.Data()), "#Deltacx",60,-0.01,0.01);
+				_hpcorr_dcy[i]=new TH1D(TString::Format("hdcy_%s",sfx.Data()), "#Deltacy",60,-0.01,0.01);
+				_hpcorr_dcz[i]=new TH1D(TString::Format("hdcz_%s",sfx.Data()), "#Deltacz",60,-0.01,0.01);
+				_hpcorr_dp[i]=new TH1D(TString::Format("hdp_%s",sfx.Data()), "#Deltap", 160,-0.08,0.08);
+			}
+		}
+	
+	}
+
 
 	//! Hadron kinematics
 	//! Lab Frame
@@ -185,6 +230,16 @@ h10looper_2pi::~h10looper_2pi()
 	delete[] _hmm2_pstc;
 	delete[] _hmm_pstc;
 	delete[] _h8;
+
+	//![02-28-16] After adding hack-pcorr
+	if (_make_h10_skim_SS){
+		delete[] _pcorr_prtcl_names;
+		delete[] _hpcorr_dpVp;
+		delete[] _hpcorr_dcx;
+   		delete[] _hpcorr_dcy;
+   		delete[] _hpcorr_dcz;
+   		delete[] _hpcorr_dp;
+    }
 
 	Info("h10looper_2pi::~h10looper_2pi","Done.");
 }
@@ -280,7 +335,7 @@ void h10looper_2pi::Loop(){
 								set_ekin();
 								set_hkin(h10idx_p, h10idx_pip);
 							}
-							
+														
 							//! EFF (top2')
 							if (_do_eff) _heff->Fill(EFF_TOT);
 							if (!_do_eff || (_do_eff && pass_eff()) ){
@@ -306,6 +361,18 @@ void h10looper_2pi::Loop(){
 									if (_do_evtsel_2pi){
 										//! Q2-W kinematic cut
 										_hq2w_prec->Fill(_W,_Q2);
+										//! hack-pcorr
+										if (_make_h10_skim_SS && _dtyp=="exp"){//! then do hack-pcorr
+											TLorentzVector lv_corr_E,lv_corr_P,lv_corr_Pip;
+											lv_corr_E.SetXYZT(0,0,0,0);
+											lv_corr_P.SetXYZT(0,0,0,0);
+											lv_corr_Pip.SetXYZT(0,0,0,0);
+											//std::cout<<"here:start"<<std::endl;
+											do_pcorr_but_not_update_h10(lv_corr_E,lv_corr_P,lv_corr_Pip);
+											set_ekin_use_passed_lv(lv_corr_E);
+											set_hkin_use_passed_lv(lv_corr_P,lv_corr_Pip,h10idx_p,h10idx_pip);
+											//std::cout<<"here:done"<<std::endl;
+										}
 										//! [11-23-15] see h8_bng.h for details if (!(_Q2>=1.25 && _Q2<5.25 && _W>1.300 && _W<2.125)) continue;
 										if (!(_Q2>=_Q2_MIN && _Q2<_Q2_MAX && _W>_W_MIN && _W<_W_MAX)) continue;
 										_hq2w_pstc->Fill(_W,_Q2);
@@ -333,8 +400,17 @@ void h10looper_2pi::Loop(){
 											_hmm_pstc_fW->Fill(mmppip);
 											_hmm2_pstc[iw]->Fill(mm2ppip);
 											_hmm_pstc[iw]->Fill(mmppip);
+
+											//! make_h10_skim_SS
+											if (_make_h10_skim_SS){
+												//std::cout<<"h10-skim-SS enter"<<std::endl;
+												_th10copy->Fill();
+												//std::cout<<"h10-skim-SS leave"<<std::endl;
+												continue;
+											}
+
 											fill_h8();
-										}
+										}//! MM2-cut
 									}//! EVTSEL_2PI
 								}//!SCPD
 							}//!EFF
@@ -379,7 +455,7 @@ void h10looper_2pi::reset_hkin(){
 	_p_p=  _theta_p=  _phi_p=0;
     _p_pip=_theta_pip=_phi_pip=0;
     _p_pim=_theta_pim=_phi_pim=0;
-    //! sector
+    //! sector and sc_pd
     _sector_p=_sc_pd_p=0;
     _sector_pip=_sc_pd_pip=0;
     _sector_pim=_sc_pd_pim=0;
@@ -841,6 +917,8 @@ void h10looper_2pi::setup_d2pi(){
 	}*/
 	if (_use_MM2_cut_EI){
 		_mm2ppip_l=-0.04,_mm2ppip_h=0.06; 
+	}else if(_use_MM2_cut_SS){
+		_mm2ppip_l=-0.16,_mm2ppip_h=0.16;
 	}else{
 		_mm2ppip_l=-0.00,_mm2ppip_h=0.04;
 	}
@@ -1020,3 +1098,116 @@ bool h10looper_2pi::pass_scpd(){
 	ret=e_inscpd && p_inscpd && pip_inscpd;
 	return ret;
 }
+
+/*
+[02-28-16] hack-pcorr for '_make_h10_skim_SS'
+*/
+void h10looper_2pi::set_hkin_use_passed_lv(TLorentzVector lvP, TLorentzVector lvPip,int h10idx_p/*=-1*/, int h10idx_pip/*=-1*/){
+	_lvP=lvP;
+	_lvPip=lvPip;
+	//! Now set _lvPim
+	_lvPim = (_lvW-(_lvP+_lvPip));
+
+	//! Set up Lab frame components of kin.
+	_p_p=_lvP.P();
+	_p_pip=_lvPip.P();
+	_p_pim=_lvPim.P();
+	_theta_p=_lvP.Theta()*TMath::RadToDeg();
+	_theta_pip=_lvPip.Theta()*TMath::RadToDeg();
+	_theta_pim=_lvPim.Theta()*TMath::RadToDeg();
+	//! phi: 1st get in range [-180,180]
+	float phi_p=_lvP.Phi()*TMath::RadToDeg();// [-180,180]
+	float phi_pip=_lvPip.Phi()*TMath::RadToDeg();// [-180,180]
+	float phi_pim=_lvPim.Phi()*TMath::RadToDeg();// [-180,180]
+	//! phi: now convert to [-30,330]
+	_phi_p=phi_p<-30?phi_p+360:phi_p; // [-30,330]
+	_phi_pip=phi_pip<-30?phi_pip+360:phi_pip; // [-30,330]
+	_phi_pim=phi_pim<-30?phi_pim+360:phi_pim; // [-30,330]
+	//! sector
+	_sector_p=get_sector(_phi_p);
+	_sector_pip=get_sector(_phi_pip);
+	_sector_pim=get_sector(_phi_pim);
+	//! paddle
+	if (_seq=="recon"){
+		_sc_pd_p=100*dc_sect[dc[h10idx_p]-1]+sc_pd[sc[h10idx_p]-1];
+		_sc_pd_pip=100*dc_sect[dc[h10idx_pip]-1]+sc_pd[sc[h10idx_pip]-1];
+		//!_sc_pd_pim= thus far, not identifying pim
+	}
+
+	//! + The following code taken directly from ProcD2pi::UpdateD2pi
+	//!   and therein the part to calculate Varset kinematics
+	//! + The only changes relate to certain variable names that have 
+	//!   changed and code readability etc.
+
+	//! Varsets kinematics
+	//! Calculate rotation: taken from Evan's phys-ana-omega on 08-05-13
+	TVector3 uz = _lvQ.Vect().Unit();
+    TVector3 ux = (_lvE0.Vect().Cross(_lvE1.Vect())).Unit();
+    ux.Rotate(-TMath::Pi()/2,uz);
+    TRotation r3;// = new TRotation();
+    r3.SetZAxis(uz,ux).Invert();
+    //! _w and _q are in z-direction
+    TVector3 boost(-1*_lvW.BoostVector());
+    TLorentzRotation r4(r3); //*_boost);
+    r4 *= boost; //*_3rot;
+	
+	_lvQCMS   = _lvQ;
+	_lvP0CMS  = _lvP0;
+	_lvPCMS   = _lvP;
+	_lvPipCMS = _lvPip;
+	_lvPimCMS = _lvPim;
+	//! Rotate and Boost
+	_lvQCMS.Transform(r4);
+	_lvP0CMS.Transform(r4);
+	_lvPCMS.Transform(r4);
+	_lvPipCMS.Transform(r4);
+	_lvPimCMS.Transform(r4);
+	
+	_M_ppip = (_lvPCMS + _lvPipCMS).Mag();
+	_M_ppim = (_lvPCMS + _lvPimCMS).Mag();
+	_M_pippim = (_lvPipCMS + _lvPimCMS).Mag();
+	
+	//! Should be directly be able to get the Theta() angle since
+	//! virtual photon defines the coordinate system
+	_theta_cms_p=_lvPCMS.Theta()*TMath::RadToDeg();
+	_theta_cms_pip=_lvPipCMS.Theta()*TMath::RadToDeg();
+	_theta_cms_pim=_lvPimCMS.Theta()*TMath::RadToDeg();
+	
+	_phi_cms_p=getPhi(_lvPCMS);
+	_phi_cms_pip=getPhi(_lvPipCMS);
+	_phi_cms_pim=getPhi(_lvPimCMS);
+
+	//! alpha angle
+	//! Following vectors are used in the calculation of alpha angle; see doc. for getAlpha()
+	TVector3 G_f(0,0,0);
+	TVector3 G_p(0,0,0);
+	TVector3 B_f(0,0,0);
+	TVector3 B_p(0,0,0);
+
+
+	G_f=uz*-1; //! Gamma vector used in calculation of alpha always "follows" -uz
+
+	//! alpha[p',pip][p,pim]
+	G_p=_lvPimCMS.Vect().Unit();
+	B_f=_lvPipCMS.Vect().Unit();
+	B_p=G_p;
+	_alpha_1=getAlpha(G_f,G_p,B_f,B_p);
+	//! alpha[pip,pim][p,p']
+	G_p=_lvPCMS.Vect().Unit();
+	B_f=_lvPipCMS.Vect().Unit();
+	B_p=G_p;
+	_alpha_2=getAlpha(G_f,G_p,B_f,B_p);
+	//! alpha[p',pim][p,pip]
+	G_p=_lvPipCMS.Vect().Unit();
+	B_f=_lvPimCMS.Vect().Unit();//_lvPCMS.Vect().Unit();
+	B_p=G_p;
+	_alpha_3=getAlpha(G_f,G_p,B_f,B_p);
+
+	//! h10idx
+	_h10idx_p=h10idx_p;
+	_h10idx_pip=h10idx_pip;
+	//_h10idx_pim=TBD;
+}
+/*
+[02-28-16] End: hack-pcorr for '_make_h10_skim_SS'
+*/

@@ -3,7 +3,7 @@ from disp_obs import DispObs
 import sys
 
 #! ---------------------
-#  dobs_1D [obsdir] [simnum=siml] [view=norm] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [expt=e1f] [dbg=False]
+#  dobs_1D [obsdir] [simnum=siml] [view=norm] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [expt=e16] [dbg=False]
 #!----------------------
 #! Get obsdir
 if len(sys.argv)==1:
@@ -48,7 +48,7 @@ if len(sys.argv)>8: #! User input expt
 	if expt!='e1f' and expt!='e16':
 		sys.exit("expt=e1f or e16 only.")
 else:
-        expt='e1f'
+        expt='e16'
 
 if len(sys.argv)>9: #! User input dbg, else use dbg=False
 	if sys.argv[9]=="False":

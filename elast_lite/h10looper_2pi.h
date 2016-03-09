@@ -52,6 +52,15 @@ public :
    //!   functions
    void e16_ST_Loop_with_efid();
 
+   /*
+   [02-28-16] hack-pcorr for '_make_h10_skim_SS'
+   + For details read comment under same header in 'h10looper_2pi.h'.
+   + In that sense, this function is the counterpart for 'set_ekin_use_passed_lv()'
+   + NOTE that h10idx are still passed in, but they are not used to obtain any kinematic
+     information, but only sc_pd information
+   */
+   void set_hkin_use_passed_lv(TLorentzVector lvP, TLorentzVector lvPip,int h10idx_p/*=-1*/, int h10idx_pip/*=-1*/);
+
    //![12-11-15]
    //!+ Hadron kinematics moved to h10looper_e1f.h
    //!  after implemeting pass_theta_vs_p() in h10looper_e1f,

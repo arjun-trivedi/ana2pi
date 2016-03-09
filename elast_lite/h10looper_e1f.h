@@ -102,9 +102,22 @@ public :
    bool _use_eff_scpd_at_mod;
    //! use_cut_ECfid_at_mod //! 18
    bool _use_cut_ECfid_at_mod;
+   //! MM2_cut_SS //! conservatively chosen to [-0.16,0.16] => MM:[-0.4,0.4]
+   bool _use_MM2_cut_SS; //! 19
 
    //! char-coded options
    bool _make_h10_skim_e;//! eid+efid; for Reco events
+   /* [02-26-15]
+   + Make skims for xsex=f(cutsncors) def.eq. Systematic Studies (SS)
+   + Turn OFF all cuts that are used in SS (default values in parenthesis):
+      1. ECfid:     (OFF)
+      2. eff_scpd:  not use ':eff:scpd:' in proc-chain
+      3. gpart_pid: (OFF)
+      4. hitSC_pid: (ON) => adtnl_opt=':14:' used to turn OFF
+      5. stat_pid:  (OFF) 
+      6. MM2_cut:   Use wider-cut => adtnl_opt=':19:' for '_use_MM2_cut_SS'
+   */
+   bool _make_h10_skim_SS; //! 'eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:'
 
 
    //! output objects
@@ -219,7 +232,7 @@ public :
    static const float _W_CUT_MAX=1.028;   
 
    //! + Used for h10-skims
-   //! + Currently: _make_h10_skim_e 
+   //! + Currently: _make_h10_skim_e, [02-26-15] _make_h10_skim_SS
    TTree* _th10copy;
 
    //! ekin
@@ -650,6 +663,24 @@ public :
    //!   to disturb my code and therefore have implemented the following special
    //!   functions
    bool e16_ST_pass_efid(); 
+
+   /*
+   [02-28-16] hack-pcorr for '_make_h10_skim_SS'
+   + The following functions are directly copied from 'do_pcorr()',
+     'do_pcorr_helper()' and 'set_ekin()', respectively. However, the
+     pcorr functions do not update the h10 variables and therefore directly return
+     the momentum corrected Lorentz Vector that is then used by the set_ekin function.
+   + This functionality was required for '_make_h10_skim_SS' because evtsel has
+     to be done corrected momenta, however, the final h10 made has to contain
+     uncorrected momenta. 
+   + While the already existing functions could have been modified, or atleast the same names used but
+     with different parameters, at this very late stage of my analysis, I decided to take a
+     very conservative approach and keep these new functions completely separate, even with regard
+     to their names so that their is no confusion at all.
+   */
+   void do_pcorr_but_not_update_h10(TLorentzVector &lvE,TLorentzVector &lvP,TLorentzVector &lvPip); //![01-13-16] Works for {e1f,e16}*{2pi:top2',elast}
+   TLorentzVector do_pcorr_but_not_update_h10_helper(TString prtcl_name);
+   void set_ekin_use_passed_lv(TLorentzVector lv);
 };
 
 #endif

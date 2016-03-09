@@ -70,7 +70,10 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	}
 
 	//! set up _pcorr_tool_e1f (No such tool needs to be set up for e16 since they are direct function calls)
-	if (_do_pcorr){
+	//! [02-28-16] 
+	//! + Added the case to instantiate this tool when '_make_h10_skim_SS=kTRUE'
+	//!   since there 'pcorr' in its hack-pcorr form is done
+	if (_do_pcorr || _make_h10_skim_SS){
 		if (_expt=="e1f"){
 			Info("h10looper_e1f::h10looper_e1f", "Setting up _pcorr_tool_e1f");
 			TString ws=getenv("WORKSPACE");;
@@ -384,22 +387,25 @@ h10looper_e1f::~h10looper_e1f()
 	delete[] _h_dtVp_pim;
 
 	delete _pcorr_tool_e1f;
-	delete[] _pcorr_prtcl_names;
-	delete[] _hpcorr_dpVp;
-	delete[] _hpcorr_dcx;
-   delete[] _hpcorr_dcy;
-   delete[] _hpcorr_dcz;
-   delete[] _hpcorr_dp;
+	//![02-28-16] After adding hack-pcorr
+	if (!_make_h10_skim_SS){
+		delete[] _pcorr_prtcl_names;
+		delete[] _hpcorr_dpVp;
+		delete[] _hpcorr_dcx;
+   		delete[] _hpcorr_dcy;
+   		delete[] _hpcorr_dcz;
+   		delete[] _hpcorr_dp;
+    }
+	
+	delete _hW;
+	delete _helast;
+	delete[] _hf;
+	delete[] _hc;
+	delete _th10copy;
 
-   delete _hW;
-   delete _helast;
-   delete[] _hf;
-   delete[] _hc;
-   delete _th10copy;
+	delete _fout;
 
-   delete _fout;
-
-   Info("h10looper_e1f::~h10looper_e1f","Done.");
+	Info("h10looper_e1f::~h10looper_e1f","Done.");
 }
 
 /*
@@ -740,7 +746,7 @@ void h10looper_e1f::do_pcorr_helper(TString prtcl_name){
 	int id;
 	int h10idx;
 	int monhistidx;//! must match array indices in _pcorr_prtcl_names
-	int mass;
+	float mass;
 	if (prtcl_name=="e"){
 		lv0=_lvE1;
 		q=-1;
@@ -1443,8 +1449,11 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     _use_eff_scpd_at_mod=kFALSE;
     //! use_cut_ECfid_at_mod
     _use_cut_ECfid_at_mod=kFALSE;
+    //! MM2_cut_SS
+	_use_MM2_cut_SS=kFALSE;
 
 	_make_h10_skim_e=kFALSE;
+	_make_h10_skim_SS=kFALSE;
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
 	
@@ -1468,8 +1477,10 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":16:")) _use_thesis_Q2W=kFALSE;
 	if (adtnl_opts.Contains(":17:")) _use_eff_scpd_at_mod=kTRUE;
 	if (adtnl_opts.Contains(":18:")) _use_cut_ECfid_at_mod=kTRUE;
+	if (adtnl_opts.Contains(":19:")) _use_MM2_cut_SS=kTRUE;
 	//! char-coded options
-	if (adtnl_opts.Contains(":h10-skim-e:")) _make_h10_skim_e=kTRUE;
+	if (adtnl_opts.Contains(":h10-skim-e:"))  _make_h10_skim_e=kTRUE;
+	if (adtnl_opts.Contains(":h10-skim-SS:")) _make_h10_skim_SS=kTRUE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
@@ -1504,8 +1515,11 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     if(_use_eff_scpd_at_mod) Info("","use_eff_scpd_at_mod");
     //! use_cut_ECfid_at_mod 
     if(_use_cut_ECfid_at_mod) Info("","use_cut_ECfid_at_mod");
+    //! MM2_cut_SS
+	if(_use_MM2_cut_SS) Info("","use_MM2_cut_SS");
 
 	if(_make_h10_skim_e) Info("","make_h10_skim_e");
+	if(_make_h10_skim_SS) Info("","make_h10_skim_SS");
 	Info("","***********");
 }
 
@@ -1704,3 +1718,127 @@ void h10looper_e1f::do_zvtxcorr(){
 
 	return;
 }
+
+
+/*
+[02-28-16] hack-pcorr for '_make_h10_skim_SS'
+*/
+void h10looper_e1f::do_pcorr_but_not_update_h10(TLorentzVector &lvE,TLorentzVector &lvP,TLorentzVector &lvPip){
+	if (_rctn=="elast"){//! only to e
+		lvE=do_pcorr_but_not_update_h10_helper("e");
+	}else if (_rctn=="2pi"){//! to e,p,pip
+		lvE=do_pcorr_but_not_update_h10_helper("e");
+		lvP=do_pcorr_but_not_update_h10_helper("p");
+		lvPip=do_pcorr_but_not_update_h10_helper("pip");
+	}else{
+		Info("h10looper_e1f::do_pcorr_but_not_update_h10_helper()","_rctn=%s not recognized. Not doing pcorr",_rctn.Data());
+	}
+	return;
+}
+
+TLorentzVector h10looper_e1f::do_pcorr_but_not_update_h10_helper(TString prtcl_name){
+	//! Get all relevant information needed by function
+	TLorentzVector lv0;
+	int q;
+	int id;
+	int monhistidx;//! must match array indices in _pcorr_prtcl_names
+	float mass;
+	if (prtcl_name=="e"){
+		lv0=_lvE1;
+		q=-1;
+		id=ELECTRON;
+		monhistidx=0;
+		mass=MASS_E;
+	}else if (prtcl_name=="p"){
+		lv0=_lvP;
+		q=1;
+		id=PROTON;
+		monhistidx=1;
+		mass=MASS_P;
+	}else if (prtcl_name=="pip"){
+		lv0=_lvPip;
+		q=1;
+		id=PIP;
+		monhistidx=2;
+		mass=MASS_PIP;
+	}else{
+		Info("h10looper_e1f::do_pcorr_helper()","prtcl_name=%s not recognized. Not doing pcorr_helper",prtcl_name.Data());
+		return lv0;
+	}
+
+
+	//! First store uncorr mom
+	float p0=lv0.P();
+	float cx0=lv0.Px()/lv0.P();
+	float cy0=lv0.Py()/lv0.P();
+	float cz0=lv0.Pz()/lv0.P();
+
+	//! + Ignore cases where pcorr is not implemented
+	//! + e1f:pcorr:{p,pip}
+	if (_expt=="e1f" && (prtcl_name=="p" || prtcl_name=="pip")){
+		return lv0;
+	}
+
+	//! Now correct
+	TLorentzVector lv1;
+	if (_expt=="e1f"){
+		if (prtcl_name=="e"){
+			lv1=_pcorr_tool_e1f->PcorN(lv0,q,id);
+		}
+	}else if (_expt=="e16"){
+		//! Re-obtain phi=[-180,180] since that is the valid phi range for e16 .f subroutines
+		float phi=lv0.Phi()*TMath::RadToDeg(); 
+		//! Setup torcur
+		float torcur=3375;
+		//! + Prepare to call .f routines
+		//! + Note for p 'eloss' is done and therefore theta_corr=theta
+		//!   i.e. theta is not corrected
+		float theta_corr=0;
+		float p_corr=0;
+		if (prtcl_name=="e"){
+			e_corr_sub(_theta_e,phi,_p_e,torcur,_sector_e,theta_corr,p_corr);
+		}else if (prtcl_name=="pip"){
+			pi_corr_sub(_theta_pip,phi,_p_pip,torcur,_sector_pip,theta_corr,p_corr);
+		}else if (prtcl_name=="p"){
+			preloss(_p_p,_theta_p,p_corr);
+			theta_corr=_theta_p;
+		}
+		//! Set lv1
+		float px_corr=p_corr*TMath::Sin(theta_corr*TMath::DegToRad())*TMath::Cos(phi*TMath::DegToRad());
+		float py_corr=p_corr*TMath::Sin(theta_corr*TMath::DegToRad())*TMath::Sin(phi*TMath::DegToRad());
+		float pz_corr=p_corr*TMath::Cos(theta_corr*TMath::DegToRad());
+		lv1.SetPxPyPzE(px_corr,py_corr,pz_corr,TMath::Sqrt(p_corr*p_corr+mass*mass));
+	}
+	
+	//! update pcorr monitorign histograms
+	float p1=lv1.P();
+	float cx1=lv1.Px()/p1;
+	float cy1=lv1.Py()/p1;
+	float cz1=lv1.Pz()/p1;
+	_hpcorr_dpVp[monhistidx]->Fill(p1,p1-p0);
+	_hpcorr_dcx[monhistidx]->Fill(cx1-cx0);
+	_hpcorr_dcy[monhistidx]->Fill(cy1-cy0);
+	_hpcorr_dcz[monhistidx]->Fill(cz1-cz0);
+	_hpcorr_dp[monhistidx]->Fill(p1-p0);
+
+	//! return lv constructed from corrected momenta
+	return lv1;
+}
+
+void h10looper_e1f::set_ekin_use_passed_lv(TLorentzVector lv){
+	_lvE1=lv;
+	_lvQ=_lvE0-(_lvE1);
+	_lvW=_lvQ+_lvP0;
+	_Q2=-1*_lvQ.Mag2();
+	_W=_lvW.Mag();
+	_theta_e=_lvE1.Theta()*TMath::RadToDeg();
+	float phi=_lvE1.Phi()*TMath::RadToDeg();// [-180,180]
+	_phi_e=phi<-30?phi+360:phi; // [-30,330]
+	_p_e=_lvE1.P();
+	_sector_e=get_sector(_phi_e);
+	_sc_pd_e=100*dc_sect[dc[0]-1]+sc_pd[sc[0]-1];
+	_h10idx_e=0;
+}
+/*
+[02-28-16] End: hack-pcorr for '_make_h10_skim_SS'
+*/

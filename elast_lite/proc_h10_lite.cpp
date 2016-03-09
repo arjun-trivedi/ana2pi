@@ -64,7 +64,7 @@ int main(int argc,  char* const argv[])
 		return 0;
 	}
 	if (seq!="recon" && seq!="thrown"){
-		printf("Incorrect seq entered: %s\n", dtyp.Data());
+		printf("Incorrect seq entered: %s\n", seq.Data());
 		return 0;
 	}
 	Info("proc_h10_lite","h10lst=%s,h10type=%s,cutsncors=%s,fout_name=%s,nentries=%llu\n,adtnl_opts=%s",

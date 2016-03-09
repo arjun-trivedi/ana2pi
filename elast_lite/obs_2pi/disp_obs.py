@@ -7,7 +7,7 @@ import array
 import itertools
 
 import os,sys
-import time
+import time,datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -122,11 +122,18 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispObs:
-	def __init__(self,obsdir,simnum='siml',view="norm",q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,expt='e1f',dbg=False):
+	def __init__(self,obsdir,simnum='siml',view="norm",q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,expt='e16',dbg=False,**SSargs):
 		print "*** In DispObs::_init_() ***"
-		self.OBSDIR=obsdir
-		self.SIM_NUM=simnum
-		self.VIEW=view
+		
+		print "expt=",expt
+
+		self.DO_SS_STUDY=False
+		if len(SSargs)>0: 
+			print "SSargs exist. Will perform SS. \n"
+			#print SSargs
+			self.DO_SS_STUDY=True
+
+		#! init independent of either SS or Regular
 		self.Q2MIN,self.Q2MAX=q2min,q2max
 		self.WMIN,self.WMAX=wmin,wmax
 		if expt=='e1f':
@@ -137,25 +144,77 @@ class DispObs:
 			self.E0=E16_E0
 
 		self.DBG=dbg
-				
-		self.FIN=root_open(os.path.join(self.OBSDIR,self.SIM_NUM,'yield.root'))
-		self.OUTDIR=os.path.join(self.OBSDIR,self.SIM_NUM)
 
-		#! Set SEQS to process
-		if   self.VIEW=="norm":
+		print "Q2MIN,Q2MAX=",self.Q2MIN,self.Q2MAX
+		print "WMIN,WMAX=",self.WMIN,self.WMAX
+		print "LUM=",self.LUM
+		print "E0=",self.E0
+
+		#! Now do init specific to SS or Regular
+		if self.DO_SS_STUDY: #! Do SS related init
+			#! set self.FIN=None
+			#! + This is for technical reasons since in Regular init there is a self. FIN
+			self.FIN=None
+
+			#! Setup OBSDIR
+			sfx=''
+			if expt=='e16':sfx='_E16'
+			self.OBSDIR=os.environ['OBSDIR%s'%sfx]
+
+			#! Create OBSD
+			self.OBSD=SSargs['obsd']
+
+			#! Set up SEQS
 			self.SEQS=['EC','EF']
-		elif self.VIEW=="fullana":
-			self.SEQS=SEQ_ALL
-		elif self.VIEW=="ERyield":
-			self.SEQS=['ER']
-		else:
-			sys.exit("view={norm,fullana,ERyield} only")
 
-		print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
-		print "self.VIEW=",self.VIEW
-		print "SEQS to process=",self.SEQS
-		print "expt=",expt
-		time.sleep(3)
+			#! OUTDIR
+			SS_tag=SSargs['SS_tag']
+			date=datetime.datetime.now().strftime('%m%d%y')
+			self.OUTDIR=os.path.join(self.OBSDIR,'SS','%s_%s'%(SS_tag,date))
+			if self.DBG==True:
+				self.OUTDIR=os.path.join(self.OBSDIR,'SS','dbg','%s_%s'%(SS_tag,date))
+
+			print "OBSDIR=",self.OBSDIR
+			#! pretty-print OBSD
+			print "OBSD (pretty print):"
+			for k in self.OBSD:
+				print k,":",self.OBSD[k][0],self.OBSD[k][1]
+			print "SEQS=",self.SEQS
+			print "OUTDIR=",self.OUTDIR
+			
+		else: #! do Regular init	
+			self.OBSDIR=obsdir
+			self.SIM_NUM=simnum
+			self.VIEW=view
+			# self.Q2MIN,self.Q2MAX=q2min,q2max
+			# self.WMIN,self.WMAX=wmin,wmax
+			# if expt=='e1f':
+			# 	self.LUM=LUM_E1F
+			# 	self.E0=E1F_E0
+			# elif expt=='e16':
+			# 	self.LUM=LUM_E16
+			# 	self.E0=E16_E0
+
+			# self.DBG=dbg
+				
+			self.FIN=root_open(os.path.join(self.OBSDIR,self.SIM_NUM,'yield.root'))
+			self.OUTDIR=os.path.join(self.OBSDIR,self.SIM_NUM)
+
+			#! Set SEQS to process
+			if   self.VIEW=="norm":
+				self.SEQS=['EC','EF']
+			elif self.VIEW=="fullana":
+				self.SEQS=SEQ_ALL
+			elif self.VIEW=="ERyield":
+				self.SEQS=['ER']
+			else:
+				sys.exit("view={norm,fullana,ERyield} only")
+
+			print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
+			print "self.VIEW=",self.VIEW
+			print "SEQS to process=",self.SEQS
+			print "expt=",expt
+			time.sleep(3)
 
 		#! Some general ROOT related setup
 		#! + Print only Warning and Error messages
@@ -279,6 +338,131 @@ class DispObs:
 		print "*** plot_1D() Done ***\n"
 		return
 
+	def plot_1D_SS(self,h1,h1_SS_err,q2wbin):
+		'''
+		[02-29-16]
+		+ 'plot_1D' was used as a tempate for this method
+		+ The idea is extend the method to incorporate plotting of a 
+		  list of SS-Obs and the associated SS-err
+		+ Therefore only details relevant to the above were changed and the core functionality left intact
+
+		+ Process details:
+			+ NOTE that 1D-Obs and SS_err_1D_Obs are plotted for each of [EC,EH]
+		'''
+
+		print "In DispObs::plot_1D_SS()"
+
+		#! Set up plotting aesthetics
+		self.plot_1D_athtcs()
+		self.hist_1D_athtcs(h1)
+		self.hist_1D_athtcs(h1_SS_err)
+				
+		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
+		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
+				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
+				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
+			
+		#! Make plots for each of [EC,EH]
+		#! + Setup variable: nlegend_canvas=0
+		#! + The idea is to draw one master legend that will be used for all plots, Obs-1D and intg_xsec
+		#! + This is because this legend is too large to draw on the same canvas as the plots.
+		#! + Once this master legend in drawn and saved, no other such legend will be drawn.
+		#! nlegend canvas
+		nlegend_canvas=0	
+		for seq in self.SEQS:			  
+			#! Canvas for h1
+			c=ROOT.TCanvas("c","c",1000,1000)
+			pad_t_c=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
+			pad_p_c=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+			pad_p_c.Draw()
+			pad_t_c.Draw()
+			pad_t_c.cd()
+			pt=ROOT.TPaveText(.05,.1,.95,.8)
+			pt.AddText("Q2_W bin=%s"%q2wbin)
+			pt.SetTextSize(0.40)
+			pt.Draw()
+			pad_p_c.Divide(3,3)
+
+			#! Canvas for h1_SS_err
+			cerr=ROOT.TCanvas("cerr","cerr",1000,1000)
+			pad_t_cerr=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
+			pad_p_cerr=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+			pad_p_cerr.Draw()
+			pad_t_cerr.Draw()
+			pad_t_cerr.cd()
+			# pt=ROOT.TPaveText(.05,.1,.95,.8)
+			# pt.AddText("Q2_W bin=%s"%q2wbin)
+			# pt.SetTextSize(0.40)
+			pt.Draw()
+			pad_p_cerr.Divide(3,3)
+
+			for item in pad_map:
+				pad,vst,var=item[0],item[1],item[2]
+				print "pad,vst,var=",pad,vst,var
+						
+				#! Draw h1
+				gpad=pad_p_c.cd(pad)
+				for i,obsnum in enumerate(self.OBSD.keys()):
+					draw_opt="" if i==0 else "same"
+					h1[obsnum,seq,vst,var].Draw(draw_opt)
+				#! Add TLegend if pad==1
+				# if pad==1:
+				# 	l=ROOT.TLegend(0.60,0.60,1.00,0.90)
+				# 	l.SetFillStyle(0)
+				# 	l.SetBorderSize(0)
+				# 	l.SetTextSize(0.04)
+				# 	for k in self.OBSD.keys():
+				# 		obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
+				# 		l.AddEntry(h1[obsnum,seq,vst,var],"%s_%s"%(obstag,seq),"p")#EF
+				# 	l.Draw()
+				#! legend canvas
+				if nlegend_canvas==0:
+					#! Setup legend
+					lm=ROOT.TLegend(0,0,1,1)
+					lm.SetFillStyle(0)
+					lm.SetBorderSize(0)
+					lm.SetTextSize(0.03)
+					for k in self.OBSD.keys():
+						obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
+						lm.AddEntry(h1[obsnum,seq,vst,var],"%s_%s"%(obstag,seq),"p")#EF
+					
+					clm=ROOT.TCanvas()
+					lm.Draw()
+					clm.SaveAs("%s/c_master_legend.png"%self.OUTDIR)
+					clm.SaveAs("%s/c_master_legend.eps"%self.OUTDIR)
+					clm.Close()
+					nlegend_canvas+=1
+
+				#! Draw h1_SS_err
+				gpad=pad_p_cerr.cd(pad)
+				h1_SS_err[seq,vst,var].SetMinimum(0)
+				h1_SS_err[seq,vst,var].Draw()
+
+			#! Save canvases for h1 and h1_SS_err
+			q2bin=self.get_q2bin(q2wbin)
+			wbin=self.get_wbin(q2wbin)
+			#! h1 in self.OUTDIR_1D/seq/q2bin
+			outdir_seq=os.path.join(self.OUTDIR_1D,seq)
+			outdir_q2bin=os.path.join(outdir_seq,"q%s"%q2bin)
+			if not os.path.exists(outdir_q2bin):
+				os.makedirs(outdir_q2bin)
+			if not os.path.exists(outdir_seq):
+				os.makedirs(outdir_seq)
+			c.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+			c.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			#! h1_SS_err in self.OUTDIR_1D_SS_ERR/seq/q2bin
+			outdir_seq_err=os.path.join(self.OUTDIR_1D_SS_ERR,seq)
+			outdir_q2bin_SS_err=os.path.join(outdir_seq_err,"q%s"%q2bin)
+			if not os.path.exists(outdir_q2bin_SS_err):
+				os.makedirs(outdir_q2bin_SS_err)
+			if not os.path.exists(outdir_seq_err):
+				os.makedirs(outdir_seq_err)
+			cerr.SaveAs("%s/cerr_w%s_q%s.png"%(outdir_q2bin_SS_err,wbin,q2bin))
+			cerr.SaveAs("%s/cerr_w%s_q%s.eps"%(outdir_q2bin_SS_err,wbin,q2bin))
+
+		print "*** plot_1D_SS() Done ***\n"
+		return
+
 	def disp_1D(self):
 		"""
 		1. Get Q2-W bin list from yield.root
@@ -375,6 +559,162 @@ class DispObs:
 
 		print "*** disp_1D() Done ***\n"
 
+
+	def disp_1D_SS(self):
+		"""
+		[02-29-16]
+		+ 'disp_1D' was used as a tempate for this method
+		+ The idea is extend the method to incorporate a list of Observables representing various SS
+		+ Therefore only details relevant to the above were changed and the core functionality left intact
+
+		0. Make all needed output directories
+		1. Get Q2-W bin list from any of the files from self.OBSD
+		2. Create h2(obs,seq,vst,var) to store integrated yields=f(Q2-bin,W-bin)
+		3. For every Q2-W bin*obsnum (in self.OBSD):
+			3.i. Extract h1(obs,seq,vst,var)(=Obs_1D) where
+				+ seq=EC,EF        
+				+ var:	
+					+ if vst==1:           VARS=(M1,THETA,ALPHA)
+					+ if vst==2 or vst==3: VARS=(M2,THETA,ALPHA)
+			3.ii.  Normalize h1(obs,seq,vst,var)
+			3.iii. Get h1_SS_err(seq,vst,var) from h1(obs,seq,vst,var)
+			3.iv.  Fill relevant bin of h2 (=Intg_yld)
+			3.v.   Plot h1 and h1_SS_err(obs,seq,vst,var)
+		4. Plot h2(obsnum,seq,vst,var) and its projection on W, which is the itg_xsec(W;Q2). 
+		   The function that plots h2 and its projection on W i.e. the itg_xsec, also obtains
+		   the SS error on the itg_xsec and plots it too.
+		"""
+		print "*** In DispObs::disp_1D_SS() ***"
+
+		#! 0. Make output directories
+		#! Make OUTDIR_1D,OUTDIR_1D_SS_ERR
+		self.OUTDIR_1D=os.path.join(self.OUTDIR,"Obs_1D")
+		self.OUTDIR_1D_SS_ERR=os.path.join(self.OUTDIR,"Obs_1D_SS_err")
+		if not os.path.exists(self.OUTDIR_1D):
+			os.makedirs(self.OUTDIR_1D)
+		if not os.path.exists(self.OUTDIR_1D_SS_ERR):
+			os.makedirs(self.OUTDIR_1D_SS_ERR)
+
+		#! Make OUTDIR_ITG_YLD,OUTDIR_ITG_YLD_SS_ERR
+		self.OUTDIR_ITG_YLD=os.path.join(self.OUTDIR,"Obs_Itg_Yld")
+		self.OUTDIR_ITG_YLD_SS_ERR=os.path.join(self.OUTDIR,"Obs_Itg_Yld_SS_err")
+		if not os.path.exists(self.OUTDIR_ITG_YLD):
+			os.makedirs(self.OUTDIR_ITG_YLD)
+		if not os.path.exists(self.OUTDIR_ITG_YLD_SS_ERR):
+			os.makedirs(self.OUTDIR_ITG_YLD_SS_ERR)
+
+		#! 1. Get Q2-W binning from file
+		#! + Q2-W binning in the file is as per Q2-W binning of h8s
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
+		print "DispObs::disp_1D_SS() Q2-W bins got from yield.root=",q2wbinl
+
+		#! 2. Create h2[obsnum,seq,vst,var]: histogram to keep integrated yields in each Q2-W bin
+		#! + Implementation appears sloppy for now, but it is created inside Q2-W bin loop
+		h2=None
+
+		#! 3. Prepare to loop over Q2-W bin*obsnum (in self.OBSD):
+		#! + Get binning information for Q2 and W, individually, from Q2-W binning
+		#! + This is needed later to specify the Q2- and W-binning when creating h2
+		q2bng=self.get_q2bng(q2wbinl)
+		wbng=self.get_wbng(q2wbinl)
+		print "DispObs::disp_1D() nq2bins,nwbins=",q2bng['NBINS'],wbng['NBINS']
+
+		#! Now, process substeps of 3. for every Q2-W bin*obsnum (in self.OBSD):
+		print "DispObs::disp_1D() Going to begin processing Q2-W bins from file"
+		for q2wbin in q2wbinl:
+			print"Processing q2wbin=",q2wbin
+
+			#! 3.i. Create h1(obsnum,seq,vst,var)
+			h1=OrderedDict()
+			for k in self.OBSD:
+				obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
+				print "Processing obsnum:obs:obstag=",obsnum,obs,obstag
+
+				#! Open file for this obs
+				obsdir=os.path.join(self.OBSDIR,obs)
+				f=root_open(os.path.join(obsdir,'yield.root'))
+			
+				#! The following will be needed when filling h2
+				iq2bin=q2bng['BINS'].index(self.get_q2bin_le(q2wbin))
+				iwbin=wbng['BINS'].index(self.get_wbin_le(q2wbin))
+				print "q2bin#,wbin#=",iq2bin+1,iwbin+1
+
+				for item in list(itertools.product(self.SEQS,VSTS)):
+					seq,vst=item[0],item[1]
+					if   vst==1:           varl=['M1','THETA','ALPHA']
+					elif vst==2 or vst==3: varl=['M2','THETA','ALPHA']
+					for var in varl:
+						h1[obsnum,seq,vst,var]=f.Get("%s/%s/VST%d/h1_%s"%(q2wbin,seq,vst,var))
+						#! Call Sumw2() since the errors as currently in the h1s
+						#! need to be propagated in all subsequent calculations that involve them
+						h1[obsnum,seq,vst,var].Sumw2()
+				#! End of [seq,vst,var] loop
+			#! End of OBSD loop
+
+			#! 3.ii. Normalize h1(obsnum,seq,vst,var)
+			self.norm_1D(h1,q2wbin)
+
+			#! 3.iii. Get h1_SS_err(seq,vst,var) from h1(obs,seq,vst,var)
+			h1_SS_err=self.get_SS_err_1D(h1)
+
+			#! 3.iv. Fill h2(obsnum,seq,vst,var)
+			if h2==None:
+				h2=self.make_h2_itg_yld(q2bng,wbng,h1) #! Note h1 passed as a template to provide (obsnum,seq,vst,var) keys
+			self.fill_h2_itg_yld(h2,h1,iq2bin,iwbin)
+
+			#! 3.v. Plot h1(obsnum,seq,vst,var)
+			self.plot_1D_SS(h1,h1_SS_err,q2wbin)
+		#! End of q2wbin loop
+
+		#! 4. Plot h2
+		self.plot_h2_itg_yld_SS(h2)
+
+		print "*** disp_1D_SS() Done ***\n"
+		print "DispObs::disp_1D() If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
+
+	def get_SS_err_1D(self,h1):
+		'''
+		[03-01-16]
+		+ General comments:
+			+ NOTE that the method actually returns the *relative* SS error.
+			+ NOTE that the calculation of the error on this *relative* SS error is not yet implemented.
+			+ Currently, h1 is either 1D-Obs or itg_xsec(W) and have keys [osbnum,seq,vst,var]
+
+		+ Details:
+			+ Using h1[osbnum,seq,vst,var] calculate and return h1_SS_err[seq,vst,var]
+			+ Currently, the relative SS error is calcualated as follows:
+				1. Calcualate arithmetic mean for all entries in a bin (mu_bin)
+				2. Calcualate arithmetic sigma for all entries in a bin (sg_bin)
+				3. Relative error = (sg_bin/mu_bin)*100
+		  	+ In that sense, I still have to find a way to obtain the error of this SS error.
+		'''
+		h1_SS_err=OrderedDict()
+		for item in list(itertools.product(self.SEQS,VSTS)):
+			seq,vst=item[0],item[1]
+			if   vst==1:           varl=['M1','THETA','ALPHA']
+			elif vst==2 or vst==3: varl=['M2','THETA','ALPHA']
+			for var in varl:
+				#! Create h1_SS_err[seq,vst,var] by Cloning and then resetting
+				#! the contents of the h1 of 1st SS-Obs in self.OBSD i.e. h1[1,seq,vst,var]
+				h1_SS_err[seq,vst,var]=h1[1,seq,vst,var].Clone()
+				h1_SS_err[seq,vst,var].Reset()
+				#! Now loop over all bins can calculate SS err
+				nbins=h1_SS_err[seq,vst,var].GetNbinsX()
+				for ibin in range(nbins):
+					binc,binerr=[],[]
+					for obsnum in self.OBSD:
+						binc.append(h1[obsnum,seq,vst,var].GetBinContent(ibin+1))
+						binerr.append(h1[obsnum,seq,vst,var].GetBinError(ibin+1))
+					SS_mu_bin=np.mean(binc)
+					SS_sg_bin=np.std(binc)
+					if SS_mu_bin==0: SS_rel_err=0
+					else:            SS_rel_err=(SS_sg_bin/SS_mu_bin)*100
+					h1_SS_err[seq,vst,var].SetBinContent(ibin+1,SS_rel_err)
+					#! Till error on SS err is calculated, set err=0 (actually to an insignificantly small value so that ROOT can draw hist with "e" option)
+					h1_SS_err[seq,vst,var].SetBinError(ibin+1,0.00000001)
+		return h1_SS_err
+
 	def norm_1D(self,h1,q2wbin):
 		print "*** In DispObs::norm_1D() ***"
 		
@@ -395,7 +735,10 @@ class DispObs:
 		#!   and vgflux, only on VAR; however this redundancy helps in code organization and readability
 		h1n=OrderedDict()
 		for k in h1:
-			seq,vst,var=k[0],k[1],k[2]
+			if self.DO_SS_STUDY:
+				obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
+			else:
+				seq,vst,var=k[0],k[1],k[2]
 			nbins=h1[k].GetNbinsX()
 			xmin=h1[k].GetXaxis().GetXmin()
 			xmax=h1[k].GetXaxis().GetXmax()
@@ -460,7 +803,7 @@ class DispObs:
 		mrkr_opend={'M1':'kOpenCircle', 'M2':'kOpenCircle',     
 					'THETA':'kOpenSquare', 'ALPHA':'kOpenTriangleUp'}
 
-		#! 1. Directly plot each h2[seq,vst,var] in its own canvas
+		#! 1. Directly plot each h2 in its own canvas
 		outdir_h2=os.path.join(self.OUTDIR_ITG_YLD,"Q2_W")
 		if not os.path.exists(outdir_h2):
 			os.makedirs(outdir_h2)
@@ -692,15 +1035,146 @@ class DispObs:
 				c3.SaveAs("%s/c_qbin%d_EC_EH.png"%(outdir_w_proj,iq2bin+1))
 
 		print "*** plot_h2_itg_yld() Done ***\n"
+
+	def plot_h2_itg_yld_SS(self,h2):
+		'''
+		[02-29-16]
+		+ 'plot_h2_itg_yld' was used as a tempate for this method
+		+ The idea is extend the method to incorporate plotting of a 
+		  list of SS-Obs and the associated SS-err
+		+ Therefore only details relevant to the above were changed and the core functionality left intact
+
+		+ Process:
+			1. First h2 is directly drawn and saved.
+			2. Then for every Q2 bin in h2:
+				2.i.   Projection of h2 on W ais made, which is the itg_xsec(W;Q2)
+				2.ii.  SS err for itg_yld(W;Q2) is obtained (SS_err_itg_xsec(W;Q2))
+				2.iii. For every for every [EC,EF]*[vst]*[var] plot and save both 
+				       itg_yld(W;Q2) and SS_err_itg_yld(W;Q2).
+		'''
+
+		print "*** In DispObs::plot_h2_itg_yld_SS() ***"
+
+		#! 1. Directly plot each h2[obsnum,seq,vst,var] in its own canvas
+		outdir_h2=os.path.join(self.OUTDIR_ITG_YLD,"Q2_W")
+		if not os.path.exists(outdir_h2):
+			os.makedirs(outdir_h2)
+		#! Plotting aesthetics
+		ROOT.gStyle.Reset() #! Reset aesthetics which may have been set by some other plot function
+		ROOT.gStyle.SetOptStat("neiuo")
+		ROOT.gStyle.SetErrorX(0.001)
+		for k in h2:
+			c=ROOT.TCanvas()
+			h2[k].Draw("colz")
+			c.SaveAs("%s/c_%s.png"%(outdir_h2,h2[k].GetName()))
+
+		#! 2. Plot projections of h2 on W bins and SS error on this projections for various Q2 bins
+		#!    i.e. intg_xsec(W) and SS_err_intg_yld(W) for various Q2 bins
+		# outdir_w_proj=os.path.join(self.OUTDIR_ITG_YLD,"W")
+		# outdir_w_proj_SS_err=os.path.join(self.OUTDIR_ITG_YLD_SS_ERR,"W")
+		# if not os.path.exists(outdir_w_proj):
+		# 	os.makedirs(outdir_w_proj)
+		# if not os.path.exists(outdir_w_proj_SS_err):
+		# 	os.makedirs(outdir_w_proj_SS_err)
+		nq2bins=h2[h2.keys()[0]].GetNbinsY()
+		for iq2bin in range(nq2bins):
+			#! 2.i. First create all projections: h1p (itg_xsec(W;Q2))
+			#! + This has to be done so that, before plotting, min and max for the Y-axis
+			#!   can be determined from all the h1p[seq,vst,var]
+			h1p=OrderedDict()
+			for k in h2:
+				obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
+				hname="qbin_%d_%d_%s_VST%d_%s"%(iq2bin+1,obsnum,seq,vst,var)
+				htitle="intg xsec for Q2=%s from %s_VST%d_%s"%(h2[k].GetYaxis().GetBinLabel(iq2bin+1),seq,vst,var)
+				h1p[k]=h2[k].ProjectionX(hname,iq2bin+1,iq2bin+1,"e")
+				h1p[k].SetTitle(htitle)
+				h1p[k].SetYTitle("#sigma[#mub]")
+				h1p[k].SetMinimum(0)
+				if   "Q2=[3.00,3.50)" in htitle: h1p[k].SetMaximum(5.0)
+				elif "Q2=[3.50,4.20)" in htitle:	h1p[k].SetMaximum(3.5)
+				elif "Q2=[4.20,5.00)" in htitle:	h1p[k].SetMaximum(2.5)
+				else:                                   h1p[k].SetMaximum(10)#15
+									
+				h1p[k].SetMarkerColor(obsnum)
+				h1p[k].SetLineColor(obsnum)
+				h1p[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+				
+			#! Determine max and set Y-axis min(=0),max for all h1p[seq,vst,var]
+			maxl=[h1p[k].GetMaximum() for k in h2]
+			maximum=max(maxl)
+			for k in h1p:
+				h1p[k].SetMinimum(0.)
+				h1p[k].SetMaximum(maximum)
+
+			#! 2.ii. Get SS err for the projected histograms (SS_err_itg_xsec(W;Q2))
+			h1p_SS_err=self.get_SS_err_1D(h1p)
+			#! fix labels for this histogram
+			for k in h1p_SS_err:
+				htitle="Systematic error for %s"%h1p_SS_err[k].GetTitle()
+				h1p_SS_err[k].SetTitle(htitle)
+				h1p_SS_err[k].SetYTitle("Systematic error [%] for itg. xsec")
+
+			#! 2.iii. For every [EC,EF]*[vst]*[var] plot itg_xsec(W;Q2) and SS_err_itg_xsec(W;Q2) 
+			#! + Construct output domain(d)=EC,EF]*[vst]*[var]
+			#! + First construct vst_var to choose the 9 1D-Obs
+			vst_var=[[1,'M1'],[1,'THETA'],[1,'ALPHA'],
+			         [2,'M2'],[2,'THETA'],[2,'ALPHA'],
+			         [3,'M2'],[3,'THETA'],[3,'ALPHA']]
+			#! + Now take the outer product with [EC,EF] 
+			d=list(itertools.product(self.SEQS,vst_var))
+			#! Now for each item in the output domain, save plots
+			for r in d:
+				seq,vst,var=r[0],r[1][0],r[1][1]
+				#! prepare outdir for itg_xsec and SS_err_itg_xsec
+				outdir_w_proj=       os.path.join(self.OUTDIR_ITG_YLD,       seq,"%d_%s"%(vst,var),"W")
+				outdir_w_proj_SS_err=os.path.join(self.OUTDIR_ITG_YLD_SS_ERR,seq,"%d_%s"%(vst,var),"W")
+				if not os.path.exists(outdir_w_proj):
+					os.makedirs(outdir_w_proj)
+				if not os.path.exists(outdir_w_proj_SS_err):
+					os.makedirs(outdir_w_proj_SS_err)
+
+				#! Firt plot and save itg_xsec 
+				ROOT.gStyle.SetOptStat(0)
+				c=ROOT.TCanvas("c","c",1200,800)
+				#! legend
+				#! legend removed after adding legend canvas in plot_1D_SS()
+				# l=ROOT.TLegend(0.60,0.60,1.00,0.90)
+				# l.SetFillStyle(0)
+				# l.SetBorderSize(0)
+				# l.SetTextSize(0.03)#0.02
+				i=0
+				for obsnum in self.OBSD:
+					obstag=self.OBSD[obsnum][1]
+					draw_opt=""
+					if i>0: draw_opt="same"
+					h1p[obsnum,seq,vst,var].Draw(draw_opt)
+					i+=1
+					#l.AddEntry(h1p[obsnum,seq,vst,var],"%s_%s_VST%d_%s"%(obstag,seq,vst,var),"p")
+				#l.Draw()
+				c.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj,iq2bin+1))
+
+				#! Now plot and save SS_err_itg_xsec
+				ROOT.gStyle.SetOptStat(0)
+				cerr=ROOT.TCanvas("cerr","cerr",1200,800)
+				h1p_SS_err[seq,vst,var].SetMinimum(0)
+				h1p_SS_err[seq,vst,var].SetMaximum(20)
+				h1p_SS_err[seq,vst,var].Draw()
+				cerr.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj_SS_err,iq2bin+1))
+
+		print "*** plot_h2_itg_yld_SS() Done ***\n"
 		
 		
 	def fill_h2_itg_yld(self,h2,h1,iq2bin,iwbin):
 		print "*** In DispObs::fill_h2_itg_yld ***"
 		
 		for k in h1:
-			seq,vst,var=k[0],k[1],k[2]
+			if self.DO_SS_STUDY:
+				obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
+			else:
+				seq,vst,var=k[0],k[1],k[2]
 			if var=='M1' or var=='M2': #! then directly use TH1::Integral(opt); opt="width" when self.VIEW="norm", "" when self.VIEW="fullana"/"ERyield"
-				opt="%s"%("width" if self.VIEW=="norm" else "")
+				if self.DO_SS_STUDY: opt="width"
+				else:                opt="%s"%("width" if self.VIEW=="norm" else "")
 				nbins=h1[k].GetNbinsX()
 				itg_err=ROOT.Double(0)#https://root.cern.ch/phpBB3/viewtopic.php?t=2499
 				itg=h1[k].IntegralAndError(1,nbins,itg_err,opt)
@@ -727,10 +1201,13 @@ class DispObs:
 					bincerr=h1[k].GetBinError(ibin+1)
 					alpha_a=h1[k].GetBinLowEdge(ibin+1)
 					alpha_b=h1[k].GetBinLowEdge(ibin+2)# + h1[k].GetBinWidth(ibin+1)
-					if self.VIEW=="norm":
+					if self.DO_SS_STUDY:
 						DAlpha=math.fabs(math.radians(alpha_b)-math.radians(alpha_a))
 					else:
-						DAlpha=1
+						if self.VIEW=="norm":
+							DAlpha=math.fabs(math.radians(alpha_b)-math.radians(alpha_a))
+						else:
+							DAlpha=1
 					itg+=binc*DAlpha
 					itg_err+=bincerr*DAlpha
 				h2[k].SetBinContent(iwbin+1,iq2bin+1,itg)
@@ -741,7 +1218,7 @@ class DispObs:
 
 	def make_h2_itg_yld(self,q2bng,wbng,h1):
 		'''
-		+ h1 needed to provide [seq,vst,var] keys
+		+ h1 needed to provide keys: either [seq,vst,var] or if self.DO_SS_STUDY== true, [obsnum,seq,vst,var]
 		+ Make h2_itg_yld[seq,vst,var] with xaxis,yaxis=nwbins,nq2bins
 			+ 'var' is included for debugging purposes since integrated yield 
 			  from all VSTS*VARS should be the same.
@@ -754,23 +1231,29 @@ class DispObs:
 		wbins=array.array('f',range(1,nwbins+1+1))#!Last '+1' to ensure 'range' includes top edge of last bin
 		h2=OrderedDict()
 		for k in h1:
-			seq,vst,var=k[0],k[1],k[2]
-			name="h2_%s_VST%d_%s"%(seq,vst,var)
+			if self.DO_SS_STUDY:
+				obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
+				obstag=self.OBSD[obsnum][1]
+				name="h2_%s_%s_VST%d_%s"%(obstag,seq,vst,var)
+			else:
+				seq,vst,var=k[0],k[1],k[2]
+				name="h2_%s_VST%d_%s"%(seq,vst,var)
+			
 			title="itg_yld(Q^{2},W)"
-			h2[seq,vst,var]=ROOT.TH2F(name,title,nwbins,wbins,nq2bins,q2bins) 
-			h2[seq,vst,var].SetXTitle("W (GeV)")
-			h2[seq,vst,var].SetYTitle("Q^{2} (GeV^{2})")
+			h2[k]=ROOT.TH2F(name,title,nwbins,wbins,nq2bins,q2bins) 
+			h2[k].SetXTitle("W (GeV)")
+			h2[k].SetYTitle("Q^{2} (GeV^{2})")
 			#! Label the bins
 			for iwbin in range(nwbins):
 				le=wbng['BINS'][iwbin]
 				ue=wbng['BINS'][iwbin+1]
-				h2[seq,vst,var].GetXaxis().SetBinLabel(iwbin+1,"[%.3f,%.3f)"%(le,ue))
+				h2[k].GetXaxis().SetBinLabel(iwbin+1,"[%.3f,%.3f)"%(le,ue))
 			for iq2bin in range(nq2bins):
 				le=q2bng['BINS'][iq2bin]
 				ue=q2bng['BINS'][iq2bin+1]
-				h2[seq,vst,var].GetYaxis().SetBinLabel(iq2bin+1,"[%.2f,%.2f)"%(le,ue))
+				h2[k].GetYaxis().SetBinLabel(iq2bin+1,"[%.2f,%.2f)"%(le,ue))
 			
-		#! For debuggin print out h2 information for first key in h2[seq,vst,var]
+		#! For debuggin print out h2 information for first key in h2
 		print "make_h2_itg_yld() nq2bins,nwbins=%d,%d"%(h2[h2.keys()[0]].GetNbinsY(),h2[h2.keys()[0]].GetNbinsX())
 		print "make_h2_itg_yld() wbin labels:" 
 		for iwbin in range(nwbins):
@@ -1085,8 +1568,19 @@ class DispObs:
 		"""
 		q2wbinl=[]
 		#! File to use to extract q2wbinl
-		f=self.FIN
-				
+		if self.DO_SS_STUDY: #! Use obsdir of the first item in OBSD
+			obsdir=os.path.join(self.OBSDIR,self.OBSD[1][0])
+			#print "obsdir=",obsdir
+			f=root_open(os.path.join(obsdir,'yield.root'))
+			#print f.GetName()
+		else: 
+			f=self.FIN
+
+		print "DispObs::get_q2wbinlist() Going to Q2-W bins from file=",f.GetName()
+		print "DispObs::get_q2wbinlist() q2min,q2max,wmin,wmax=",q2min,q2max,wmin,wmax
+		if dbg==True:
+			print "DispObs::get_q2wbinlist() dbg=True"
+
 		i=0 #! for dbg_bins
 		for path,dirs,files in f.walk():
 			if path=="":continue #! Avoid root path
@@ -1096,6 +1590,7 @@ class DispObs:
 				i+=1
 			if dbg==True:
 				if i>=dbg_bins: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+
 
 		#! Remove q2wbins that are not within [q2min,q2max],[wmin,wmax] 
 		q2wbins_remove=[]
@@ -1164,8 +1659,26 @@ class DispObs:
 		return float(self.get_wbin(q2wbin).split('-')[1])
 	
 	def hist_1D_athtcs(self,h1):
+		'''
+		[03-02-16]
+		After addition of self.DO_SS_STUDY, this method was modified so that it can understand 
+		the type of h1 being passed, which could be either of the following depending on the condition (noted
+		in parenthesis and programmed into the logic of this function):
+		+ h1(seq,vst,var)        (nkeys=3)
+		+ h1(obsnum,seq,vst,var) (nkeys=4)
+		+ h1_SS_err(seq,vst,var) (nkeys=3 and self.DO_SS_STUDY=true)
+		'''
+		#! First determine if h1 has 3 or 4 keys(3 keys=seq,vst,var; 4 keys=obsnum,seq,vst,var)
+		#! + This structure of h1 depends on self.DO_SS_STUDY
+		nkeys=len(h1.keys()[0])
+		print("DispObs::hist_1D_athtcs(): nkeys=%d"%nkeys)
 		for k in h1.keys():	
-			seq,vst,var=k[0],k[1],k[2]
+			if nkeys==4:
+				obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
+			elif nkeys==3:
+				seq,vst,var=k[0],k[1],k[2]
+			else:
+				sys.exit("DispObs::hist_1D_athtcs(): nkeys undetermined. Exiting.")
 			h1[k].SetTitle("")
 			h1[k].SetXTitle( "%s[%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
 			#! X-axis title aesthetics
@@ -1175,24 +1688,40 @@ class DispObs:
 			#! Y-axis title aesthetics
 			h1[k].GetYaxis().SetTitleOffset(1.5)
 			h1[k].GetYaxis().SetTitleSize(.05)
-			if self.VIEW=="norm":
-				# if var!='THETA':
-				# 	h1[k].SetYTitle("#frac{#Delta#sigma}{#Delta%s}[#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-				# elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
-				# 	h1[k].SetYTitle("#frac{#Delta#sigma}{#Deltacos(%s)}[#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+			if nkeys==4:#s i.e. self.DO_SS_STUDY=true:
 				if var!='THETA':
 					h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
 					h1[k].SetYTitle("#Delta#sigma/#Deltacos(%s) [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			elif self.VIEW=="fullana":
-				h1[k].SetYTitle("\"Normalized\" counts")
-			elif self.VIEW=="ERyield":
-				h1[k].SetYTitle("Counts")
 
-			if self.VIEW!="ERyield":
-				h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
-				h1[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
-				h1[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq])	
+				h1[k].SetMarkerColor(obsnum)
+				h1[k].SetLineColor(obsnum)
+				h1[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+			elif nkeys==3 and self.DO_SS_STUDY: #! i.e. self.DO_SS_STUDY=true and it is h1_SS_err
+				if var!='THETA':
+					h1[k].SetYTitle("Systematic error [%%] for #Delta#sigma/#Delta%s"%(VAR_NAMES[(vst,var)]))
+				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
+					h1[k].SetYTitle("Systematic error [%%] for #Delta#sigma/#Deltacos(%s)"%(VAR_NAMES[(vst,var)]))
+				
+				h1[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				h1[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				h1[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+			elif nkeys==3:
+				if self.VIEW=="norm":
+					if var!='THETA':
+						h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+					elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
+						h1[k].SetYTitle("#Delta#sigma/#Deltacos(%s) [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				elif self.VIEW=="fullana":
+					h1[k].SetYTitle("\"Normalized\" counts")
+				elif self.VIEW=="ERyield":
+					h1[k].SetYTitle("Counts")
+
+				if self.VIEW!="ERyield":
+					h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+					h1[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+					h1[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq])
+
 
 	def plot_1D_athtcs(self):
 		#ROOT.gStyle.Reset()

@@ -1,0 +1,100 @@
+#!/bin/bash
+
+#####################################################################################
+# [03-01-16]
+# + Locally for e16*{exp,sim} make h10_skim_e->h10_skim_SS
+#####################################################################################
+date=`date +%m%d%y`
+
+#- Set up location of all h10_skim_e*{exp,sim} present locally
+# + These lists are taken directly from h10_2_Obs script 
+H10PATH="/home/trivedia/ongoing/h10lsts_local/e16"
+H10LSTS=($H10PATH/exp/h10-skim-e_010816.lst $H10PATH/sim/sim4/h10-skim-e_122115.lst $H10PATH/sim/sim5/h10-skim-e_122115.lst $H10PATH/sim/sim6/h10-skim-e_122915.lst $H10PATH/sim/sim7/h10-skim-e_010816.lst $H10PATH/sim/sim8/h10-skim-e_012416.lst $H10PATH/sim/sim9/h10-skim-e_012416.lst)
+H10LSTSTAG=(exp sim4 sim5 sim6 sim7 sim8 sim9)
+NFILES=(606 4358 4981 9957 9963 7318 9860) #! for sim NFILES obtained from check_vltl_2pi_sim_data_e16
+########################
+
+#- Define PROCORDER and ADTNLOPTS to be used with proc_h10_lite
+PROCORDER="eid:efid:pid:pfid:evtsel_2pi:"
+ADTNLOPTS=":h10-skim-SS:14:19:"
+############
+
+#- Now looper over H10LSTS and *sequentially* submit jobs for each h10
+ih10lst=0
+for h10lst in "${H10LSTS[@]}";do
+  h10tag=${H10LSTSTAG[ih10lst]}
+  if [[ $h10tag == "exp" ]];then
+    dtyp="exp"
+    outdir=$H10DIR_EXP_E16/h10_2_h10-skim-SS_$date
+    mkdir -p $outdir
+    tmp_h10lstdir=$HOME/tmp/h10lsts_skim_e_local/$dtyp
+  elif [[ $h10tag == sim* ]];then
+    dtyp="sim"
+    outdir=$H10DIR_SIM_E16/$h10tag"_"h10_2_h10-skim-SS_$date
+    mkdir -p $outdir
+    tmp_h10lstdir=$HOME/tmp/h10lsts_skim_e_local/$dtyp/$h10tag
+  fi
+  echo "Processing h10_2_h10_skim_SS for the following:"
+  echo "h10lst="$h10lst
+  echo "h10tag="$h10tag
+  echo "dtyp="$dtyp
+  echo "tmp_h10lstdir="$tmp_h10lstdir
+  echo "outdir="$outdir
+  echo ""
+
+  #! Decide if tmp_h10lstdir needs to created and h10.lst be put in then
+  #! (The first time the program runs, it makes the above and therefore it does not need to do so again)
+  #! Make h10.lst only if tmp_h10lstdir does not exist and  or if number of tmp_h10lstdir/h10.lst is not correct
+  echo "Start: Check if tmp_h10lstdir needs to be created"
+  create_tmp_h10lstdir="false"
+  if [[ ! -d $tmp_h10lstdir ]];then
+    echo $tmp_h10lstdir does not exists. Will create it and put h10.lst in it
+    create_tmp_h10lstdir="true"
+  elif [[ -d $tmp_h10lstdir ]];then
+    echo $tmp_h10lstdir exists
+    echo "Checking if number of files are OK"
+    nfiles_tmp=$(ls $tmp_h10lstdir/*.lst |wc -l)
+    nfiles_org=${NFILES[ih10lst]}
+    diff=$((nfiles_org-nfiles_tmp))
+    echo "nfiles_org:nfiles_tmp:diff"=$nfiles_org:$nfiles_tmp:$diff
+    if [ $diff -ne 0 ];then
+      echo "Files are missing. Will recreate h10.lst"
+      create_tmp_h10lstdir="true"
+    else
+      echo "Number of files are OK."
+    fi
+  else
+    echo $tmp_h10lstdir exists and number of files in it are OK
+  fi
+  echo "End: Check if tmp_h10lstdir needs to be created"
+  echo ""
+
+  echo "Start: Submit jobs for each h10 in h10lst"
+  #! make tmp_h10lstdir if needed
+  if [[ $create_tmp_h10lstdir == "true" ]];then
+    mkdir -p $tmp_h10lstdir
+  fi
+  #! Now start to process
+  for h10 in $(cat $h10lst); do
+    #! extract runnum from h10
+    echo "h10="$h10
+    if [[ $dtyp == "exp" ]]; then
+      runnum=$(echo $h10 | awk -F/ '{print $8}' | awk -F. '{print $1}')
+    elif [[ $dtyp == "sim" ]]; then
+      runnum=$(echo $h10 | awk -F/ '{print $8}' | awk -F. '{print $1}')
+    fi
+    echo "runnum="$runnum
+    #! make h10.lst for this runnum if needed
+    if [[ $create_tmp_h10lstdir == "true" ]];then
+      echo $h10>$tmp_h10lstdir/$runnum.lst
+    fi
+    #! Call proc_h10_lite
+    echo ">proc_h10_lite -i $tmp_h10lstdir/$runnum.lst -t e16:$dtyp:2pi:recon -c $PROCORDER -o $outdir/$runnum.root $ADTNLOPTS"
+    proc_h10_lite -i $tmp_h10lstdir/$runnum.lst -t e16:$dtyp:2pi:recon -c $PROCORDER -o $outdir/$runnum.root $ADTNLOPTS
+    #sleep 5
+  done
+  
+  echo "Done: Submit jobs for each h10 in h10lst"
+  echo "***"
+  ih10lst=$((ih10lst + 1))
+done
