@@ -7,22 +7,23 @@ setenv PATH "${PATH}:${STUDY_ACC_DIR}"
 ##- modify PYTHONPATH
 setenv PYTHONPATH "${PYTHONPATH}:${STUDY_ACC_DIR}"
 
+#-- [03-14-16] The following was moved to $ANA2PI/elast_lite/obs_2pi/setup.tcshrc
 ##-- dir where h10.lst and d2pi are kept
-if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
-  setenv H10DIR_EXP_E16 "/data/trivedia/e16/2pi/exp"
-  setenv H10DIR_SIM_E16 "/data/trivedia/e16/2pi/sim"
-  setenv H10SKIMDIR_EXP_E16 "${H10DIR_EXP_E16}/h10skim"
-  setenv D2PIDIR_E16 "/data/trivedia/e16/2pi/d2pi"
-  setenv D2PIDIR_EXP_E16 "${D2PIDIR_E16}/exp"
-  setenv D2PIDIR_SIM_E16 "${D2PIDIR_E16}/sim"
-else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
-  setenv H10DIR_EXP_E16 "${VOLHOME}/data/e16/2pi/exp"
-  setenv H10DIR_SIM_E16 "${VOLHOME}/data/e16/2pi/sim"
-  setenv H10SKIMDIR_EXP_E16 "${H10DIR_EXP_E16}/h10skim"
-  setenv D2PIDIR_E16 "${EG3HOME}/data/e16/2pi/d2pi"
-  setenv D2PIDIR_EXP_E16 "${D2PIDIR_E16}/exp"
-  setenv D2PIDIR_SIM_E16 "${D2PIDIR_E16}/sim"
-  setenv D2PIDIR_SIM_MEMTEST_E16 "${D2PIDIR}/sim/memtest"
-endif
+#if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
+#  setenv H10DIR_EXP_E16 "/data/trivedia/e16/2pi/exp"
+#  setenv H10DIR_SIM_E16 "/data/trivedia/e16/2pi/sim"
+#  setenv H10SKIMDIR_EXP_E16 "${H10DIR_EXP_E16}/h10skim"
+#  setenv D2PIDIR_E16 "/data/trivedia/e16/2pi/d2pi"
+#  setenv D2PIDIR_EXP_E16 "${D2PIDIR_E16}/exp"
+#  setenv D2PIDIR_SIM_E16 "${D2PIDIR_E16}/sim"
+#else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
+#  setenv H10DIR_EXP_E16 "${VOLHOME}/data/e16/2pi/exp"
+#  setenv H10DIR_SIM_E16 "${VOLHOME}/data/e16/2pi/sim"
+#  setenv H10SKIMDIR_EXP_E16 "${H10DIR_EXP_E16}/h10skim"
+#  setenv D2PIDIR_E16 "${EG3HOME}/data/e16/2pi/d2pi"
+#  setenv D2PIDIR_EXP_E16 "${D2PIDIR_E16}/exp"
+#  setenv D2PIDIR_SIM_E16 "${D2PIDIR_E16}/sim"
+#  setenv D2PIDIR_SIM_MEMTEST_E16 "${D2PIDIR}/sim/memtest"
+#endif
 ##-- dir where obs_<date> are kepts (obs_<date> contains yields and their displays)
-setenv OBSDIR_E16 "$D2PIDIR_E16"
+#setenv OBSDIR_E16 "$D2PIDIR_E16"

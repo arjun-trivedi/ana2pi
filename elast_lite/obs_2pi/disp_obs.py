@@ -18,7 +18,7 @@ import atlib as atlib
 
 from rootpy.interactive import wait
 
-from proc_h8 import H5_DIM,VSTS,VARS,SEQ_ALL 
+from proc_h8 import H5_DIM,VSTS,VARS,SEQ_ALL,MASS_P,MASS_PIP,MASS_PIM
 
 ROOT.gROOT.ProcessLine(".L THnTool.C+")
 from ROOT import THnTool
@@ -64,7 +64,7 @@ VAR_UNIT_NAMES={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"deg",VARS[3]:"deg",VARS[4]:
 VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"",VARS[3]:"rad",VARS[4]:"rad"}
 
 #! Following dictionaries for extracting R2
-R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{\'}}'}
+R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{p}}'} #'R2_{LT^{\'}}'
 H5_MFUNCD={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
 MTHD_NAMED={'mthd1':'h5-mply-itg','mthd2':'phi-proj-fit','mthd3':'phi-prof-mply-itg'}
 #! The following binning information taken from h8_bng.h
@@ -73,15 +73,53 @@ NBINS={'M1':14,'M2':14,'THETA':10,'PHI':10,'ALPHA':10}
 NXPADS={'M1':2,'M2':2,'THETA':2,'PHI':2,'ALPHA':2}
 NYPADS={'M1':7,'M2':7,'THETA':5,'PHI':5,'ALPHA':5}
 #! Fit function (needed for mthd2)
-FPHI=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
-FPHI.SetParameter(0,1)
-FPHI.SetParameter(1,10)
-FPHI.SetParameter(2,20)
-FPHI.SetParameter(3,100)
-FPHI.SetParName(0, "A")
-FPHI.SetParName(1, "B")
-FPHI.SetParName(2, "C")
-FPHI.SetParName(3, "D")#hPD
+# FPHI=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+# FPHI.SetParameter(0,.1)#!
+# FPHI.SetParameter(1,.1)#10
+# FPHI.SetParameter(2,.1)#20
+# FPHI.SetParameter(3,.1)#100
+# FPHI.SetParName(0, "A")
+# FPHI.SetParName(1, "B")
+# FPHI.SetParName(2, "C")
+# FPHI.SetParName(3, "D")#hPD
+def get_fphi(extract_D,name_sfx=""):
+	#! Approach where D*sin(phi) is added/removed depending on extract_D
+	if extract_D: #! fphi with D*sin(phi)
+		fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+	else: #! fphi without D*sin(theta)
+		fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()))",0,360)
+
+	#! Set parameter names
+	fphi.SetParName(0, "A")
+	fphi.SetParName(1, "B")
+	fphi.SetParName(2, "C")
+	if extract_D:
+		fphi.SetParName(3, "D")#hPD
+	#! Set initial state of parameters
+	fphi.SetParameter(0,.1)#!
+	fphi.SetParameter(1,.1)#10
+	fphi.SetParameter(2,.1)#20
+	if extract_D:
+		fphi.SetParameter(3,.1)#100
+	
+	
+	#! Approach where D=0/non-O depending on extract_D
+	# fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+
+	# #! Set parameter names
+	# fphi.SetParName(0, "A")
+	# fphi.SetParName(1, "B")
+	# fphi.SetParName(2, "C")
+	# fphi.SetParName(3, "D")#hPD
+
+	# #! Set initial state of parameters
+	# fphi.SetParameter(0,.1)#!
+	# fphi.SetParameter(1,.1)#10
+	# fphi.SetParameter(2,.1)#20
+	# if extract_D: fphi.SetParameter(3,.1)#100
+	# else:         fphi.FixParameter(3,0)#100
+
+	return fphi
 
 #! Constants relating to plotting and its aesthetics
 PLT_SEQ_ALL=SEQ_ALL#['ST','SR','SA','SC','SH','SF','ER','EC','EH','EF']
@@ -107,6 +145,27 @@ MRKS_PLT_SEQ_ALL={('ST'):ROOT.gROOT.ProcessLine("kPlus"),
 				  ('EH'):ROOT.gROOT.ProcessLine("kCircle"),
 				  ('EF'):ROOT.gROOT.ProcessLine("kFullDotLarge")}
 
+#! N unique identifiers in the space of markers,colors
+#! Currently N=42: 7-markers * 6-colors
+#! + This is useful when plotting several histograms on the same TCanvas
+#! + This method can be extended by adding dimensions to the space and more points along each dimension
+MRKS_N=[ROOT.gROOT.ProcessLine("kFullCircle"),ROOT.gROOT.ProcessLine("kFullTriangleUp"),
+       ROOT.gROOT.ProcessLine("kFullTriangleDown"),ROOT.gROOT.ProcessLine("kFullSquare"),
+       ROOT.gROOT.ProcessLine("kFullCross"),ROOT.gROOT.ProcessLine("kFullStar"),
+       ROOT.gROOT.ProcessLine("kFullDiamond")]
+CLRS_N=[ROOT.gROOT.ProcessLine("kRed"),ROOT.gROOT.ProcessLine("kMagenta"),ROOT.gROOT.ProcessLine("kBlue"),
+        ROOT.gROOT.ProcessLine("kCyan"),ROOT.gROOT.ProcessLine("kGreen"),ROOT.gROOT.ProcessLine("kYellow")]
+
+#! Get all coordinates in this space, where coordinate def.eq. (mrkr,clr)
+MRKS_CLRS_N_COORDS=list(itertools.product(MRKS_N,CLRS_N))
+#! Now put them into a dictionary labelled by numbers
+MRKS_CLRS_N_COORDS_DICT=OrderedDict()
+for i,coord in enumerate(MRKS_CLRS_N_COORDS):
+	MRKS_CLRS_N_COORDS_DICT[i+1]=[coord[0],coord[1]]
+
+
+
+
 def nu(w,q2):
 	return (w*w-MP*MP+q2)/(2*MP)
 
@@ -127,6 +186,7 @@ class DispObs:
 		
 		print "expt=",expt
 
+		#! setup self.DO_SS_STUDY
 		self.DO_SS_STUDY=False
 		if len(SSargs)>0: 
 			print "SSargs exist. Will perform SS. \n"
@@ -149,11 +209,12 @@ class DispObs:
 		print "WMIN,WMAX=",self.WMIN,self.WMAX
 		print "LUM=",self.LUM
 		print "E0=",self.E0
+		print "DBG=",self.DBG
 
 		#! Now do init specific to SS or Regular
 		if self.DO_SS_STUDY: #! Do SS related init
 			#! set self.FIN=None
-			#! + This is for technical reasons since in Regular init there is a self. FIN
+			#! + This is for technical reasons since in Regular init there is a self.FIN
 			self.FIN=None
 
 			#! Setup OBSDIR
@@ -199,6 +260,8 @@ class DispObs:
 				
 			self.FIN=root_open(os.path.join(self.OBSDIR,self.SIM_NUM,'yield.root'))
 			self.OUTDIR=os.path.join(self.OBSDIR,self.SIM_NUM)
+			if self.DBG==True:
+				self.OUTDIR=os.path.join(self.OBSDIR,self.SIM_NUM,'dbg')
 
 			#! Set SEQS to process
 			if   self.VIEW=="norm":
@@ -207,8 +270,12 @@ class DispObs:
 				self.SEQS=SEQ_ALL
 			elif self.VIEW=="ERyield":
 				self.SEQS=['ER']
+			elif self.VIEW=="EC_SF_ST": #! views from this point on tuned for 'dobs_R2'
+				self.SEQS=['EC','SF','ST'] 
+			elif self.VIEW=="EC_EF":
+				self.SEQS=['EC','EF']
 			else:
-				sys.exit("view={norm,fullana,ERyield} only")
+				sys.exit("view={norm,fullana,ERyield,EC_SF_ST,EC_EF} only")
 
 			print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
 			print "self.VIEW=",self.VIEW
@@ -256,11 +323,12 @@ class DispObs:
 			gpad=pad_p.cd(pad)
 			if self.VIEW=="norm" or self.VIEW=="ERyield":
 				#! First set minimum(=0) and maximum of y-axis
+				fctr=1.1
 				maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
 				maximum=max(maxl)
 				for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
 					htmp.SetMinimum(0.)
-					htmp.SetMaximum(maximum+0.5)
+					htmp.SetMaximum(maximum*fctr)
 				#! Now draw
 				for i,seq in enumerate(self.SEQS):
 					draw_opt="" if i==0 else "same"
@@ -374,6 +442,7 @@ class DispObs:
 			c=ROOT.TCanvas("c","c",1000,1000)
 			pad_t_c=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
 			pad_p_c=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+			pad_p_c.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 			pad_p_c.Draw()
 			pad_t_c.Draw()
 			pad_t_c.cd()
@@ -401,6 +470,14 @@ class DispObs:
 				print "pad,vst,var=",pad,vst,var
 						
 				#! Draw h1
+				#! First set minimum and maximum of hists
+				fctr=1.1
+				maxl=[h1[obsnum,seq,vst,var].GetMaximum() for obsnum in self.OBSD.keys()]
+				maximum=max(maxl)
+				for obsnum in self.OBSD.keys():
+					h1[obsnum,seq,vst,var].SetMinimum(0.)
+					h1[obsnum,seq,vst,var].SetMaximum(fctr*maximum)
+				#! Now draw
 				gpad=pad_p_c.cd(pad)
 				for i,obsnum in enumerate(self.OBSD.keys()):
 					draw_opt="" if i==0 else "same"
@@ -427,6 +504,7 @@ class DispObs:
 						lm.AddEntry(h1[obsnum,seq,vst,var],"%s_%s"%(obstag,seq),"p")#EF
 					
 					clm=ROOT.TCanvas()
+					clm.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 					lm.Draw()
 					clm.SaveAs("%s/c_master_legend.png"%self.OUTDIR)
 					clm.SaveAs("%s/c_master_legend.eps"%self.OUTDIR)
@@ -646,10 +724,23 @@ class DispObs:
 					elif vst==2 or vst==3: varl=['M2','THETA','ALPHA']
 					for var in varl:
 						h1[obsnum,seq,vst,var]=f.Get("%s/%s/VST%d/h1_%s"%(q2wbin,seq,vst,var))
+
+						#! + The following line was added to decouple histograms from the open
+						#! ROOT file which can then be closed.
+						#! + This had to be done because otherwise I was getting an error from
+						#! rootpy saying that "Too many files are open" (perhaps related to 'ulimit': See notes in ZIM under Technology/UNIX):
+						#! rootpy.ROOTError: level=5000, loc='TFile::TFile', msg='file /data/trivedia/e16/2pi/d2pi/highQ2_030916/cutsncors16/sim9/yield.root can not be opened for reading (Too many open files)'
+						h1[obsnum,seq,vst,var].SetDirectory(0)
+
 						#! Call Sumw2() since the errors as currently in the h1s
 						#! need to be propagated in all subsequent calculations that involve them
 						h1[obsnum,seq,vst,var].Sumw2()
 				#! End of [seq,vst,var] loop
+
+				#! Close file
+				#! + Was getting intermittent error from rootpy saying "Too many files are open": 
+				#! rootpy.ROOTError: level=5000, loc='TFile::TFile', msg='file /data/trivedia/e16/2pi/d2pi/highQ2_030916/cutsncors16/sim9/yield.root can not be opened for reading (Too many open files)'
+				f.Close() 
 			#! End of OBSD loop
 
 			#! 3.ii. Normalize h1(obsnum,seq,vst,var)
@@ -1095,10 +1186,12 @@ class DispObs:
 				elif "Q2=[4.20,5.00)" in htitle:	h1p[k].SetMaximum(2.5)
 				else:                                   h1p[k].SetMaximum(10)#15
 									
-				h1p[k].SetMarkerColor(obsnum)
-				h1p[k].SetLineColor(obsnum)
-				h1p[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
-				
+				mrk=MRKS_CLRS_N_COORDS_DICT[obsnum][0]
+				clr=MRKS_CLRS_N_COORDS_DICT[obsnum][1]
+				h1p[k].SetMarkerStyle(mrk)
+				h1p[k].SetMarkerColor(clr)
+				h1p[k].SetLineColor(clr)
+							
 			#! Determine max and set Y-axis min(=0),max for all h1p[seq,vst,var]
 			maxl=[h1p[k].GetMaximum() for k in h2]
 			maximum=max(maxl)
@@ -1136,6 +1229,7 @@ class DispObs:
 				#! Firt plot and save itg_xsec 
 				ROOT.gStyle.SetOptStat(0)
 				c=ROOT.TCanvas("c","c",1200,800)
+				c.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				#! legend
 				#! legend removed after adding legend canvas in plot_1D_SS()
 				# l=ROOT.TLegend(0.60,0.60,1.00,0.90)
@@ -1673,12 +1767,10 @@ class DispObs:
 		nkeys=len(h1.keys()[0])
 		print("DispObs::hist_1D_athtcs(): nkeys=%d"%nkeys)
 		for k in h1.keys():	
-			if nkeys==4:
-				obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
-			elif nkeys==3:
-				seq,vst,var=k[0],k[1],k[2]
-			else:
-				sys.exit("DispObs::hist_1D_athtcs(): nkeys undetermined. Exiting.")
+			if   nkeys==4: obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
+			elif nkeys==3: seq,vst,var=k[0],k[1],k[2]
+			else: 		   sys.exit("DispObs::hist_1D_athtcs(): nkeys undetermined. Exiting.")
+
 			h1[k].SetTitle("")
 			h1[k].SetXTitle( "%s[%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
 			#! X-axis title aesthetics
@@ -1688,15 +1780,18 @@ class DispObs:
 			#! Y-axis title aesthetics
 			h1[k].GetYaxis().SetTitleOffset(1.5)
 			h1[k].GetYaxis().SetTitleSize(.05)
+
 			if nkeys==4:#s i.e. self.DO_SS_STUDY=true:
 				if var!='THETA':
 					h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
 					h1[k].SetYTitle("#Delta#sigma/#Deltacos(%s) [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 
-				h1[k].SetMarkerColor(obsnum)
-				h1[k].SetLineColor(obsnum)
-				h1[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+				mrk=MRKS_CLRS_N_COORDS_DICT[obsnum][0]
+				clr=MRKS_CLRS_N_COORDS_DICT[obsnum][1]
+				h1[k].SetMarkerStyle(mrk)
+				h1[k].SetMarkerColor(clr)
+				h1[k].SetLineColor(clr)
 			elif nkeys==3 and self.DO_SS_STUDY: #! i.e. self.DO_SS_STUDY=true and it is h1_SS_err
 				if var!='THETA':
 					h1[k].SetYTitle("Systematic error [%%] for #Delta#sigma/#Delta%s"%(VAR_NAMES[(vst,var)]))
@@ -1755,3 +1850,597 @@ class DispObs:
 			itg+=math.fabs(h.GetBinContent(i+1))
 		return itg
 
+	def disp_R2(self,R2l,mthd,plotphiproj=False,fopt=""):
+		"""
+		+ Extract user specified R2(s) in R2l using user specified method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
+									
+		+ The following is the outline of the process:
+			1. Get Q2-W bin list from yield.root
+			2. Loop over Q2-W bin list and
+				2.1. Get h5d[self.SEQS,VST]
+				2.2. From h5d[self.SEQS,VST], extract hR2d[self.SEQS,vst,var] as per specified method
+				2.3. Plot hR2d[self.SEQS,vst,var]
+		"""
+		print "In DispObs::disp_R2()"
+
+		#! Setup Class using variables passed in through this function
+		#! + [03-18-16] I discovered only today that Class variables could be initialized from a 
+		#!   member function and therefore of all such initializations I could do here, I have only
+		#!   setup self.FOPT for now, which is a new argument I added for disp_R2() today.           
+		self.FOPT=fopt
+		print "self.FOPT=",self.FOPT
+
+		self.EXTRACT_D=False
+		if "D" in R2l: self.EXTRACT_D=True
+
+		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2_%s"%self.VIEW,"mthd_%s"%MTHD_NAMED[mthd])
+		#! Modify above if D is in R2l
+		if "D" in R2l:
+			self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2_wD_%s"%self.VIEW,"mthd_%s"%MTHD_NAMED[mthd])
+		#! Append FOPT output dir name
+		if mthd=="mthd2": self.OUTDIR_OBS_R2+="_%s"%self.FOPT
+		if not os.path.exists(self.OUTDIR_OBS_R2):
+			os.makedirs(self.OUTDIR_OBS_R2)
+
+		#! 1. Get Q2-W binning from file
+		#! + Q2-W binning in the file is as per Q2-W binning of h8s
+		if self.DBG==True: 	q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+		else:    			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
+		print "DispObs::disp_R2() Q2-W bins got from yield.root=",q2wbinl
+
+		print "DispObs::disp_R2() Going to begin processing Q2-W bins from file"
+		#! 2. Now, loop over Q2-W bin and per bin:
+		#! 2.1. Obtain h5 
+		for q2wbin in q2wbinl:
+			print"DispObs::disp_R2() Processing q2wbin=",q2wbin
+			
+			#! 2.1. Obtain h5d(seq,vst)
+			h5d=OrderedDict()
+			for item in list(itertools.product(self.SEQS,VSTS)):
+				seq,vst=item[0],item[1]
+				h5d[seq,vst]=self.FIN.Get("%s/%s/VST%d/h5"%(q2wbin,seq,vst))
+			
+			#! 2.2. and 2.3. Extract and plot R2
+			print "DispObs::disp_R2() Going to extract and plot R2 for mthd %s"%mthd
+			self.extract_and_plot_R2(q2wbin,h5d,R2l,mthd,plotphiproj)
+				
+		print "Done DispObs::disp_R2()"
+		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
+		return
+
+	def extract_and_plot_R2(self,q2wbin,h5d,R2l,mthd,plotphiproj):
+		"""
+		+ From h5d extract and plot hR2d using the specified method
+		"""
+		print "In DispObs::extract_and_plot_R2()"
+		
+		print "DispObs::extract_and_plot_R2() Going to extract and plot R2s=%s for mthd %s..."%(R2l,mthd)
+		if mthd=='mthd1':#'h5-mply-itg'
+			#! h5d=>hR2d, directly
+			for R2 in R2l:
+				print "DispObs::extract_and_plot_R2() Doing h5=>hR2 for mthd %s:R2=%s"%(mthd,R2)
+				hR2d=OrderedDict()
+				for k in h5d:
+					seq,vst=k[0],k[1]
+					h5=h5d[k]
+					if R2!='D':
+						h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)	
+					elif R2=='D':
+						h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
+						#! The following was valid when I was helicit information in E1F data
+						# if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
+						# elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],-1)	
+												
+					for var in VARS:
+						if var=='PHI': continue
+						if vst==1 and var=='M2': continue
+						if vst==2 and var=='M1': continue
+						if vst==3 and var=='M1': continue
+						hR2d[seq,vst,var]=h5m.Projection(H5_DIM[var],"E")
+						#! Call Sumw2() since these errors will need to be propagated
+						hR2d[seq,vst,var].Sumw2()
+						#! setM1M2axisrange
+						if var=='M1' or var=='M2': self.setM1M2axisrange(q2wbin,hR2d[seq,vst,var],vst,var)
+						#! some histogram aesthetics
+						hR2d[seq,vst,var].SetName("%s_%s_VST%d_%s"%(R2,seq,vst,var))
+						hR2d[seq,vst,var].SetTitle("%s(%s)"%(R2_NAMED[R2],VAR_NAMES[(vst,var)]))
+						
+				#! Scale: hR2s extracted thus far need mthd1-dependent scale factor
+				#! (See handwritten notes for details)
+				for k in hR2d:
+					if R2=='A': hR2d[k].Scale(1/(2*math.pi)) #! for A
+					else: 		hR2d[k].Scale(1/math.pi)     #! for B,C,D
+										
+				#! Normalize hR2
+				self.norm_1D(hR2d,q2wbin)
+				# if "norm" in self.VIEW:
+				# 	self.norm_1D(hR2d,q2wbin)
+				# else: #! just DCosTheta normalize theta distributions
+				# 	for k in hR2d:
+				# 		if k[2]=='THETA':
+				# 			self.norm_1D_theta(hR2d[k])
+
+				print "DispObs::extract_and_plot_R2(): Done h5d=>hR2d for mthd %s:R2=%s"%(mthd,R2)
+
+				print "DispObs::extract_and_plot_R2(): Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+				self.plot_R2(q2wbin,hR2d,R2)
+				print "DispObs::extract_and_plot_R2(): Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)	
+		elif mthd=='mthd2' or mthd=='mthd3':#proj-phi-fit or proj-phi-mply-itg
+			#! 1. h5d=>hphiprojd
+			print "DispObs::extract_and_plot_R2(): Doing h5d=>hphiprojd for method %s..."%mthd
+			
+			hphiprojd=OrderedDict()
+			for k in h5d:
+				seq,vst=k[0],k[1]
+				h5=h5d[k]
+				for var in VARS:
+					if var=='PHI': continue
+					if vst==1 and var=='M2': continue
+					if vst==2 and var=='M1': continue
+					if vst==3 and var=='M1': continue
+					nbins=NBINS[var]
+					#! Now make projections on to PHI per bin
+					for ibin in range(nbins):
+						h5.GetAxis(H5_DIM[var]).SetRange(ibin+1,ibin+1)
+						h=h5.Projection(H5_DIM['PHI'],"E")
+						#! Modify the title so also state projection range
+						#! + original title(set in proc_yields.py)=[q2min-q2max]_[wmin-wmax]_VSTX_SEQ_HEL=(POS/NEG/UNPOL)
+						#! Get q2wbintitle
+						# orig_ttl=h5.GetTitle().split("_")
+						# q2wbintitle="%s_%s"%(orig_ttl[0],orig_ttl[1])
+						#! get projection bin edges
+						xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ibin+1)
+						xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ibin+1)
+						new_ttl="%s:proj. bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],xmin,xmax)
+						h.SetTitle(new_ttl)
+						h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
+						h.SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+						h.SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+						#! Finally, add this histogram to hphiprojd
+						hphiprojd[seq,vst,var,ibin+1]=h
+						#! Before leaving projection loop, reset projection range for h5!
+						h5.GetAxis(H5_DIM[var]).SetRange()
+			print "DispObs::extract_and_plot_R2(): Done h5d=>hphiprojd for method %s..."%mthd
+			
+			#! 2. hphiprojd=>fpard
+			print "DispObs::extract_and_plot_R2(): Doing hphiprojd=>fpard"
+			fpard=OrderedDict()
+			for k in hphiprojd:
+				seq,vst,var,bin=k[0],k[1],k[2],k[3]
+				
+				#! Get fphi
+				f=get_fphi(self.EXTRACT_D)# FPHI
+
+				print "DispObs::extract_and_plot_R2(): Going to fit phi proj for",k
+				fstat=int(hphiprojd[k].Fit(f,self.FOPT)) #! "NQI"
+				print "DispObs::extract_and_plot_R2(): fstat=",fstat
+				A,Aerr=0,0
+				B,Berr=0,0
+				C,Cerr=0,0
+				D,Derr=0,0
+				chisq_per_DOF=0
+				prob=0
+				#A,Aerr,B,Berr,C,Cerr=0,0,0,0,0,0
+
+				if fstat==0:
+					A,Aerr=f.GetParameter(0),f.GetParError(0)
+					B,Berr=f.GetParameter(1),f.GetParError(1)
+					C,Cerr=f.GetParameter(2),f.GetParError(2)
+					if self.EXTRACT_D:
+						D,Derr=f.GetParameter(3),f.GetParError(3)
+					#print "here",A,B,C,D,f.GetChisquare(),f.GetNDF()
+					if f.GetNDF()==0: chisq_per_DOF=1000 #! I have not looked into why this happens sometimes
+					else:             chisq_per_DOF=f.GetChisquare()/f.GetNDF()
+					prob=f.GetProb()
+				else:
+					print "DispObs::extract_obs_R2(): AT-WARNING: Fit did not succeed for q2wbin,vst,var,bin=",q2wbin,vst,var,bin
+					#! For now to identify these data points, use very large error bars
+					Aerr,Berr,Cerr=10000,10000,10000
+					if self.EXTRACT_D:
+						Derr=10000
+					chisq_per_DOF=10000
+					prob=10000
+
+				fpard[k]={'A':A,'Aerr':Aerr,'B':B,'Berr':Berr,'C':C,'Cerr':Cerr,'D':D,'Derr':Derr,'chisq_per_DOF':chisq_per_DOF,'prob':prob}
+				#fpard[k]={'A':A,'Aerr':Aerr,'B':B,'Berr':Berr,'C':C,'Cerr':Cerr}
+				print "DispObs::extract_and_plot_R2(): A,B,C,D,chisq_per_DOF=",A,B,C,D,chisq_per_DOF
+				#print "DispObs::extract_and_plot_R2(): A,B,C=",A,B,C
+			print "Done hphiprojd=>fpard"
+			
+			#! 2. Obtain hR2 for each R2 from fpard and plot
+			for R2 in R2l:
+				print "DispObs::extract_and_plot_R2(): Going to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
+				hR2d=self.extract_R2_from_phiproj(q2wbin,h5d,fpard,R2)
+				print "DispObs::extract_and_plot_R2(): Done to extract R2 from phiproj fits for mthd %s:R2=%s"%(mthd,R2)
+
+				print "DispObs::extract_and_plot_R2(): Going to plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+				self.plot_R2(q2wbin,hR2d,R2)
+				print "DispObs::extract_and_plot_R2(): Done plot hR2d for mthd %s:R2=%s"%(mthd,R2)
+
+			#! 3. Finally, for visual verification, plot phiprojs
+			if plotphiproj:
+				print "DispObs::extract_and_plot_R2(): Going to plot phi-proj and extract R2 for method %s"%mthd
+				self.plot_phiproj(q2wbin,hphiprojd,fpard)
+				print "DispObs::extract_and_plot_R2(): Done to plot phi-proj and extract R2 for method %s"%mthd
+			
+			print "DispObs::extract_and_plot_R2(): Done h5d=>hR2d for method %s..."%mthd
+		print "DispObs::extract_and_plot_R2(): Done to extract and plot R2s=%s for mthd %s..."%(R2l,mthd)
+					
+
+	def plot_R2(self,q2wbin,hR2d,R2):
+		"""
+		+ Plot R2s just like 1D observables are plotted
+		"""
+
+		print "In DispObs::plot_R2()"
+
+		#! Set up some plotting related styles and aesthetics 
+		self.plot_R2_athtcs()
+				
+		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
+		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
+				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
+				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
+		
+		print "DispObs::plot_R2() Plotting hR2 for R2=%s,q2wbin=%s"%(R2,q2wbin)
+		c=ROOT.TCanvas("c","c",1000,1000)
+		pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
+		pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  		pad_p.Draw()
+  		pad_t.Draw()
+  		pad_t.cd()
+  		pt=ROOT.TPaveText(.05,.1,.95,.8)
+  		pt.AddText("%s for Q2,W = %s"%(R2_NAMED[R2],q2wbin))
+  		pt.SetTextSize(0.42)
+  		pt.Draw()
+  		pad_p.Divide(3,3)
+  		#! TLine, for each pad, for ln at y=0
+  		ln=[0 for i in range(9)]
+		for item in pad_map:
+			pad,vst,var=item[0],item[1],item[2]
+			print "pad,vst,var=",pad,vst,var
+			gpad=pad_p.cd(pad)
+
+			#! setup histogram aesthetics
+			for seq in self.SEQS:
+				hR2d[seq,vst,var].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq]) #! ROOT.gROOT.ProcessLine("kFullCircle")
+				hR2d[seq,vst,var].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+				hR2d[seq,vst,var].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+				hR2d[seq,vst,var].SetTitle("")
+				hR2d[seq,vst,var].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+				hR2d[seq,vst,var].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! X-axis title aesthetics
+				hR2d[seq,vst,var].GetXaxis().SetLabelSize(.05)
+				hR2d[seq,vst,var].GetXaxis().SetTitleSize(.10)
+				hR2d[seq,vst,var].GetXaxis().SetTitleOffset(.7)
+				#! Y-axis title aesthetics
+				hR2d[seq,vst,var].GetYaxis().SetTitleOffset(1.5)
+				hR2d[seq,vst,var].GetYaxis().SetTitleSize(.05)
+				
+			
+			#! Prepare to draw histograms
+			#! 1. If SF and EC in self.SEQS, the normalize its integral to that of EC
+			if "SF" in self.SEQS and "EC" in self.SEQS:
+				print "DispObs::plot_R2() Scaling SF-itg to EC-itg"
+				itg_EC=self.get_signed_integral(hR2d['EC',vst,var])
+				#! First call Sumw2() so that errors are also scaled
+				hR2d['SF',vst,var].Sumw2()
+				#! Now get scale factor and scale bin contents
+				itg_SF=self.get_signed_integral(hR2d['SF',vst,var])
+				if itg_EC==0 or itg_SF==0: 	scale_factor=1
+				else:    					scale_factor=itg_EC/itg_SF
+				hR2d['SF',vst,var].Scale(scale_factor)
+
+			#! 1. If ST and EC in self.SEQS, the normalize its integral to that of EC
+			if "ST" in self.SEQS and "EC" in self.SEQS:
+				print "DispObs::plot_R2() Scaling ST-itg to EC-itg"
+				itg_EC=self.get_signed_integral(hR2d['EC',vst,var])
+				#! First call Sumw2() so that errors are also scaled
+				hR2d['ST',vst,var].Sumw2()
+				#! Now get scale factor and scale bin contents
+				itg_ST=self.get_signed_integral(hR2d['ST',vst,var])
+				if itg_EC==0 or itg_SF==0: 	scale_factor=1
+				else:    					scale_factor=itg_EC/itg_ST
+				hR2d['ST',vst,var].Scale(scale_factor)
+
+			#! 2. determine and set maximum
+			minl=[hR2d[seq,vst,var].GetMinimum() for seq in self.SEQS]
+			maxl=[hR2d[seq,vst,var].GetMaximum() for seq in self.SEQS]
+			minimum=min(minl)
+			maximum=max(maxl)
+			fctr_not_A=1.5
+			fctr_A=1.1
+			for seq in self.SEQS:		
+				if R2!="A": #! B,C,D can oscillate around 0
+					hR2d[seq,vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
+					hR2d[seq,vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
+				elif R2=="A": #! These distributions are same as Obs-1D
+					hR2d[seq,vst,var].SetMinimum(0)
+					hR2d[seq,vst,var].SetMaximum(fctr_A*maximum)
+			#! 3. Finally draw
+			if self.VIEW=="EC_SF_ST":
+				hR2d['SF',vst,var].Draw()
+				hR2d['ST',vst,var].Draw("same")
+				hR2d['EC',vst,var].Draw("same") #! Draw EC at the end so that its error bar is on top
+				#hR2d['SF',vst,var].Draw("same")
+			elif self.VIEW=="EC_EF":
+				hR2d['EC',vst,var].Draw()
+				hR2d['EF',vst,var].Draw("same")
+				#hR2d['SF',vst,var].Draw("same")			
+
+			#! Draw TLine only if ymin<0
+			if hR2d['EC',vst,var].GetMinimum()<0:
+				ln[pad-1]=ROOT.TLine(hR2d['EC',vst,var].GetXaxis().GetXmin(),0,hR2d['EC',vst,var].GetXaxis().GetXmax(),0)
+				ln[pad-1].Draw("same")			
+			
+
+		q2bin=self.get_q2bin(q2wbin)
+		wbin=self.get_wbin(q2wbin)				
+		outdir=os.path.join(self.OUTDIR_OBS_R2,"q%s"%q2bin,R2)
+		if not os.path.exists(outdir):
+			os.makedirs(outdir)
+		c.SaveAs("%s/c_w%s_q%s.png"%(outdir,wbin,q2bin))
+		c.SaveAs("%s/c_w%s_q%s.eps"%(outdir,wbin,q2bin))
+		c.Close()
+		print "Done DispObs::plot_R2()"
+		return
+
+	def extract_R2_from_phiproj(self,q2wbin,h5d,fpard,R2):
+		"""
+		+ From fpard, for a particular R2, extract hR2
+		"""
+		print "In DispObs::extract_R2_from_phiproj() for R2=%s"%(R2)
+
+		hR2d=OrderedDict()
+		#! the following is a very "hack-ish" way to create hR2d by
+		#! using projections from h5d and then resetting the contents of the histogram
+		for k in h5d:
+			seq,vst=k[0],k[1]
+			h5=h5d[k]
+														
+			for var in VARS:
+				if var=='PHI': continue
+				if vst==1 and var=='M2': continue
+				if vst==2 and var=='M1': continue
+				if vst==3 and var=='M1': continue
+				hR2d[seq,vst,var]=h5.Projection(H5_DIM[var],"E")
+				if var=='M1' or var=='M2': self.setM1M2axisrange(q2wbin,hR2d[seq,vst,var],vst,var)
+				hR2d[seq,vst,var].SetName("%s_%s_VST%d_%s"%(R2,seq,vst,var))
+				hR2d[seq,vst,var].SetTitle("%s(%s)"%(R2_NAMED[R2],VAR_NAMES[(vst,var)]))
+				hR2d[seq,vst,var].Reset()
+					
+		print "Going to extract R2 from phi-proj fits"
+		for k in fpard:
+			seq,vst,var,bin=k[0],k[1],k[2],k[3]
+			#fpard[hel][q2bin_le,wbin_le,vst,var,bin,dtyp,seq]=f
+			#! Now fill hR2 from fit
+			if R2=='A':
+				r2=    fpard[k]['A']
+				r2_err=fpard[k]['Aerr']
+			elif R2=='B':
+				r2=    fpard[k]['B']
+				r2_err=fpard[k]['Berr']
+			elif R2=='C':
+				r2=    fpard[k]['C']
+				r2_err=fpard[k]['Cerr']
+			elif R2=='D':
+				r2=    fpard[k]['D']
+				r2_err=fpard[k]['Derr']
+				#! The following was valid when I was helicit information in E1F data
+				#if   hel=='POS' or hel=='UNP': r2=   fpard[hel][k]['D']
+				#elif hel=='NEG':               r2=-1*fpard[hel][k]['D']
+				#r2_err=fpard[hel][k]['Derr']
+			hR2d[seq,vst,var].SetBinContent(bin,r2)
+			hR2d[seq,vst,var].SetBinError(bin,r2_err)
+		
+		#! Scale: hR2s extracted thus far need mthd2-dependent scale factor
+		#! (See handwritten notes for details)
+		if self.FOPT=="NQ" or self.FOPT=="NQL":
+			if R2=='A':
+				for k in hR2d:
+					sf=1/math.radians(36)
+					hR2d[k].Scale(sf)
+			else: #! i.e.B,C,D
+				for k in hR2d:
+					sf=1/math.radians(36)
+					hR2d[k].Scale(sf)
+		elif self.FOPT=="NQI":	#! If fopt="I" i.e. the Integral fit option
+			for k in hR2d:
+				sf=1/math.radians(36)
+				hR2d[k].Scale(sf)
+		
+		#! Call Sumw2() for hR2s since these errors will need to be propagated
+		for k in hR2d:
+			hR2d[k].Sumw2()
+
+		#! Normalize hR2
+		self.norm_1D(hR2d,q2wbin)
+		# if "norm" in self.VIEW:
+		# 	self.norm_1D(hR2d,q2wbin)
+		# else: #! just DCosTheta normalize theta distributions
+		# 	for k in hR2d:
+		# 		if k[2]=='THETA':
+		# 			self.norm_1D_theta(hR2d[k])
+
+		print "DispObs::extract_R2_from_phiproj() Done extracting R2 from phi-proj fits"
+		return hR2d
+
+		print "Done DispObs::extract_R2_from_phiproj for R2=%s"%(R2)
+
+	def plot_phiproj(self,q2wbin,hphiprojd,fpard):
+		"""
+		+ plot phiprojs
+		"""
+		print "In DispObs::plot_phiproj()"
+
+		#! Set up ROOT-display aesthetics
+		self.plot_phiproj_athtcs()
+
+		for vst in VSTS:
+			if self.DBG==True and vst!=1: continue
+			for var in VARS:
+				if var=='PHI': continue
+				if vst==1 and var=='M2': continue
+				if vst==2 and var=='M1': continue
+				if vst==3 and var=='M1': continue
+
+				if self.DBG==True and var!='ALPHA': continue
+
+				q2bin=self.get_q2bin(q2wbin)
+				wbin=self.get_wbin(q2wbin)
+				outdir=os.path.join(self.OUTDIR_OBS_R2,"phiprojs","VST%d_%s"%(vst,var),"q%s_w%s"%(q2bin,wbin))
+				if not os.path.exists(outdir):
+					os.makedirs(outdir)
+
+				c=ROOT.TCanvas("c","c",5000,7000)
+				pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+				#pad_t.SetFillColor(11)
+				pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
+				pad_p.SetFillColor(11)
+				pad_t.Draw()
+  				pad_p.Draw()
+  				pad_t.cd()
+  				pt=ROOT.TPaveText(.05,.1,.95,.8)
+  				pt.AddText("#phi-projections(%s:Q2,W=%s,%s)"%(VAR_NAMES[(vst,var)],q2bin,wbin))
+  				pt.Draw()
+ 				pad_p.cd()
+ 				nbins=NBINS[var]
+ 				pad_p.Divide(NXPADS[var],NYPADS[var])
+ 				#! The following are used to draw the Fit, TPaveText with fit pars and the TLegend
+ 				f= [[0 for j in range(len(self.SEQS))]for i in range(nbins)]
+ 				pt=[[0 for j in range(len(self.SEQS))]for i in range(nbins)]
+ 				l= [[0 for j in range(len(self.SEQS))]for i in range(nbins)]
+ 				
+ 				for ibin in range(nbins):
+					pad=pad_p.cd(ibin+1)
+					pad.Divide(1,len(self.SEQS))
+					
+					for iseq,seq in enumerate(self.SEQS):
+						if hphiprojd.has_key((seq,vst,var,ibin+1)):
+							k=seq,vst,var,ibin+1
+							h=hphiprojd[k]
+							h.SetXTitle( "%s%s"%(VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES['PHI']) )
+							h.GetXaxis().SetLabelSize(.05)
+							h.GetXaxis().SetTitleSize(.10)
+							h.GetXaxis().SetTitleOffset(.7)
+					
+							if self.VIEW=="EC_SF_ST":										
+								if   seq=='EC': pad.cd(1)
+								elif seq=='SF': pad.cd(2)
+								elif seq=='ST': pad.cd(3) 
+							elif self.VIEW=="EC_EF":
+								if   seq=='EC': pad.cd(1)
+								elif seq=='EF': pad.cd(2)
+							
+							#! Draw hist
+							h.SetMinimum(0)
+							h.Draw()
+							#! Draw Fit
+							f[ibin][iseq]=get_fphi(self.EXTRACT_D,"_%d_%s"%(ibin+1,seq))
+							f[ibin][iseq].SetParameter(0,fpard[k]['A'])
+							f[ibin][iseq].SetParError (0,fpard[k]['Aerr'])
+  							f[ibin][iseq].SetParameter(1,fpard[k]['B'])
+  							f[ibin][iseq].SetParError (1,fpard[k]['Berr'])
+  							f[ibin][iseq].SetParameter(2,fpard[k]['C'])
+  							f[ibin][iseq].SetParError (2,fpard[k]['Cerr'])
+  							if self.EXTRACT_D:
+  								f[ibin][iseq].SetParameter(3,fpard[k]['D'])
+  								f[ibin][iseq].SetParError (3,fpard[k]['Derr'])
+ 							f[ibin][iseq].SetParName(0, "A")
+  							f[ibin][iseq].SetParName(1, "B")
+  							f[ibin][iseq].SetParName(2, "C")
+  							if self.EXTRACT_D:
+  								f[ibin][iseq].SetParName(3, "D")#hPD
+  							f[ibin][iseq].SetLineColor(h.GetMarkerColor())
+							f[ibin][iseq].Draw("same")
+							#! Draw Fit stats
+							#pt[ibin].append(ROOT.TPaveText(.20,.6,.30,1.0,"NDC"))
+							pt[ibin][iseq]=ROOT.TPaveText(.20,.6,.30,1.0,"NDC")
+							pt[ibin][iseq].AddText( "A=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(0),f[ibin][iseq].GetParError(0)) )
+							pt[ibin][iseq].AddText( "B=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(1),f[ibin][iseq].GetParError(1)) )
+							pt[ibin][iseq].AddText( "C=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(2),f[ibin][iseq].GetParError(2)) )
+							if self.EXTRACT_D:
+								pt[ibin][iseq].AddText( "D=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(3),f[ibin][iseq].GetParError(3)) )
+							pt[ibin][iseq].AddText( "#chi^{2}/NDOF=%.2f"%fpard[k]['chisq_per_DOF'] )
+							pt[ibin][iseq].AddText( "prob=%.2f"%fpard[k]['prob'] )
+							pt[ibin][iseq].SetTextColor(h.GetMarkerColor())
+							pt[ibin][iseq].SetFillColor(11)
+							pt[ibin][iseq].Draw()
+							
+							#! Draw legend
+							l[ibin][iseq]=ROOT.TLegend(0.1,0.8,0.2,0.9)
+							l[ibin][iseq].AddEntry(h,seq,"p")
+							l[ibin][iseq].Draw()
+				c.SaveAs("%s/c_q%s_w%s.png"%(outdir,q2bin,wbin))
+				c.SaveAs("%s/c_q%s_w%s.eps"%(outdir,q2bin,wbin))
+				c.Close()
+			print "Done DispObs::plot_phiproj()"	
+
+	def plot_R2_athtcs(self):
+		#ROOT.gStyle.Reset()
+		#! Stats Box
+		ROOT.gStyle.SetOptStat(0)
+
+		# ROOT.gStyle.SetLabelSize(0.5,"t")
+		# ROOT.gStyle.SetTitleSize(0.5,"t")
+		#ROOT.gStyle.SetPaperSize(20,26);
+		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		#ROOT.gStyle.SetPadRightMargin(0.15)#(0.05);
+		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		#ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
+
+		ROOT.gStyle.SetTitleW(10)# //title width 
+		ROOT.gStyle.SetTitleFontSize(20)# 
+		ROOT.gStyle.SetTitleH(0.15)# //title height 
+		
+		#! + The following options do not seem to work from here
+		#! + I have to set them in label_hist_obs1D()
+		#ROOT.gStyle.SetTitleFont(42,"xyz")
+		#ROOT.gStyle.SetTitleSize(.35,"xyz")
+		#ROOT.gStyle.SetTitleOffset(0.5,"xyz");
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001)
+
+	def plot_phiproj_athtcs(self):
+		#! Stats Box
+		ROOT.gStyle.SetOptStat(0)
+		#ROOT.gStyle.SetOptFit(1111)
+
+		# # ROOT.gStyle.SetLabelSize(0.5,"t")
+		# # ROOT.gStyle.SetTitleSize(0.5,"t")
+		# #ROOT.gStyle.SetPaperSize(20,26);
+		# ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
+		# #ROOT.gStyle.SetPadRightMargin(0.09)#(0.05);
+		# #ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
+		# #ROOT.gStyle.SetPadLeftMargin(0.15)#(0.12);
+
+		ROOT.gStyle.SetTitleW(5)# //title width 
+		ROOT.gStyle.SetTitleFontSize(10)# //title width 
+		ROOT.gStyle.SetTitleH(0.10)# //title height 
+		# ROOT.gStyle.SetTitleY(1)# //title Y location 
+
+		#!get rid of X error bars and y error bar caps
+		ROOT.gStyle.SetErrorX(0.001);
+		return
+
+	def setM1M2axisrange(self,q2wbin,h,vst,var):
+		'''
+		1,M1=p,pip 1,M2=pip,pim
+		2,M1=p,pip 2,M2=pip,pim
+		3,M1=p,pip 3,M2=p,pim
+		'''
+		#! Determine wmax
+		wmax=self.get_wbin_ue(q2wbin)
+		#! Determine xmin,xmax=f(vst,M1/M2)
+		if (var=='M1' and (vst==1 or vst==2 or vst==3)):
+			xmin=MASS_P+MASS_PIP
+			xmax=wmax-MASS_PIM
+		elif (var=='M2' and (vst==1 or vst==2)):
+			xmin=MASS_PIP+MASS_PIM
+			xmax=wmax-MASS_P
+		elif (var=='M2' and (vst==3)):
+			xmin=MASS_P+MASS_PIM
+			xmax=wmax-MASS_PIP
+		#! Now set limits on h
+		h.GetXaxis().SetRangeUser(xmin,xmax)

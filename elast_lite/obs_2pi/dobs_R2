@@ -1,0 +1,95 @@
+#!/usr/bin/python
+from disp_obs import DispObs
+import sys
+
+#! ---------------------
+#  dobs_R2 [mthds=mthd1:mthd2:False] [obsdir] [simnum=siml] [view=ECnorm_with_sim] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [expt=e16] [dbg=False]
+#! + The first arguments taken information as mthd1:mthd2:plotphiproj(for mthd2)
+#!----------------------
+
+#! Decode mthds and put info in mthdl and plorphiproj
+mthdl=[]
+plotphiproj=False
+if len(sys.argv)==1:
+	sys.exit("Please enter mthds in format mthd1:mthd2:plotphiproj")
+else:
+	mthds=sys.argv[1]
+	#! now decode mthds and setup mthdl and plotphiproj
+	codel=mthds.split(":")
+	print codel
+	for code in codel:
+		if code=="mthd1" or code=="mthd2": 
+			mthdl.append(code)
+		elif code=="True" or code=="False":
+			if "mthd2" in codel:
+				if   code=="True":  plotphiproj=True
+				elif code=="False": plotphiproj=False
+		else:
+			sys.exit("mthds can only contain colon separated items: mthd1,mthd2,True or False. For example: mthd1:mthd2:True")
+#! Get obsdir
+if len(sys.argv)==2:
+        sys.exit("Please enter obsdir")
+else:
+        obsdir=sys.argv[2]
+
+if len(sys.argv)>3: #! User input simnum, else use siml
+	simnum=sys.argv[3]
+else:
+	simnum='siml'
+
+if len(sys.argv)>4: #! User input view, else use view=norm 
+	view=sys.argv[4]
+else:
+	view="ECnorm_with_sim"	
+
+if len(sys.argv)>5: #! User input q2min 
+        q2min=float(sys.argv[5])
+else:
+        q2min=1.50
+
+if len(sys.argv)>6: #! User input q2max 
+        q2max=float(sys.argv[6])
+else:
+        q2max=5.00
+
+if len(sys.argv)>7: #! User input wmin 
+        wmin=float(sys.argv[7])
+else:
+        wmin=1.400
+
+if len(sys.argv)>8: #! User input q2min 
+        wmax=float(sys.argv[8])
+else:
+        wmax=2.125
+
+if len(sys.argv)>9: #! User input expt 
+        expt=sys.argv[9]
+	if expt!='e1f' and expt!='e16':
+		sys.exit("expt=e1f or e16 only.")
+else:
+        expt='e16'
+
+if len(sys.argv)>10: #! User input dbg, else use dbg=False
+	if sys.argv[10]=="False":
+                dbg=False
+        elif sys.argv[10]=="True":
+                dbg=True
+        else:
+                print "Please enter dbg=True or False!"
+                sys.exit()
+else:
+	dbg="False"
+
+print "Displaying R2-Obs for mthdl plotphiproj obsdir simnum view q2min q2max wmin wmax expt dbg",mthdl,plotphiproj,obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg
+
+foptl=["NQ","NQL"] #! used for mthd2; removed "NQI"
+
+for mthd in mthdl:
+	for R2l in[['A','B','C']]: #! ['A','B','C','D']extract with and without 'D'
+		if mthd=='mthd1':
+                        do=DispObs(obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg)
+                        do.disp_R2(R2l,mthd=mthd)
+		elif mthd=='mthd2':
+			for fopt in foptl:
+				do=DispObs(obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg)
+				do.disp_R2(R2l,mthd=mthd,plotphiproj=plotphiproj,fopt=fopt)

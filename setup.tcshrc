@@ -15,7 +15,7 @@ alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT&'
 alias notes 'pnb {$ANA2PI}/notes&'
 alias ana2pi_tech-notes 'cd ${ANA2PI}/notes/tech'
 
-##--Setup env for elast_lite and disable all others
+##--Setup env for elast_lite
 source ${ANA2PI}/elast_lite/setup.tcshrc
 
 ##--Setup env for ana2pi observables
@@ -53,3 +53,5 @@ source ${ANA2PI}/sub_studies/study_pcorr/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_zvtx/setup.tcshrc
 #-- [01-24-16]
 source ${ANA2PI}/sub_studies/study_det_ineff/setup.tcshrc
+#-- [03-14-16] Setup env for 'lite'-2pi observables
+source $ANA2PI/elast_lite/obs_2pi/setup.tcshrc

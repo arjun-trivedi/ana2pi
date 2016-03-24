@@ -40,12 +40,12 @@ import disp_SS as t#! for plot_SS
 	+ To use the appropriate d2piT_<date>.root, the DATE_ST(EXPT,sim) is used.
 	
 + Usage
-	>h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_lite_type[=parallel] date_of_existing_jobtag[=today's MMDDYY]
+	>h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_lite_type[=parallel] date_of_existing_jobtag[=today's MMDDYY] make_SS_plots_only[=False]
 	+ idtfr: string used to describe the job; can be entered as ""
 	+ cumsiml: output created for every cumsim in cumsiml under jobtag/cumsim
 	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that jobtag is going to be updated with, as set up currently in the code,for example, addition of a new simulation.
 '''
-USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_lite_type[=parallel] date_of_existing_jobtag[=today's MMDDYY]"
+USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_lite_type[=parallel] date_of_existing_jobtag[=today's MMDDYY] make_SS_plots_only[=False]"
 
 #! *** Setup global variables ***
 EXPTS=['e1f','e16']
@@ -180,6 +180,17 @@ if len(sys.argv)>7: #! i.e. date of existing jobtag entered by user i.e. update 
         PROC_NEW_JOBTAG=False
 else:
         DATE=datetime.datetime.now().strftime('%m%d%y')
+
+if len(sys.argv)>8: #! i.e. make_SS_plots_only information entered by user
+	if sys.argv[8]=="False":
+		 MAKE_SS_PLOTS_ONLY=False
+	elif sys.argv[8]=="True":
+		MAKE_SS_PLOTS_ONLY=True
+	else:
+		print "Please enter make_SS_plots_only=True or False only."
+		sys.exit()
+else:
+        MAKE_SS_PLOTS_ONLY=False
 #! ******
 
 #! *** Set up some other global variables after getting user input *** 
@@ -195,7 +206,11 @@ if not os.path.exists(LOGDIR):
 LOGDIR_MAINTAG="%s/%s"%(LOGDIR,MAINTAG)
 if not os.path.exists(LOGDIR_MAINTAG):
         os.makedirs(LOGDIR_MAINTAG)
-sys.stdout=open('%s/h10_2_Obs.log'%(LOGDIR_MAINTAG), 'w')
+if PROC_NEW_JOBTAG:
+	sys.stdout=open('%s/h10_2_Obs.log'%(LOGDIR_MAINTAG), 'w')
+else:
+	sys.stdout=open('%s/h10_2_Obs_update_%s.log'%(LOGDIR_MAINTAG,datetime.datetime.now().strftime('%m%d%y_%H%M%S')), 'w')
+
 #! Put all relevant global variables information in the file
 print "h10_2_Obs start time",datetime.datetime.now().strftime('%H:%M:%S')
 
@@ -212,11 +227,13 @@ print "CUMSIML=",CUMSIML
 print "PROC_H10_LITE_TYPE=",PROC_H10_LITE_TYPE
 print "DATE=",DATE
 print "PROC_NEW_JOBTAG=",PROC_NEW_JOBTAG
+print "MAKE_SS_PLOTS_ONLY=",MAKE_SS_PLOTS_ONLY
 #sys.exit()
 #! ******
 
 #! *** Now start processing CUTSNCORS ***
 for k in CUTSNCORS.keys():
+	if MAKE_SS_PLOTS_ONLY: continue
 	#continue #! debug
 	#if k>2: continue #! debug
     	procorder,adtnl_opts,adtnl_opts_tag= CUTSNCORS[k][0],CUTSNCORS[k][1],CUTSNCORS[k][2]
@@ -554,7 +571,8 @@ for k in CUTSNCORS.keys():
 	obstag=adtnl_opts_tag
 	OBSD[k]=['%s/%s'%(obsdir,sim_total),adtnl_opts_tag]
 SS_TAG='%s_%s'%(MAINTAG,sim_total)
-#DBG=True #! debug
+DBG=False 
+#DBG=True #! debug (!Note, toggling comment-state of this line is coupled with toggling above line!)
 t.plot_SS(float(Q2MIN),float(Q2MAX),float(WMIN),float(WMAX),EXPT,DBG,obsd=OBSD,SS_tag=SS_TAG)
 #! ******
 

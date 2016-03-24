@@ -26,6 +26,10 @@ from ROOT import THnTool
 thntool=THnTool()
 
 #Constants
+MASS_P=0.93827203
+MASS_PIP=0.13957018
+MASS_PIM=0.13957018
+
 #! See http://stackoverflow.com/questions/16553506/python-ordereddict-iteration for following code
 H8_DIM=OrderedDict([('HEL',0),('Q2',1),('W',2),('M1',3),('M2',4),('THETA',5),('PHI',6),('ALPHA',7)])
 H5_PROJDIM=array('i',[H8_DIM['M1'],H8_DIM['M2'],H8_DIM['THETA'],H8_DIM['PHI'],
