@@ -1,18 +1,18 @@
 #!/bin/bash
 
-#! sim1.1: /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_200M_051815
-#! sim2:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_300M_052015
-#! sim3:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112315
-#! sim4:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112715
-#! sim5:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_120915
-#! sim6:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_121815
-#! sim7:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216
-#! sim8:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010316
-#! sim9:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011216
-#! sim10:  /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011916
-#! sim11:  /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_012916
-#! sim12:  /mss/clas/caa/atrivedi/batchdata/e16/2pi/sim/2pi_1B_021016
-#! sim13:  /mss/clas/caa/atrivedi/batchdata/e16/2pi/sim/2pi_1B_021716
+#! sim1.1: /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_200M_051815   (1991)
+#! sim2:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_300M_052015   (2987)
+#! sim3:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112315   (4980)
+#! sim4:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_112715   4358)
+#! sim5:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_500M_120915   (4981)
+#! sim6:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_121815     (9957)
+#! sim7:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010216     (9963)
+#! sim8:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_010316     (7318)
+#! sim9:   /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011216     (9860)
+#! sim10:  /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_011916     (5199)
+#! sim11:  /mss/home/atrivedi/batchdata/e16/2pi/sim/2pi_1B_012916     (9873)
+#! sim12:  /mss/clas/caa/atrivedi/batchdata/e16/2pi/sim/2pi_1B_021016 (9788)
+#! sim13:  /mss/clas/caa/atrivedi/batchdata/e16/2pi/sim/2pi_1B_021716 (9022)
 
 simnamel=(2pi_200M_051815 2pi_300M_052015 2pi_500M_112315 2pi_500M_112715 2pi_500M_120915 2pi_1B_121815 2pi_1B_010216 2pi_1B_010316 2pi_1B_011216 2pi_1B_011916 2pi_1B_012916 2pi_1B_021016 2pi_1B_021716)
 #! Following list obtained by ls /mss-path-to-sim/recon/*.root |grep -v ana |wc -l 
