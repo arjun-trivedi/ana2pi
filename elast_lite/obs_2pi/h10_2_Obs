@@ -50,7 +50,7 @@ USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_
 #! *** Setup global variables ***
 EXPTS=['e1f','e16']
 SEQS=['ER','SR','ST']
-SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9']}
+SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9','sim10','sim11','sim12','sim13']}
 #print EXPTS,SEQS,SIMS
 
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
@@ -58,22 +58,30 @@ H10LSTS={
 ('e1f','ER'):'TBD',
 ('e16','ER'):'%s/e16/exp/h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
 ('e1f','SR','sim-TBD'):'TBD',
-('e16','SR','sim4'):'%s/e16/sim/sim4/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
-('e16','SR','sim5'):'%s/e16/sim/sim5/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
-('e16','SR','sim6'):'%s/e16/sim/sim6/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122915.lst
-('e16','SR','sim7'):'%s/e16/sim/sim7/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst 
-('e16','SR','sim8'):'%s/e16/sim/sim8/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_012416.lst
-('e16','SR','sim9'):'%s/e16/sim/sim9/h10_2_h10-skim-SS_030116.lst'%(H10PATH)  #! h10-skim-e_012416.lst
+('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
+('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
+('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122915.lst
+('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst 
+('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_012416.lst
+('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_030116.lst'%(H10PATH),  #! h10-skim-e_012416.lst
+('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_031516.lst'%(H10PATH),
+('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_031516.lst'%(H10PATH),
+('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_031516.lst'%(H10PATH),
+('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_031516.lst'%(H10PATH)
 }
 #print H10LSTS
 DATE_ST={
 ('e1f','sim-TBD'):'TBD',
-('e16','sim4'):'122215',
-('e16','sim5'):'122215',
-('e16','sim6'):'122915',
-('e16','sim7'):'010816',
-('e16','sim8'):'012416',
-('e16','sim9'):'012416'
+('e16','sim4') :'122215',
+('e16','sim5') :'122215',
+('e16','sim6') :'122915',
+('e16','sim7') :'010816',
+('e16','sim8') :'012416',
+('e16','sim9') :'012416',
+('e16','sim10'):'032116',
+('e16','sim11'):'032116',
+('e16','sim12'):'032116',
+('e16','sim13'):'032116',
 }
 
 #! *** Define WMIN,WMAX ***

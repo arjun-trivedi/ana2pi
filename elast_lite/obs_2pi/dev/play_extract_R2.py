@@ -31,9 +31,9 @@ def get_fphi(extract_D,name_sfx=""):
 	
 	return fphi
 
-def get_R2(R2,h):
+def get_R2_mthd1(R2,h):
 	if R2!='A' and R2!='B' and R2!='C' and R2!='D':
-		print "get_R2() not implemented for R2=",R2
+		print "get_R2_mthd1() not implemented for R2=",R2
 
 	hc=h.Clone("hc")
 	hc.Reset()
@@ -55,15 +55,24 @@ def get_R2(R2,h):
                 hc.SetBinError(ibin+1,bine*fctr)
 
 	if R2=='A':
-		scl_fctr=2*math.pi
+		EF=2*math.pi
+		CF=1
 	elif R2=='B':#! for B,C and D
-		scl_fctr=math.pi/1.06896
+		EF=math.pi
+		CF=0.93549 #!(1/1.06896)
 	elif R2=='C':
-		scl_fctr=math.pi/1.32131
+		EF=math.pi
+		CF=0.75683 #!(1/1.32131)
+		scl_fctr=math.pi*CF
 	elif R2=='D':
-                scl_fctr=math.pi/1.06896
+		EF=math.pi
+		CF=0.93549 #! (1/1.06896)
+                scl_fctr=math.pi*CF
 
-	return hc.Integral()/scl_fctr
+	itg_err=ROOT.Double(0)
+	itg=hc.IntegralAndError(1,hc.GetNbinsX(),itg_err)
+	return [itg/(EF*CF),itg_err]
+	#return hc.Integral()/scl_fctr
 		
 
 #! Create histogram
@@ -117,21 +126,29 @@ pt_wD.Draw()
 	
 #! from mthd1
 print "*** mthd1 ***"
-print "A,B,C,D=",get_R2('A',h),get_R2('B',h),get_R2('C',h),get_R2('D',h)
+print "A(err)=%.2f(%.2f)"%(get_R2_mthd1('A',h)[0],get_R2_mthd1('A',h)[1])
+print "B(err)=%.2f(%.2f)"%(get_R2_mthd1('B',h)[0],get_R2_mthd1('B',h)[1])
+print "C(err)=%.2f(%.2f)"%(get_R2_mthd1('C',h)[0],get_R2_mthd1('C',h)[1])
+print "D(err)=%.2f(%.2f)"%(get_R2_mthd1('D',h)[0],get_R2_mthd1('D',h)[1])
 print "******"
 
 #! from mthd2
-sf_A=1/math.radians(36)
-sf_B=1.62
-sf_C=1.70
-sf_D=1.62
+CF_A=1.59155 #!=1/math.radians(36)
+CF_B=1.61803
+CF_C=1.70131
+CF_D=1.61803
 #! nD
 print "*** mthd2 nD ***"
-print "A,B,C=",fit_fphi_nD.GetParameter(0)*sf_A,fit_fphi_nD.GetParameter(1)*sf_B,fit_fphi_nD.GetParameter(2)*sf_C
+print "A(err)=%.2f(%.2f)"%(fit_fphi_nD.GetParameter(0)*CF_A,fit_fphi_nD.GetParError(0))
+print "B(err)=%.2f(%.2f)"%(fit_fphi_nD.GetParameter(1)*CF_B,fit_fphi_nD.GetParError(1))
+print "C(err)=%.2f(%.2f)"%(fit_fphi_nD.GetParameter(2)*CF_C,fit_fphi_nD.GetParError(2))
 print "******"
 #! from mthd2:wD
 print "*** wD ***"
-print "A,B,C,D=",fit_fphi_wD.GetParameter(0)*sf_A,fit_fphi_wD.GetParameter(1)*sf_B,fit_fphi_wD.GetParameter(2)*sf_C,fit_fphi_wD.GetParameter(3)*sf_D
+print "A(err)=%.2f(%.2f)"%(fit_fphi_wD.GetParameter(0)*CF_A,fit_fphi_wD.GetParError(0))
+print "B(err)=%.2f(%.2f)"%(fit_fphi_wD.GetParameter(1)*CF_B,fit_fphi_wD.GetParError(1))
+print "C(err)=%.2f(%.2f)"%(fit_fphi_wD.GetParameter(2)*CF_C,fit_fphi_wD.GetParError(2))
+print "D(err)=%.2f(%.2f)"%(fit_fphi_wD.GetParameter(3)*CF_D,fit_fphi_wD.GetParError(3))
 print "******"
 
 

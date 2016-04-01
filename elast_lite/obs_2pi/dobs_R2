@@ -3,11 +3,11 @@ from disp_obs import DispObs
 import sys
 
 #! ---------------------
-#  dobs_R2 [mthds=mthd1:mthd2:False] [obsdir] [simnum=siml] [view=ECnorm_with_sim] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [expt=e16] [dbg=False]
+#  dobs_R2 mthds extract_D_E_for_non_alpha obsdir simnum[=siml] view[=ECnorm_with_sim] q2min[=1.50] q2max[=5.00] wmin[=1.400] wmax[=2.125] expt[=e16] dbg[=False]
 #! + The first arguments taken information as mthd1:mthd2:plotphiproj(for mthd2)
 #!----------------------
 
-#! Decode mthds and put info in mthdl and plorphiproj
+#! Decode mthds and put info in mthdl and plorphiproj (input format: mthd1:mthd2:True/False)
 mthdl=[]
 plotphiproj=False
 if len(sys.argv)==1:
@@ -26,53 +26,62 @@ else:
 				elif code=="False": plotphiproj=False
 		else:
 			sys.exit("mthds can only contain colon separated items: mthd1,mthd2,True or False. For example: mthd1:mthd2:True")
-#! Get obsdir
+
+#! Get extract_D_E_for_non_alpha
 if len(sys.argv)==2:
+        sys.exit("Please enter extract_D_E_for_non_alpha as True or False")
+else:
+	if   sys.argv[2]=="True":  extract_D_E_for_non_alpha=True
+	elif sys.argv[2]=="False": extract_D_E_for_non_alpha=False
+	else: sys.exit("Please enter extract_D_E_for_non_alpha as True or False only!")
+
+#! Get obsdir
+if len(sys.argv)==3:
         sys.exit("Please enter obsdir")
 else:
-        obsdir=sys.argv[2]
+        obsdir=sys.argv[3]
 
-if len(sys.argv)>3: #! User input simnum, else use siml
-	simnum=sys.argv[3]
+if len(sys.argv)>4: #! User input simnum, else use siml
+	simnum=sys.argv[4]
 else:
 	simnum='siml'
 
-if len(sys.argv)>4: #! User input view, else use view=norm 
-	view=sys.argv[4]
+if len(sys.argv)>5: #! User input view, else use view=norm 
+	view=sys.argv[5]
 else:
 	view="ECnorm_with_sim"	
 
-if len(sys.argv)>5: #! User input q2min 
-        q2min=float(sys.argv[5])
+if len(sys.argv)>6: #! User input q2min 
+        q2min=float(sys.argv[6])
 else:
         q2min=1.50
 
-if len(sys.argv)>6: #! User input q2max 
-        q2max=float(sys.argv[6])
+if len(sys.argv)>7: #! User input q2max 
+        q2max=float(sys.argv[7])
 else:
         q2max=5.00
 
-if len(sys.argv)>7: #! User input wmin 
-        wmin=float(sys.argv[7])
+if len(sys.argv)>8: #! User input wmin 
+        wmin=float(sys.argv[8])
 else:
         wmin=1.400
 
-if len(sys.argv)>8: #! User input q2min 
-        wmax=float(sys.argv[8])
+if len(sys.argv)>9: #! User input q2min 
+        wmax=float(sys.argv[9])
 else:
         wmax=2.125
 
-if len(sys.argv)>9: #! User input expt 
-        expt=sys.argv[9]
+if len(sys.argv)>10: #! User input expt 
+        expt=sys.argv[10]
 	if expt!='e1f' and expt!='e16':
 		sys.exit("expt=e1f or e16 only.")
 else:
         expt='e16'
 
-if len(sys.argv)>10: #! User input dbg, else use dbg=False
-	if sys.argv[10]=="False":
+if len(sys.argv)>11: #! User input dbg, else use dbg=False
+	if sys.argv[11]=="False":
                 dbg=False
-        elif sys.argv[10]=="True":
+        elif sys.argv[11]=="True":
                 dbg=True
         else:
                 print "Please enter dbg=True or False!"
@@ -82,14 +91,14 @@ else:
 
 print "Displaying R2-Obs for mthdl plotphiproj obsdir simnum view q2min q2max wmin wmax expt dbg",mthdl,plotphiproj,obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg
 
-foptl=["NQ","NQL"] #! used for mthd2; removed "NQI"
+foptl=["NQ"]#,"NQL"] #! used for mthd2; removed "NQI"
 
 for mthd in mthdl:
-	for R2l in[['A','B','C']]: #! ['A','B','C','D']extract with and without 'D'
+	for R2l in[['A','B','C','D','E']]: #! ['A','B','C','D']extract with and without 'D'
 		if mthd=='mthd1':
-                        do=DispObs(obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg)
-                        do.disp_R2(R2l,mthd=mthd)
+                       	do=DispObs(obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg)
+			do.disp_R2(R2l,mthd,extract_D_E_for_non_alpha)
 		elif mthd=='mthd2':
 			for fopt in foptl:
 				do=DispObs(obsdir,simnum,view,q2min,q2max,wmin,wmax,expt,dbg)
-				do.disp_R2(R2l,mthd=mthd,plotphiproj=plotphiproj,fopt=fopt)
+				do.disp_R2(R2l,mthd,extract_D_E_for_non_alpha,plotphiproj,fopt)

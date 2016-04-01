@@ -64,61 +64,59 @@ VAR_UNIT_NAMES={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"deg",VARS[3]:"deg",VARS[4]:
 VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"",VARS[3]:"rad",VARS[4]:"rad"}
 
 #! Following dictionaries for extracting R2
-R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{p}}'} #'R2_{LT^{\'}}'
-H5_MFUNCD={'A':'1','B':'cphi','C':'c2phi','D':'sphi'}
+#! post VM-fdbk
+#R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'R2_{LT^{p}}'} #'R2_{LT^{\'}}'
+#R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2_{LT}','C':'R2_{TT}','D':'D','E':'E'}
+R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2^{c}_{LT}','C':'R2^{c}_{TT}','D':'R2^{s}_{LT}','E':'R2^{s}_{TT}'}
+
+H5_MFUNCD={'A':'1','B':'cphi','C':'c2phi','D':'sphi','E':'s2phi'}
 MTHD_NAMED={'mthd1':'h5-mply-itg','mthd2':'phi-proj-fit','mthd3':'phi-prof-mply-itg'}
 #! The following binning information taken from h8_bng.h
 NBINS={'M1':14,'M2':14,'THETA':10,'PHI':10,'ALPHA':10}	
 #! The following for phi-projection canvas
 NXPADS={'M1':2,'M2':2,'THETA':2,'PHI':2,'ALPHA':2}
 NYPADS={'M1':7,'M2':7,'THETA':5,'PHI':5,'ALPHA':5}
-#! Fit function (needed for mthd2)
-# FPHI=ROOT.TF1("fphi", "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
-# FPHI.SetParameter(0,.1)#!
-# FPHI.SetParameter(1,.1)#10
-# FPHI.SetParameter(2,.1)#20
-# FPHI.SetParameter(3,.1)#100
-# FPHI.SetParName(0, "A")
-# FPHI.SetParName(1, "B")
-# FPHI.SetParName(2, "C")
-# FPHI.SetParName(3, "D")#hPD
-def get_fphi(extract_D,name_sfx=""):
-	#! Approach where D*sin(phi) is added/removed depending on extract_D
-	if extract_D: #! fphi with D*sin(phi)
-		fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
-	else: #! fphi without D*sin(theta)
-		fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()))",0,360)
+#! EF and CF needed for each mthd to finally extract R2s (see $ELAST_LITE/obs_2pi/dev/R2_EF_CFs.txt)
+EF={('mthd1','A'):2*math.pi,('mthd1','B'):math.pi,('mthd1','C'):math.pi,('mthd1','D'):math.pi,('mthd1','E'):math.pi,
+	('mthd2','A'):1,        ('mthd2','B'):1,      ('mthd2','C'):1,      ('mthd2','D'):1,      ('mthd2','E'):1}
+CF={('mthd1','A'):1,      ('mthd1','B'):0.93549,('mthd1','C'):0.75683,('mthd1','D'):0.93549,('mthd1','E'):0.75683,
+	('mthd2','A'):1.59155,('mthd2','B'):1.61803,('mthd2','C'):1.70131,('mthd2','D'):1.61803,('mthd2','E'):1.70131}
+
+def get_fphi(name_sfx=""):
+	fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()))",0,360)
 
 	#! Set parameter names
 	fphi.SetParName(0, "A")
 	fphi.SetParName(1, "B")
 	fphi.SetParName(2, "C")
-	if extract_D:
-		fphi.SetParName(3, "D")#hPD
+	
 	#! Set initial state of parameters
 	fphi.SetParameter(0,.1)#!
 	fphi.SetParameter(1,.1)#10
 	fphi.SetParameter(2,.1)#20
-	if extract_D:
-		fphi.SetParameter(3,.1)#100
 	
+	return fphi
+
+def get_fphi_alpha(name_sfx=""):
+	'''
+	Add sphi and s2phi moments for phi dependence in alpha projection
+	'''
+	fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()) + [4]*sin(2*x*TMath::DegToRad()))",0,360)
 	
-	#! Approach where D=0/non-O depending on extract_D
-	# fphi=ROOT.TF1("fphi%s"%name_sfx, "([0] + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()) + [3]*sin(x*TMath::DegToRad()))",0,360)
+	#! Set parameter names
+	fphi.SetParName(0, "A")
+	fphi.SetParName(1, "B")
+	fphi.SetParName(2, "C")
+	fphi.SetParName(3, "D")
+	fphi.SetParName(4, "E")
 
-	# #! Set parameter names
-	# fphi.SetParName(0, "A")
-	# fphi.SetParName(1, "B")
-	# fphi.SetParName(2, "C")
-	# fphi.SetParName(3, "D")#hPD
-
-	# #! Set initial state of parameters
-	# fphi.SetParameter(0,.1)#!
-	# fphi.SetParameter(1,.1)#10
-	# fphi.SetParameter(2,.1)#20
-	# if extract_D: fphi.SetParameter(3,.1)#100
-	# else:         fphi.FixParameter(3,0)#100
-
+	#! Set initial state of parameters
+	fphi.SetParameter(0,.1)#!
+	fphi.SetParameter(1,.1)#10
+	fphi.SetParameter(2,.1)#20
+	fphi.SetParameter(3,.1)#100
+	fphi.SetParameter(4,.1)#100
+	
 	return fphi
 
 #! Constants relating to plotting and its aesthetics
@@ -1774,12 +1772,13 @@ class DispObs:
 			h1[k].SetTitle("")
 			h1[k].SetXTitle( "%s[%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
 			#! X-axis title aesthetics
-			h1[k].GetXaxis().SetLabelSize(.05)
-			h1[k].GetXaxis().SetTitleSize(.10)
-			h1[k].GetXaxis().SetTitleOffset(.7)
+			hR2d[k].GetXaxis().SetTitleOffset(0.7)
+			hR2d[k].GetXaxis().SetLabelSize(0.05)
+			hR2d[k].GetXaxis().SetTitleSize(0.10)
 			#! Y-axis title aesthetics
-			h1[k].GetYaxis().SetTitleOffset(1.5)
-			h1[k].GetYaxis().SetTitleSize(.05)
+			hR2d[k].GetYaxis().SetTitleOffset(0.7)
+			hR2d[k].GetYaxis().SetLabelSize(0.05)
+			hR2d[k].GetYaxis().SetTitleSize(0.10)
 
 			if nkeys==4:#s i.e. self.DO_SS_STUDY=true:
 				if var!='THETA':
@@ -1817,6 +1816,34 @@ class DispObs:
 					h1[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
 					h1[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq])
 
+	def hist_R2_athtcs(self,hR2d,R2):
+		print("DispObs::hist_R2_athtcs()")
+		for k in hR2d:
+			seq,vst,var=k[0],k[1],k[2]
+			hR2d[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq]) #! ROOT.gROOT.ProcessLine("kFullCircle")
+			hR2d[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+			hR2d[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+			hR2d[k].SetTitle("")
+			hR2d[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+			#! post VM-fdbk
+			#hR2d[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+			#! tchncl problem with following
+			#hR2d[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+			#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
+			hR2d[k].SetYTitle("%s ^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+			#! Solution 2: _{phi_{i}}R2^{X_{ij}}
+			#hR2d[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+
+			#! X-axis title aesthetics
+			hR2d[k].GetXaxis().SetTitleOffset(0.7)
+			hR2d[k].GetXaxis().SetLabelSize(0.05)
+			hR2d[k].GetXaxis().SetTitleSize(0.10)
+			#! Y-axis title aesthetics
+			hR2d[k].GetYaxis().SetTitleOffset(0.7)
+			hR2d[k].GetYaxis().SetLabelSize(0.05)
+			hR2d[k].GetYaxis().SetTitleSize(0.10)
+		print("DispObs::hist_R2_athtcs()")
+
 
 	def plot_1D_athtcs(self):
 		#ROOT.gStyle.Reset()
@@ -1850,7 +1877,7 @@ class DispObs:
 			itg+=math.fabs(h.GetBinContent(i+1))
 		return itg
 
-	def disp_R2(self,R2l,mthd,plotphiproj=False,fopt=""):
+	def disp_R2(self,R2l,mthd,extract_D_E_for_non_alpha=True,plotphiproj=False,fopt=""):
 		"""
 		+ Extract user specified R2(s) in R2l using user specified method(='mthd1'/'mthd2'/'mthd3' ='h5-mply-itg'/'phi-proj-fit'/'phi-proj-mply-itg')
 									
@@ -1869,14 +1896,13 @@ class DispObs:
 		#!   setup self.FOPT for now, which is a new argument I added for disp_R2() today.           
 		self.FOPT=fopt
 		print "self.FOPT=",self.FOPT
-
-		self.EXTRACT_D=False
-		if "D" in R2l: self.EXTRACT_D=True
+		self.EXTRACT_D_E_FOR_NON_ALPHA=extract_D_E_for_non_alpha
+		print "self.EXTRACT_D_E_FOR_NON_ALPHA=",self.EXTRACT_D_E_FOR_NON_ALPHA
 
 		self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2_%s"%self.VIEW,"mthd_%s"%MTHD_NAMED[mthd])
-		#! Modify above if D is in R2l
-		if "D" in R2l:
-			self.OUTDIR_OBS_R2=os.path.join(self.OUTDIR,"Obs_R2_wD_%s"%self.VIEW,"mthd_%s"%MTHD_NAMED[mthd])
+		#! Append EXTRACT_D_E_FOR_NON_ALPHA in output dir name
+		if self.EXTRACT_D_E_FOR_NON_ALPHA==True:
+			self.OUTDIR_OBS_R2+="_w_non-alpha_DE"
 		#! Append FOPT output dir name
 		if mthd=="mthd2": self.OUTDIR_OBS_R2+="_%s"%self.FOPT
 		if not os.path.exists(self.OUTDIR_OBS_R2):
@@ -1923,19 +1949,21 @@ class DispObs:
 				for k in h5d:
 					seq,vst=k[0],k[1]
 					h5=h5d[k]
-					if R2!='D':
-						h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)	
-					elif R2=='D':
-						h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
-						#! The following was valid when I was helicit information in E1F data
-						# if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
-						# elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],-1)	
+					h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
+					#! The following was valid when I was helicit information in E1F data
+					# if R2!='D':
+					# 	h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)	
+					# elif R2=='D':
+					# 	h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
+					# 	if   hel=='POS' or hel=='UNP': h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],1)
+					# 	elif hel=='NEG':               h5m=thntool.MultiplyBy(h5,H5_MFUNCD[R2],-1)	
 												
 					for var in VARS:
 						if var=='PHI': continue
-						if vst==1 and var=='M2': continue
-						if vst==2 and var=='M1': continue
-						if vst==3 and var=='M1': continue
+						#! post VM-fdbk
+						# if vst==1 and var=='M2': continue
+						# if vst==2 and var=='M1': continue
+						# if vst==3 and var=='M1': continue
 						hR2d[seq,vst,var]=h5m.Projection(H5_DIM[var],"E")
 						#! Call Sumw2() since these errors will need to be propagated
 						hR2d[seq,vst,var].Sumw2()
@@ -1943,13 +1971,18 @@ class DispObs:
 						if var=='M1' or var=='M2': self.setM1M2axisrange(q2wbin,hR2d[seq,vst,var],vst,var)
 						#! some histogram aesthetics
 						hR2d[seq,vst,var].SetName("%s_%s_VST%d_%s"%(R2,seq,vst,var))
-						hR2d[seq,vst,var].SetTitle("%s(%s)"%(R2_NAMED[R2],VAR_NAMES[(vst,var)]))
+						#! post VM-fdbk: Label as R2 as R2^{X_ij}_{phi_i}
+						#hR2d[seq,vst,var].SetTitle("%s(%s)"%(R2_NAMED[R2],VAR_NAMES[(vst,var)]))
+						hR2d[seq,vst,var].SetTitle("%s^{%s}_{%s}"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')]))
 						
-				#! Scale: hR2s extracted thus far need mthd1-dependent scale factor
+				#! + hR2s extracted thus far need to be divided by mthd2-dependent EF*SF, where
+				#! 		+ EF=Extraction Factor and CF=Correction Factor
 				#! (See handwritten notes for details)
 				for k in hR2d:
-					if R2=='A': hR2d[k].Scale(1/(2*math.pi)) #! for A
-					else: 		hR2d[k].Scale(1/math.pi)     #! for B,C,D
+					ef=EF[('mthd1',R2)]*CF[('mthd1',R2)]
+					hR2d[k].Scale(1/ef)
+					# if R2=='A': hR2d[k].Scale(1/(2*math.pi)) #! for A
+					# else: 		hR2d[k].Scale(1/math.pi)     #! for B,C,D
 										
 				#! Normalize hR2
 				self.norm_1D(hR2d,q2wbin)
@@ -1975,9 +2008,10 @@ class DispObs:
 				h5=h5d[k]
 				for var in VARS:
 					if var=='PHI': continue
-					if vst==1 and var=='M2': continue
-					if vst==2 and var=='M1': continue
-					if vst==3 and var=='M1': continue
+					#! post VM-fdbk
+					# if vst==1 and var=='M2': continue
+					# if vst==2 and var=='M1': continue
+					# if vst==3 and var=='M1': continue
 					nbins=NBINS[var]
 					#! Now make projections on to PHI per bin
 					for ibin in range(nbins):
@@ -1991,7 +2025,9 @@ class DispObs:
 						#! get projection bin edges
 						xmin=h5.GetAxis(H5_DIM[var]).GetBinLowEdge(ibin+1)
 						xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ibin+1)
-						new_ttl="%s:proj. bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],xmin,xmax)
+						#! post VM-fdbk
+						#new_ttl="%s:proj. bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],xmin,xmax)
+						new_ttl="%s:#phi_{%s} proj. bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],xmin,xmax)
 						h.SetTitle(new_ttl)
 						h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 						h.SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
@@ -2009,7 +2045,12 @@ class DispObs:
 				seq,vst,var,bin=k[0],k[1],k[2],k[3]
 				
 				#! Get fphi
-				f=get_fphi(self.EXTRACT_D)# FPHI
+				if self.EXTRACT_D_E_FOR_NON_ALPHA:
+					f=get_fphi_alpha()
+				else:
+					if   var!='ALPHA':	f=get_fphi()
+					elif var=='ALPHA':	f=get_fphi_alpha()
+				
 
 				print "DispObs::extract_and_plot_R2(): Going to fit phi proj for",k
 				fstat=int(hphiprojd[k].Fit(f,self.FOPT)) #! "NQI"
@@ -2018,6 +2059,7 @@ class DispObs:
 				B,Berr=0,0
 				C,Cerr=0,0
 				D,Derr=0,0
+				E,Eerr=0,0
 				chisq_per_DOF=0
 				prob=0
 				#A,Aerr,B,Berr,C,Cerr=0,0,0,0,0,0
@@ -2026,8 +2068,9 @@ class DispObs:
 					A,Aerr=f.GetParameter(0),f.GetParError(0)
 					B,Berr=f.GetParameter(1),f.GetParError(1)
 					C,Cerr=f.GetParameter(2),f.GetParError(2)
-					if self.EXTRACT_D:
+					if var=='ALPHA' or self.EXTRACT_D_E_FOR_NON_ALPHA:
 						D,Derr=f.GetParameter(3),f.GetParError(3)
+						E,Eerr=f.GetParameter(4),f.GetParError(4)
 					#print "here",A,B,C,D,f.GetChisquare(),f.GetNDF()
 					if f.GetNDF()==0: chisq_per_DOF=1000 #! I have not looked into why this happens sometimes
 					else:             chisq_per_DOF=f.GetChisquare()/f.GetNDF()
@@ -2036,14 +2079,15 @@ class DispObs:
 					print "DispObs::extract_obs_R2(): AT-WARNING: Fit did not succeed for q2wbin,vst,var,bin=",q2wbin,vst,var,bin
 					#! For now to identify these data points, use very large error bars
 					Aerr,Berr,Cerr=10000,10000,10000
-					if self.EXTRACT_D:
-						Derr=10000
+					if var=='ALPHA' or self.EXTRACT_D_E_FOR_NON_ALPHA:
+						Derr,Err=10000,10000
 					chisq_per_DOF=10000
 					prob=10000
 
-				fpard[k]={'A':A,'Aerr':Aerr,'B':B,'Berr':Berr,'C':C,'Cerr':Cerr,'D':D,'Derr':Derr,'chisq_per_DOF':chisq_per_DOF,'prob':prob}
-				#fpard[k]={'A':A,'Aerr':Aerr,'B':B,'Berr':Berr,'C':C,'Cerr':Cerr}
-				print "DispObs::extract_and_plot_R2(): A,B,C,D,chisq_per_DOF=",A,B,C,D,chisq_per_DOF
+				fpard[k]={'A':A,'Aerr':Aerr,'B':B,'Berr':Berr,'C':C,'Cerr':Cerr,
+				          'D':D,'Derr':Derr,'E':E,'Eerr':Eerr,
+				          'chisq_per_DOF':chisq_per_DOF,'prob':prob}
+				print "DispObs::extract_and_plot_R2(): A,B,C,D,E,chisq_per_DOF,prop=",A,B,C,D,E,chisq_per_DOF,prob
 				#print "DispObs::extract_and_plot_R2(): A,B,C=",A,B,C
 			print "Done hphiprojd=>fpard"
 			
@@ -2076,12 +2120,20 @@ class DispObs:
 
 		#! Set up some plotting related styles and aesthetics 
 		self.plot_R2_athtcs()
+		self.hist_R2_athtcs(hR2d,R2)
 				
 		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
-		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
-				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
-				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
-		
+		#! post VM-fdbk
+		# pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
+		# 		 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
+		# 		 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
+		pad_map=[(1,1,"M1"),    (2,3,'M1'),    (3,2,'M1'), 
+				 (4,1,"M2"),    (5,3,'M2'),    (6,2,'M2'),
+				 (7,1,"THETA"), (8,3,'THETA'), (9,2,'THETA'),
+				 (10,1,"ALPHA"),(11,3,'ALPHA'),(12,2,'ALPHA')]
+		npadsx=3
+		npadsy=4
+		npads=npadsx*npadsy
 		print "DispObs::plot_R2() Plotting hR2 for R2=%s,q2wbin=%s"%(R2,q2wbin)
 		c=ROOT.TCanvas("c","c",1000,1000)
 		pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
@@ -2093,54 +2145,74 @@ class DispObs:
   		pt.AddText("%s for Q2,W = %s"%(R2_NAMED[R2],q2wbin))
   		pt.SetTextSize(0.42)
   		pt.Draw()
-  		pad_p.Divide(3,3)
+  		pad_p.Divide(npadsx,npadsy)
   		#! TLine, for each pad, for ln at y=0
-  		ln=[0 for i in range(9)]
+  		ln=[0 for i in range(npads)]
 		for item in pad_map:
 			pad,vst,var=item[0],item[1],item[2]
 			print "pad,vst,var=",pad,vst,var
 			gpad=pad_p.cd(pad)
 
-			#! setup histogram aesthetics
-			for seq in self.SEQS:
-				hR2d[seq,vst,var].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq]) #! ROOT.gROOT.ProcessLine("kFullCircle")
-				hR2d[seq,vst,var].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
-				hR2d[seq,vst,var].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
-				hR2d[seq,vst,var].SetTitle("")
-				hR2d[seq,vst,var].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
-				hR2d[seq,vst,var].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-				#! X-axis title aesthetics
-				hR2d[seq,vst,var].GetXaxis().SetLabelSize(.05)
-				hR2d[seq,vst,var].GetXaxis().SetTitleSize(.10)
-				hR2d[seq,vst,var].GetXaxis().SetTitleOffset(.7)
-				#! Y-axis title aesthetics
-				hR2d[seq,vst,var].GetYaxis().SetTitleOffset(1.5)
-				hR2d[seq,vst,var].GetYaxis().SetTitleSize(.05)
-				
-			
+			if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+				if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+
 			#! Prepare to draw histograms
-			#! 1. If SF and EC in self.SEQS, the normalize its integral to that of EC
+			#! 1. If SF and EC in self.SEQS, then normalize its integral to that of EC
+			#! [03-28-16] Normalization changed: max-amplitude of SF normalized to max-amplitude of EC
 			if "SF" in self.SEQS and "EC" in self.SEQS:
-				print "DispObs::plot_R2() Scaling SF-itg to EC-itg"
-				itg_EC=self.get_signed_integral(hR2d['EC',vst,var])
+				#! Integral normalization
+				# print "DispObs::plot_R2() Scaling SF-itg to EC-itg"
+				# itg_EC=self.get_signed_integral(hR2d['EC',vst,var])
+				# #! First call Sumw2() so that errors are also scaled
+				# hR2d['SF',vst,var].Sumw2()
+				# #! Now get scale factor and scale bin contents
+				# itg_SF=self.get_signed_integral(hR2d['SF',vst,var])
+				# if itg_EC==0 or itg_SF==0: 	scale_factor=1
+				# else:    					scale_factor=itg_EC/itg_SF
+				# hR2d['SF',vst,var].Scale(scale_factor)
+
+				#![03-18-16] Max-amplitude normalization
+				print "DispObs::plot_R2() Scaling ampltd-SF to ampltd-EC"
+				max_EC=hR2d['EC',vst,var].GetMaximum()
+				min_EC=hR2d['EC',vst,var].GetMinimum()
+				ampltd_EC=max([max_EC,math.fabs(min_EC)])
 				#! First call Sumw2() so that errors are also scaled
 				hR2d['SF',vst,var].Sumw2()
 				#! Now get scale factor and scale bin contents
-				itg_SF=self.get_signed_integral(hR2d['SF',vst,var])
-				if itg_EC==0 or itg_SF==0: 	scale_factor=1
-				else:    					scale_factor=itg_EC/itg_SF
+				max_SF=hR2d['SF',vst,var].GetMaximum()
+				min_SF=hR2d['SF',vst,var].GetMinimum()
+				ampltd_SF=max([max_SF,math.fabs(min_SF)])
+				if ampltd_EC==0 or ampltd_SF==0: scale_factor=1
+				else:    						 scale_factor=ampltd_EC/ampltd_SF
 				hR2d['SF',vst,var].Scale(scale_factor)
 
-			#! 1. If ST and EC in self.SEQS, the normalize its integral to that of EC
+			#! 1. If ST and EC in self.SEQS, then normalize its integral to that of EC
+			#! [03-28-16] Normalization changed: max-amplitude of SF normalized to max-amplitude of EC
 			if "ST" in self.SEQS and "EC" in self.SEQS:
-				print "DispObs::plot_R2() Scaling ST-itg to EC-itg"
-				itg_EC=self.get_signed_integral(hR2d['EC',vst,var])
+				#! Integral normalization
+				# print "DispObs::plot_R2() Scaling ST-itg to EC-itg"
+				# itg_EC=self.get_signed_integral(hR2d['EC',vst,var])
+				# #! First call Sumw2() so that errors are also scaled
+				# hR2d['ST',vst,var].Sumw2()
+				# #! Now get scale factor and scale bin contents
+				# itg_ST=self.get_signed_integral(hR2d['ST',vst,var])
+				# if itg_EC==0 or itg_SF==0: 	scale_factor=1
+				# else:    					scale_factor=itg_EC/itg_ST
+				# hR2d['ST',vst,var].Scale(scale_factor)
+
+				#![03-18-16] Max-amplitude normalization
+				print "DispObs::plot_R2() Scaling ampltd-ST to ampltd-EC"
+				max_EC=hR2d['EC',vst,var].GetMaximum()
+				min_EC=hR2d['EC',vst,var].GetMinimum()
+				ampltd_EC=max([max_EC,math.fabs(min_EC)])
 				#! First call Sumw2() so that errors are also scaled
 				hR2d['ST',vst,var].Sumw2()
 				#! Now get scale factor and scale bin contents
-				itg_ST=self.get_signed_integral(hR2d['ST',vst,var])
-				if itg_EC==0 or itg_SF==0: 	scale_factor=1
-				else:    					scale_factor=itg_EC/itg_ST
+				max_ST=hR2d['ST',vst,var].GetMaximum()
+				min_ST=hR2d['ST',vst,var].GetMinimum()
+				ampltd_ST=max([max_ST,math.fabs(min_ST)])
+				if ampltd_EC==0 or ampltd_ST==0: scale_factor=1
+				else:    						 scale_factor=ampltd_EC/ampltd_ST
 				hR2d['ST',vst,var].Scale(scale_factor)
 
 			#! 2. determine and set maximum
@@ -2200,13 +2272,16 @@ class DispObs:
 														
 			for var in VARS:
 				if var=='PHI': continue
-				if vst==1 and var=='M2': continue
-				if vst==2 and var=='M1': continue
-				if vst==3 and var=='M1': continue
+				#! post VM-fdbk
+				# if vst==1 and var=='M2': continue
+				# if vst==2 and var=='M1': continue
+				# if vst==3 and var=='M1': continue
 				hR2d[seq,vst,var]=h5.Projection(H5_DIM[var],"E")
 				if var=='M1' or var=='M2': self.setM1M2axisrange(q2wbin,hR2d[seq,vst,var],vst,var)
 				hR2d[seq,vst,var].SetName("%s_%s_VST%d_%s"%(R2,seq,vst,var))
-				hR2d[seq,vst,var].SetTitle("%s(%s)"%(R2_NAMED[R2],VAR_NAMES[(vst,var)]))
+				#! post VM-fdbk: Label as R2 as R2^{X_ij}_{phi_i}
+				#hR2d[seq,vst,var].SetTitle("%s(%s)"%(R2_NAMED[R2],VAR_NAMES[(vst,var)]))
+				hR2d[seq,vst,var].SetTitle("%s^{%s}_{%s}"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')]))
 				hR2d[seq,vst,var].Reset()
 					
 		print "Going to extract R2 from phi-proj fits"
@@ -2226,6 +2301,9 @@ class DispObs:
 			elif R2=='D':
 				r2=    fpard[k]['D']
 				r2_err=fpard[k]['Derr']
+			elif R2=='E':
+				r2=    fpard[k]['E']
+				r2_err=fpard[k]['Eerr']
 				#! The following was valid when I was helicit information in E1F data
 				#if   hel=='POS' or hel=='UNP': r2=   fpard[hel][k]['D']
 				#elif hel=='NEG':               r2=-1*fpard[hel][k]['D']
@@ -2233,17 +2311,22 @@ class DispObs:
 			hR2d[seq,vst,var].SetBinContent(bin,r2)
 			hR2d[seq,vst,var].SetBinError(bin,r2_err)
 		
-		#! Scale: hR2s extracted thus far need mthd2-dependent scale factor
+		#! + hR2s extracted thus far need to be divided by mthd2-dependent EF*SF, where
+		#! 		+ EF=Extraction Factor and CF=Correction Factor
 		#! (See handwritten notes for details)
+		#! + This is not needed if the Integral fit option is used
 		if self.FOPT=="NQ" or self.FOPT=="NQL":
-			if R2=='A':
-				for k in hR2d:
-					sf=1/math.radians(36)
-					hR2d[k].Scale(sf)
-			else: #! i.e.B,C,D
-				for k in hR2d:
-					sf=1/math.radians(36)
-					hR2d[k].Scale(sf)
+			ef=EF[('mthd2',R2)]*CF[('mthd2',R2)]
+			for k in hR2d:
+				hR2d[k].Scale(ef)
+			# if R2=='A':
+			# 	for k in hR2d:
+			# 		sf=1/math.radians(36)
+			# 		hR2d[k].Scale(sf)
+			# else: #! i.e.B,C,D
+			# 	for k in hR2d:
+			# 		sf=1/math.radians(36)
+			# 		hR2d[k].Scale(sf)
 		elif self.FOPT=="NQI":	#! If fopt="I" i.e. the Integral fit option
 			for k in hR2d:
 				sf=1/math.radians(36)
@@ -2280,9 +2363,10 @@ class DispObs:
 			if self.DBG==True and vst!=1: continue
 			for var in VARS:
 				if var=='PHI': continue
-				if vst==1 and var=='M2': continue
-				if vst==2 and var=='M1': continue
-				if vst==3 and var=='M1': continue
+				#! post VM-fdbk
+				# if vst==1 and var=='M2': continue
+				# if vst==2 and var=='M1': continue
+				# if vst==3 and var=='M1': continue
 
 				if self.DBG==True and var!='ALPHA': continue
 
@@ -2336,21 +2420,25 @@ class DispObs:
 							h.SetMinimum(0)
 							h.Draw()
 							#! Draw Fit
-							f[ibin][iseq]=get_fphi(self.EXTRACT_D,"_%d_%s"%(ibin+1,seq))
+							if   var!='ALPHA': f[ibin][iseq]=get_fphi("_%d_%s"%(ibin+1,seq))
+							elif var=='ALPHA': f[ibin][iseq]=get_fphi_alpha("_%d_%s"%(ibin+1,seq))
 							f[ibin][iseq].SetParameter(0,fpard[k]['A'])
 							f[ibin][iseq].SetParError (0,fpard[k]['Aerr'])
   							f[ibin][iseq].SetParameter(1,fpard[k]['B'])
   							f[ibin][iseq].SetParError (1,fpard[k]['Berr'])
   							f[ibin][iseq].SetParameter(2,fpard[k]['C'])
   							f[ibin][iseq].SetParError (2,fpard[k]['Cerr'])
-  							if self.EXTRACT_D:
+  							if var=='ALPHA':
   								f[ibin][iseq].SetParameter(3,fpard[k]['D'])
   								f[ibin][iseq].SetParError (3,fpard[k]['Derr'])
+  								f[ibin][iseq].SetParameter(4,fpard[k]['E'])
+  								f[ibin][iseq].SetParError (4,fpard[k]['Eerr'])
  							f[ibin][iseq].SetParName(0, "A")
   							f[ibin][iseq].SetParName(1, "B")
   							f[ibin][iseq].SetParName(2, "C")
-  							if self.EXTRACT_D:
-  								f[ibin][iseq].SetParName(3, "D")#hPD
+  							if var=='ALPHA':
+  								f[ibin][iseq].SetParName(3, "D")
+  								f[ibin][iseq].SetParName(4, "E")
   							f[ibin][iseq].SetLineColor(h.GetMarkerColor())
 							f[ibin][iseq].Draw("same")
 							#! Draw Fit stats
@@ -2359,8 +2447,9 @@ class DispObs:
 							pt[ibin][iseq].AddText( "A=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(0),f[ibin][iseq].GetParError(0)) )
 							pt[ibin][iseq].AddText( "B=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(1),f[ibin][iseq].GetParError(1)) )
 							pt[ibin][iseq].AddText( "C=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(2),f[ibin][iseq].GetParError(2)) )
-							if self.EXTRACT_D:
+							if var=='ALPHA':
 								pt[ibin][iseq].AddText( "D=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(3),f[ibin][iseq].GetParError(3)) )
+								pt[ibin][iseq].AddText( "E=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(4),f[ibin][iseq].GetParError(4)) )
 							pt[ibin][iseq].AddText( "#chi^{2}/NDOF=%.2f"%fpard[k]['chisq_per_DOF'] )
 							pt[ibin][iseq].AddText( "prob=%.2f"%fpard[k]['prob'] )
 							pt[ibin][iseq].SetTextColor(h.GetMarkerColor())
@@ -2387,7 +2476,7 @@ class DispObs:
 		#ROOT.gStyle.SetPadTopMargin(0.15)#(0.05);
 		#ROOT.gStyle.SetPadRightMargin(0.15)#(0.05);
 		ROOT.gStyle.SetPadBottomMargin(0.20)#(0.16);
-		#ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
+		ROOT.gStyle.SetPadLeftMargin(0.20)#(0.12);
 
 		ROOT.gStyle.SetTitleW(10)# //title width 
 		ROOT.gStyle.SetTitleFontSize(20)# 
