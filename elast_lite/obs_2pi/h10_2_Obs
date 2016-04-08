@@ -7,7 +7,7 @@ from collections import OrderedDict
 import itertools
 
 #from disp_obs import DispObs #! for SS
-import disp_SS as t#! for plot_SS
+import disp_SS as tool_disp_SS#! for plot_SS
 
 #! --  Additional options. For full details see h10looper_e1f.h -- 
 #! + Default values on [12-14-15], in brackets, are toggled when any of the options are selected
@@ -45,7 +45,7 @@ import disp_SS as t#! for plot_SS
 	+ cumsiml: output created for every cumsim in cumsiml under jobtag/cumsim
 	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that jobtag is going to be updated with, as set up currently in the code,for example, addition of a new simulation.
 '''
-USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_lite_type[=parallel] date_of_existing_jobtag[=today's MMDDYY] make_SS_plots_only[=False]"
+USAGE="h10_2_Obs expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] proc_h10_lite_type[=parallel] date_of_existing_jobtag[=today's MMDDYY] make_SS_plots_only[=False] skip_SS_plots[=False] skip_make_d2pi[=False] skip_dobs_R2[=False]"
 
 #! *** Setup global variables ***
 EXPTS=['e1f','e16']
@@ -198,7 +198,42 @@ if len(sys.argv)>8: #! i.e. make_SS_plots_only information entered by user
 		print "Please enter make_SS_plots_only=True or False only."
 		sys.exit()
 else:
-        MAKE_SS_PLOTS_ONLY=False
+	MAKE_SS_PLOTS_ONLY=False
+
+
+if len(sys.argv)>9: #! i.e. skip_SS_plots information entered by user
+	if sys.argv[9]=="False":
+		SKIP_SS_PLOTS=False
+	elif sys.argv[9]=="True":
+		SKIP_SS_PLOTS=True
+	else:
+		print "Please enter skip_SS_plots=True or False only."
+		sys.exit()
+else:
+	SKIP_SS_PLOTS=False
+
+if len(sys.argv)>10: #! i.e. skip_make_d2pi information entered by user
+	if sys.argv[10]=="False":
+		SKIP_MAKE_D2PI=False
+	elif sys.argv[10]=="True":
+		SKIP_MAKE_D2PI=True
+	else:
+		print "Please enter skip_make_d2pi=True or False only."
+		sys.exit()
+else:
+	SKIP_MAKE_D2PI=False
+
+if len(sys.argv)>11: #! i.e. skip_dobs_R2 information entered by user
+	if sys.argv[11]=="False":
+		SKIP_DOBS_R2=False
+	elif sys.argv[11]=="True":
+		SKIP_DOBS_R2=True
+	else:
+		print "Please enter skip_dobs_R2=True or False only."
+		sys.exit()
+else:
+	SKIP_DOBS_R2=False
+
 #! ******
 
 #! *** Set up some other global variables after getting user input *** 
@@ -236,6 +271,9 @@ print "PROC_H10_LITE_TYPE=",PROC_H10_LITE_TYPE
 print "DATE=",DATE
 print "PROC_NEW_JOBTAG=",PROC_NEW_JOBTAG
 print "MAKE_SS_PLOTS_ONLY=",MAKE_SS_PLOTS_ONLY
+print "SKIP_SS_PLOTS=",SKIP_SS_PLOTS
+print "SKIP_MAKE_D2PI=",SKIP_MAKE_D2PI
+print "SKIP_DOBS_R2=",SKIP_DOBS_R2
 #sys.exit()
 #! ******
 
@@ -286,7 +324,7 @@ for k in CUTSNCORS.keys():
 	if not os.path.exists(d2pidir_exp):
 		os.makedirs(d2pidir_exp)
 	#! Process d2piR.root only if it does not exist OR if processing a non-existing jobtag 
-        if not os.path.isfile(os.path.join(d2pidir_exp,"d2piR.root")) or PROC_NEW_JOBTAG:
+	if (not SKIP_MAKE_D2PI) and (not os.path.isfile(os.path.join(d2pidir_exp,"d2piR.root")) or PROC_NEW_JOBTAG):
 		h10lst=H10LSTS[EXPT,'ER']
 		print 'h10lst=',h10lst
 		mainlog.write('h10lst=%s\n'%h10lst)
@@ -307,8 +345,12 @@ for k in CUTSNCORS.keys():
 			p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			p.wait()
 	else:
-		print os.path.join(d2pidir_exp,"d2piR.root"),"exists. Not making new one"
-                mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_exp,"d2piR.root"))	
+		if SKIP_MAKE_D2PI:
+			print "SKIP_MAKE_D2PI=True. Therefore not making one."
+			mainlog.write("SKIP_MAKE_D2PI=True. Therefore not making one.")
+		else:
+			print os.path.join(d2pidir_exp,"d2piR.root"),"exists. Not making new one"
+			mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_exp,"d2piR.root"))	
 
 	#! SR
 	print "SR"
@@ -323,7 +365,7 @@ for k in CUTSNCORS.keys():
 			if not os.path.exists(d2pidir_sim):
                 		os.makedirs(d2pidir_sim)
 			#! Process d2piR.root only if it does not exist OR if processing a non-existing jobtag 
-			if not os.path.isfile(os.path.join(d2pidir_sim,"d2piR.root")) or PROC_NEW_JOBTAG:
+			if (not SKIP_MAKE_D2PI) and (not os.path.isfile(os.path.join(d2pidir_sim,"d2piR.root")) or PROC_NEW_JOBTAG):
 				h10lst=H10LSTS[EXPT,'SR',sim] 
 				print 'sim=',sim
 				mainlog.write('sim=%s\n'%sim)
@@ -348,8 +390,12 @@ for k in CUTSNCORS.keys():
 					p=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 					p.wait()
 			else:
-				print os.path.join(d2pidir_sim,"d2piR.root"),"exists. Not making new one"
-				mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_sim,"d2piR.root"))
+				if SKIP_MAKE_D2PI:
+					print "SKIP_MAKE_D2PI=True. Therefore not making one."
+					mainlog.write("SKIP_MAKE_D2PI=True. Therefore not making one.")
+				else:
+					print os.path.join(d2pidir_sim,"d2piR.root"),"exists. Not making new one"
+					mainlog.write("%s exists. Not making new one\n"%os.path.join(d2pidir_sim,"d2piR.root"))
 
 			#! ST
 			#! + For each sim,should directly already have been made on the farm on DATE_ST
@@ -414,7 +460,7 @@ for k in CUTSNCORS.keys():
 				hadd_outdir=d2pidir_ST_total
 				logfilename="hadd_ST_sim_%s.log"%(sim_total)
 			#! Now hadd
-			if ( (addSR and len(CUMSIM)>1) and (not os.path.isfile(os.path.join(hadd_outdir,f)) or PROC_NEW_JOBTAG) ) or (addST and not  os.path.isfile(os.path.join(hadd_outdir,f))):
+			if ( (addSR and len(CUMSIM)>1 and not SKIP_MAKE_D2PI) and (not os.path.isfile(os.path.join(hadd_outdir,f)) or PROC_NEW_JOBTAG) ) or (addST and not  os.path.isfile(os.path.join(hadd_outdir,f))):
 				logfile=open('%s/%s'%(logdir,logfilename),'w')
 				tgtf=os.path.join(hadd_outdir,f)
  				srcfl=[]
@@ -433,10 +479,12 @@ for k in CUTSNCORS.keys():
 			else:
 				if addSR and len(CUMSIM)==1:
 					print "Not going to hadd since len(CUMSIM)==1 and therefore already %s/%s exists"%(hadd_outdir,f)
-                                	mainlog.write("Not going to hadd since len(CUMSIM)==1 and therefore %s/%s exists\n"%(hadd_outdir,f))
+					mainlog.write("Not going to hadd since len(CUMSIM)==1 and therefore %s/%s exists\n"%(hadd_outdir,f))
+				elif addSR and SKIP_MAKE_D2PI:
+					print "Not going to hadd since SKIP_MAKE_D2PI=True"          
 				else:
 					print "Not going to hadd since %s/%s exists"%(hadd_outdir,f)
-                               		mainlog.write("Not going to hadd since %s/%s exists\n"%(hadd_outdir,f))
+					mainlog.write("Not going to hadd since %s/%s exists\n"%(hadd_outdir,f))
 
 		#! 2. d2pi->Observables
 		print "*** 2. d2pi->Observables for %s***"%CUMSIM
@@ -461,8 +509,8 @@ for k in CUTSNCORS.keys():
 			#! First unlink any existing link
 			cmd=["unlink","%s/d2pi_exp/d2piR.root"%(obsdir)]
 			print">>>%s\n"%cmd
-                        mainlog.write(">>>%s\n"%cmd)
-                        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			mainlog.write(">>>%s\n"%cmd)
+			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
 			#! Recreate link
 			cmd=["ln", "-s", "%s/d2piR.root"%d2pidir_exp,"%s/d2pi_exp/d2piR.root"%(obsdir)]
@@ -471,16 +519,16 @@ for k in CUTSNCORS.keys():
 			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
 		else:
-			print os.path.join(obsdir,"d2pi_exp/d2piR.root"),"exists. Not making new one"
+			print os.path.join(obsdir,"d2pi_exp/d2piR.root"),"exists. Not linking new one"
 			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,"d2pi_exp/d2piR.root"))
 	
 		if not os.path.isfile(os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root")) or PROC_NEW_JOBTAG:
 			logfile=open("%s/prep_obsdir_%s.log"%(logdir,sim_total),'a')
 			#! First unlink any existing link
 			cmd=["unlink","%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)]
-                        print">>>%s\n"%cmd
-                        mainlog.write(">>>%s\n"%cmd)
-                        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			print">>>%s\n"%cmd
+			mainlog.write(">>>%s\n"%cmd)
+			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
 			#! Recreate link
 			cmd=(["ln", "-s", "%s/d2piR.root"%d2pidir_SR_total,"%s/d2pi_sim/%s/d2piR.root"%(obsdir,sim_total)])
@@ -489,25 +537,25 @@ for k in CUTSNCORS.keys():
 			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
 		else:
-			print os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root"),"exists. Not making new one"
+			print os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root"),"exists. Not linking new one"
 			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,"d2pi_sim",sim_total,"d2piR.root"))
 
 		if not os.path.isfile(os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root")) or PROC_NEW_JOBTAG:
 			logfile=open("%s/prep_obsdir_%s.log"%(logdir,sim_total),'a')
 			#! First unlink any existing link
-                        cmd=["unlink","%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)]
-                        print">>>%s\n"%cmd
-                        mainlog.write(">>>%s\n"%cmd)
-                        tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			cmd=["unlink","%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)]
+			print">>>%s\n"%cmd
+			mainlog.write(">>>%s\n"%cmd)
+			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
-                        #! Recreate link
+ 			#! Recreate link
 			cmd=(["ln", "-s", "%s/d2piT.root"%(d2pidir_ST_total),"%s/d2pi_sim/%s/d2piT.root"%(obsdir,sim_total)])
 			print">>>%s\n"%cmd
 			mainlog.write(">>>%s\n"%cmd)
 			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
 		else:
-			print os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root"),"exists. Not making new one"
+			print os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root"),"exists. Not linking new one"
 			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,"d2pi_sim",sim_total,"d2piT.root"))
 
 		#-- Now start to make Obervables
@@ -529,11 +577,39 @@ for k in CUTSNCORS.keys():
 			logfile=open("%s/dobs_1D_%s.log"%(logdir,sim_total),'w')
 			print">>>%s >& %s/dobs_1D_%s.log\n"%(cmd,logdir,sim_total)
 			mainlog.write(">>>%s >& %s/dobs_1D_%s.log\n"%(cmd,logdir,sim_total))
-        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+			tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
 			tool.wait()
 		else:
 			print os.path.join(obsdir,sim_total,"Obs_1D_norm"),"exists. Not making new one"
-                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_1D_norm"))
+			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_1D_norm"))
+
+        #! dobs_R2
+        #! echo "dobs_R2 mthd1:mthd2:True $EXTRACT_D_E_FOR_NON_ALPHA $obsdir $sim $view 2.00 3.00 1.400 2.125 e16 >& $logdir_obs/dobs_R2.log"
+        #!
+        #! [04-04-16]
+        #! + Use views = 'EC_EH' and "EC_ST"
+        #!   + Former to track contributions from holes; the latter to contrast new observables with current knowledge and also
+        #!     till holes fill out in simulation, to show the function of EC that may till then, get drowned by EH.
+        #! [04-07-16]
+        #! + After fixing hole filling problem, use view="EC_EF_ST"
+		if not SKIP_DOBS_R2:
+			EXTRACT_D_E_FOR_NON_ALPHA="True"
+ 			OBS_R2_VIEWL=['EC_EF_ST']#!['EC_EF','EC_ST']
+			for view in OBS_R2_VIEWL:
+				if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_R2_%s"%view)) or PROC_NEW_JOBTAG:
+					cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+					logfile=open("%s/dobs_R2_%s_%s.log"%(logdir,sim_total,view),'w')
+					print">>>%s >& %s\n"%(cmd,logfile.name)
+					mainlog.write(">>>%s >& %s\n"%(cmd,logfile.name))
+					tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+					tool.wait()
+				else:
+					print os.path.join(obsdir,sim_total,"Obs_R2_%s"%view),"exists. Not making new one"
+					mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_R2_%s"%view))
+		else:
+			print "SKIP_DOBS_R2=True. Therefore not doing dobs_R2"
+			mainlog.write("SKIP_DOBS_R2=True. Therefore not doing dobs_R2")
+
 
 		#-- simstats
 		#echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
@@ -564,24 +640,27 @@ for k in CUTSNCORS.keys():
 #! *** End : Now start processing CUTSNCORS *** 
 
 #! *** Now display results of all CUTSNCORS together = Systematic Study(SS) ***
-print "h10_2_Obs Going to plot_SS"
-#! Construct OBSD and SS_TAG to pass to disp_SS:plot_SS()
-OBSD={}
-for CUMSIM in CUMSIML:
-	sim_total="_".join(CUMSIM) 
-for k in CUTSNCORS.keys():
-	#if k>2: continue #! debug
-        procorder,adtnl_opts,adtnl_opts_tag= CUTSNCORS[k][0],CUTSNCORS[k][1],CUTSNCORS[k][2]
-	#! The following 3 definitions of cutsncorsnum,jobtag and obsdir should be the same as the in the CUTSNCORS loop
-	cutsncorsnum=k
-        jobtag='%s/cutsncors%d'%(MAINTAG,cutsncorsnum)
-	obsdir=jobtag
-	obstag=adtnl_opts_tag
-	OBSD[k]=['%s/%s'%(obsdir,sim_total),adtnl_opts_tag]
-SS_TAG='%s_%s'%(MAINTAG,sim_total)
-DBG=False 
-#DBG=True #! debug (!Note, toggling comment-state of this line is coupled with toggling above line!)
-t.plot_SS(float(Q2MIN),float(Q2MAX),float(WMIN),float(WMAX),EXPT,DBG,obsd=OBSD,SS_tag=SS_TAG)
-#! ******
+if not SKIP_SS_PLOTS:
+	print "h10_2_Obs Going to plot_SS"
+	#! Construct OBSD and SS_TAG to pass to disp_SS:plot_SS()
+	OBSD={}
+	for CUMSIM in CUMSIML:
+		sim_total="_".join(CUMSIM) 
+	for k in CUTSNCORS.keys():
+		#if k>2: continue #! debug
+		procorder,adtnl_opts,adtnl_opts_tag= CUTSNCORS[k][0],CUTSNCORS[k][1],CUTSNCORS[k][2]
+		#! The following 3 definitions of cutsncorsnum,jobtag and obsdir should be the same as the in the CUTSNCORS loop
+		cutsncorsnum=k
+		jobtag='%s/cutsncors%d'%(MAINTAG,cutsncorsnum)
+		obsdir=jobtag
+		obstag=adtnl_opts_tag
+		OBSD[k]=['%s/%s'%(obsdir,sim_total),adtnl_opts_tag]
+	SS_TAG='%s_%s'%(MAINTAG,sim_total)
+
+	DBG=False 
+	#DBG=True #! debug (!Note, toggling comment-state of this line is coupled with toggling above line!)
+
+	tool_disp_SS.plot_SS(float(Q2MIN),float(Q2MAX),float(WMIN),float(WMAX),EXPT,DBG,obsd=OBSD,SS_tag=SS_TAG)
+	#! ******
 
 print "h10_2_Obs end time",datetime.datetime.now().strftime('%H:%M:%S')

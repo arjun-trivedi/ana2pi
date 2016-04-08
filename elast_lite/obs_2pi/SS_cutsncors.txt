@@ -1,0 +1,21 @@
+#! + The following is taken from $HOME/h10_2_Obs_logs/lowQ2_030916/h10_2_Obs_update_032416_122159.log
+#! + Only the CUTSNCORS portion of the log is kept
+
+Total number of CUTSNCORS= 16
+CUTSNCORS pretty print:
+1 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::13:15::14::11:', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-OFF::MM2-EI:']
+2 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::13:15::14:', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-OFF::MM2-AT:']
+3 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::13:15::11:', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-ON::MM2-EI:']
+4 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::13:15:', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-ON::MM2-AT:']
+5 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::14::11:', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-OFF::MM2-EI:']
+6 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::14:', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-OFF::MM2-AT:']
+7 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2::11:', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-ON::MM2-EI:']
+8 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-ON::MM2-AT:']
+9 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::13:15::14::11:', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-OFF::MM2-EI:']
+10 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::13:15::14:', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-OFF::MM2-AT:']
+11 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::13:15::11:', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-ON::MM2-EI:']
+12 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::13:15:', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-ON::MM2-AT:']
+13 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::14::11:', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-OFF::MM2-EI:']
+14 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::14:', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-OFF::MM2-AT:']
+15 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18::11:', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-ON::MM2-EI:']
+16 ['eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:', '1:3:17:2:18:', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-ON::MM2-AT:']

@@ -272,8 +272,12 @@ class DispObs:
 				self.SEQS=['EC','SF','ST'] 
 			elif self.VIEW=="EC_EF":
 				self.SEQS=['EC','EF']
+			elif self.VIEW=="EC_ST": 
+				self.SEQS=['EC','ST']
+			elif self.VIEW=="EC_EF_ST": 
+				self.SEQS=['EC','EF','ST']
 			else:
-				sys.exit("view={norm,fullana,ERyield,EC_SF_ST,EC_EF} only")
+				sys.exit("view={norm,fullana,ERyield,EC_SF_ST,EC_EF,EC_ST,EC_EF_ST} only")
 
 			print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
 			print "self.VIEW=",self.VIEW
@@ -1772,13 +1776,13 @@ class DispObs:
 			h1[k].SetTitle("")
 			h1[k].SetXTitle( "%s[%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
 			#! X-axis title aesthetics
-			hR2d[k].GetXaxis().SetTitleOffset(0.7)
-			hR2d[k].GetXaxis().SetLabelSize(0.05)
-			hR2d[k].GetXaxis().SetTitleSize(0.10)
+			h1[k].GetXaxis().SetTitleOffset(0.7)
+			h1[k].GetXaxis().SetLabelSize(0.05)
+			h1[k].GetXaxis().SetTitleSize(0.10)
 			#! Y-axis title aesthetics
-			hR2d[k].GetYaxis().SetTitleOffset(0.7)
-			hR2d[k].GetYaxis().SetLabelSize(0.05)
-			hR2d[k].GetYaxis().SetTitleSize(0.10)
+			h1[k].GetYaxis().SetTitleOffset(0.7)
+			h1[k].GetYaxis().SetLabelSize(0.05)
+			h1[k].GetYaxis().SetTitleSize(0.10)
 
 			if nkeys==4:#s i.e. self.DO_SS_STUDY=true:
 				if var!='THETA':
@@ -1820,9 +1824,14 @@ class DispObs:
 		print("DispObs::hist_R2_athtcs()")
 		for k in hR2d:
 			seq,vst,var=k[0],k[1],k[2]
-			hR2d[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq]) #! ROOT.gROOT.ProcessLine("kFullCircle")
-			hR2d[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
-			hR2d[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+			if seq=="ST" and (self.VIEW=="EC_EF_ST" or self.view=="EC_ST"): #! modify ST's defined marker color and style to contrast better with EC,EH
+				hR2d[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL['SF']) 
+				hR2d[k].SetMarkerColor(CLRS_PLT_SEQ_ALL['SF'])
+				hR2d[k].SetLineColor(CLRS_PLT_SEQ_ALL['SF'])
+			else:
+				hR2d[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq]) 
+				hR2d[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+				hR2d[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
 			hR2d[k].SetTitle("")
 			hR2d[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
 			#! post VM-fdbk
@@ -2238,12 +2247,26 @@ class DispObs:
 			elif self.VIEW=="EC_EF":
 				hR2d['EC',vst,var].Draw()
 				hR2d['EF',vst,var].Draw("same")
-				#hR2d['SF',vst,var].Draw("same")			
+				#hR2d['SF',vst,var].Draw("same")
+			elif self.VIEW=="EC_ST":
+				hR2d['ST',vst,var].Draw()
+				hR2d['EC',vst,var].Draw("same") #! Draw EC at the end so that its error bar is on top			
+			elif self.VIEW=="EC_EF_ST":
+				hR2d['ST',vst,var].Draw()
+				hR2d['EF',vst,var].Draw("same")
+				hR2d['EC',vst,var].Draw("same")	#! Draw EC at the end so that its error bar is on top
 
 			#! Draw TLine only if ymin<0
 			if hR2d['EC',vst,var].GetMinimum()<0:
 				ln[pad-1]=ROOT.TLine(hR2d['EC',vst,var].GetXaxis().GetXmin(),0,hR2d['EC',vst,var].GetXaxis().GetXmax(),0)
 				ln[pad-1].Draw("same")			
+
+			#! Draw TLegend if pad==3 (since this pad, in the upper right corner, is not shrouded by the TPaveText-Q2W label)
+			if pad==3:
+				l=ROOT.TLegend(0.7,0.8,0.9,1.0)
+				for seq in self.SEQS:
+					l.AddEntry(hR2d[seq,vst,var],seq,"p")
+				l.Draw()
 			
 
 		q2bin=self.get_q2bin(q2wbin)
@@ -2415,6 +2438,13 @@ class DispObs:
 							elif self.VIEW=="EC_EF":
 								if   seq=='EC': pad.cd(1)
 								elif seq=='EF': pad.cd(2)
+							elif self.VIEW=="EC_ST":
+								if   seq=='EC': pad.cd(1)
+								elif seq=='ST': pad.cd(2)
+							elif self.VIEW=="EC_EF_ST":
+								if   seq=='EC': pad.cd(1)
+								elif seq=='EF': pad.cd(2)
+								elif seq=='ST': pad.cd(3)
 							
 							#! Draw hist
 							h.SetMinimum(0)

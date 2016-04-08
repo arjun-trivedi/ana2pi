@@ -320,14 +320,31 @@ class ProcH8:
 			h.GetXaxis().SetRangeUser(0.2780,wmax-0.938)
 	
 	def calc_EH_scale_factor(self,hN_EC,hN_SC):
+		# scale_factor,nExpEvts,nSimEvts=0,0,0
+		# ndims=hN_EC.GetNdimensions();
+		# expBinCoord=np.zeros(ndims,'i')
+		# nExpBins=hN_EC.GetNbins()
+		# for iExpBin in range(nExpBins):
+		# 	nExpEvts+=hN_EC.GetBinContent(iExpBin,expBinCoord)
+		# 	iSimBin=hN_SC.GetBin(expBinCoord);
+		# 	nSimEvts+=hN_SC.GetBinContent(iSimBin)
+		# if (nSimEvts!=0):
+		# 	scale_factor=nExpEvts/nSimEvts;
+		# else:
+		# 	print "norm for Holes=0 because nSC=0!"
+		# return scale_factor
+
+		#! [04-06-16] 
+		#! Fixed this method to obtain scale_factor using SR Phase Space
+		#! (Earlier I was using ER Phase Space and this was overestimating this factor)
 		scale_factor,nExpEvts,nSimEvts=0,0,0
-		ndims=hN_EC.GetNdimensions();
-		expBinCoord=np.zeros(ndims,'i')
-		nExpBins=hN_EC.GetNbins()
-		for iExpBin in range(nExpBins):
-			nExpEvts+=hN_EC.GetBinContent(iExpBin,expBinCoord)
-			iSimBin=hN_SC.GetBin(expBinCoord);
-			nSimEvts+=hN_SC.GetBinContent(iSimBin)
+		ndims=hN_SC.GetNdimensions();
+		simBinCoord=np.zeros(ndims,'i')
+		nSimBins=hN_SC.GetNbins()
+		for iSimBin in range(nSimBins):
+			nSimEvts+=hN_SC.GetBinContent(iSimBin,simBinCoord)
+			iExpBin=hN_EC.GetBin(simBinCoord);
+			nExpEvts+=hN_EC.GetBinContent(iExpBin)
 		if (nSimEvts!=0):
 			scale_factor=nExpEvts/nSimEvts;
 		else:

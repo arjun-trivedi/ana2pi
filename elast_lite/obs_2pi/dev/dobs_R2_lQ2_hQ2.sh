@@ -7,7 +7,8 @@ logfile_sfx=""
 viewl=(EC_SF_ST EC_EF)
 if [[ $DBG == "True" ]];then
   logfile_sfx="debug"
-  viewl=(EC_SF_ST)
+  #viewl=(EC_SF_ST)
+  viewl=(EC_ST)
 fi
 
 for view in "${viewl[@]}";do
