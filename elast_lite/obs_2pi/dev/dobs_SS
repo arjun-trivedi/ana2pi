@@ -1,0 +1,57 @@
+#!/usr/bin/python
+import sys,os
+
+#! The following to be able to use disp_obs.py 
+sys.path.insert(0, os.path.join(os.environ['ANA2PI'],'elast_lite/obs_2pi'))
+from disp_obs import DispObs
+
+#! ---------------------
+#  + Usage=dobs_SS [expt=e16] [dbg=False]
+#  + SS inputs (dobsd, SS_tag) have to be entered manually
+#  + NOTE, 'SS_tag' is used to name the output created
+#!----------------------
+
+#! *** Setup global parameters ***
+#! Q2 limits for lowQ2
+Q2MIN=2.00
+Q2MAX=3.00
+#! W limits
+WMIN=1.400
+WMAX=2.125
+
+#! Get inputs from user
+#if len(sys.argv)>1: #! User input expt 
+#        expt=sys.argv[1]
+#        if expt!='e1f' and expt!='e16':
+#                sys.exit("expt=e1f or e16 only.")
+#else:
+#        expt='e16'
+#
+#if len(sys.argv)>2: #! User input dbg, else use dbg=False
+#        if sys.argv[2]=="False":
+#                dbg=False
+#        elif sys.argv[2]=="True":
+#                dbg=True
+#        else:
+#                print "Please enter dbg=True or False!"
+#                sys.exit()
+#else:
+#        dbg="False"
+
+EXPT="e16"
+DBG=True
+
+obsd={
+       1:['lowQ2_new_EH_calc_040616/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/dbg', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-OFF::MM2-EI:'],
+       2:['lowQ2_new_EH_calc_040616/cutsncors2/sim4_sim5_sim6_sim7_sim8_sim13/dbg', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-OFF::MM2-AT:'],
+       3:['lowQ2_new_EH_calc_040616/cutsncors3/sim4_sim5_sim6_sim7_sim8_sim13/dbg', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-ON::MM2-EI:'],
+       4:['lowQ2_new_EH_calc_040616/cutsncors4/sim4_sim5_sim6_sim7_sim8_sim13/dbg', ':ECfid-ON::gpart-pid-ON:stat-pid-ON::hitSC-pid-ON::MM2-AT:'],
+       5:['lowQ2_new_EH_calc_040616/cutsncors5/sim4_sim5_sim6_sim7_sim8_sim13/dbg', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF::hitSC-pid-OFF::MM2-EI:']
+}
+SS_tag='lowQ2_new_EH_calc_040616'
+print "Displaying SS-obs for obsdir q2min q2max wmin wmax expt dbg",'NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG
+print "obsd=",obsd
+print "SS_tag=",SS_tag
+do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag)
+#do.disp_1D_SS()
+do.disp_R2_SS()

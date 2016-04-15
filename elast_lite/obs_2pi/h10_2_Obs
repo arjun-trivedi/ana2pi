@@ -104,12 +104,43 @@ BASIC_ADTNL_OPTS='1:3:17' #! ECin-on:zvtx-on:eff_scpd_atmod
 #! 2. Now setup all the additional combinations of adtnl_opts that when added to 1. lead to the 16 CUTSNCORS
 #! + These combinations can be oraganized as an outer product of vectors that represent specific grouping of adtnl_opts 
 #! + Note that code of '' is used for if a cutncor is the default of the analysis code
+#! SS1
+# v1={'code':[':2:',':2:18:'],'tag':[':ECfid-ON:',':ECfid_atmod_ON:']}                             #! {ECfid-on,ECfid_atmod_on}
+# v2={'code':[':13:15:',''],  'tag':[':gpart-pid-ON:stat-pid-ON:',':gpart-pid-OFF:stat-pid-OFF:']} #! {(gpart-PID-on,stat-PID-on),(gpart-PID-off,stat-PID-off)}
+# v3={'code':[':14:',''],     'tag':[':hitSC-pid-OFF:',':hitSC-pid-ON:']}                          #! {hitSC-pid-off,hitSC-pid-on}
+# v4={'code':[':11:',''],     'tag':[':MM2-EI:',':MM2-AT:']}                                       #! {MM2-EI,MM2-AT}
+# ADTNL_OPTS_CODE_LIST=list(itertools.product(v1['code'],v2['code'],v3['code'],v4['code']))
+# ADTNL_OPTS_TAG_LIST=list(itertools.product(v1['tag'],v2['tag'],v3['tag'],v4['tag']))
+
+#! [04-15-16] SS-bands
+#! From SS1 it was noted that the various cutsncors were separating out in bands that depended mostly on
+#! + various cobinations of gpart-pid-ON/FF*stat-pid-ON/OFF
+#! + ECfid-ON and ECfid_atmod_ON, mostly for the lowest Q2 bin
+#!
+#! And around these bands were deviations from some of the other cuts like 
+#! + MM2-EI and MM2-AT
+#! + hitSC-pid-OFF/ON -> the deviation from this cut is insignificant and therefore this option is no longer retained.
+#!
+#! Therefore 2 distinct branches of SS study are emerging: SS-bands and SS-true:
+#! + SS-bands: These bands are dependent on flag-cuts and need to be understood in the sense that only of
+#!             these bands should be identified as being true and other have to be falsified.
+#! + SS-true: These will be the source of the true Systematic Errors (SE) and this list will
+#!					  eventually become bigger to accomodate other sources of true SE like modifications
+#!					  of eid-,pid-, and efid-cuts etc to their loose/medium/tight and other selection critereon. 
+#!					  I envision that SE from each item in this list will have to be noted. This list will include
+#!					  the the effect of varying the following items:
+#!					  	+ MM2-cut: MM2-EI +/- loose/medium/tight
+#!						+ eid: +/- loose/medium/tight, peak-fit/full-fit
+#!						+ pid: +/- loose/medium/tight, peak-fit/full-fit
+#!						+ efid: +/- loose/medium/tight
+#!						+ pfid: +/- loose/medium/tight
+#!
+#! For now, to get the process going, I am going to do use the SS-bands (leading to a total of 8 CUTSNCORS),
+#! and as I begin to work on writing, I plan to resolve these bands and shift my attention to the SS-true.
 v1={'code':[':2:',':2:18:'],'tag':[':ECfid-ON:',':ECfid_atmod_ON:']}                             #! {ECfid-on,ECfid_atmod_on}
-v2={'code':[':13:15:',''],  'tag':[':gpart-pid-ON:stat-pid-ON:',':gpart-pid-OFF:stat-pid-OFF:']} #! {(gpart-PID-on,stat-PID-on),(gpart-PID-off,stat-PID-off)}
-v3={'code':[':14:',''],     'tag':[':hitSC-pid-OFF:',':hitSC-pid-ON:']}                          #! {hitSC-pid-off,hitSC-pid-on}
-v4={'code':[':11:',''],     'tag':[':MM2-EI:',':MM2-AT:']}                                       #! {MM2-EI,MM2-AT}
-ADTNL_OPTS_CODE_LIST=list(itertools.product(v1['code'],v2['code'],v3['code'],v4['code']))
-ADTNL_OPTS_TAG_LIST=list(itertools.product(v1['tag'],v2['tag'],v3['tag'],v4['tag']))
+v2={'code':[':13:15:','',':13:',':15:'],  'tag':[':gpart-pid-ON:stat-pid-ON:',':gpart-pid-OFF:stat-pid-OFF:',':gpart-pid-ON:stat-pid-OFF:',':gpart-pid-OFF:stat-pid-ON:']} #! {(gpart-PID-on,stat-PID-on),(gpart-PID-off,stat-PID-off),(gpart-PID-on,stat-PID-off),(gpart-PID-off,stat-PID-on)}
+ADTNL_OPTS_CODE_LIST=list(itertools.product(v1['code'],v2['code']))#,v3['code'],v4['code']))
+ADTNL_OPTS_TAG_LIST=list(itertools.product(v1['tag'],v2['tag']))#,v3['tag'],v4['tag']))
 
 #! 3. Now finally, using 1. and 2., put together the 16 CUTSNCORS
 for i,lst in enumerate(zip(ADTNL_OPTS_CODE_LIST,ADTNL_OPTS_TAG_LIST)):
@@ -571,7 +602,7 @@ for k in CUTSNCORS.keys():
 			print os.path.join(obsdir,sim_total,"yield.root"),"exists. Not making new one"
                 	mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"yield.root")) 
 
-		#echo ">dobs_1D $obsdir $sim norm 2.00 3.00 1.400 2.125 >& $logdir_obs/dobs_1D.log"
+		#echo ">dobs_1D $obsdir $sim norm 2.00 3.00 1.400 2.125 e16 "
 		if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_1D_norm")) or PROC_NEW_JOBTAG:
 			cmd=["dobs_1D",obsdir,sim_total,"norm",Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
 			logfile=open("%s/dobs_1D_%s.log"%(logdir,sim_total),'w')
@@ -585,6 +616,7 @@ for k in CUTSNCORS.keys():
 
         #! dobs_R2
         #! echo "dobs_R2 mthd1:mthd2:True $EXTRACT_D_E_FOR_NON_ALPHA $obsdir $sim $view 2.00 3.00 1.400 2.125 e16 >& $logdir_obs/dobs_R2.log"
+        #! echo "dobs_R2 mthd2:False      $EXTRACT_D_E_FOR_NON_ALPHA $obsdir $sim EC_EH_ST 2.00 3.00 1.400 2.125 e16 
         #!
         #! [04-04-16]
         #! + Use views = 'EC_EH' and "EC_ST"
@@ -592,12 +624,14 @@ for k in CUTSNCORS.keys():
         #!     till holes fill out in simulation, to show the function of EC that may till then, get drowned by EH.
         #! [04-07-16]
         #! + After fixing hole filling problem, use view="EC_EF_ST"
+        #! + 'mthd1:mthd2:True' -> 'mthd2:False'
 		if not SKIP_DOBS_R2:
 			EXTRACT_D_E_FOR_NON_ALPHA="True"
  			OBS_R2_VIEWL=['EC_EF_ST']#!['EC_EF','EC_ST']
 			for view in OBS_R2_VIEWL:
 				if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_R2_%s"%view)) or PROC_NEW_JOBTAG:
-					cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+					#cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+					cmd=["dobs_R2","mthd2:False","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
 					logfile=open("%s/dobs_R2_%s_%s.log"%(logdir,sim_total,view),'w')
 					print">>>%s >& %s\n"%(cmd,logfile.name)
 					mainlog.write(">>>%s >& %s\n"%(cmd,logfile.name))
