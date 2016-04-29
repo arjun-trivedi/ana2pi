@@ -15,9 +15,10 @@ import math
 '''
 + {e1f,e16}*{ER,SR}*2pi*{wzvtxcorr,nzvtxcorr}
 
-+ Usage: study_zvtx.py expt=<e1f/e16>
++ Usage: study_zvtx.py expt=<e1f/e16> plots=[ER-wzvtxcorr:ER-nzvtxcorr:SR-nzvtxcorr]
 '''
 
+#! *** User entered parameters ***
 if len(sys.argv)<2:
 		sys.exit('usage: study_pcorr.py expt=(e1f/e16)')
 expt=sys.argv[1]
@@ -27,6 +28,15 @@ print "expt=",expt
 #! For now ignore e1f
 if expt=="e1f":
 	sys.exit("Not implemented for e1f yet")
+
+if len(sys.argv)>2: #! i.e. plots entered by user
+	PLOTS=[item for item in sys.argv[2].split(":")]
+else:
+	PLOTS=["ER-wzvtxcorr","ER-nzvtxcorr","SR-nzvtxcorr"]
+
+print "expt=",expt
+print "PLOTS=",PLOTS
+#sys.exit()
 
 #! *** Prepare input data structure: FIN/T[dtyp][corr] ***
 NDTYP=2
@@ -141,14 +151,15 @@ for isctr in range(NSCTR):
 		h[ER][isctr][WZVTXCORR].Draw("HIST")
 		h[ER][isctr][NZVTXCORR].Draw("HIST sames")
 		 #! scale SR and then draw
-               	max_ER= h[ER][isctr][WZVTXCORR].GetMaximum()
-               	if max_ER==0:max_ER=1
-               	max_SR=h[SR][isctr][NZVTXCORR].GetMaximum()
-               	if max_SR==0:max_SR=1
-               	scl_fctr_SR=max_ER/max_SR
-               	if scl_fctr_SR==0:scl_fctr_SR=1
-               	h[SR][isctr][NZVTXCORR].Scale(scl_fctr_SR)
-		h[SR][isctr][NZVTXCORR].Draw("HIST sames")
+		if "SR-nzvtxcorr" in PLOTS:
+               		max_ER= h[ER][isctr][WZVTXCORR].GetMaximum()
+               		if max_ER==0:max_ER=1
+               		max_SR=h[SR][isctr][NZVTXCORR].GetMaximum()
+               		if max_SR==0:max_SR=1
+               		scl_fctr_SR=max_ER/max_SR
+               		if scl_fctr_SR==0:scl_fctr_SR=1
+               		h[SR][isctr][NZVTXCORR].Scale(scl_fctr_SR)
+			h[SR][isctr][NZVTXCORR].Draw("HIST sames")
 		#! Ajust statbox
 		ROOT.gPad.Update()
 		#czvtx.Update()
@@ -165,13 +176,14 @@ for isctr in range(NSCTR):
                 pt_nzvtxcorr.SetY2NDC(y2)
 		#czvtx.Update()
 		#! statbox for SR:nzvtxcorr
-                pt_SR_nzvtxcorr=h[SR][isctr][NZVTXCORR].GetListOfFunctions().FindObject("stats")
-                pt_SR_nzvtxcorr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
-                diff=pt_nzvtxcorr.GetY2NDC()-pt_nzvtxcorr.GetY1NDC()
-                y2=pt_nzvtxcorr.GetY1NDC()
-                y1=y2-diff
-                pt_SR_nzvtxcorr.SetY1NDC(y1)
-                pt_SR_nzvtxcorr.SetY2NDC(y2)
+		if "SR-nzvtxcorr" in PLOTS:
+                	pt_SR_nzvtxcorr=h[SR][isctr][NZVTXCORR].GetListOfFunctions().FindObject("stats")
+                	pt_SR_nzvtxcorr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+                	diff=pt_nzvtxcorr.GetY2NDC()-pt_nzvtxcorr.GetY1NDC()
+                	y2=pt_nzvtxcorr.GetY1NDC()
+                	y1=y2-diff
+                	pt_SR_nzvtxcorr.SetY1NDC(y1)
+                	pt_SR_nzvtxcorr.SetY2NDC(y2)
                 #czvtx.Update()
 		#! Draw cut lines
 		ZVTX_CUTL_EI.SetY1(h[ER][isctr][WZVTXCORR].GetMinimum())
@@ -185,7 +197,8 @@ for isctr in range(NSCTR):
 		#l.AddEntry(h[ER][isctr][NZVTXCORR],'nzvtxcorr')
 		#l.Draw()
 czvtx.Update()
-czvtx.SaveAs("%s/%s.png"%(outdir,cname))
+czvtx.SaveAs("%s/%s_%s.png"%(outdir,cname,'_'.join(PLOTS)))
+czvtx.SaveAs("%s/%s_%s.pdf"%(outdir,cname,'_'.join(PLOTS)))
 #! ***
 #! debug
 #sys.exit()

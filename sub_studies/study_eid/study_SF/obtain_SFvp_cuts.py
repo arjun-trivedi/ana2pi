@@ -170,32 +170,50 @@ def obtain_SFcut_pars():
 		#gf[imthd].SetLineStyle(MTHD_LINE_STYLE[imthd])
 		
 	for idtyp in range(NDTYP):
-			fout_name="%s/fSFvp_post_fits_%s.root"%(OUTDIR,DTYP_NAME[idtyp])
-			FOUT=ROOT.TFile(fout_name,"RECREATE")
 			if DEBUG and DTYP_NAME[idtyp]!="exp": continue
+
+			fout_name="%s/fSFvp_post_fits_%s.root"%(OUTDIR,DTYP_NAME[idtyp])
+			if DEBUG: 
+				fout_name="%s/fSFvp_post_fits_%s_dbg.root"%(OUTDIR,DTYP_NAME[idtyp])
+			FOUT=ROOT.TFile(fout_name,"RECREATE")
+
+			#! [04-28-16] thesis-phase addition
+			#! Create TCanvas to store in one canvas for all sectors "relevant data" for showing SF cut in thesis
+			#! + "relevant data" created under each sector's loop iteration
+			#! + Such work will typical in thesis-phase
+			cname="cSFvp_thesis_%s"%(DTYP_NAME[idtyp])
+			cSFvp_thesis=ROOT.TCanvas(cname,cname,2000,1500)	
+			cSFvp_thesis.Divide(3,2)
+
+			#! Create hcutSF[NMTHD][NFNC][NSCTR]
+			#! [04-28-16] thesis-phase: The following is now created outside sctr loop so that all the relevant
+                        #!                          objects to be stored in cSFvp_thesis have their own index
+                        hcutSFvp=[[[[] for isctr in range(NSCTR)] for ifnc in range(NFNC)] for imthd in range(NMTHD)]
 			for isctr in range(NSCTR):
-				if DEBUG and isctr+1!=1: continue
+				if DEBUG and (isctr+1)!=1: continue
 
 				FOUT.mkdir("s%d"%(isctr+1)).cd()
 				outdir_png="%s/%s_pngs/s%d"%(OUTDIR,DTYP_NAME[idtyp],isctr+1)
 				if not os.path.exists(outdir_png):
 					os.makedirs(outdir_png)
 
-				#! Get hSFvp[NDTYP][NSCTR]
+				#! Get hSFvp[NDTYP]
 				hSFvp=FIN.Get("h_%s_s%d"%(DTYP_NAME[idtyp],isctr+1))
 
 				#! Create hcutSF[NMTHD][NFNC]
-				hcutSFvp=[[[] for ifnc in range(NFNC)] for imthd in range(NMTHD)]
+				#! [04-28-16] thesis-phase: The following is now created outside sctr loop so that all the relevant
+				#!                          objects to be stored in cSFvp_thesis have their own index
+				#hcutSFvp=[[[] for ifnc in range(NFNC)] for imthd in range(NMTHD)]
 				nbins=hSFvp.GetNbinsX()
 				xmin=hSFvp.GetXaxis().GetXmin()
 				xmax=hSFvp.GetXaxis().GetXmax()
 				for imthd in range(NMTHD):
 					for ifnc in range(NFNC):
-						hname="%s_%s"%(MTHD_NAME[imthd],FNC_NAME[ifnc])
-						hcutSFvp[imthd][ifnc]=ROOT.TH1F(hname,hname,nbins,xmin,xmax)
+						hname="%s_%s_s%d"%(MTHD_NAME[imthd],FNC_NAME[ifnc],isctr+1)
+						hcutSFvp[imthd][ifnc][isctr]=ROOT.TH1F(hname,hname,nbins,xmin,xmax)
 						#! aesthetics
-						hcutSFvp[imthd][ifnc].SetMarkerStyle(ROOT.gROOT.ProcessLine(MTHD_MRKR_STYLE[imthd]))
-						hcutSFvp[imthd][ifnc].SetMarkerColor(ROOT.gROOT.ProcessLine(MTHD_CLR[imthd]))
+						hcutSFvp[imthd][ifnc][isctr].SetMarkerStyle(ROOT.gROOT.ProcessLine(MTHD_MRKR_STYLE[imthd]))
+						hcutSFvp[imthd][ifnc][isctr].SetMarkerColor(ROOT.gROOT.ProcessLine(MTHD_CLR[imthd]))
 						
 				for ipbin in range(NPBIN):
 					pbin_min=round(PBIN_LE[ipbin],2)
@@ -263,15 +281,15 @@ def obtain_SFcut_pars():
 						#! Fill SF-cut-pars(pbin) in hcutSF
 						#! Note the bin used here is that contains pavg=(pbin_min+pbin_max)/2
 						pavg=(pbin_min+pbin_max)/2
-						bin=hcutSFvp[imthd][H].FindBin(pavg)
-						hcutSFvp[imthd][H].SetBinContent(bin,cut_h)
-						hcutSFvp[imthd][L].SetBinContent(bin,cut_l)
-						hcutSFvp[imthd][M].SetBinContent(bin,mu)
+						bin=hcutSFvp[imthd][H][isctr].FindBin(pavg)
+						hcutSFvp[imthd][H][isctr].SetBinContent(bin,cut_h)
+						hcutSFvp[imthd][L][isctr].SetBinContent(bin,cut_l)
+						hcutSFvp[imthd][M][isctr].SetBinContent(bin,mu)
 						#! + PyROOT will not fit till hist bins have errors set!
 						#! + If error bars are not set, it returns "Fit data is empty"
-						hcutSFvp[imthd][H].SetBinError(bin,cut_h_err)
-						hcutSFvp[imthd][L].SetBinError(bin,cut_l_err)
-						hcutSFvp[imthd][M].SetBinError(bin,mu_err)
+						hcutSFvp[imthd][H][isctr].SetBinError(bin,cut_h_err)
+						hcutSFvp[imthd][L][isctr].SetBinError(bin,cut_l_err)
+						hcutSFvp[imthd][M][isctr].SetBinError(bin,mu_err)
 					#! Draw and save fitted hSF along with fits (as .png and in .root file) 
 					#! plotting aesthetics
 					ROOT.gStyle.SetOptStat("ne")
@@ -291,24 +309,25 @@ def obtain_SFcut_pars():
 					l.AddEntry(gfF,MTHD_NAME[F])
 					l.AddEntry(gfP,MTHD_NAME[P])
 					l.Draw("same")
-					#! .png save
+					#! .png and .pdf  save
 					c.SaveAs("%s/c_pbin%02d.png"%(outdir_png,ipbin+1))
+					c.SaveAs("%s/c_pbin%02d.pdf"%(outdir_png,ipbin+1))
 					#! .root file save
 					#hSF.Write()
 					c.Write()
-				#! Now fit hcutSFvp[NMTHD][NFNC], save fit pars in fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR]
+				#! Now fit hcutSFvp[NMTHD][NFNC][NSCTR], save fit pars in fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR]
 				for imthd in range(NMTHD):
 					fitf=[0,0,0]
 					for ifnc in range(NFNC):
 						fitf[ifnc]=ROOT.TF1("fitf_%s"%FNC_NAME[ifnc],"pol3",PMIN,PMAX)
 						fitf[ifnc].SetLineColor(ROOT.gROOT.ProcessLine(MTHD_CLR[imthd]))
 						#fitf[ifnc].SetLineStyle(MTHD_LINE_STYLE[imthd])
-					print "Fitting hcutSFvp for mthd:fnc=%s,%s"%(MTHD_NAME[imthd],FNC_NAME[H])
-					hcutSFvp[imthd][H].Fit(fitf[H].GetName(),"","",PMIN,PMAX)
-					print "Fitting hcutSFvp for mthd:fnc=%s,%s"%(MTHD_NAME[imthd],FNC_NAME[L])
-					hcutSFvp[imthd][L].Fit(fitf[L].GetName(),"","",PMIN,PMAX)
-					print "Fitting hcutSFvp for mthd:fnc=%s,%s"%(MTHD_NAME[imthd],FNC_NAME[M])
-					hcutSFvp[imthd][M].Fit(fitf[M].GetName(),"","",PMIN,PMAX)
+					print "Fitting hcutSFvp for mthd:fnc:sctr=%s,%s,%d"%(MTHD_NAME[imthd],FNC_NAME[H],isctr+1)
+					hcutSFvp[imthd][H][isctr].Fit(fitf[H].GetName(),"","",PMIN,PMAX)
+					print "Fitting hcutSFvp for mthd:fnc:sctr=%s,%s,%d"%(MTHD_NAME[imthd],FNC_NAME[L],isctr+1)
+					hcutSFvp[imthd][L][isctr].Fit(fitf[L].GetName(),"","",PMIN,PMAX)
+					print "Fitting hcutSFvp for mthd:fnc:sctr=%s,%s,%d"%(MTHD_NAME[imthd],FNC_NAME[M],isctr+1)
+					hcutSFvp[imthd][M][isctr].Fit(fitf[M].GetName(),"","",PMIN,PMAX)
 					for ipar in range(NPAR):
 						fpSFvp[idtyp][isctr][imthd][H][ipar]=fitf[H].GetParameter(ipar)
 						fpSFvp[idtyp][isctr][imthd][L][ipar]=fitf[L].GetParameter(ipar)
@@ -320,18 +339,48 @@ def obtain_SFcut_pars():
 				ROOT.gStyle.SetStatX(0.9);
 				hSFvp.Draw("colz")
 				for imthd in range(NMTHD):
-					hcutSFvp[imthd][H].Draw("P same")
-					hcutSFvp[imthd][L].Draw("P same")
-					hcutSFvp[imthd][M].Draw("P same")
+					hcutSFvp[imthd][H][isctr].Draw("P same")
+					hcutSFvp[imthd][L][isctr].Draw("P same")
+					hcutSFvp[imthd][M][isctr].Draw("P same")
 				#! legend
 				l=ROOT.TLegend(0.1,0.8,0.3,0.9)#,"","NDC");
 				for imthd in range(NMTHD):
-					l.AddEntry(hcutSFvp[imthd][H],MTHD_NAME[imthd],"p")
+					l.AddEntry(hcutSFvp[imthd][H][isctr],MTHD_NAME[imthd],"p")
 				l.Draw("same")
 				#! save as .png
 				c.SaveAs("%s/cSFvp.png"%(outdir_png))
 				#! save in .root file
 				c.Write()
+
+				#! + [04-28-16] Also add this histograms to cSFvp_thesis
+				print cSFvp_thesis.GetName()
+				cSFvp_thesis.cd(isctr+1)
+				#! plotting aesthetics
+                                ROOT.gStyle.SetOptStat("ne")
+                                ROOT.gStyle.SetStatX(0.9);
+                                hSFvp.Draw("colz")
+                                for imthd in range(NMTHD):
+                                        hcutSFvp[imthd][H][isctr].Draw("P same")
+                                        hcutSFvp[imthd][L][isctr].Draw("P same")
+                                        hcutSFvp[imthd][M][isctr].Draw("P same")
+                                #! legend
+				if (isctr+1==1):
+                                	l_thesis=ROOT.TLegend(0.1,0.8,0.3,0.9)#,"","NDC");
+                                	for imthd in range(NMTHD):
+                                        	l_thesis.AddEntry(hcutSFvp[imthd][H][isctr],MTHD_NAME[imthd],"p")
+                                	l_thesis.Draw("same")
+
+			#! Write cSFvp_thesis in .root file and as .png and .pdf
+			FOUT.cd()
+			cSFvp_thesis.Write()
+			outdir_png="%s/%s_pngs"%(OUTDIR,DTYP_NAME[idtyp])
+                        if not os.path.exists(outdir_png):
+                        	os.makedirs(outdir_png)
+			cSFvp_thesis.SaveAs("%s/cSFvp.png"%(outdir_png))
+			cSFvp_thesis.SaveAs("%s/cSFvp.pdf"%(outdir_png))
+			
+				
+				
 	#! Write fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR] to file
 	#print "fpSFvp[idtyp][isctr][imthd][H][0]=",fpSFvp[0][0][0][H][0]
 	for idtyp in range(NDTYP):

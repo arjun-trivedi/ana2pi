@@ -55,3 +55,6 @@ source ${ANA2PI}/sub_studies/study_zvtx/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_det_ineff/setup.tcshrc
 #-- [03-14-16] Setup env for 'lite'-2pi observables
 source $ANA2PI/elast_lite/obs_2pi/setup.tcshrc
+
+setenv SUBSTUDIES "${WORKSPACE}/ana2pi/sub_studies"
+alias substudies 'cd ${SUBSTUDIES}'
