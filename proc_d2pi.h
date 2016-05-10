@@ -574,10 +574,23 @@ void ProcD2pi::UpdateD2pi(Bool_t ismc /* = kFALSE */){
 	tp->theta_p=_lvP.Theta()*RadToDeg();
 	tp->theta_pip=_lvPip.Theta()*RadToDeg();
 	tp->theta_pim=_lvPim.Theta()*RadToDeg();
-	tp->phi_e=getPhi(_lvE);//_lvE.Phi()*RadToDeg();
+	//! [05-06-16] phi angles in lab frame between [-30,330]
+	//! + Changed when doing substudies/study_efid/e16 (to correspond with CLAS sectors)
+	/*tp->phi_e=getPhi(_lvE);//_lvE.Phi()*RadToDeg();
 	tp->phi_p=getPhi(_lvP);//_lvP.Phi()*RadToDeg();
 	tp->phi_pip=getPhi(_lvPip);//_lvPip.Phi()*RadToDeg();
-	tp->phi_pim=getPhi(_lvPim);//_lvPim.Phi()*RadToDeg();
+	tp->phi_pim=getPhi(_lvPim);//_lvPim.Phi()*RadToDeg();*/
+	//! First get values between [-180,180]
+	float phi_e=_lvE.Phi()*TMath::RadToDeg();// [-180,180]
+	float phi_p=_lvP.Phi()*TMath::RadToDeg();// [-180,180]
+	float phi_pip=_lvPip.Phi()*TMath::RadToDeg();// [-180,180]
+	float phi_pim=_lvPim.Phi()*TMath::RadToDeg();// [-180,180]
+	//! phi: now convert to [-30,330]
+	tp->phi_e=phi_e<-30?phi_e+360:phi_e; // [-30,330]
+	tp->phi_p=phi_p<-30?phi_p+360:phi_p; // [-30,330]
+	tp->phi_pip=phi_pip<-30?phi_pip+360:phi_pip; // [-30,330]
+	tp->phi_pim=phi_pim<-30?phi_pim+360:phi_pim; // [-30,330]
+
 	//! Reconstructed e' Vertex
 	if (!ismc){
 		tp->vx_e=dH10->vx[dAna->h10idxE];

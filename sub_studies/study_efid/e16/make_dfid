@@ -1,0 +1,25 @@
+#!/bin/bash
+seq=$1
+nentries=${2:-0}
+
+#-- Check if input data is OK
+if [ $seq != 'ER' ] && [ $seq != 'SR' ];then
+  echo "seq=$seq is not valid"
+  exit
+fi
+
+#-- Do $seq related setup
+if [ $seq == 'ER' ]; then
+  dtyp="exp"
+  procorder='eid:pidnewmon:q2wskimR:d2piR_tree' #Note 'eid' has mon hists on by default
+elif [ $seq == 'SR' ]; then
+  dtyp="sim"
+  procorder='eid:pidnewmon:q2wskimR:d2piR_tree' #Note 'eid' has mon hists on by default
+fi
+
+echo "seq="$seq
+echo "procorder="$procorder
+echo "nentries="$nentries
+
+echo ">proc_h10 -i h10"$seq".lst -t e16:$dtyp:2pi  -p $procorder -o dfid.root -n $nentries"
+proc_h10 -i h10"$seq".lst -t e16:$dtyp:2pi  -p $procorder -o dfid.root -n $nentries

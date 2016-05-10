@@ -284,6 +284,15 @@ void h10looper_2pi::Loop(){
 				if (_do_eid)_heid->Fill(EID_E);
 				_hevt->Fill(EVT_E);
 				set_ekin();
+
+				//! make_h10_skim_eid
+				if (_make_h10_skim_eid){
+					//std::cout<<"h10-skim-eid enter"<<std::endl;
+					_th10copy->Fill();
+					//std::cout<<"h10-skim-eid leave"<<std::endl;
+					continue;
+				}
+
 				//! EFID
 				if (_do_efid) _hefid->Fill(EFID_TOT);
 				//std::cout<<"efid"<<std::endl;

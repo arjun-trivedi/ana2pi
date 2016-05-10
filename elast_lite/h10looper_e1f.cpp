@@ -176,6 +176,15 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 			}
 		}
 	}
+	if(_make_h10_skim_eid){
+		//! + h10 is created directly under 'fout:/' for technical reasons
+		//!   (since the program expects to find the h10 tree in the root dir.)
+		//! + Directory 'copyh10' is created only for book-keeping reasons
+		_fout->mkdir("copyh10");
+		_fout->cd();
+		_th10copy = (TTree*)fChain->GetTree()->CloneTree(0);
+		set_h10_SEB_BranchStatus(_th10copy);
+	}
 	//! EFID
 	if (_do_efid){
 		_fout->mkdir("efid")->cd();
@@ -1454,6 +1463,7 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 
 	_make_h10_skim_e=kFALSE;
 	_make_h10_skim_SS=kFALSE;
+	_make_h10_skim_eid=kFALSE;
 
 	Info("h10looper_e1f::setup_adtnl_opts","***adtnl_opts=%s***",adtnl_opts.Data());
 	
@@ -1479,8 +1489,9 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":18:")) _use_cut_ECfid_at_mod=kTRUE;
 	if (adtnl_opts.Contains(":19:")) _use_MM2_cut_SS=kTRUE;
 	//! char-coded options
-	if (adtnl_opts.Contains(":h10-skim-e:"))  _make_h10_skim_e=kTRUE;
-	if (adtnl_opts.Contains(":h10-skim-SS:")) _make_h10_skim_SS=kTRUE;
+	if (adtnl_opts.Contains(":h10-skim-e:"))    _make_h10_skim_e=kTRUE;
+	if (adtnl_opts.Contains(":h10-skim-SS:"))   _make_h10_skim_SS=kTRUE;
+	if (adtnl_opts.Contains(":h10-skim-eid:"))  _make_h10_skim_eid=kTRUE;
 	
 	Info("h10looper_e1f::setup_adtnl_opts","The following cuts-corrections will be made in addition to \'dflt\':");
 	//! eid: new cuts and corrections
@@ -1518,8 +1529,9 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     //! MM2_cut_SS
 	if(_use_MM2_cut_SS) Info("","use_MM2_cut_SS");
 
-	if(_make_h10_skim_e) Info("","make_h10_skim_e");
-	if(_make_h10_skim_SS) Info("","make_h10_skim_SS");
+	if(_make_h10_skim_e)   Info("","make_h10_skim_e");
+	if(_make_h10_skim_SS)  Info("","make_h10_skim_SS");
+	if(_make_h10_skim_eid) Info("","make_h10_skim_eid");
 	Info("","***********");
 }
 

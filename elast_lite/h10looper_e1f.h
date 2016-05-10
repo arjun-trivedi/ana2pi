@@ -118,6 +118,8 @@ public :
       6. MM2_cut:   Use wider-cut => adtnl_opt=':19:' for '_use_MM2_cut_SS'
    */
    bool _make_h10_skim_SS; //! 'eid:efid:pid:pfid:pcorr:evtsel_2pi:',':11:14:'
+   //! [05-09-16]
+   bool _make_h10_skim_eid;//! eid; for Reco events
 
 
    //! output objects

@@ -1,0 +1,12 @@
+#--
+setenv STUDY_FID_E16 "${ANA2PI}/sub_studies/study_efid/e16"
+alias study_fid_e16 'cd ${STUDY_FID_E16}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_FID_E16}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_FID_E16}"
+
+##- Set up STUDY_FID_E16_DATADIR
+setenv STUDY_FID_E16_DATADIR "/data/trivedia/e16/study_fid"

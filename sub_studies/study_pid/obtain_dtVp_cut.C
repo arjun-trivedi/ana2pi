@@ -7,7 +7,7 @@
  
   TH2F* h2_dtVp[2][3];
 
-  //! Create directory where output (in .root file and as .pngs) is stored
+  //! Create directory where output (in .root file and as .pngs and .pdf) is stored
   TString OUTDIR=TString::Format("%s/dtVp_cuts",gSystem->ExpandPathName("$STUDY_PID_DATADIR"));
   gSystem->mkdir(OUTDIR); //! Will create dir only if it does not exist
   //! 'touch' OUTDIR to reflect that it has been worked upon
@@ -151,6 +151,7 @@
         //c->SaveAs(TString::Format("%s/c%02d.jpg",outdir.Data(),ibin+1));
         //c->Write(TString::Format("c_%s_%s_pbin%02d",dtyp_name[i].Data(),part_name[j].Data(),ibin+1));
         c->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),cname.Data()));
+	c->SaveAs(TString::Format("%s/%s.pdf",outdir.Data(),cname.Data()));
         c->Write(cname.Data());
         c->Close();
         //! Get fit parameters
@@ -208,6 +209,7 @@
       //ccut->SaveAs(TString::Format("%s/ccut.jpg",outdir.Data()));
       //ccut->Write(TString::Format("c_cut_%s_%s",dtyp_name[i].Data(),part_name[j].Data()));
       ccut->SaveAs(TString::Format("%s/%s.jpg",outdir.Data(),cname.Data()));
+      ccut->SaveAs(TString::Format("%s/%s.pdf",outdir.Data(),cname.Data()));
       ccut->Write(cname.Data());
       ccut->Close();
       //gPad->Update();

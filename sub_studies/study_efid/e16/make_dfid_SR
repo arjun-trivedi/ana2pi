@@ -1,0 +1,2 @@
+nentries=${1:-0}
+$SUBSTUDIES/study_efid/e16/make_dfid SR $nentries
