@@ -298,8 +298,8 @@ if MAKE_KIN_PLOTS:
 	fout_root=ROOT.TFile("%s/%s.root"%(outdir,fname),"RECREATE")
 
 	#! CWDTH,CHGHT defined as per 3,2 TCanvas
-	CWDTH=500
-	CHGHT=300
+	CWDTH=2000#500
+        CHGHT=1500#300
 	for iq2wb,q2wbin_le in enumerate(DLE):
 		if DEBUG and iq2wb>0: continue #! debug
 		q2min,q2max=q2wbin_le[0],DUE[iq2wb][0]
@@ -628,8 +628,8 @@ if STDY_BAD_SC_PD_THETA_VS_P_CRLTN:
 		fname+="_dbg"
 	fout_root=ROOT.TFile("%s/%s.root"%(outdir_sc_pd_theta_vs_p,fname),"RECREATE")
 	#! CWDTH,CHGHT defined as per 3,2 TCanvas
-	CWDTH=500
-	CHGHT=300
+	CWDTH=2000#500
+	CHGHT=1500#300
 	for iq2wb,q2wbin_le in enumerate(DLE):
 		if DEBUG and iq2wb>0: continue #! debug
 		q2min,q2max=q2wbin_le[0],DUE[iq2wb][0]
