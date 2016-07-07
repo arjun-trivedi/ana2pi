@@ -19,12 +19,15 @@ public:
         Float_t l_e;
         Float_t t_e;
         Float_t t_off;
+        //! [06-27-16] gpart. Should be equal to ntrk.
+        Int_t gpart;
         //! ntrk=Number of charged tracks
         Int_t ntrk;
         //! Following are directly measured quantities for ntrk
         Int_t q[kMaxTrack];
         Int_t dc[kMaxTrack];
         Int_t sc[kMaxTrack];
+        Int_t stat[kMaxTrack]; //! added on [06-27-16]
         Float_t p[kMaxTrack];
         Float_t l[kMaxTrack];
         Float_t t[kMaxTrack];

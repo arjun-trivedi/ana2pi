@@ -1,0 +1,13 @@
+#--
+setenv STUDY_SS_BANDS "${ANA2PI}/sub_studies/study_SS_bands"
+alias study_ss_bands 'cd ${STUDY_SS_BANDS}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_SS_BANDS}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_SS_BANDS}"
+
+##- Set up STUDY_SS_BANDS_DATADIR
+setenv STUDY_SS_BANDS_DATADIR "/data/trivedia/e16/study_SS_bands/"
+

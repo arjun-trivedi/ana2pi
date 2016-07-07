@@ -19,6 +19,12 @@
   is called in handle() only if h10->expt=="e16" and h10->dtyp=="exp" 
 */
 
+ /*
+[07-08-16]
++ Added relevant functions and objects, FOR E16 ONLY, to make zvtx and ECin_min cut.
++ Added objects to monitor zvtx corr (which was added on 01-17-16)
+*/
+
 using namespace TMath;
 using namespace ParticleConstants;
 using namespace AnalysisConstants;
@@ -36,21 +42,25 @@ public:
 	Bool_t goodE();
 	Bool_t goodE_bos();
 	void updateEid();
+	void updateEid_zvtx_only();
 	void updateEkin(Bool_t useMc=kFALSE,Bool_t McHasPARTBanks=kFALSE);
 	Float_t getCCtheta(Float_t x_sc, Float_t y_sc, Float_t z_sc, Float_t cx_sc, Float_t cy_sc, Float_t cz_sc);
 	void GetUVW(float xyz[3], float uvw[3]);
 	void corr_zvtx();
-		
+	
 protected:
 	Eid* _eidTool;
 	TDirectory* _dirmon;
+	TDirectory* _dirzvtxcorr;
 	TDirectory* _dircut;
 	TTree* _t[NPROCMODES];
+	//! _hzvtxcorr[6][2] for zvtxcorr monitoring, before and after cut
+    TH1F*** _hzvtxcorr;
 				
-	static const Int_t NUM_EVTCUTS = 13;
+	static const Int_t NUM_EVTCUTS = 15;
 	enum { EVT_NULL, EVT_TRIG, EVT_GPART1, EVT_STAT1, EVT_Q1,
 	       EVT_DC1, EVT_CC1, EVT_SC1, EVT_EC1,
-	       EVT_DCSTAT1, EVT_ECLOW1, EVT_ECFID, EVT_SF, EVT_BOS11
+	       EVT_DCSTAT1, EVT_ECLOW1, EVT_ECFID, EVT_ECIN_MIN, EVT_ZVTX, EVT_SF, EVT_BOS11
 	     };
 	bool _make_tree;
 };
@@ -61,23 +71,7 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 {
 	TString path;
   	path=getenv("WORKSPACE");
-  	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
-	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
-	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
-	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6 exp.
-
-    if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
-    }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
-    }else if (dH10->expt=="e16" && _eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
-    }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
-    }*/
-
+  	
     //![11-17-15] Use same eid-cut pars for E16 and E1F
     //![02-17-16]
     //! + same eid-cut pars for sim:{e16,e1f}
@@ -92,6 +86,7 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	
 	_make_tree=make_tree;
 	_dirmon=NULL;
+	_dirzvtxcorr=NULL;
 	_dircut=NULL;
 
 	td->cd();
@@ -108,6 +103,8 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_DCSTAT1,"dc_stat>0");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECLOW1,"EC Threshold");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECFID,"EC Fid.");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_ECIN_MIN,"ec_ei > ECmin");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_ZVTX,"pass zvrtx");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SF,"SF");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_BOS11,"EVNT.id=11");
 
@@ -115,7 +112,23 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	_dirmon = dirout->mkdir(TString::Format("monitor"));
 	dAna->makeHistsEid(hists[MONMODE][EVTINC], _dirmon);
 	dAna->makeHistsEkin(histsEkin[MONMODE][EVTINC], _dirmon);
+
+	//! 07-06-16 Make hists to monitor zvtxcorr
+	_dirzvtxcorr=dirout->mkdir(TString::Format("zvtxcorr"));
+	_dirzvtxcorr->cd();
+	_hzvtxcorr=new TH1F**[6];
+	for (int i=0;i<6;i++){
+		_hzvtxcorr[i]=new TH1F*[2];
+		for (int j=0;j<2;j++){
+			TString name_sfx;
+			if      (j==0) name_sfx="prec";
+			else if (j==1) name_sfx="pstc";
+			TString name=TString::Format("zvtxcorr_s%d_%s",i+1,name_sfx.Data());
+			_hzvtxcorr[i][j]=new TH1F(name,name,100,-12,6);
+		}
+	}
 	
+	//! monmode tree	
 	if (_make_tree){
 		_dirmon->cd();
 		_t[MONMODE] = new TTree("t","TTree containing data from ProdEid");
@@ -146,24 +159,8 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
 {
 	TString path;
   	path=getenv("WORKSPACE");
-  	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.mc.out");
-	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid("/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out");*/
-	/*if      (dH10->expt=="e1f" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else if (dH10->expt=="e1f" && dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
-	else if (dH10->expt=="e16" && dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
-	else  Info("ProcEid::ProcEid()", "_eidTool not initialized");//for e1-6 exp.
-
-    if (dH10->expt=="e1f" && _eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=true. Will use goodE()"); 
-    }else if (dH10->expt=="e1f" && !_eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e1f && eidParFileFound=false. Will use goodE_bos()");
-    }else if (dH10->expt=="e16" && _eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=true. Will use goodE()");
-    }else if (dH10->expt=="e16" && !_eidTool->eidParFileFound) {
-    	Info("ProcEid::ProcEid()", "dH10.expt==e16 && eidParFileFound=false. Will use goodE_bos()");; //pars for e1-6 not yet obtained
-    }*/
-
-    //![11-17-15] Use same eid-cut pars for E16 and E1F
+  	
+  	//![11-17-15] Use same eid-cut pars for E16 and E1F
     //![02-17-16]
     //! + same eid-cut pars for sim:{e16,e1f}
    	//! + For exp:e16, I created eid.exp.e16.out where I have updated the SFpars from 
@@ -185,7 +182,9 @@ ProcEid::~ProcEid(){
 	delete _eidTool;
 	delete _t;
 	delete _dirmon;
+	delete _dirzvtxcorr;
 	delete _dircut;
+	delete[] _hzvtxcorr;
 }
 	
 void ProcEid::handle() {
@@ -211,8 +210,18 @@ void ProcEid::handle() {
     else if (dH10->expt=="e16" && _eidTool->eidParFileFound) gE =  goodE();
     else if (dH10->expt=="e16")                               gE =  goodE_bos(); //pars for e1-6 not yet obtained*/
 
-    //! [01-17-16] if e16:ER then corr_zvtx() 
-    if (dH10->expt=="e16" and dH10->dtyp=="exp") corr_zvtx();
+    //! [01-17-16] if e16:ER then corr_zvtx() and update DataEid zvtx 
+    if (dH10->expt=="e16" and dH10->dtyp=="exp") {
+    	//! 1. Fill prec monitoring
+    	int sctr=dAna->eid.sector;
+		if (sctr!=0) _hzvtxcorr[sctr-1][0]->Fill(dAna->eid.vz);
+		//! 2. do corr_zvtx()
+    	corr_zvtx();
+    	//! 3. update DataEid::vz
+    	updateEid_zvtx_only();
+    	//! 4. pstc monitoring
+    	if (sctr!=0)_hzvtxcorr[sctr-1][1]->Fill(dAna->eid.vz);
+	    }
 
     gE=goodE();
     
@@ -259,19 +268,25 @@ Bool_t ProcEid::goodE(){
 										if (_eidTool->PassThreshold(eid->p)) {
 											hevtsum->Fill(EVT_ECLOW1);
 											float uvw[3]={eid->ecU,eid->ecV,eid->ecW};
-											//if (_eidTool->PassECFid(uvw)){
+											if (_eidTool->PassECFid(uvw)){
 												hevtsum->Fill(EVT_ECFID);
 												Int_t sector = eid->sector;
-												Float_t p = eid->p;
-												Float_t sf = eid->etot/p;
-												if (_eidTool->PassSF(sector,p,sf)) {
-													hevtsum->Fill(EVT_SF);
-													if (!_eidTool->Pass(sector,p,sf)) {
-														hevtsum->Fill(NUM_EVTCUTS+1);
+												if ( (dH10->expt!="e16") || (dH10->expt=="e16" && _eidTool->pass_ECin_min(sector,eid->ec_ei)) ){
+													hevtsum->Fill(EVT_ECIN_MIN);
+													if ( (dH10->expt!="e16") || (dH10->expt=="e16" && _eidTool->pass_zvtx(sector, eid->vz)) ){
+														hevtsum->Fill(EVT_ZVTX);
+														Float_t p = eid->p;
+														Float_t sf = eid->etot/p;
+														if (_eidTool->PassSF(sector,p,sf)) {
+															hevtsum->Fill(EVT_SF);
+															if (!_eidTool->Pass(sector,p,sf)) {
+																hevtsum->Fill(NUM_EVTCUTS+1);
+															}
+															retval = kTRUE;
+														}
 													}
-													retval = kTRUE;
 												}
-											//}
+											}
 										}
 									}
 								//}
@@ -328,6 +343,7 @@ void ProcEid::updateEid(){
 	dAna->eid.dc_xsc = dH10->dc_xsc[dH10->dc[0]-1];
 	dAna->eid.dc_ysc = dH10->dc_ysc[dH10->dc[0]-1];
 	dAna->eid.dc_zsc = dH10->dc_zsc[dH10->dc[0]-1];
+	dAna->eid.vz     = dH10->vz[0];
 	//! From SC
 	dAna->eid.sector = dH10->sc_sect[dH10->sc[0]-1];
 
@@ -372,6 +388,10 @@ void ProcEid::updateEid(){
 	Float_t dc_cysc = dH10->dc_cysc[dH10->dc[0]-1];
 	Float_t dc_czsc = dH10->dc_czsc[dH10->dc[0]-1];
 	dAna->eid.cc_theta = getCCtheta(dc_xsc, dc_ysc, dc_zsc, dc_cxsc, dc_cysc, dc_czsc);
+}
+
+void ProcEid::updateEid_zvtx_only(){
+	dAna->eid.vz = dH10->vz[0];
 }
 
 void ProcEid::updateEkin(Bool_t useMc /*= kFALSE*/,Bool_t McHasPARTBanks/*=kFALSE*/) {
@@ -542,6 +562,7 @@ void ProcEid::corr_zvtx(){
 	dH10->vx[0]=vx_corr;
 	dH10->vy[0]=vy_corr;
 	dH10->vz[0]=vz_corr;
+
 	return;
 }
 #endif // PROCEID_H

@@ -55,10 +55,13 @@ void DataAna::makeHistsEid(TObjArray** hists, TDirectory* dirout)
 	//TObjArray* ret[NSECTORS];
 	//TDirectory* direid = dirout->mkdir("eid");
 	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
-		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL ){
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+		}else{
+			dirout->cd(TString::Format("sector%d",iSector));
+		}
 		
-		hists[iSector] = new TObjArray(7);
+		hists[iSector] = new TObjArray(8);
 		
 		hists[iSector]->Add(new TH2F("heoutVein",TString::Format("#DeltaE_{out} vs. #DeltaE_{in}(sector%d)", iSector),150, 0, 1, 150, 0, 1));
 		hists[iSector]->Add(new TH2F("hsfoutVsfin", TString::Format("SF_{out} vs. SF_{in}(sector%d)", iSector),100, 0, 0.5, 100, 0, 0.5));
@@ -67,6 +70,7 @@ void DataAna::makeHistsEid(TObjArray** hists, TDirectory* dirout)
 		hists[iSector]->Add(new TH2F("hCCthetaVCCseg" ,TString::Format("CC_{#theta} vs. CC_{seg}(sector%d)", iSector), 20, 0, 20, 100, 0, 50));
 		hists[iSector]->Add(new TH2F("hbetaVp",TString::Format("#beta vs p(sector%d)", iSector),100, 0, 4, 100, 0, 1.5));
 		hists[iSector]->Add(new TH2F("hdtIfVp",TString::Format("#Deltat vs p(sector%d)", iSector),100, 0, 4, 100, -80, 120));
+		hists[iSector]->Add(new TH1F("hvz",TString::Format("#vz(sector%d)", iSector),100,-12,6));
 	}
 	/*for(Int_t iSector=0;iSector<NSECTORS;iSector++){
 		Info("DataAna::makeHistsEid()", "sector%d = %d", iSector, hists[iSector]->GetEntriesFast());
@@ -440,8 +444,11 @@ void DataAna::makeHistsEkin(TObjArray** hists, TDirectory* dirout)
 	//TObjArray* ret[NSECTORS];
 	//TDirectory* direkin = dirout->mkdir("ekin");
 	for(Int_t iSector=0;iSector<NSECTORS;iSector++){
-		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL )
+		if ( (dirout->GetDirectory(TString::Format("sector%d",iSector))) == NULL ){
 			dirout->mkdir(TString::Format("sector%d",iSector))->cd();
+		}else{
+			dirout->cd(TString::Format("sector%d",iSector));
+		}
 			
 		hists[iSector] = new TObjArray(6);
 		
@@ -663,6 +670,10 @@ void DataAna::fillHistsEid(TObjArray** hists, Bool_t useMc /* = kFALSE */)
 	
 			TH2* h7 = (TH2*)hists[iSector]->At(6);
 			h7->Fill(eid.p, eid.dt_e);
+
+			TH1* h8 = (TH2*)hists[iSector]->At(7);
+			h8->Fill(eid.vz);
+
 		}
 	}
 	/*TH2* h1 = (TH2*)hists->At(0);
@@ -1511,15 +1522,15 @@ void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("nphe",&eid.nphe);
 	t->Branch("cc_segm",&eid.cc_segm);
 	t->Branch("cc_theta",&eid.cc_theta);
-	t->Branch("top",&d2pi.top);
+	//t->Branch("top",&d2pi.top); //! [06-30-16] Why was this here!
 }
 
 void DataAna::addBranches_DataEkin(TTree* t,Bool_t useMc/*=kFALSE*/){
 	DataEkin*  dekin=&eKin;
 	if (useMc) dekin=&eKin_mc;
 	//t->Branch("sector",&eKin.sector); //! Should be added already from DataEid
-	t->Branch("W",&dekin->W);  
-	t->Branch("Q2",&dekin->Q2);
+	t->Branch("ekin_W",&dekin->W);  //! different tree-var name! Avoid conflict with 2pi-tree-var 'Q2'
+	t->Branch("ekin_Q2",&dekin->Q2);//! different tree-var name! Avoid conflict with 2pi-tree-var 'Q2'
     t->Branch("nu",&dekin->nu);
     t->Branch("xb",&dekin->xb);
 	t->Branch("E1",&dekin->E1);
@@ -1575,17 +1586,18 @@ void DataAna::addBranches_DataPidNew(TTree* t){
 	t->Branch("l_e",&pidnew.l_e,"l_e/F");
 	t->Branch("t_e",&pidnew.t_e,"t_e/F");
 	t->Branch("t_off",&pidnew.t_off,"t_off/F");
+	t->Branch("gpart",&pidnew.gpart,"gpart/I");
 	t->Branch("ntrk",&pidnew.ntrk,"ntrk/I");
 	t->Branch("q",pidnew.q,"q[ntrk]/I");
 	t->Branch("dc",pidnew.dc,"dc[ntrk]/I");
 	t->Branch("sc",pidnew.sc,"sc[ntrk]/I");
-	t->Branch("q",pidnew.q,"q[ntrk]/I");
-	t->Branch("p",pidnew.p,"p[ntrk]/F");
+	t->Branch("stat",pidnew.stat,"stat[ntrk]/I");
+	t->Branch("pid_p",pidnew.p,"p[ntrk]/F"); //! different tree-var name! Avoid conflict with eid-tree-var 'p'
 	t->Branch("l",pidnew.l,"l[ntrk]/F");
 	t->Branch("t",pidnew.t,"t[ntrk]/F");
-	t->Branch("b",pidnew.b,"b[ntrk]/F");
-	t->Branch("id",pidnew.id,"id[ntrk]/I");
-	t->Branch("sector",pidnew.sector,"sector[ntrk]/I");
+	t->Branch("pid_b",pidnew.b,"b[ntrk]/F"); //! different tree-var name! Avoid conflict with eid-tree-var 'b'
+	t->Branch("pid",pidnew.id,"pid[ntrk]/I"); //! different tree-var name! Avoid conflict with eid-tree-var 'id' 
+	t->Branch("sector_pid",pidnew.sector,"sector[ntrk]/I"); //! different tree-var name! Avoid conflict with eid-tree-var 'sector'
 	t->Branch("h10_idx",pidnew.h10_idx,"h10_idx[ntrk]/I");
 	t->Branch("b_p",pidnew.b_p,"b_p[ntrk]/F");
 	t->Branch("b_pip",pidnew.b_pip,"b_pip[ntrk]/F");

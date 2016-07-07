@@ -16,6 +16,7 @@ public:
 	Float_t dc_xsc;
     Float_t dc_ysc;
     Float_t dc_zsc;
+    Float_t vz;
 	//! From SC
 	Int_t sector;
     Float_t b;

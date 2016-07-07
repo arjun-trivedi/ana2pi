@@ -30,6 +30,9 @@ using namespace ParticleConstants;
 	+ hevtsum: showing stats for number of events processed and number passing selection
 	+ In 'mon' and 'mononly' mode: PID monitoring hists
 	+ In 'make_tree' mode: Tree containing DataPidNew  (see DataPidNew for Tree's structure)
+
+[06-27-16] Added 'gpart' and 'stat[ntrk]' to output Tree in order to debug SS-bands due to
+           gpart-pid*stat-pid
 *******************************************************/
 
 class ProcPidNew : public EpProcessor
@@ -166,7 +169,7 @@ void ProcPidNew::handle()
 					dpid->id[itrk]=PROTON;
 					dpid->h10IdxP=dpid->h10_idx[itrk];
 					dH10->id[dpid->h10_idx[itrk]]=PROTON;
-				}else if (!found_pip && dpid->dc[itrk]>0 &&  dpid->sc[itrk]>0 && _pid_tool->is_pip(dpid->dt_pip[itrk],dpid->p[itrk])){
+				}else if (!found_pip && _pid_tool->is_pip(dpid->dt_pip[itrk],dpid->p[itrk])){
 					found_pip=kTRUE;
 					hevtsum->Fill(EVT_PIP_FOUND);
 					dpid->id[itrk]=PIP;
@@ -229,16 +232,20 @@ void ProcPidNew::updatePidNew()
 	Float_t t_off=t_e-(l_e/SOL);
 
 	//! Copy data into Branch variables
+	//! directly measured quantities for e-
 	dpid->l_e=l_e;
 	dpid->t_e=t_e;
 	dpid->t_off=t_off;
-	
+	//!gpart (should be equal to ntrk)
+	dpid->gpart=dH10->gpart;
+	//! update ntrk and measured quantities for ntrk
 	for (Int_t i=1;i<dH10->gpart;i++) {
 		if (dH10->q[i]==1 || dH10->q[i]==-1){
 			//! Directly measured quantities
 			Int_t q=dH10->q[i];
 			Int_t dc=dH10->dc[i];
 			Int_t sc=dH10->sc[i];
+			Int_t stat=dH10->stat[i];
 			Float_t p=dH10->p[i];
 			Float_t l=dH10->sc_r[dH10->sc[i]-1];
 			Float_t t=dH10->sc_t[dH10->sc[i]-1];
@@ -260,6 +267,7 @@ void ProcPidNew::updatePidNew()
 			dpid->q[dpid->ntrk-1]=q;
 			dpid->dc[dpid->ntrk-1]=dc;
 			dpid->sc[dpid->ntrk-1]=sc;
+			dpid->stat[dpid->ntrk-1]=stat;
 			dpid->q[dpid->ntrk-1]=q;
 			dpid->p[dpid->ntrk-1]=p;
 			dpid->l[dpid->ntrk-1]=l;

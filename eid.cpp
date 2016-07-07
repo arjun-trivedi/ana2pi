@@ -96,6 +96,17 @@ Eid::Eid(char* eidParFileName)
 	_Vmax=375;//MG:375,EI:360,YT:370,EP:375,RP:360
 	_Wmin=0,
 	_Wmax=410;//MG:410,EI:390,YT:405,EP:410,RP:395
+
+	//! *** Following added on [07-06-16] ***
+	//! + For E16 only!
+	//! + Taken from elast_lite/constants.h::namespace E16
+	//! + Note that the values for these cuts are the same for exp and sim
+	for (int isector=0;isector<6;isector++){
+		_ECin_min[isector]=0.06;
+		_zvtx_min[isector]=-8.0;
+		_zvtx_max[isector]=-0.8;
+	}
+	//! ******
 }
 
 Eid::~Eid()
@@ -154,3 +165,19 @@ void Eid::DrawSFcuts(int sector){
 	_fpol3Low[isctr]->Draw("sames");
 	_fpol3High[isctr]->Draw("sames");
 }
+
+//! *** Following added on [07-06-16] ***
+//! + For E16 only!
+//! + Taken from elast_lite/constants.h::namespace E16
+//! + Note that the values for these cuts are the same for exp and sim
+//! + Taken directly from h10looper_e1f.h/.cpp
+bool Eid::pass_ECin_min(int sctr, float ec_ei){
+	return (ec_ei>_ECin_min[sctr-1]);
+}
+
+bool Eid::pass_zvtx(int sctr, float zvtx){
+	bool ret=kFALSE;
+	ret=zvtx>_zvtx_min[sctr-1] && zvtx<_zvtx_max[sctr-1];
+	return ret;
+}
+//! *******

@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-0}
+$SUBSTUDIES/study_SS_bands/make_dSSbands ER $nentries

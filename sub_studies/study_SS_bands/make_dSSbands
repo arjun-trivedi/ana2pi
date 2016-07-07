@@ -1,0 +1,29 @@
+#!/bin/bash
+seq=$1
+nentries=${2:-0}
+
+#! Check if input data is ok
+if [ $seq != 'ER' ] && [ $seq != 'SR' ];then
+  echo "seq=$seq is not valid"
+  exit
+fi
+
+#-- Now setup other params
+#-- Do $seq related setup
+if [ $seq == 'ER' ]; then
+  dtyp="exp"
+elif [ $seq == 'SR' ]; then
+  dtyp="sim"
+fi
+
+#-- procorder
+# + 'mom' is not required (anyway, for now, ER_NPCORR agrees best with SR_NPCORR)
+procorder='eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG'
+
+echo "seq="$seq
+echo "dtyp="$dtyp
+echo "procorder="$procorder
+echo "nentries="$nentries
+
+echo ">proc_h10 -i h10$seq.lst -t e16:$dtyp:2pi  -p $procorder -o d2piR.root -n $nentries"
+proc_h10 -i h10$seq.lst -t e16:$dtyp:2pi  -p $procorder -o d2piR.root -n $nentries

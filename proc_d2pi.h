@@ -172,7 +172,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 			//AddBranches(_tR);
 			dAna->addBranches_DataEid(_tR);
 			dAna->addBranches_DataEkin(_tR);
-			//dAna->addBranches_DataPidNew(_tR);
+			dAna->addBranches_DataPidNew(_tR);
 			dAna->addBranches_Data2pi(_tR);
 		}
 	}
