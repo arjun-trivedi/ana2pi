@@ -13,6 +13,8 @@
 #include "data_pid.h"
 #include "data_pid_new.h"
 #include "data_peff.h"
+#include "data_eff.h"
+#include "data_scpd.h"
 #include "data_pid_elast.h"
 #include "data_pid_elast_new.h"
 #include "data_ekin.h"
@@ -44,6 +46,8 @@ public:
 	DataPid pid;
 	DataPidNew pidnew;
 	DataPEff peff;
+	DataEff eff;
+	DataScpd scpd;
 	DataPidElast pid_elast;
 	DataPidElastNew pid_elastnew;
 	DataMom mom;

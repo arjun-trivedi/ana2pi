@@ -39,6 +39,8 @@ void DataAna::Clear()
 	pid.Clear();
 	pidnew.Clear();
 	peff.Clear();
+	eff.Clear();
+	scpd.Clear();
 	pid_elast.Clear();
 	pid_elastnew.Clear();
 	eKin.Clear();
@@ -1522,7 +1524,7 @@ void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("nphe",&eid.nphe);
 	t->Branch("cc_segm",&eid.cc_segm);
 	t->Branch("cc_theta",&eid.cc_theta);
-	//t->Branch("top",&d2pi.top); //! [06-30-16] Why was this here!
+	t->Branch("top",&d2pi.top); //! [07-15-16] Needed for study_eid 
 }
 
 void DataAna::addBranches_DataEkin(TTree* t,Bool_t useMc/*=kFALSE*/){

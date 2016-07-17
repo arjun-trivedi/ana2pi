@@ -25,6 +25,16 @@
 + Added objects to monitor zvtx corr (which was added on 01-17-16)
 */
 
+/*
+[07-15-16]
++ Added options to not apply cuts that need to be studied.
++ Currently the only 3 cuts (*nphe is excluded for now*) that need to be, and have been, studied are ECfid, zvtx, and SF.
+	+ 1. ECfid: added user option '_study_ECfid' (Note if applied ECfid-cut=E1F values)
+	+ 2. zvtx:  added used option '_study_zvtx'
+	+ 3. SF:    this already has its own specialized processor 'study_eid_play.h', which was made earlier, before I though
+	            of this new way.
+*/
+
 using namespace TMath;
 using namespace ParticleConstants;
 using namespace AnalysisConstants;
@@ -33,7 +43,7 @@ class ProcEid : public EpProcessor
 {
 public:
 	ProcEid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-		    Bool_t make_tree=kFALSE);
+		    Bool_t make_tree=kFALSE, bool study_ECfid=kFALSE,bool study_zvtx=kFALSE);
 	ProcEid(DataH10* dataH10,DataAna* dataAna);
 	~ProcEid();
 	
@@ -63,10 +73,12 @@ protected:
 	       EVT_DCSTAT1, EVT_ECLOW1, EVT_ECFID, EVT_ECIN_MIN, EVT_ZVTX, EVT_SF, EVT_BOS11
 	     };
 	bool _make_tree;
+	bool _study_ECfid;
+	bool _study_zvtx;
 };
 
 ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna, 
-                 Bool_t make_tree/* = kFALSE*/)
+                 Bool_t make_tree/* = kFALSE*/,bool study_ECfid/*=kFALSE*/,bool study_zvtx/*=kFALSE*/)
                  :EpProcessor(td, dataH10, dataAna)
 {
 	TString path;
@@ -85,6 +97,17 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	}
 	
 	_make_tree=make_tree;
+	_study_ECfid=study_ECfid;
+	_study_zvtx=study_zvtx;
+
+	if (_study_ECfid){
+		Info("ProcEid::ProcEid()", "_study_ECfid=kTRUE, therefore this cut will not be applied");
+	}
+	if (_study_zvtx){
+		Info("ProcEid::ProcEid()", "_study_zvtx=kTRUE, therefore this cut will not be applied");
+	}
+
+
 	_dirmon=NULL;
 	_dirzvtxcorr=NULL;
 	_dircut=NULL;
@@ -268,12 +291,12 @@ Bool_t ProcEid::goodE(){
 										if (_eidTool->PassThreshold(eid->p)) {
 											hevtsum->Fill(EVT_ECLOW1);
 											float uvw[3]={eid->ecU,eid->ecV,eid->ecW};
-											if (_eidTool->PassECFid(uvw)){
+											if ( (_study_ECfid) || (!_study_ECfid && _eidTool->PassECFid(uvw)) ){
 												hevtsum->Fill(EVT_ECFID);
 												Int_t sector = eid->sector;
 												if ( (dH10->expt!="e16") || (dH10->expt=="e16" && _eidTool->pass_ECin_min(sector,eid->ec_ei)) ){
 													hevtsum->Fill(EVT_ECIN_MIN);
-													if ( (dH10->expt!="e16") || (dH10->expt=="e16" && _eidTool->pass_zvtx(sector, eid->vz)) ){
+													if ( (dH10->expt!="e16" || _study_zvtx) || (dH10->expt=="e16" && !_study_zvtx && _eidTool->pass_zvtx(sector, eid->vz)) ){
 														hevtsum->Fill(EVT_ZVTX);
 														Float_t p = eid->p;
 														Float_t sf = eid->etot/p;

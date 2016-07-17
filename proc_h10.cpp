@@ -28,6 +28,8 @@
 #include "proc_copy_h10.h"
 #include "proc_skim_h10.h"
 #include "proc_lum.h"
+#include "proc_eff.h"
+#include "proc_scpd.h"
 
 #include <TChain.h>
 #include <TFileCollection.h>
@@ -233,6 +235,8 @@ EpProcessor* SetupProcs(){
          TString str = obj_str->GetString();
          if (str.EqualTo("eid"))             proc = new ProcEid(mkdir("eid"),dH10,dAna);
          else if (str.EqualTo("eid_tree")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
+         else if (str.EqualTo("eid_tree_study_ECfid")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
+         else if (str.EqualTo("eid_tree_study_zvtx")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kFALSE,kTRUE);
          /*else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("eidplay"))             proc = new ProcEidPlay(mkdir("eid"),dH10,dAna);
@@ -274,6 +278,10 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("pfidelastnew"))       proc = new ProcPFidElastNew(mkdir("pfidelast"),dH10,dAna);
          else if (str.EqualTo("peff"))       proc = new ProcPEff(mkdir("peff"),dH10,dAna);
          else if (str.EqualTo("peffnew"))       proc = new ProcPEffNew(mkdir("peff"),dH10,dAna);
+         else if (str.EqualTo("eff"))       proc = new ProcEff(mkdir("eff"),dH10,dAna);
+         else if (str.EqualTo("eff_atmod"))       proc = new ProcEff(mkdir("eff"),dH10,dAna,kFALSE,kFALSE,kTRUE);
+         else if (str.EqualTo("scpd"))       proc = new ProcScpd(mkdir("scpd"),dH10,dAna);
+         else if (str.EqualTo("scpd_atmod"))       proc = new ProcScpd(mkdir("scpd"),dH10,dAna,kFALSE,kFALSE,kTRUE);
          else if (str.EqualTo("pidelast"))   	  proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna);
          else if (str.EqualTo("pidelastmon"))     proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE);
          else if (str.EqualTo("pidelastmononly")) proc = new ProcPidElast(mkdir("pidelast"),dH10,dAna,kTRUE,kTRUE);

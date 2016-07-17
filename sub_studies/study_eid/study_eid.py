@@ -35,9 +35,9 @@ import math
 			+ theta_vs_seg 
 			+ nphe
 
-+ Usage: study_eid.py expt=<e1f/e16> top[=2] debug[=False]
++ Usage: study_eid.py expt=<e1f/e16> top[=2] use_deid_w_eff_scpd=[True] debug[=False]
 '''
-USAGE="study_eid.py expt=<e1f/e16> top[=2] debug[=False]"
+USAGE="study_eid.py expt=<e1f/e16> top[=2] use_deid_w_eff_scpd=[True] debug[=False]"
 #! *** Get arguments from user *** #!
 if len(sys.argv)<2:
 		sys.exit('usage: %s'%USAGE)
@@ -56,11 +56,21 @@ if TOP<1 or TOP>4:
         sys.exit("Valid tops=1,2,3 or 4")
 print "TOP=",TOP
 
+USE_DEID_W_EFF_SCPD=True
+if len(sys.argv)>3: #! i.e. use_deid_w_eff_scpd entered by user
+	if sys.argv[3]=="True":
+		USE_DEID_W_EFF_SCPD=True
+	elif sys.argv[3]=="False":
+		USE_DEID_W_EFF_SCPD=False
+	else:
+		sys.exit("Please enter use_deid_w_eff_scpd as True/False only.")
+print "USE_DEID_W_EFF_SCPD=",USE_DEID_W_EFF_SCPD
+
 DEBUG=False
-if len(sys.argv)>3: #! i.e. debug entered by user
-        if sys.argv[3]=="True":
+if len(sys.argv)>4: #! i.e. debug entered by user
+        if sys.argv[4]=="True":
                 DEBUG=True
-        elif sys.argv[3]=="False":
+        elif sys.argv[4]=="False":
                 DEBUG=False
         else:
                 sys.exit("Please enter debug as True/False only.")
@@ -118,6 +128,8 @@ if expt=="e1f":
 	DATADIR_OUTPUT=os.environ['STUDY_EID_E1F']
 elif expt=="e16":
 	DATADIR_OUTPUT=os.environ['STUDY_EID_E16']
+if USE_DEID_W_EFF_SCPD:
+	DATADIR_OUTPUT+="/w_eff_scpd"
 print "DATADIR_OUTPUT=",DATADIR_OUTPUT
 #! ***
 
@@ -125,11 +137,16 @@ print "DATADIR_OUTPUT=",DATADIR_OUTPUT
 DATADIR_INPUT=[[] for i in range(NDTYP)]
 sfx=''
 if expt=='e16':sfx='_E16'
-DATADIR_INPUT[ER]=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],"data_eid_020816")
-DATADIR_INPUT[SR]=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],"data_eid_020816")
+if USE_DEID_W_EFF_SCPD:
+	DATADIR_INPUT[ER]=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],"data_eid_w_eff_scpd_071516")
+	DATADIR_INPUT[SR]=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],"data_eid_w_eff_scpd_071516")
+else:
+	DATADIR_INPUT[ER]=os.path.join(os.environ['D2PIDIR_EXP%s'%sfx],"data_eid_020816")
+	DATADIR_INPUT[SR]=os.path.join(os.environ['D2PIDIR_SIM%s'%sfx],"data_eid_020816")
 
 print "DATADIR_INPUT[ER]=",DATADIR_INPUT[ER]
 print "DATADIR_INPUT[SR]=",DATADIR_INPUT[SR]
+#sys.exit()
 
 for idtyp,icutlvl in zip(range(NDTYP),range(NCUTLVL)):
 	print "Getting FIN,T for",DTYP_NAME[idtyp]
@@ -237,7 +254,10 @@ for iq2wb,q2wbin_le in enumerate(DLE):
 		cutlvl=CUTLVL_NAME[icutlvl]
 		plt=PLT_NAME[iplt]
 		#! Make TCut: begin by creating with Q2,W cut
-		cut_q2w=ROOT.TCut("Q2>%f && Q2<%f && W>%f && W<%f"%(q2min,q2max,wmin,wmax))
+		if USE_DEID_W_EFF_SCPD: #! because I renamed, at some point,  eid TTree's Q2,W -> ekin_Q2,ekin_W
+			cut_q2w=ROOT.TCut("ekin_Q2>%f && ekin_Q2<%f && ekin_W>%f && ekin_W<%f"%(q2min,q2max,wmin,wmax))
+		else:
+			cut_q2w=ROOT.TCut("Q2>%f && Q2<%f && W>%f && W<%f"%(q2min,q2max,wmin,wmax))
 		cut=ROOT.TCut(cut_q2w)
 		#! Add cut_sector
 		cut_sctr=ROOT.TCut("sector==%d"%sctr)
@@ -271,6 +291,52 @@ fname="eid"
 if DEBUG:
 	fname+="_dbg"
 fout_root=ROOT.TFile("%s/%s.root"%(outdir,fname),"RECREATE")
+
+#! TLINES for cut on U,V and W
+NECFIDCUTS=2 #! EI and AT
+EI,AT=range(2)
+EC_U_MIN=[0 for i in range(NECFIDCUTS)]
+EC_U_MAX=[0 for i in range(NECFIDCUTS)]
+EC_V_MIN=[0 for i in range(NECFIDCUTS)]
+EC_V_MAX=[0 for i in range(NECFIDCUTS)]
+EC_W_MIN=[0 for i in range(NECFIDCUTS)]
+EC_W_MAX=[0 for i in range(NECFIDCUTS)]
+U_CUTL=[0 for i in range(NECFIDCUTS)]
+U_CUTH=[0 for i in range(NECFIDCUTS)]
+V_CUTL=[0 for i in range(NECFIDCUTS)]
+V_CUTH=[0 for i in range(NECFIDCUTS)]
+W_CUTL=[0 for i in range(NECFIDCUTS)]
+W_CUTH=[0 for i in range(NECFIDCUTS)]
+#! fill EI values
+EC_U_MIN[EI],EC_U_MAX[EI]=40,9999
+EC_V_MIN[EI],EC_V_MAX[EI]=0,360
+EC_W_MIN[EI],EC_W_MAX[EI]=0,390
+#! fill AT values
+EC_U_MIN[AT],EC_U_MAX[AT]=20,400
+EC_V_MIN[AT],EC_V_MAX[AT]=0,375
+EC_W_MIN[AT],EC_W_MAX[AT]=0,410
+#! setup cut lines
+for i in range(NECFIDCUTS):
+	if   i==EI:linecolor=ROOT.gROOT.ProcessLine("kRed")
+	elif i==AT:linecolor=ROOT.gROOT.ProcessLine("kBlue")
+	U_CUTL[i]=ROOT.TLine(EC_U_MIN[i],0,EC_U_MIN[i],0)
+	U_CUTH[i]=ROOT.TLine(EC_U_MAX[i],0,EC_U_MAX[i],0)
+	U_CUTL[i].SetLineWidth(3)
+	U_CUTL[i].SetLineColor(linecolor)
+	U_CUTH[i].SetLineWidth(3)
+	U_CUTH[i].SetLineColor(linecolor)
+	V_CUTL[i]=ROOT.TLine(EC_V_MIN[i],0,EC_V_MIN[i],0)
+	V_CUTH[i]=ROOT.TLine(EC_V_MAX[i],0,EC_V_MAX[i],0)
+	V_CUTL[i].SetLineWidth(3)
+	V_CUTL[i].SetLineColor(linecolor)
+	V_CUTH[i].SetLineWidth(3)
+	V_CUTH[i].SetLineColor(linecolor)
+	W_CUTL[i]=ROOT.TLine(EC_W_MIN[i],0,EC_W_MIN[i],0)
+	W_CUTH[i]=ROOT.TLine(EC_W_MAX[i],0,EC_W_MAX[i],0)
+	W_CUTL[i].SetLineWidth(3)
+	W_CUTL[i].SetLineColor(linecolor)
+	W_CUTH[i].SetLineWidth(3)
+	W_CUTH[i].SetLineColor(linecolor)
 
 #! CWDTH,CHGHT defined as per 3,2 TCanvas
 CWDTH=500
@@ -318,6 +384,36 @@ for iq2wb,q2wbin_le in enumerate(DLE):
 				if scl_fctr_SR==0:scl_fctr_SR=1
 				heid[SR][iq2wb][isctr][icutlvl][iplt].Scale(scl_fctr_SR)
 				heid[SR][iq2wb][isctr][icutlvl][iplt].Draw("sames %s"%draw_opt)
+
+				#! Draw cut line if plot = ecU,ecV, or ecW
+				#! Get ymin and ymax to be used for cut lines
+				if plt=="ecU" or plt=="ecV" or plt=="ecW":
+					ymin_cut=heid[ER][iq2wb][isctr][icutlvl][iplt].GetMinimum()
+					ymax_cut=heid[ER][iq2wb][isctr][icutlvl][iplt].GetMaximum()
+					if plt=="ecU":
+						for i in range(NECFIDCUTS):
+							U_CUTL[i].SetY1(ymin_cut)
+							U_CUTL[i].SetY2(ymax_cut)
+							U_CUTH[i].SetY1(ymin_cut)
+							U_CUTH[i].SetY2(ymax_cut)
+							U_CUTL[i].Draw("same")
+							U_CUTH[i].Draw("same")
+					elif plt=="ecV":
+						for i in range(NECFIDCUTS):
+							V_CUTL[i].SetY1(ymin_cut)
+							V_CUTL[i].SetY2(ymax_cut)
+							V_CUTH[i].SetY1(ymin_cut)
+							V_CUTH[i].SetY2(ymax_cut)
+							V_CUTL[i].Draw("same")
+							V_CUTH[i].Draw("same")
+					elif plt=="ecW":		
+						for i in range(NECFIDCUTS):
+							W_CUTL[i].SetY1(ymin_cut)
+							W_CUTL[i].SetY2(ymax_cut)
+							W_CUTH[i].SetY1(ymin_cut)
+							W_CUTH[i].SetY2(ymax_cut)
+							W_CUTL[i].Draw("same")
+							W_CUTH[i].Draw("same")
 						
 				#! Adjust statbox
 				#c.Update()

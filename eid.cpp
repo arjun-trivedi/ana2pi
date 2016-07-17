@@ -89,7 +89,7 @@ Eid::Eid(char* eidParFileName)
 	_f.close();
 
 	//! Eid cut parameters directly entered
-	//! [07-16-15] UVW cut parms. obtained from study_eid/hists/Wlt1/evtsel
+	//! [07-16-15] UVW cut parms. obtained from constants.h::E1F
 	_Umin=20; //MG:20,EI:40,YT:40,EP:20,RP:60
 	_Umax=400;
 	_Vmin=0;
