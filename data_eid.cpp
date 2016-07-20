@@ -32,5 +32,6 @@ void DataEid::Clear()
 	cc=0;
 	nphe=0;
 	cc_segm=0;
+	pmt=-9999; //! since 0 is a valid data value (both L and R PMT fired)
 	cc_theta=0;
 }

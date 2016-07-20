@@ -235,8 +235,10 @@ EpProcessor* SetupProcs(){
          TString str = obj_str->GetString();
          if (str.EqualTo("eid"))             proc = new ProcEid(mkdir("eid"),dH10,dAna);
          else if (str.EqualTo("eid_tree")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
-         else if (str.EqualTo("eid_tree_study_ECfid")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);
-         else if (str.EqualTo("eid_tree_study_zvtx")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kFALSE,kTRUE);
+         else if (str.EqualTo("eid_tree_study_ECfid")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE,kFALSE,kFALSE);
+         else if (str.EqualTo("eid_tree_study_zvtx"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kFALSE,kTRUE,kFALSE);
+         else if (str.EqualTo("eid_tree_study_nphe"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kFALSE,kFALSE,kTRUE);
+         else if (str.EqualTo("eid_study_nphe"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kFALSE,kFALSE,kFALSE,kTRUE);
          /*else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("eidplay"))             proc = new ProcEidPlay(mkdir("eid"),dH10,dAna);

@@ -36,6 +36,7 @@ public:
 	Int_t cc;
 	Int_t nphe;
 	Int_t cc_segm;
+	Int_t pmt;
 	Float_t cc_theta;
 };
 

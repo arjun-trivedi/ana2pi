@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-0}
+$SUBSTUDIES/study_eid/study_nphe_e16/make_dnphe sim nnphe $nentries

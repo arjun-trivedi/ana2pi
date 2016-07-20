@@ -43,7 +43,7 @@ class ProcEid : public EpProcessor
 {
 public:
 	ProcEid(TDirectory *td,DataH10* dataH10,DataAna* dataAna, 
-		    Bool_t make_tree=kFALSE, bool study_ECfid=kFALSE,bool study_zvtx=kFALSE);
+		    Bool_t make_tree=kFALSE, bool study_ECfid=kFALSE,bool study_zvtx=kFALSE, bool study_nphe=kFALSE);
 	ProcEid(DataH10* dataH10,DataAna* dataAna);
 	~ProcEid();
 	
@@ -67,18 +67,19 @@ protected:
 	//! _hzvtxcorr[6][2] for zvtxcorr monitoring, before and after cut
     TH1F*** _hzvtxcorr;
 				
-	static const Int_t NUM_EVTCUTS = 15;
+	static const Int_t NUM_EVTCUTS = 16;
 	enum { EVT_NULL, EVT_TRIG, EVT_GPART1, EVT_STAT1, EVT_Q1,
-	       EVT_DC1, EVT_CC1, EVT_SC1, EVT_EC1,
+	       EVT_DC1, EVT_CC1, EVT_SC1, EVT_EC1, EVT_NPHE,
 	       EVT_DCSTAT1, EVT_ECLOW1, EVT_ECFID, EVT_ECIN_MIN, EVT_ZVTX, EVT_SF, EVT_BOS11
 	     };
 	bool _make_tree;
 	bool _study_ECfid;
 	bool _study_zvtx;
+	bool _study_nphe;
 };
 
 ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna, 
-                 Bool_t make_tree/* = kFALSE*/,bool study_ECfid/*=kFALSE*/,bool study_zvtx/*=kFALSE*/)
+                 Bool_t make_tree/* = kFALSE*/,bool study_ECfid/*=kFALSE*/,bool study_zvtx/*=kFALSE*/,bool study_nphe/*=kFALSE*/)
                  :EpProcessor(td, dataH10, dataAna)
 {
 	TString path;
@@ -99,12 +100,16 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	_make_tree=make_tree;
 	_study_ECfid=study_ECfid;
 	_study_zvtx=study_zvtx;
+	_study_nphe=study_nphe;
 
 	if (_study_ECfid){
 		Info("ProcEid::ProcEid()", "_study_ECfid=kTRUE, therefore this cut will not be applied");
 	}
 	if (_study_zvtx){
 		Info("ProcEid::ProcEid()", "_study_zvtx=kTRUE, therefore this cut will not be applied");
+	}
+	if (_study_nphe){
+		Info("ProcEid::ProcEid()", "_study_nphe=kTRUE, therefore this cut will not be applied");
 	}
 
 
@@ -123,6 +128,7 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_CC1,"CC");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SC1,"SC");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_EC1,"EC");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_NPHE,"NPHE");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_DCSTAT1,"dc_stat>0");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECLOW1,"EC Threshold");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ECFID,"EC Fid.");
@@ -130,6 +136,7 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
 	hevtsum->GetXaxis()->SetBinLabel(EVT_ZVTX,"pass zvrtx");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_SF,"SF");
 	hevtsum->GetXaxis()->SetBinLabel(EVT_BOS11,"EVNT.id=11");
+	hevtsum->SetMinimum(0.);
 
 	//! Make monitor output objects
 	_dirmon = dirout->mkdir(TString::Format("monitor"));
@@ -284,8 +291,8 @@ Bool_t ProcEid::goodE(){
 							hevtsum->Fill(EVT_SC1);
 							if (dH10->ec[0]>0) {
 								hevtsum->Fill(EVT_EC1);
-								//if(dH10->nphe[dH10->cc[0]-1]>20 || dH10->dtyp=="sim"){
-									//hevtsum->Fill(EVT_NPHE20);
+								if( (_study_nphe) || (!_study_nphe && (dH10->nphe[dH10->cc[0]-1]>20 || dH10->dtyp=="sim")) ){
+									hevtsum->Fill(EVT_NPHE);
 									if (dH10->dc_stat[dH10->dc[0]-1]>0) {
 										hevtsum->Fill(EVT_DCSTAT1);
 										if (_eidTool->PassThreshold(eid->p)) {
@@ -312,7 +319,7 @@ Bool_t ProcEid::goodE(){
 											}
 										}
 									}
-								//}
+								}
 							}
 						}
 					}
@@ -403,6 +410,7 @@ void ProcEid::updateEid(){
 	dAna->eid.cc      = dH10->cc[0];
 	dAna->eid.nphe    = dH10->nphe[dH10->cc[0]-1];
 	dAna->eid.cc_segm = (dH10->cc_segm[dH10->cc[0]-1]%1000)/10;
+	dAna->eid.pmt     = (dH10->cc_segm[dH10->cc[0]-1]/1000)-1;
 	//calculate cc_theta
 	Float_t dc_xsc  = dH10->dc_xsc[dH10->dc[0]-1];
 	Float_t dc_ysc  = dH10->dc_ysc[dH10->dc[0]-1];

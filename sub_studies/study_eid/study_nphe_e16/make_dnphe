@@ -1,0 +1,45 @@
+#!/bin/bash
+dtyp=$1
+cut=$2
+nentries=${3:-0}
+
+#! Check if input data is ok
+if [ $dtyp != 'exp' ] && [ $dtyp != 'sim' ];then
+  echo "dtyp=$dtyp is not valid"
+  exit
+fi
+if [ $cut != 'wnphe' ] && [ $cut != 'nnphe' ];then
+  echo "corr=$corr is not valid"
+  exit
+fi
+
+#! setups
+#! seq
+if [ $dtyp == 'exp' ]; then
+  seq='ER'
+elif [ $dtyp == 'sim' ]; then
+  seq='SR'
+fi
+
+#! procorder. Note:
+if [ $cut == 'wnphe' ]; then
+  eid='eid'
+elif [ $cut == 'nnphe' ]; then
+  eid='eid_study_nphe'
+fi
+#! + 'mom' is not applied for ER.
+#!     + This is because no 'mom' exists for SR and when comparing MM distributions to study BG,
+#!       I find it best to not apply 'mom' for both in which case MM can be directly compared.
+#!     + If 'mom' is applied to ER but not SR, MM distribution cannot be directly compared
+#! + 'eff_atmod:scpd_atmod' are not applied since not only do not matter in this study but additionally because
+#!    in ER their parameters are developed to be applied after 'mom', which may have subtle effects
+procorder="$eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG"
+
+echo "dtyp="$dtyp
+echo "cut="$cut
+echo "seq="$seq
+echo "eid="$eid
+echo "procorder="$procorder
+
+echo ">proc_h10 -i h10$seq.lst -t e16:$dtyp:2pi -p $procorder -o dnphe_$cut.root -n $nentries"
+proc_h10 -i h10$seq.lst -t e16:$dtyp:2pi -p $procorder -o dnphe_$cut.root -n $nentries

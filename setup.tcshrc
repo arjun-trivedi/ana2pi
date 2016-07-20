@@ -39,6 +39,7 @@ source ${ANA2PI}/sub_studies/study_acc/setup.tcshrc
 #-- study_eid
 source ${ANA2PI}/sub_studies/study_eid/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_eid/study_SF/setup.tcshrc
+source ${ANA2PI}/sub_studies/study_eid/study_nphe_e16/setup.tcshrc
 #-- study_pid
 source ${ANA2PI}/sub_studies/study_pid/setup.tcshrc
 #-- study_efid

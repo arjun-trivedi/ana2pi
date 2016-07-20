@@ -1523,6 +1523,7 @@ void DataAna::addBranches_DataEid(TTree* t){
 	t->Branch("cc",&eid.cc);
 	t->Branch("nphe",&eid.nphe);
 	t->Branch("cc_segm",&eid.cc_segm);
+	t->Branch("pmt",&eid.pmt);
 	t->Branch("cc_theta",&eid.cc_theta);
 	t->Branch("top",&d2pi.top); //! [07-15-16] Needed for study_eid 
 }

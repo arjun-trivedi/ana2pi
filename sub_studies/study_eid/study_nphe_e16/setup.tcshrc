@@ -1,0 +1,5 @@
+#--
+setenv STUDY_EID_NPHE_E16 "${STUDY_EID}/study_nphe_e16"
+alias study_eid_nphe_e16 'cd ${STUDY_EID_NPHE_E16}'
+
+setenv STUDY_EID_NPHE_E16_DATADIR "/data/trivedia/e16/study_eid/study_nphe"
