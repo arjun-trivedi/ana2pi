@@ -104,6 +104,8 @@ public :
    bool _use_cut_ECfid_at_mod;
    //! MM2_cut_SS //! conservatively chosen to [-0.16,0.16] => MM:[-0.4,0.4]
    bool _use_MM2_cut_SS; //! 19
+   //! CC_cut_eff //! 20
+   bool _use_CC_cut_eff; //! 20
 
    //! char-coded options
    bool _make_h10_skim_e;//! eid+efid; for Reco events
@@ -173,6 +175,8 @@ public :
    TH1F*** _hzvtxcut; //!_hzvtxcut[6][2]
    //! _hsf[6][2], SF for each sector, before and after cut
    TH2F*** _hsf;
+   //! CC cut eff[sct][sgm][pmt]
+   float*** _CC_cut_eff; 
    
    //! EFID
    static const int NUM_EFID_STATS=2;
@@ -625,6 +629,7 @@ public :
    void setup_cutsncors(TString cutsncors);
 
    void setup_eid_cutpars(TString dtyp);
+   void setup_eid_CC_cut_eff();
    void setup_adtnl_opts(TString adtnl_opts);
 
    bool pass_eid();

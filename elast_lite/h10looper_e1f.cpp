@@ -6,6 +6,8 @@
 #include <TCanvas.h>
 #include <TMath.h>
 
+#include <fstream>
+
 #include "mom_corr.cpp"
 #include "fidfuncs.C"         //! EP_EFID
 #include "wrpr_cut_fid_e16.h" //! EI_EFID
@@ -377,6 +379,7 @@ h10looper_e1f::~h10looper_e1f()
 	delete[] _hsf;
 	delete[] _hzvtxcorr;
 	delete[] _hzvtxcut;
+	delete[] _CC_cut_eff;
 	
 	delete _hevt;
 	delete _heid;
@@ -536,6 +539,71 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 			}
 		}
 	}
+	//! CC cut eff
+	if (_use_CC_cut_eff && dtyp=="exp" && _expt=="e16"){
+		setup_eid_CC_cut_eff();
+	}
+}
+
+void h10looper_e1f::setup_eid_CC_cut_eff(){
+	//Info("h10looper_e1f::setup_eid_CC_cut_eff()","");
+
+	//! First set create _CC_cut_eff initialized to 0s
+	_CC_cut_eff=new float**[6];
+	for (int isct=0;isct<6;isct++){
+		_CC_cut_eff[isct]=new float*[18];
+		for (int isgm=0;isgm<18;isgm++){
+			_CC_cut_eff[isct][isgm]=new float[2];
+			for (int ipmt=0;ipmt<2;ipmt++){
+				_CC_cut_eff[isct][isgm][ipmt]=0;
+      		}
+    	}
+	}
+
+	//! Now fill structure with data from file
+	ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_eff.txt");
+	if (!f){
+		Info("h10looper_e1f::setup_eid_CC_cut_eff()","Cannot open file to read CC efficiency data");
+	} 
+	
+ 	int iline=0;
+	while(f) {
+		char str[255];
+		f.getline(str, 255);  // delim defaults to '\n'
+		if(f.eof()) break;
+		//!Info("h10looper_e1f::setup_eid_CC_cut_eff()","line# %d: %s",iline+1,str);
+			
+		int iword=0;
+		int sct=-9999,sgm=-9999,pmt=-9999;
+		float eff=-9999;
+		char *word = strtok(str, " ");
+		while (word) {
+			//printf ("Token: %s\n", word);
+			if      (iword==0) {sct=atoi(word);}
+      		else if (iword==1) {sgm=atoi(word);}
+			else if (iword==2) {pmt=atoi(word);}
+			else if (iword==3) {eff=atof(word);}
+			word=strtok(NULL, " ");
+			iword+=1;
+		}
+		//Info("h10looper_e1f::setup_eid_CC_cut_eff()","sct:sgm:pmt:eff=%d:%d:%d:%f",sct,sgm,pmt,eff);
+		_CC_cut_eff[sct-1][sgm-1][pmt-1]=eff;
+
+		iline+=1;
+	}
+	f.close();
+
+	//! To check integrity of data read from file 
+	ofstream ftest("/tmp/CC_cut_eff.txt");
+	for (int isct=0;isct<6;isct++){
+		for (int isgm=0;isgm<18;isgm++){
+ 			for (int ipmt=0;ipmt<2;ipmt++){
+				ftest <<isct+1<<" "<<isgm+1<<" "<<ipmt+1<<" "<<_CC_cut_eff[isct][isgm][ipmt]<<endl;
+      		}
+    	}
+  	}
+
+
 }
 
 void h10looper_e1f::Loop(){
@@ -1460,6 +1528,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     _use_cut_ECfid_at_mod=kFALSE;
     //! MM2_cut_SS
 	_use_MM2_cut_SS=kFALSE;
+	//! CC_cut_eff
+	_use_CC_cut_eff=kFALSE;
 
 	_make_h10_skim_e=kFALSE;
 	_make_h10_skim_SS=kFALSE;
@@ -1488,6 +1558,7 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":17:")) _use_eff_scpd_at_mod=kTRUE;
 	if (adtnl_opts.Contains(":18:")) _use_cut_ECfid_at_mod=kTRUE;
 	if (adtnl_opts.Contains(":19:")) _use_MM2_cut_SS=kTRUE;
+	if (adtnl_opts.Contains(":20:")) _use_CC_cut_eff=kTRUE;
 	//! char-coded options
 	if (adtnl_opts.Contains(":h10-skim-e:"))    _make_h10_skim_e=kTRUE;
 	if (adtnl_opts.Contains(":h10-skim-SS:"))   _make_h10_skim_SS=kTRUE;
@@ -1528,6 +1599,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     if(_use_cut_ECfid_at_mod) Info("","use_cut_ECfid_at_mod");
     //! MM2_cut_SS
 	if(_use_MM2_cut_SS) Info("","use_MM2_cut_SS");
+	//! CC_cut_eff
+	if(_use_CC_cut_eff) Info("","use_CC_cut_eff");
 
 	if(_make_h10_skim_e)   Info("","make_h10_skim_e");
 	if(_make_h10_skim_SS)  Info("","make_h10_skim_SS");
