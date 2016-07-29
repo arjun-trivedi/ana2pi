@@ -175,8 +175,12 @@ public :
    TH1F*** _hzvtxcut; //!_hzvtxcut[6][2]
    //! _hsf[6][2], SF for each sector, before and after cut
    TH2F*** _hsf;
+   //! CC cut values[sct][sgm]
+   float** _CC_cut_val;
    //! CC cut eff[sct][sgm][pmt]
    float*** _CC_cut_eff; 
+   //! CC cut wgt[sct][sgm][pmt]
+   float*** _CC_cut_wgt;
    
    //! EFID
    static const int NUM_EFID_STATS=2;
@@ -629,7 +633,9 @@ public :
    void setup_cutsncors(TString cutsncors);
 
    void setup_eid_cutpars(TString dtyp);
+   void setup_eid_CC_cut_val();
    void setup_eid_CC_cut_eff();
+   void setup_eid_CC_cut_wgt();
    void setup_adtnl_opts(TString adtnl_opts);
 
    bool pass_eid();

@@ -379,7 +379,9 @@ h10looper_e1f::~h10looper_e1f()
 	delete[] _hsf;
 	delete[] _hzvtxcorr;
 	delete[] _hzvtxcut;
+	delete[] _CC_cut_val;
 	delete[] _CC_cut_eff;
+	delete[] _CC_cut_wgt;
 	
 	delete _hevt;
 	delete _heid;
@@ -541,13 +543,70 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 	}
 	//! CC cut eff
 	if (_use_CC_cut_eff && dtyp=="exp" && _expt=="e16"){
+		setup_eid_CC_cut_val();
 		setup_eid_CC_cut_eff();
 	}
+}
+
+void h10looper_e1f::setup_eid_CC_cut_val(){
+	//Info("h10looper_e1f::setup_eid_CC_cut_val()","");
+
+	//! _CC_cut_val
+	//! First set create _CC_cut_val initialized to 0s
+	_CC_cut_val=new float*[6];
+	for (int isct=0;isct<6;isct++){
+		_CC_cut_val[isct]=new float[18];
+		for (int isgm=0;isgm>18;isgm++){
+			_CC_cut_val[isct][isgm]=0;
+		}
+	}
+
+	//! Now fill structure with data from file
+	ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_cut.txt");
+	if (!f){
+		Info("h10looper_e1f::setup_eid_CC_cut_val()","Cannot open file elast_lite/eid_e16_exp_nphe_cut.txt");
+	} 
+	
+ 	int iline=0;
+	while(f) {
+		char str[255];
+		f.getline(str, 255);  // delim defaults to '\n'
+		if(f.eof()) break;
+		//!Info("h10looper_e1f::setup_eid_CC_cut_val()","line# %d: %s",iline+1,str);
+			
+		int iword=0;
+		int sct=-9999,sgm=-9999;
+		float val=-9999;
+		char *word = strtok(str, " ");
+		while (word) {
+			//printf ("Token: %s\n", word);
+			if      (iword==0) {sct=atoi(word);}
+      		else if (iword==1) {sgm=atoi(word);}
+			else if (iword==2) {val=atoi(word);}
+			word=strtok(NULL, " ");
+			iword+=1;
+		}
+		//Info("h10looper_e1f::setup_eid_CC_cut_val()","sct:sgm:pmt:eff=%d:%d:%d:%f",sct,sgm,pmt,eff);
+		_CC_cut_val[sct-1][sgm-1]=val;
+
+		iline+=1;
+	}
+	f.close();
+
+	//! To check integrity of data read from file 
+	ofstream ftest("/tmp/CC_cut_val.txt");
+	for (int isct=0;isct<6;isct++){
+		for (int isgm=0;isgm<18;isgm++){
+ 			ftest <<isct+1<<" "<<isgm+1<<" "<<_CC_cut_val[isct][isgm]<<endl;
+      	}
+  	}
+
 }
 
 void h10looper_e1f::setup_eid_CC_cut_eff(){
 	//Info("h10looper_e1f::setup_eid_CC_cut_eff()","");
 
+	//! _CC_cut_eff
 	//! First set create _CC_cut_eff initialized to 0s
 	_CC_cut_eff=new float**[6];
 	for (int isct=0;isct<6;isct++){
@@ -563,7 +622,7 @@ void h10looper_e1f::setup_eid_CC_cut_eff(){
 	//! Now fill structure with data from file
 	ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_eff.txt");
 	if (!f){
-		Info("h10looper_e1f::setup_eid_CC_cut_eff()","Cannot open file to read CC efficiency data");
+		Info("h10looper_e1f::setup_eid_CC_cut_eff()","Cannot open file elast_lite/eid_e16_exp_nphe_eff.txt");
 	} 
 	
  	int iline=0;
@@ -603,6 +662,40 @@ void h10looper_e1f::setup_eid_CC_cut_eff(){
     	}
   	}
 
+}
+
+void h10looper_e1f::setup_eid_CC_cut_wgt(){
+	//Info("h10looper_e1f::setup_eid_CC_cut_wgt()","");
+
+	//! _CC_cut_wgt
+	//! Initialize usig _CC_cut_eff, except for:
+	//! + sgm=1,18: set weight=0 irrespective of what is in file
+	_CC_cut_wgt=new float**[6];
+	for (int isct=0;isct<6;isct++){
+		_CC_cut_wgt[isct]=new float*[18];
+		for (int isgm=0;isgm<18;isgm++){
+			_CC_cut_wgt[isct][isgm]=new float[2];
+			for (int ipmt=0;ipmt<2;ipmt++){
+				float wgt=0;
+				if (isgm+1!=1 && isgm+1!=18){
+					wgt=1/_CC_cut_eff[isct][isgm][ipmt];
+				}else{
+					wgt=0;
+				}
+				_CC_cut_wgt[isct][isgm][ipmt]=wgt;
+			}
+    	}
+	}
+
+	//! To check integrity of data 
+	ofstream ftest("/tmp/CC_cut_wgt.txt");
+	for (int isct=0;isct<6;isct++){
+		for (int isgm=0;isgm<18;isgm++){
+ 			for (int ipmt=0;ipmt<2;ipmt++){
+				ftest <<isct+1<<" "<<isgm+1<<" "<<ipmt+1<<" "<<_CC_cut_wgt[isct][isgm][ipmt]<<endl;
+      		}
+    	}
+  	}
 
 }
 

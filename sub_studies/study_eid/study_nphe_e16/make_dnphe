@@ -33,7 +33,8 @@ fi
 #!     + If 'mom' is applied to ER but not SR, MM distribution cannot be directly compared
 #! + 'eff_atmod:scpd_atmod' are not applied since not only do not matter in this study but additionally because
 #!    in ER their parameters are developed to be applied after 'mom', which may have subtle effects
-procorder="$eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG"
+#! + [07-26-16] 'q2wskimR' removed: Perhaps it was because of this cut that hnphe for sgms:1,16,17,18 did not have data?
+procorder="$eid:efid:pidnewmon:pfidnew:d2piR_tree_BG" #! procorder="$eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG"
 
 echo "dtyp="$dtyp
 echo "cut="$cut
