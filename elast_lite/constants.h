@@ -45,6 +45,11 @@ const Int_t PHI_CENTRAL_SECTOR[6][2]={
 	{302,304}
 };
 
+//! constants for the CC
+const int CC_NSEGMENTS=18;
+//! The structure should match in study_nphe_e16.py
+const int CC_NPMTS=3;
+enum {IPMT_L,IPMT_C,IPMT_R};
 
 namespace E1F{
 	const Float_t E0_P = 5.499;

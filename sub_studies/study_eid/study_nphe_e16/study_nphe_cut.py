@@ -35,8 +35,14 @@ NSCTRS=6
 
 NSGMNTS=18
 
-NPMTS=2
-L,R=range(NPMTS)
+#! setup PMT related constants
+#! NOTE that the following structure is carried on to h10looper_e1f(2pi).h/.cpp
+#          L  C  R
+#pmt-h10  -1  0  1
+#pmt       1  2  3
+#ipmt      0  1  2
+NPMTS=3
+L,C,R=range(NPMTS)
 
 #! *** Prepare output datadir***
 OUTDIR=os.environ['STUDY_EID_NPHE_E16_DATADIR']
@@ -97,8 +103,9 @@ for i, ev in enumerate(T, 1):
 	isct=ev.sector-1
         isgm=ev.cc_segm-1
 	if   ev.pmt==-1: ipmt=0
-        elif ev.pmt==1: ipmt=1
-        else: continue #! if pmt==0, then eff=1
+	elif ev.pmt==0: ipmt=1
+        elif ev.pmt==1: ipmt=2
+        #else: continue #! if pmt==0, then eff=1
 	sct=isct+1
 	sgm=isgm+1
 
@@ -202,15 +209,15 @@ for r in d:
     #! +  Sometimes purely for getting any reasonable fits the following need to done
     if sct==1 and sgm==2 and pmt==1:
         FITL[isct][isgm][ipmt]=[10,XMAX[isct][isgm][ipmt]]
-    if sct==1 and sgm==2 and pmt==2:
+    if sct==1 and sgm==2 and pmt==3:
         FITL[isct][isgm][ipmt]=[50,XMAX[isct][isgm][ipmt]]
 
-    if sct==4 and sgm==2:# and pmt=1/2:
+    if sct==4 and sgm==2:# and pmt=1/3:
         FITL[isct][isgm][ipmt]=[10,XMAX[isct][isgm][ipmt]]
 
     if sct==5 and sgm==2 and pmt==1:
         FITL[isct][isgm][ipmt]=[20,XMAX[isct][isgm][ipmt]]
-    if sct==5 and sgm==2 and pmt==2:
+    if sct==5 and sgm==2 and pmt==3:
         FITL[isct][isgm][ipmt]=[30,XMAX[isct][isgm][ipmt]]
     
 
@@ -224,10 +231,10 @@ for r in d:
         FITL[isct][isgm][ipmt]=[60,XMAX[isct][isgm][ipmt]]
 
     #! Exceptions to the above generality
-    if sct==2 and sgm==15 and pmt==2:
+    if sct==2 and sgm==15 and pmt==3:
         FITL[isct][isgm][ipmt]=[80,XMAX[isct][isgm][ipmt]]
     
-    if sct==3 and sgm==16 and pmt==2:
+    if sct==3 and sgm==16 and pmt==3:
         FITL[isct][isgm][ipmt]=[80,XMAX[isct][isgm][ipmt]]
 
     if sct==4 and sgm==15 and pmt==1:
@@ -240,7 +247,7 @@ for r in d:
     if sct==5 and sgm==17 and pmt==1:
         FITL[isct][isgm][ipmt]=[100,XMAX[isct][isgm][ipmt]]
 
-    if sct==6 and sgm==16 and pmt==2:
+    if sct==6 and sgm==16 and pmt==3:
         FITL[isct][isgm][ipmt]=[100,XMAX[isct][isgm][ipmt]]
 
     #! 3. Fits that needs to be adjusted due to issues that I have not understood
@@ -251,9 +258,14 @@ for r in d:
 	FITL[isct][isgm][ipmt]=[100,XMAX[isct][isgm][ipmt]]
     
 #! Now fit
+#! NOTE, do not fit pmt==2 i.e. center pmt
 d=itertools.product(*[range(NSCTRS),range(NSGMNTS),range(NPMTS)])
 for r in d:
 	isct,isgm,ipmt=r[0],r[1],r[2]
+	
+	#! Skip fitting central pmt
+	if ipmt==C: continue
+
 	f=get_ffnphe()
 	#! Draw histogram and fit to given range
 	range_min=FITL[isct][isgm][ipmt][0]
@@ -273,6 +285,7 @@ FULLFITF=[[[0 for k in range(NPMTS)]for j in range(NSGMNTS)]for i in range(NSCTR
 for isct in range(NSCTRS):
 	FOUT.mkdir("sector%d"%(isct+1)).cd()
 	for ipmt in range(NPMTS):
+		pmt=ipmt+1
 		cname=("sct%d_pmt%d"%(isct+1,ipmt+1))
 		c=ROOT.TCanvas(cname,cname,CWDTH,CHGHT)
 		c.Divide(6,3)
@@ -285,7 +298,9 @@ for isct in range(NSCTRS):
 				 hnphe[isct][isgm][ipmt].SetMaximum(YMAX[sgm])	
 			hnphe[isct][isgm][ipmt].Draw()
 			#! FULLFIT: Draw a superimposed fit function that covers the full range to check the fits's integrity
-			fitf=hnphe[isct][isgm][ipmt].GetFunction("fnphe")
+			#! if pmt==2 then there is not fit
+			if pmt==2: fitf=None
+			else:      fitf=hnphe[isct][isgm][ipmt].GetFunction("fnphe")
         		if fitf!=None:
                 		FULLFITF[isct][isgm][ipmt]=fitf.Clone("full_fit_sct%d_sgm%d_pmt%d"%(isct+1,isgm+1,ipmt+1))
                 		FULLFITF[isct][isgm][ipmt].SetRange(0,XMAX[isct][isgm][ipmt])
@@ -308,6 +323,11 @@ EFF_TGT=[[[0 for k in range(NPMTS)]for j in range(NSGMNTS)]for i in range(NSCTRS
 d=itertools.product(*[range(NSCTRS),range(NSGMNTS),range(NPMTS)])
 for r in d:
         isct,isgm,ipmt=r[0],r[1],r[2]
+
+	#! Skip central pmt
+	if ipmt==C: continue
+
+	print "isct:isgm:ipmt=%d:%d:%d"%(isct,isgm,ipmt)
 	f=hnphe[isct][isgm][ipmt].GetFunction("fnphe")
 	print "Obtaining EFF_LSE for isct,isgm,ipmt=",isct,isgm,ipmt
 	if f!=None:
@@ -346,6 +366,10 @@ EFF_TGT_DATA=open("%s/eid_e16_exp_nphe_eff_tgt.txt"%OUTDIR,"w")
 d=itertools.product(*[range(NSCTRS),range(NSGMNTS),range(NPMTS)])
 for r in d:
 	isct,isgm,ipmt=r[0],r[1],r[2]
+	
+	#! Skip central pmt 
+        if ipmt==C: continue
+
 	EFF_LSE_DATA.write("%d %d %d %f\n"%(isct+1,isgm+1,ipmt+1,EFF_LSE[isct][isgm][ipmt]))
 	EFF_TGT_DATA.write("%d %d %d %f\n"%(isct+1,isgm+1,ipmt+1,EFF_TGT[isct][isgm][ipmt]))
 EFF_LSE_DATA.close()

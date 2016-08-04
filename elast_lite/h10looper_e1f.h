@@ -104,8 +104,18 @@ public :
    bool _use_cut_ECfid_at_mod;
    //! MM2_cut_SS //! conservatively chosen to [-0.16,0.16] => MM:[-0.4,0.4]
    bool _use_MM2_cut_SS; //! 19
-   //! CC_cut_eff //! 20
-   bool _use_CC_cut_eff; //! 20
+   //! CC_cut_eff_lse/tgt //! 20/21
+   bool _use_CC_cut_lse; //! 20
+   bool _use_CC_cut_tgt; //! 21
+   bool _use_CC_cut; //! this is set equal to _use_CC_cut_lse || _use_CC_cut_tgt
+   //! The following options for using pmtC, which is normally ignored (no cut, wgt=1),
+   //! will work only when option 20 or 21 are used:
+   //! + av: cut,eff,wgt=av(pmtL,pmtR)
+   //! + L: cut,eff,wgt=pmtL
+   //! + R: cut,eff,wgt=pmtR
+   bool _use_CC_cut_pmtC_av; //! 22
+   bool _use_CC_cut_pmtC_L;  //! 23 
+   bool _use_CC_cut_pmtC_R;  //! 24
 
    //! char-coded options
    bool _make_h10_skim_e;//! eid+efid; for Reco events
@@ -150,10 +160,10 @@ public :
    TH1D* _hevt;*/
 
    //! EID
-   static const int NUM_EID_STATS=15;
+   static const int NUM_EID_STATS=16;
    enum {EID_NULL, EID_TRG, EID_GPART0, EID_Q, 
          EID_HIT_DC, EID_HIT_CC, EID_HIT_SC, EID_HIT_EC, 
-         EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_ECIN_MIN, EID_EC_FID, EID_ZVTX, EID_SF, EID_E};
+         EID_STAT, EID_DC_STAT, EID_P_MIN_ECTH, EID_ECIN_MIN, EID_EC_FID, EID_ZVTX, EID_NPHE, EID_SF, EID_E};
    TH1D* _heid;
    //! for p_min_ECth
    float _p_min_ECth;
@@ -181,6 +191,8 @@ public :
    float*** _CC_cut_eff; 
    //! CC cut wgt[sct][sgm][pmt]
    float*** _CC_cut_wgt;
+   //! _hnphe[6][18][2][2], hsf[sct][sgm][pmt][cut]
+   TH1F***** _hnphe;
    
    //! EFID
    static const int NUM_EFID_STATS=2;
@@ -633,8 +645,8 @@ public :
    void setup_cutsncors(TString cutsncors);
 
    void setup_eid_cutpars(TString dtyp);
-   void setup_eid_CC_cut_val();
-   void setup_eid_CC_cut_eff();
+   void setup_eid_CC_cut_val(TString lvl);
+   void setup_eid_CC_cut_eff(TString lvl);
    void setup_eid_CC_cut_wgt();
    void setup_adtnl_opts(TString adtnl_opts);
 
@@ -667,7 +679,10 @@ public :
    bool pass_ECin_min();
    bool pass_ECfid();
    bool pass_zvtx();
+   bool pass_nphe();
    bool pass_sf();
+
+   double get_CC_cut_wgt();
 
    //! Special functions to process sim-e16-EI
    //! + EI obtains "acceptance" as ST-pass-efid/ST-fullPS

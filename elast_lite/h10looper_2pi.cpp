@@ -937,22 +937,52 @@ void h10looper_2pi::fill_h8(){
 	int iw=GetCrsWBinIdx(_W);
 	
 	int h=evthel;
+	//! [08-01-16]
+	//! + If _expt=="e16", then overwrite h with 0.
+	//! + e16-exp-h10 has no TBranch called 'evthel', and though previously
+	//!   without the following h was still assigned 0, this makes it safer
+	if (_expt=="e16"){
+		h=0;
+	}
 	//! + If _dtyp=="sim", then overwrite h with 0.
 	//! + sim-h10 should contain 0, but from what I checked, evthel=7 for sim-h10
 	if (_dtyp=="sim"){
 		h=0;
 	}
+	//Info("h10looper_2pi::fill_h8()","evthel=%d",h);
+
+	//! Get weight
+	double wgt=1;
+	if (_seq=="recon" && _use_CC_cut){
+		wgt=get_CC_cut_wgt();
+
+		//! debug
+		/*//! sct
+		int idxEC=ec[0]-1;
+		int sct=ec_sect[idxEC];
+		//! sgm
+		int sgm=(cc_segm[cc[0]-1]%1000)/10;
+		//! pmt 
+		int pmt=(cc_segm[cc[0]-1]/1000)-1;
+		int ipmt=-9999;
+		if     (pmt==-1){ipmt=0;}
+		else if(pmt==0) {ipmt=1;}
+		else if(pmt==1) {ipmt=2;}
+		Info("h10looper_2pi::fill_h8()","wgt for sct:sgm:pmt -> %d:%d:%d=%f",sct,sgm,ipmt+1,wgt);*/
+	}
+	
+
 	/* Varset 1 (Delta++)*/
 	double coord1[] = {h,_Q2,_W,_M_ppip,_M_pippim,_theta_cms_pim,_phi_cms_pim,_alpha_1};
-	_h8[iw][0]->Fill(coord1);
+	_h8[iw][0]->Fill(coord1,wgt);
 	
 	/* Varset 2 (Rho)*/
 	double coord2[] = {h,_Q2,_W,_M_ppip,_M_pippim,_theta_cms_p,_phi_cms_p,_alpha_2};
-	_h8[iw][1]->Fill(coord2);
+	_h8[iw][1]->Fill(coord2,wgt);
 	
 	/* Varset 3 (Delta0)*/
 	double coord3[] = {h,_Q2,_W,_M_ppip,_M_ppim,_theta_cms_pip,_phi_cms_pip,_alpha_3};
-	_h8[iw][2]->Fill(coord3);
+	_h8[iw][2]->Fill(coord3,wgt);
 
 	return;
 }

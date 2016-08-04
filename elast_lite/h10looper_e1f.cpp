@@ -119,7 +119,7 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 	}
 	
 	//! EID
-	if (_do_eid){
+	if (_do_eid){//!_if _do_eid
 		//_fout->mkdir("eid")->cd();
 		TDirectory* dir_eid=_fout->mkdir("eid");
 		dir_eid->cd();
@@ -138,7 +138,9 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 		_heid->GetXaxis()->SetBinLabel(EID_EC_FID,"pass ECfid");
 		_heid->GetXaxis()->SetBinLabel(EID_ZVTX,"pass zvrtx");
 		_heid->GetXaxis()->SetBinLabel(EID_SF,"pass sf");
+		_heid->GetXaxis()->SetBinLabel(EID_NPHE,"pass nphe");
 		_heid->GetXaxis()->SetBinLabel(EID_E,"e found");
+		_heid->SetMinimum(0.);
 		//! sf hists
 		_hsf=new TH2F**[6];
 		for (int i=0;i<6;i++){
@@ -177,7 +179,28 @@ h10looper_e1f::h10looper_e1f(TString h10type, TChain* h10chain,
 				_hzvtxcut[i][j]=new TH1F(name,name,100,-12,6);
 			}
 		}
-	}
+		//! _hnphe[6][18][2][2]
+		TDirectory* dir_nphe=dir_eid->mkdir("nphecut");
+		_hnphe=new TH1F****[6];
+		for (int i=0;i<6;i++){//!sct
+			dir_nphe->mkdir(TString::Format("sector%d",i+1))->cd();
+			_hnphe[i]=new TH1F***[CC_NSEGMENTS];
+			for (int j=0;j<CC_NSEGMENTS;j++){//!sgm
+				_hnphe[i][j]=new TH1F**[CC_NPMTS];
+				for (int k=0;k<CC_NPMTS;k++){//!pmt
+					_hnphe[i][j][k]=new TH1F*[2];
+					for (int l=0;l<2;l++){//!cut
+						TString name_sfx;
+						if      (l==0) name_sfx="prec";
+						else if (l==1) name_sfx="pstc";
+						TString name=TString::Format("nphe_sct%d_sgm%d_pmt%d_%s",i+1,j+1,k+1,name_sfx.Data());
+						_hnphe[i][j][k][l]=new TH1F(name,name,100,0,500);
+					}//!cut
+				}//!pmt
+			}//!sgm
+		}//!sct
+		
+	}//!_if _do_eid
 	if(_make_h10_skim_eid){
 		//! + h10 is created directly under 'fout:/' for technical reasons
 		//!   (since the program expects to find the h10 tree in the root dir.)
@@ -382,6 +405,7 @@ h10looper_e1f::~h10looper_e1f()
 	delete[] _CC_cut_val;
 	delete[] _CC_cut_eff;
 	delete[] _CC_cut_wgt;
+	delete[] _hnphe;
 	
 	delete _hevt;
 	delete _heid;
@@ -541,31 +565,51 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 			}
 		}
 	}
-	//! CC cut eff
-	if (_use_CC_cut_eff && dtyp=="exp" && _expt=="e16"){
-		setup_eid_CC_cut_val();
-		setup_eid_CC_cut_eff();
+	//! CC cut 
+	/*
+	+ _use_CC_cut=True "if (_use_CC_cut_lse || _use_CC_cut_tgt) && _expt=="e16""
+	+ if dtyp=="exp" then read in eff,cut and setup wgt=1/eff
+	*/
+	_use_CC_cut=kFALSE;
+	if ( (_use_CC_cut_lse || _use_CC_cut_tgt) and _expt=="e16"){
+		_use_CC_cut=kTRUE;
+		if (dtyp=="exp"){
+			if (_use_CC_cut_lse){
+				setup_eid_CC_cut_val("lse");
+				setup_eid_CC_cut_eff("lse");
+			}else if (_use_CC_cut_tgt){
+				setup_eid_CC_cut_val("tgt");
+				setup_eid_CC_cut_eff("tgt");
+			}
+			setup_eid_CC_cut_wgt();
+		}
 	}
 }
 
-void h10looper_e1f::setup_eid_CC_cut_val(){
+void h10looper_e1f::setup_eid_CC_cut_val(TString lvl){
 	//Info("h10looper_e1f::setup_eid_CC_cut_val()","");
 
 	//! _CC_cut_val
 	//! First set create _CC_cut_val initialized to 0s
 	_CC_cut_val=new float*[6];
 	for (int isct=0;isct<6;isct++){
-		_CC_cut_val[isct]=new float[18];
-		for (int isgm=0;isgm>18;isgm++){
+		_CC_cut_val[isct]=new float[CC_NSEGMENTS];
+		for (int isgm=0;isgm<CC_NSEGMENTS;isgm++){
 			_CC_cut_val[isct][isgm]=0;
 		}
 	}
 
 	//! Now fill structure with data from file
-	ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_cut.txt");
+	//ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_cut.txt");
+	TString path=getenv("ELAST_LITE");
+	TString fname=TString::Format("eid_e16_exp_nphe_cut_%s.txt",lvl.Data());
+	TString file=TString::Format("%s/%s",path.Data(),fname.Data());
+	ifstream f(file.Data());
 	if (!f){
-		Info("h10looper_e1f::setup_eid_CC_cut_val()","Cannot open file elast_lite/eid_e16_exp_nphe_cut.txt");
-	} 
+		Info("h10looper_e1f::setup_eid_CC_cut_val()","ERROR Cannot open file %s",file.Data());
+	}else{
+		Info("h10looper_e1f::setup_eid_CC_cut_val()","Reading file %s",file.Data());
+	}
 	
  	int iline=0;
 	while(f) {
@@ -594,36 +638,42 @@ void h10looper_e1f::setup_eid_CC_cut_val(){
 	f.close();
 
 	//! To check integrity of data read from file 
-	ofstream ftest("/tmp/CC_cut_val.txt");
+	ofstream ftest( TString::Format("/tmp/%s",fname.Data()).Data() );
 	for (int isct=0;isct<6;isct++){
-		for (int isgm=0;isgm<18;isgm++){
+		for (int isgm=0;isgm<CC_NSEGMENTS;isgm++){
  			ftest <<isct+1<<" "<<isgm+1<<" "<<_CC_cut_val[isct][isgm]<<endl;
       	}
   	}
 
 }
 
-void h10looper_e1f::setup_eid_CC_cut_eff(){
+void h10looper_e1f::setup_eid_CC_cut_eff(TString lvl){
 	//Info("h10looper_e1f::setup_eid_CC_cut_eff()","");
 
 	//! _CC_cut_eff
 	//! First set create _CC_cut_eff initialized to 0s
 	_CC_cut_eff=new float**[6];
 	for (int isct=0;isct<6;isct++){
-		_CC_cut_eff[isct]=new float*[18];
-		for (int isgm=0;isgm<18;isgm++){
-			_CC_cut_eff[isct][isgm]=new float[2];
-			for (int ipmt=0;ipmt<2;ipmt++){
+		_CC_cut_eff[isct]=new float*[CC_NSEGMENTS];
+		for (int isgm=0;isgm<CC_NSEGMENTS;isgm++){
+			_CC_cut_eff[isct][isgm]=new float[CC_NPMTS];
+			for (int ipmt=0;ipmt<CC_NPMTS;ipmt++){
 				_CC_cut_eff[isct][isgm][ipmt]=0;
       		}
     	}
 	}
 
 	//! Now fill structure with data from file
-	ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_eff.txt");
+	//ifstream f("/home/trivedia/CLAS/workspace/ana2pi/elast_lite/eid_e16_exp_nphe_eff.txt");
+	TString path=getenv("ELAST_LITE");
+	TString fname=TString::Format("eid_e16_exp_nphe_eff_%s.txt",lvl.Data());
+	TString file=TString::Format("%s/%s",path.Data(),fname.Data());
+	ifstream f(file.Data());
 	if (!f){
-		Info("h10looper_e1f::setup_eid_CC_cut_eff()","Cannot open file elast_lite/eid_e16_exp_nphe_eff.txt");
-	} 
+		Info("h10looper_e1f::setup_eid_CC_cut_eff()","ERROR Cannot open %s",file.Data());
+	}else{
+		Info("h10looper_e1f::setup_eid_CC_cut_eff()","Reading file %s",file.Data());
+	}
 	
  	int iline=0;
 	while(f) {
@@ -653,10 +703,12 @@ void h10looper_e1f::setup_eid_CC_cut_eff(){
 	f.close();
 
 	//! To check integrity of data read from file 
-	ofstream ftest("/tmp/CC_cut_eff.txt");
+	ofstream ftest( TString::Format("/tmp/%s",fname.Data()).Data() );
 	for (int isct=0;isct<6;isct++){
-		for (int isgm=0;isgm<18;isgm++){
- 			for (int ipmt=0;ipmt<2;ipmt++){
+		for (int isgm=0;isgm<CC_NSEGMENTS;isgm++){
+ 			for (int ipmt=0;ipmt<CC_NPMTS;ipmt++){
+ 				//! Skip central pmt because cut eff not extracted for them
+ 				if (ipmt==IPMT_C) {continue;}
 				ftest <<isct+1<<" "<<isgm+1<<" "<<ipmt+1<<" "<<_CC_cut_eff[isct][isgm][ipmt]<<endl;
       		}
     	}
@@ -664,6 +716,13 @@ void h10looper_e1f::setup_eid_CC_cut_eff(){
 
 }
 
+/*
+[07-30-16]
++ wgt=1/eff except for sgm=1/18 where wgt=0 i.e. sgm=1/18 are ignored
++ This because these segments do not have any signal events and there is only
+  the noise peak, and therefore eff cannot be calculated. Any number present in 
+  the file is from the fit to the noise peak and therefore should be ignored.
+*/
 void h10looper_e1f::setup_eid_CC_cut_wgt(){
 	//Info("h10looper_e1f::setup_eid_CC_cut_wgt()","");
 
@@ -672,10 +731,12 @@ void h10looper_e1f::setup_eid_CC_cut_wgt(){
 	//! + sgm=1,18: set weight=0 irrespective of what is in file
 	_CC_cut_wgt=new float**[6];
 	for (int isct=0;isct<6;isct++){
-		_CC_cut_wgt[isct]=new float*[18];
-		for (int isgm=0;isgm<18;isgm++){
-			_CC_cut_wgt[isct][isgm]=new float[2];
-			for (int ipmt=0;ipmt<2;ipmt++){
+		_CC_cut_wgt[isct]=new float*[CC_NSEGMENTS];
+		for (int isgm=0;isgm<CC_NSEGMENTS;isgm++){
+			_CC_cut_wgt[isct][isgm]=new float[CC_NPMTS];
+			for (int ipmt=0;ipmt<CC_NPMTS;ipmt++){
+				//! Skip central pmt because cut eff not extracted for them
+ 				if (ipmt==IPMT_C) {continue;}
 				float wgt=0;
 				if (isgm+1!=1 && isgm+1!=18){
 					wgt=1/_CC_cut_eff[isct][isgm][ipmt];
@@ -687,11 +748,23 @@ void h10looper_e1f::setup_eid_CC_cut_wgt(){
     	}
 	}
 
-	//! To check integrity of data 
-	ofstream ftest("/tmp/CC_cut_wgt.txt");
+	//! To check integrity of data
+	//! + Note this file is written in $ELAST_LITE folder to 
+	//!   for access to direct verification using corresponding
+	//!   eff file
+	TString path=getenv("ELAST_LITE");
+	TString sfx;
+	if      (_use_CC_cut_lse) sfx="lse";
+	else if (_use_CC_cut_tgt) sfx="tgt";
+	TString fname=TString::Format("eid_e16_exp_nphe_wgt_%s.txt",sfx.Data());
+	TString file=TString::Format("%s/%s",path.Data(),fname.Data());
+	ofstream ftest(file.Data());
+	//ofstream ftest(TString::Format("/tmp/eid_e16_exp_nphe_wgt_%s.txt",sfx.Data()));
 	for (int isct=0;isct<6;isct++){
-		for (int isgm=0;isgm<18;isgm++){
- 			for (int ipmt=0;ipmt<2;ipmt++){
+		for (int isgm=0;isgm<CC_NSEGMENTS;isgm++){
+ 			for (int ipmt=0;ipmt<CC_NPMTS;ipmt++){
+ 				//! Skip central pmt because cut eff not extracted for them
+ 				if (ipmt==IPMT_C) {continue;}
 				ftest <<isct+1<<" "<<isgm+1<<" "<<ipmt+1<<" "<<_CC_cut_wgt[isct][isgm][ipmt]<<endl;
       		}
     	}
@@ -836,10 +909,13 @@ bool h10looper_e1f::pass_eid(){
 					_heid->Fill(EID_EC_FID);
 					if( (!_use_cut_zvtx) || (_use_cut_zvtx && pass_zvtx()) ){
 						_heid->Fill(EID_ZVTX);
-						if (pass_sf()){
-							_heid->Fill(EID_SF);
-							ret=kTRUE;
-						} 
+						if( (!_use_CC_cut) || (_use_CC_cut && pass_nphe())){
+							_heid->Fill(EID_NPHE);
+							if (pass_sf()){
+								_heid->Fill(EID_SF);
+								ret=kTRUE;
+							} 
+						}
 					}
 				}
 			}	
@@ -1470,6 +1546,165 @@ void h10looper_e1f::GetUVW(float xyz[3], float uvw[3]) {
   uvw[W] = ((yhi-ylow)/tgrho+xi+(yhi-yi)/tgrho)/2./cosrho;
 }
 
+/*
+[07-31-16]
+Alogirthm
+==========
+if sgm==1 or sgm==18
+	then for exp and sim do not pass events (i.e. these segments are directly removed from analysis)
+if sgm!=1 and sgm!=18
+	if exp:
+		if pmt!=0: use _CC_cut_val[sct][sgm]
+		if pmt==0: 
+			if _use_CC_cut_pmtC_av || _use_CC_cut_pmtC_L || _use_CC_cut_pmtC_R: use _CC_cut_val[sct][sgm] 
+				(Note that av,L,R take effect only w.r.t. eff and wgt where fits may be different for each PMT,
+				 however, the cut values are same for all pmts within sct:sgm)
+			else: no cut
+*/
+bool h10looper_e1f::pass_nphe(){
+	
+	bool pass=kFALSE;
+
+	//! First get all the information
+	//! sct
+	int idxEC=ec[0]-1;
+	int sct=ec_sect[idxEC];
+	int isct=sct-1;
+	//! nphe
+	float numphe=nphe[cc[0]-1];
+	//! sgm
+	int sgm=(cc_segm[cc[0]-1]%1000)/10;
+	int isgm=sgm-1;
+	if (sgm<1 || sgm>18){
+		Info("h10looper_e1f::pass_nphe()","sgm!=[1,18]. sgm=%d pass_nphe=kFALSE",sgm);
+		return kFALSE;
+	}
+	//! pmt 
+	//! pmt -> ipmt: -1,0,1 -> 0,1,2 (L,Center,R)
+	int pmt=(cc_segm[cc[0]-1]/1000)-1;
+	int ipmt=-9999;
+	if     (pmt==-1){ipmt=0;}
+	else if(pmt==0) {ipmt=1;}
+	else if(pmt==1) {ipmt=2;}
+	else{
+		Info("h10looper_e1f::pass_nphe()","ERROR pmt is neither of -1,0,1. pmt=%d pass_nphe=kFALSE",pmt);
+		return kFALSE;
+	}
+
+	//! sct==0	
+	if (sct==0) {//! simply because sctr=0 from pass_sf (see pass_sf())
+		Info("h10looper_e1f::pass_nphe()","sctr for 1st particle=0. pass_nphe=kFALSE");
+		return kFALSE;
+	}
+
+	//! prec
+	_hnphe[isct][isgm][ipmt][0]->Fill(numphe);
+
+	//!cut
+	if (sgm==1 or sgm==18){//! for exp and sim
+		pass=kFALSE;
+	}else if (sgm!=1 and sgm!=18){
+		if (_dtyp=="exp"){
+			if (pmt!=0){//! then apply cut from _CC_cut_val
+				if (numphe<_CC_cut_val[isct][isgm]){pass=kFALSE;}
+				else{pass=kTRUE;}
+			}else if (pmt==0) {
+				if (_use_CC_cut_pmtC_av || _use_CC_cut_pmtC_L || _use_CC_cut_pmtC_R){//! then apply cut from _CC_cut_val
+					if (numphe<_CC_cut_val[isct][isgm]){pass=kFALSE;}
+					else{pass=kTRUE;}
+				}else{
+					pass=kTRUE;
+				}
+			}
+		}else if (_dtyp=="sim"){
+			pass=kTRUE;
+		}
+	}
+
+	//! pstc
+	if (pass==kTRUE){
+		_hnphe[isct][isgm][ipmt][1]->Fill(numphe);
+	}
+	return pass;
+}
+
+/*
+[07-31-16]
+Alogirthm
+==========
+if sgm==1 or sgm==18
+	then for exp and sim: wgt=0 
+	(although these events should already be removed by the time this method is called)
+if sgm!=1 and sgm!=18
+	if exp
+		if pmt!=0: wgt= _CC_cut_val[sct][sgm][pmt]
+		if pmt==0:
+			if _use_CC_cut_pmtC_av || _use_CC_cut_pmtC_L || _use_CC_cut_pmtC_R: 
+				if _use_CC_cut_pmtC_av: wgt=(_CC_cut_val[sct][sgm][L]+_CC_cut_val[sct][sgm][R])/2
+				if _use_CC_cut_pmtC_L:  wgt=_CC_cut_val[sct][sgm][L]
+				if _use_CC_cut_pmtC_R:  wgt=_CC_cut_val[sct][sgm][R]
+			else: wgt=1
+	if sim: wgt=1 
+*/
+double h10looper_e1f::get_CC_cut_wgt(){
+	
+	//! First get all the information
+	//! sct
+	int idxEC=ec[0]-1;
+	int sct=ec_sect[idxEC];
+	int isct=sct-1;
+	//! nphe
+	float numphe=nphe[cc[0]-1];
+	//! sgm
+	int sgm=(cc_segm[cc[0]-1]%1000)/10;
+	int isgm=sgm-1;
+	if (sgm<1 || sgm>18){
+		Info("h10looper_e1f::get_CC_cut_wgt()","sgm!=[1,18]. sgm=%d wgt=0",sgm);
+		return kFALSE;
+	}
+	//! pmt 
+	//! pmt -> ipmt: -1,0,1 -> 0,1,2 (L,Center,R)
+	int pmt=(cc_segm[cc[0]-1]/1000)-1;
+	int ipmt=-9999;
+	if     (pmt==-1){ipmt=0;}
+	else if(pmt==0) {ipmt=1;}
+	else if(pmt==1) {ipmt=2;}
+	else{
+		Info("h10looper_e1f::get_CC_cut_wgt()","ERROR pmt is neither of -1,0,1. pmt=%d wgt=0",pmt);
+		return kFALSE;
+	}
+
+	//! Now determine wgt
+	double wgt=0;
+	if (sgm==1 or sgm==18){//! for exp and sim
+		wgt=0;
+	}else if (sgm!=1 and sgm!=18){
+		if (_dtyp=="exp"){
+			if(pmt!=0){
+				wgt=_CC_cut_wgt[isct][isgm][ipmt];
+			}
+			else if (pmt==0){
+				if (_use_CC_cut_pmtC_av || _use_CC_cut_pmtC_L || _use_CC_cut_pmtC_R){//! then apply cut from _CC_cut_val
+					if (_use_CC_cut_pmtC_av){
+						wgt=(_CC_cut_wgt[isct][isgm][IPMT_L]+_CC_cut_wgt[isct][isgm][IPMT_R])/2;
+					}else if (_use_CC_cut_pmtC_L){
+						wgt=_CC_cut_wgt[isct][isgm][IPMT_L];
+					}else if(_use_CC_cut_pmtC_R){
+						wgt=_CC_cut_wgt[isct][isgm][IPMT_R];
+					}
+				}else{
+					wgt=1;
+				}
+			}
+		}else if (_dtyp=="sim"){
+			wgt=1;
+		}
+	}
+
+	return wgt;
+
+}
+
 bool h10looper_e1f::pass_sf()
 {
 	bool ret=kFALSE;
@@ -1621,8 +1856,13 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     _use_cut_ECfid_at_mod=kFALSE;
     //! MM2_cut_SS
 	_use_MM2_cut_SS=kFALSE;
-	//! CC_cut_eff
-	_use_CC_cut_eff=kFALSE;
+	//! CC_cut
+	_use_CC_cut_lse=kFALSE;
+	_use_CC_cut_tgt=kFALSE;
+	_use_CC_cut_pmtC_av=kFALSE;
+	_use_CC_cut_pmtC_L=kFALSE;
+	_use_CC_cut_pmtC_R=kFALSE;
+
 
 	_make_h10_skim_e=kFALSE;
 	_make_h10_skim_SS=kFALSE;
@@ -1651,7 +1891,11 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":17:")) _use_eff_scpd_at_mod=kTRUE;
 	if (adtnl_opts.Contains(":18:")) _use_cut_ECfid_at_mod=kTRUE;
 	if (adtnl_opts.Contains(":19:")) _use_MM2_cut_SS=kTRUE;
-	if (adtnl_opts.Contains(":20:")) _use_CC_cut_eff=kTRUE;
+	if (adtnl_opts.Contains(":20:")) _use_CC_cut_lse=kTRUE;
+	if (adtnl_opts.Contains(":21:")) _use_CC_cut_tgt=kTRUE;
+	if (adtnl_opts.Contains(":22:")) _use_CC_cut_pmtC_av=kTRUE;
+	if (adtnl_opts.Contains(":23:")) _use_CC_cut_pmtC_L=kTRUE;
+	if (adtnl_opts.Contains(":24:")) _use_CC_cut_pmtC_R=kTRUE;
 	//! char-coded options
 	if (adtnl_opts.Contains(":h10-skim-e:"))    _make_h10_skim_e=kTRUE;
 	if (adtnl_opts.Contains(":h10-skim-SS:"))   _make_h10_skim_SS=kTRUE;
@@ -1693,7 +1937,11 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
     //! MM2_cut_SS
 	if(_use_MM2_cut_SS) Info("","use_MM2_cut_SS");
 	//! CC_cut_eff
-	if(_use_CC_cut_eff) Info("","use_CC_cut_eff");
+	if(_use_CC_cut_lse) Info("","use_CC_cut_lse");
+	if(_use_CC_cut_tgt) Info("","use_CC_cut_tgt");
+	if(_use_CC_cut_pmtC_av) Info("","use_CC_cut_pmtC_av");
+	if(_use_CC_cut_pmtC_L) Info("","use_CC_cut_pmtC_L");
+	if(_use_CC_cut_pmtC_R) Info("","use_CC_cut_pmtC_R");
 
 	if(_make_h10_skim_e)   Info("","make_h10_skim_e");
 	if(_make_h10_skim_SS)  Info("","make_h10_skim_SS");

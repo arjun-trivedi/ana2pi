@@ -30,6 +30,11 @@ import disp_SS as tool_disp_SS#! for plot_SS
 # 17: eff_scpd_at_mod (OFF)
 # 18: ECfid_at_mod (OFF) (option #2 i.e. ECfid has to be ON for this to take effect)
 # 19: MM2_cut_SS (OFF)
+# 20: CC_cut_lse (OFF)
+# 21: CC_cut_tgt (OFF)
+# 22: CC_cut_pmtC_av (OFF) (either of option #20 or #21 have to be ON for this to take effect)
+# 23: CC_cut_pmtC_L (OFF)  (either of option #20 or #21 have to be ON for this to take effect)
+# 24: CC_cut_pmtC_R (OFF)  (either of option #20 or #21 have to be ON for this to take effect) 
 # ----
 
 '''
@@ -137,12 +142,54 @@ BASIC_ADTNL_OPTS='1:3:11:17' #! ECin-on:zvtx-on:MM2_cut_EI-on:eff_scpd_atmod
 #!
 #! For now, to get the process going, I am going to do use the SS-bands (leading to a total of 8 CUTSNCORS),
 #! and as I begin to work on writing, I plan to resolve these bands and shift my attention to the SS-true.
-v1={'code':[':2:',':2:18:'],'tag':[':ECfid-ON:',':ECfid_atmod_ON:']}                             #! {ECfid-on,ECfid_atmod_on}
-v2={'code':[':13:15:','',':13:',':15:'],  'tag':[':gpart-pid-ON:stat-pid-ON:',':gpart-pid-OFF:stat-pid-OFF:',':gpart-pid-ON:stat-pid-OFF:',':gpart-pid-OFF:stat-pid-ON:']} #! {(gpart-PID-on,stat-PID-on),(gpart-PID-off,stat-PID-off),(gpart-PID-on,stat-PID-off),(gpart-PID-off,stat-PID-on)}
-ADTNL_OPTS_CODE_LIST=list(itertools.product(v1['code'],v2['code']))#,v3['code'],v4['code']))
-ADTNL_OPTS_TAG_LIST=list(itertools.product(v1['tag'],v2['tag']))#,v3['tag'],v4['tag']))
+#v1={'code':[':2:',':2:18:'],'tag':[':ECfid-ON:',':ECfid_atmod_ON:']}                             #! {ECfid-on,ECfid_atmod_on}
+#v2={'code':[':13:15:','',':13:',':15:'],  'tag':[':gpart-pid-ON:stat-pid-ON:',':gpart-pid-OFF:stat-pid-OFF:',':gpart-pid-ON:stat-pid-OFF:',':gpart-pid-OFF:stat-pid-ON:']} #! {(gpart-PID-on,stat-PID-on),(gpart-PID-off,stat-PID-off),(gpart-PID-on,stat-PID-off),(gpart-PID-off,stat-PID-on)}
+#ADTNL_OPTS_CODE_LIST=list(itertools.product(v1['code'],v2['code']))#,v3['code'],v4['code']))
+#ADTNL_OPTS_TAG_LIST=list(itertools.product(v1['tag'],v2['tag']))#,v3['tag'],v4['tag']))
+#!
+#![08-02-17] 8 CUTSNCORS => 9 CUTSNCORS 
+#!           (1 left from the previous 8 + 8 new from newly developed CC_cut and related systematic effects)
+#! The latest results from the 8 CUTSNCORS are noted in observables of 'fixMM2cut_062416' and after these results,
+#! I decided to remove (for full details see handwritten notes of [07-18-17]:
+#! + ECfid(EI) with ECfid_atmod (AT) which is truer 
+#! + Removed gpart-pid*stat-pid: on-on (EI), off-on and on-off
+#!
+#! The following adtnl_opts are a result of 
+#! 1. Incorporating above (after which only 1 set of adtnl opt should remain::ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:) AND
+#! 2. The need to study various systematic effects present while making CC_cut:
+#!    + {lse,tgt}*{pmtC_NX,pmtC_av,pmtC_L,pmtC_R} = 2*4 = 8 
+#! => Total of 9 CUTSNCORS: 1 left from the 8 CUTSNCORS + 8 from CC_cut related systematic effects 
+#! 1 left over from the 8 CUTSNCORS:
+v1={'code':[':2:18:'],'tag':[':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF']}
+#! 8 CC_cut related = {lse,tgt}*{pmtC_NX,pmtC_av,pmtC_L,pmtC_R}(=vCC_1*vCC_2)
+vCC_1={'code':[':20:',':21:'],'tag':[':CC_cut_lse:',':CC_cut_tgt:']}
+vCC_2={'code':['',':22:',':23:',':24'],'tag':[':pmtC_NX:',':pmtC_av:',':pmtC_L:',':pmtC_R:']}
+#! put it all together: 1+8
+ADTNL_OPTS_CODE_LIST=v1['code']+list(itertools.product(v1['code'],vCC_1['code'],vCC_2['code']))
+ADTNL_OPTS_TAG_LIST =v1['tag']+list(itertools.product(v1['tag'],vCC_1['tag'],vCC_2['tag']))
+#! output from debug of ADTNL_OPTS_CODE_LIST and ADTNL_OPTS_TAG_LIST (see below)
+# len(ADTNL_OPTS_CODE_LIST)= 9
+# len(ADTNL_OPTS_TAG_LIST)= 9
+# 1 :2:18: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF
+# 2 :2:18::20: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_NX:
+# 3 :2:18::20::22: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_av:
+# 4 :2:18::20::23: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_L:
+# 5 :2:18::20::24 -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_R:
+# 6 :2:18::21: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_NX:
+# 7 :2:18::21::22: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_av:
+# 8 :2:18::21::23: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_L:
+# 9 :2:18::21::24 -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_R:
 
-#! 3. Now finally, using 1. and 2., put together the 16 CUTSNCORS
+# #! To debug ADTNL_OPTS_CODE_LIST and ADTNL_OPTS_TAG_LIST
+# print "len(ADTNL_OPTS_CODE_LIST)=",len(ADTNL_OPTS_CODE_LIST)
+# print "len(ADTNL_OPTS_TAG_LIST)=",len(ADTNL_OPTS_TAG_LIST)
+# for i,lst in enumerate(zip(ADTNL_OPTS_CODE_LIST,ADTNL_OPTS_TAG_LIST)):
+# 	adtnl_opt_code=''.join(lst[0])
+# 	adtnl_opt_tag=''.join(lst[1])
+# 	print i+1,adtnl_opt_code,"->",adtnl_opt_tag 
+# sys.exit()
+
+#! 3. Now finally, using 1. and 2., put together the CUTSNCORS
 for i,lst in enumerate(zip(ADTNL_OPTS_CODE_LIST,ADTNL_OPTS_TAG_LIST)):
     adtnl_opt_code=BASIC_ADTNL_OPTS+''.join(lst[0])
     adtnl_opt_tag=''.join(lst[1])
