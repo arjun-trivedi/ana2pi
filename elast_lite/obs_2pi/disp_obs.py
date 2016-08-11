@@ -287,11 +287,59 @@ class DispObs:
 			else:
 				sys.exit("view={norm,fullana,ERyield,EC_SF_ST,EC_EF,EC_ST,EC_EF_ST} only")
 
+			#! Setup related to applying rad-eff-corr
+			#! if expt=='e16': set self.APPLY_RAD_EFF_CORR to True and obtain rad-eff-corr factors
+			self.APPLY_RAD_EFF_CORR=False
+			if expt=='e16': self.APPLY_RAD_EFF_CORR=True
+			#! override for testing/debug
+			#self.APPLY_RAD_EFF_CORR=False
+			if self.APPLY_RAD_EFF_CORR==True:
+				#! Obtain correction factors in self.RAD_EFF_CORR_FCTR[q2wbin]=[cf,cferr]
+				#! + NOTE that q2wbin syntax should be similar to that in yield.root produced by proc_h8: q.qq-q.qq_w.www-w.www
+				self.RAD_EFF_CORR_FCTR=OrderedDict()
+				#! Open file 
+				f=ROOT.TFile("%s/rad-eff-corr-sim/sim1/drad.root"%os.environ['D2PIDIR_SIM_E16'])
+				#! Now read in data 
+				#! + The file contains hcf_qbin_X where X=1,2,3,4,5 i.e. 5 Q2 bins for now
+				for q2binnum in [1,2,3,4,5,6,7,8]:
+					hname="hcf_qbin_%d"%q2binnum
+					h=f.Get(hname)
+					if h!=None:
+						#! Get q2 bin in correct syntax from htitle
+						htitle=h.GetTitle()
+						#print htitle
+						start=htitle.find("Q2")
+						q2bin=htitle[start:]
+						#print q2bin
+						q2bin=q2bin.replace("Q2=","")
+						q2bin=q2bin.replace("[","")
+						q2bin=q2bin.replace(")","")	
+						q2bin=q2bin.replace(",","-")
+						#print q2bin
+						for iwbin in range(h.GetNbinsX()):
+							#! Get wbin in correct syntax
+							wle=format(h.GetBinLowEdge(iwbin+1),'.3f')
+							wue=format(h.GetBinLowEdge(iwbin+1+1),'.3f')
+							wbin="%s-%s"%(wle,wue)
+							#! Now get cf, cferr
+							cf   =h.GetBinContent(iwbin+1)
+							cferr=h.GetBinError(iwbin+1)
+							self.RAD_EFF_CORR_FCTR["%s_%s"%(q2bin,wbin)]=[cf,cferr]
+					else:
+						print "DispObs::__init__():rad-eff-corr setup: %s not found"%hname
+			
+			print "expt=",expt
 			print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
 			print "self.VIEW=",self.VIEW
 			print "SEQS to process=",self.SEQS
-			print "expt=",expt
+			print "APPLY_RAD_EFF_CORR=",self.APPLY_RAD_EFF_CORR
+			if self.APPLY_RAD_EFF_CORR==True:
+				print "*** rad-eff-corr factors[q2bin,wbin]=[cf,cferr] ***"
+				for k in self.RAD_EFF_CORR_FCTR:
+					print k,self.RAD_EFF_CORR_FCTR[k]
+				print "******"
 			time.sleep(3)
+			#! End Regular init
 
 		#! Some general ROOT related setup
 		#! + Print only Warning and Error messages
@@ -567,7 +615,7 @@ class DispObs:
 					+ if vst==1:           VARS=(M1,THETA,ALPHA)
 					+ if vst==2 or vst==3: VARS=(M2,THETA,ALPHA)
 
-			+ If self.VIEW="norm", then Normalize h1(seq,vst,var)
+			+ If self.VIEW="norm", then first Normalize and then, i.e. secondly, apply rad-effect-corr h1(seq,vst,var)
 			+ Fill relevant bin of h2 (=Intg_yld)
 			+ Plot h1(seq,vst,var)
 		4. Plot h2(seq,vst,var) and its projection on W
@@ -640,9 +688,11 @@ class DispObs:
 					h1[seq,vst,var].Sumw2()
 			#! End of [seq,vst,var] loop
 
-			#! If norm, then normalize h1(SEQ,VSTS,VARS)
+			#! If norm, then (1.)normalize and then (2.) apply_rad_eff_corr to h1(SEQ,VSTS,VARS)
 			if self.VIEW=="norm":
 				self.norm_1D(h1,q2wbin)
+				if self.APPLY_RAD_EFF_CORR==True:
+					self.apply_rad_eff_corr(h1,q2wbin)
 			else: #! just DCosTheta normalize theta distributions
 				for k in h1:
 					if k[2]=='THETA':
@@ -659,6 +709,8 @@ class DispObs:
 
 		#! Plot h2
 		self.plot_h2_itg_yld(h2)
+		if self.VIEW=="norm":
+			self.plot_h2_itg_yld_all_Q2_same_canvas(h2)
 
 		print "*** disp_1D() Done ***\n"
 
@@ -941,6 +993,40 @@ class DispObs:
 
 		print "*** norm_1D() Done\n ***"
 
+	def apply_rad_eff_corr(self,h1,q2wbin):
+		print "*** In DispObs::apply_rad_eff_corr() ***"
+		
+		#! Get rad-eff-corr for this q2wbin
+		cf,cferr=None,None
+		if q2wbin in self.RAD_EFF_CORR_FCTR.keys():
+			cf   =self.RAD_EFF_CORR_FCTR[q2wbin][0]
+			cferr=self.RAD_EFF_CORR_FCTR[q2wbin][1]
+		else:
+			print "DispObs::apply_rad_eff_corr():WARNING: %s not found in self.RAD_EFF_CORR_FCTR. Using cf,cfferr=1,1"
+			cf=1
+			cferr=1
+
+		#! Now apply cf,cferr to h1s
+		#! + In order to propagate errors, use TH1::Multiply()
+		for k in h1:
+			#! 1. First make hm(=Multiply by histogram) all of whose binc,bine=cf,cferr
+			#! + Do this using TH1::Clone()
+			hm=h1[k].Clone("hm")
+			hm.SetTitle("hm")
+			#! Reset bin contents i.e. set binc,bine=0
+			hm.Reset()
+			#! Now set all binc,bine=cf,cferr
+			for ibin in range(hm.GetNbinsX()):
+				hm.SetBinContent(ibin+1,cf)
+				hm.SetBinError(ibin+1,cferr)
+			#! Set Sumw2() for hm so that errors are propagated
+			hm.Sumw2()
+
+			#! 2. Now apply rad-eff-corr
+			h1[k].Multiply(hm)
+
+		print "*** DispObs::apply_rad_eff_corr() Done\n ***"
+
 	def norm_1D_theta(self,hTheta):
 		#! 1. Create normalization factor histogram
 		hDCosTheta=hTheta.Clone()
@@ -993,7 +1079,7 @@ class DispObs:
 			os.makedirs(outdir_w_proj)
 		nq2bins=h2[h2.keys()[0]].GetNbinsY()
 		for iq2bin in range(nq2bins):
-			q2bin=h2[k].GetYaxis().GetBinLabel(iq2bin+1)
+			q2bin=h2[h2.keys()[0]].GetYaxis().GetBinLabel(iq2bin+1)
 			#! Tranform q2bin (obtained from h2) to q2wbin, which is in the format used to name folders in .root files
 			#! + q2bin=[q2min,q2max)
 			#! + q2wbin=q2min-q2max_wmin-wmax (wmin,wmax here is equal to 1.400, 2.125)
@@ -1264,7 +1350,97 @@ class DispObs:
 
 		print "*** plot_h2_itg_yld() Done ***\n"
 
-			
+	def plot_h2_itg_yld_all_Q2_same_canvas(self,h2):
+		'''
+		[08-09-16]
+		+ This function "simplifies"(simplifications described below) plotting of itg xsec as done in plot_h2_itg_yld(), 
+		  where all possible results from seq,vst,var are plotted separately, and that too in different canvases for each Q2
+
+		+ Simplications:
+			+ Level 1: Plot only for seq,var,<vst>='EF','THETA',<VST1,VST2,VST3> because:
+				+ 'EF' is used in the final result
+				+  From the results of plot_h2_itg_yld() it can be seen that all VARs within a VST give same result. The only
+				   variability is from different VSTs, hence the vst=average of all VSTs
+			  NOTE, <vst> uses the error from TH1::Add() that used to obtain <vst>=(vst1+vst2+vst3)/3 
+
+			+ Level 2: Plot all Q2 on the same TCanvas because:
+				+ The Q2 evolution can directly be seen
+		
+		'''
+		print "*** In DispObs::plot_h2_itg_yld_all_Q2_same_canvas ***"
+
+		#! Define colors to differentiate between hW for different Q2
+		clrd={1:'kBlue', 2:'kCyan', 3:'kRed', 4:'kMagenta', 5:'kGreen', 6:'kGreen+4', 7:'kOrange'}
+
+		#! Plot projection h2 on W bins i.e. int_yld(W) for various Q2 bins on same canvas using:
+		#! + seq,var,vst='EF','THETA',<VST1,VST2,VST3>
+		#! Define TCanvas and TLegend
+		c=ROOT.TCanvas("c","c",1200,800)
+		l=ROOT.TLegend(0.8,0.80,1.00,1.00)
+		l.SetFillStyle(0)
+		l.SetBorderSize(0)
+		#l.SetTextSize(0.06)#0.02
+		#! Create output dir
+		outdir_w_proj=os.path.join(self.OUTDIR_ITG_YLD,"W")
+		if not os.path.exists(outdir_w_proj):
+			os.makedirs(outdir_w_proj)
+		#! Obtain number of q2 bins in h2
+		nq2bins=h2[h2.keys()[0]].GetNbinsY()
+		#! Create structure to store vst averaged histograms for each Q2
+		h1p_vst_av=[0 for i in range(nq2bins)]
+		#! Now loop over q2bins in h2
+		for iq2bin in range(nq2bins):
+			q2bin=h2[h2.keys()[0]].GetYaxis().GetBinLabel(iq2bin+1)
+						
+			#! Plotting aesthetics
+			#ROOT.gROOT.SetOptStat("ne")
+				
+			#! + First create all projections: h1p['EF',vst,'THETA']
+			#! + NOTE, call Sumw2() so that errors can be stored for later propagation
+			h1p=OrderedDict()
+			for k in h2:
+				seq,vst,var=k[0],k[1],k[2]
+				if seq=='EC': continue
+				if var!='THETA': continue
+				hname="hW_%s_%d_%s"%(seq,vst,var)
+				htitle=""#! Remove title since legend will contain it
+				h1p[k]=h2[k].ProjectionX(hname,iq2bin+1,iq2bin+1,"e")
+				h1p[k].SetTitle(htitle)
+				h1p[k].SetYTitle("#sigma[#mub]")
+				h1p[k].SetMinimum(0)
+				h1p[k].Sumw2()
+
+			#! Now obtain h1p_vst_av=(h1p['EF','1','THETA']+h1p['EF','1','THETA']+h1p['EF','1','THETA'])/3
+			#! 1. Create h1p_av using by Cloning h1p['EF','1','THETA']
+			#! NOTE, set Sumw2() so that errors can be stored and then propagated
+			h1p_vst_av[iq2bin]=h1p['EF',1,'THETA'].Clone("h1p_vst_av")
+			h1p_vst_av[iq2bin].Sumw2()
+			#! 2. Now Add to it h1p['EF',2,'THETA'] and h1p['EF',3,'THETA']
+			h1p_vst_av[iq2bin].Add(h1p['EF',2,'THETA'])
+			h1p_vst_av[iq2bin].Add(h1p['EF',3,'THETA'])
+			#! 3. Divide by 3
+			h1p_vst_av[iq2bin].Scale(1/3)
+
+			#! SetMinimum=0 (for aesthetic reasons)
+			h1p_vst_av[iq2bin].SetMinimum(0)
+
+			#! Now draw
+			clr=clrd[iq2bin+1]
+			h1p_vst_av[iq2bin].SetMarkerStyle(ROOT.gROOT.ProcessLine('kFullCircle'))
+			h1p_vst_av[iq2bin].SetLineColor(ROOT.gROOT.ProcessLine(clr))
+			h1p_vst_av[iq2bin].SetMarkerColor(ROOT.gROOT.ProcessLine(clr))
+			draw_opt=""
+			if iq2bin>0: draw_opt="same"
+			h1p_vst_av[iq2bin].Draw(draw_opt)
+			l.AddEntry(h1p_vst_av[iq2bin],"Q2=%s"%q2bin,"p")
+
+		#! Finally draw legend and save canvas
+		l.Draw()
+		#! Save canvas
+		c.SaveAs("%s/c_all-qbin_vst-av_var-THETA.png"%(outdir_w_proj))			
+
+		print "*** Done DispObs::plot_h2_itg_yld_all_Q2_same_canvas ***"
+
 	def plot_hW_SS(self,hW):
 		'''
 		1. Get q2wbinl from hW(q2wbin,obsnum,seq,vst,var)
@@ -2338,8 +2514,10 @@ class DispObs:
 					# if R2=='A': hR2d[k].Scale(1/(2*math.pi)) #! for A
 					# else: 		hR2d[k].Scale(1/math.pi)     #! for B,C,D
 										
-				#! Normalize hR2
+				#! Normalize and apply_rad_eff_corr to hR2
 				self.norm_1D(hR2d,q2wbin)
+				if self.APPLY_RAD_EFF_CORR==True:
+					self.apply_rad_eff_corr(hR2d,q2wbin)
 				# if "norm" in self.VIEW:
 				# 	self.norm_1D(hR2d,q2wbin)
 				# else: #! just DCosTheta normalize theta distributions
@@ -2836,8 +3014,10 @@ class DispObs:
 		for k in hR2d:
 			hR2d[k].Sumw2()
 
-		#! Normalize hR2
+		#! Normalize and apply_rad_eff_corr to hR2
 		self.norm_1D(hR2d,q2wbin)
+		if self.APPLY_RAD_EFF_CORR==True:
+			self.apply_rad_eff_corr(hR2d,q2wbin)
 		# if "norm" in self.VIEW:
 		# 	self.norm_1D(hR2d,q2wbin)
 		# else: #! just DCosTheta normalize theta distributions

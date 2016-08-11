@@ -47,7 +47,8 @@ print "Displaying simstats for (obsdir,simnun)=(",obsdir,simnum,")"
 WBINW=0.025
 NWBINS,WMIN,WMAX=36,1.300,2.200# post removing W>2.125 GeV from analysis #68,1.3,3.0 #25 MeV/bin
 NQ2BINS,Q2MIN,Q2MAX=8,1.25,5.25 # place-holder bng, for it will be modified by variable bng
-#Q2_VARBINS=array("d",[1.0,1.2,1.6,2.0,2.4,3.0,3.5,4.2,5.0])
+NBINS_Q2_VAR_BINW_BNG=5;
+Q2_BINS_VAR_BINW_BNG=array("d",[2.00,2.40,3.00,3.50,4.20,5.00])
 
 def make_h_nbins_vs_Q2W():
 	"""
@@ -55,6 +56,8 @@ def make_h_nbins_vs_Q2W():
 	"""
 	#! Create histogram
 	h=ROOT.TH2F("h_nbins","nbins(Q2,W)",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
+	#! Set variable binning in Q2
+	h.GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	#print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
@@ -62,7 +65,7 @@ def make_h_nbins_vs_Q2W():
 	nbins=14*14*10*10*10
 	#print "nbins=",nbins
 	for ixbin in range(h.GetXaxis().GetNbins()):
-		for iybin in range(h.GetXaxis().GetNbins()):
+		for iybin in range(h.GetYaxis().GetNbins()):
 			bin=h.GetBin(ixbin+1,iybin+1)
 			h.SetBinContent(bin,nbins)
 	return h
@@ -75,6 +78,8 @@ def divide(h1,h2):
 	Returns h
 	"""
 	h=ROOT.TH2F("h_div","h_div",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
+	#! Set variable binning in Q2
+	h.GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	num_wbins=h.GetXaxis().GetNbins()
@@ -99,6 +104,8 @@ def subtract(h1,h2):
 	Returns h
 	"""
 	h=ROOT.TH2F("h_diff","h_diff",NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
+	#! Set variable binning in Q2
+	h.GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 	h.SetXTitle("W [GeV]")
 	h.SetYTitle("Q^2 [GeV^2]")
 	num_wbins=h.GetXaxis().GetNbins()
@@ -118,6 +125,8 @@ h={}
 for seq in ['ST','SR','SA','SH']:
 	for par in ['nbins','N','mu','sg']:
 		h[seq,par]=ROOT.TH2F("h_%s_%s"%(par,seq),"%s_%s(Q2,W)"%(par,seq),NWBINS,WMIN,WMAX,NQ2BINS,Q2MIN,Q2MAX)
+		#! Set variable binning in Q2
+		h[seq,par].GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 		h[seq,par].SetXTitle("W [GeV]")
 		h[seq,par].SetYTitle("Q^2 [GeV^2]")
 		#print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
