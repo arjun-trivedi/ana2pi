@@ -1,0 +1,54 @@
+#!/bin/bash
+# $1: dir_RE_on_sim (including full path)
+# $2: dir_RE_of_sim (including full path)
+# NOTE that off=of for symmetry with on
+
+#! First check to make sure dirs exist
+if [ ! -d $1 ]; then
+  echo "$1 does not exist. Exiting"
+  exit
+fi
+if [ ! -d $2 ]; then
+  echo "$2 does not exist. Exiting"
+  exit
+fi
+
+#! Create dirl where the first index is for RE-on and the second for RE-off
+dirl=($1 $2)
+#! Note this index structure
+iRE_on=0
+iRE_of=1
+
+#! Now from dirl, obtain simnamel and nfilesl
+simnamel=()
+nfilesl=()
+for dir in "${dirl[@]}";do
+  #! simname: name of last dir in dirpath
+  arr=(${dir//\// })
+  name=${arr[${#arr[@]}-1]}
+  simnamel+=($name)
+  #! nifles
+  nfiles=$(ls $dir/evtgen/*.root |wc -l)
+  nfilesl+=($nfiles)
+done
+
+echo "*** The following are the details of the simulations: ***"
+echo "dirl="${dirl[*]}
+echo "simnamel="${simnamel[*]}
+echo "nfilesl="${nfilesl[*]}
+echo "******"
+
+#! Now get the files from Tape to Volatile
+isim=0
+for dir in "${dirl[@]}";do
+  dir=${dirl[$isim]}
+  simname=${simnamel[$isim]}
+
+  echo "Going to jget for "$simname
+  echo ">mkdir -p $H10DIR_SIM_E16/rad-eff-corr-sim/$simname/evtgen"
+  mkdir -p $H10DIR_SIM_E16/rad-eff-corr-sim/$simname/evtgen
+  echo ">jget `ls $dir/evtgen/*.root`  $H10DIR_SIM_E16/rad-eff-corr-sim/$simname/evtgen/ >& /tmp/atrivedi/jget_$simname.log&"
+  jget `ls $dir/evtgen/*.root`  $H10DIR_SIM_E16/rad-eff-corr-sim/$simname/evtgen/ >& /tmp/atrivedi/jget_$simname.log&
+
+  isim=$((isim + 1))
+done
