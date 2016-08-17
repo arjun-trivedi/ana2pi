@@ -44,7 +44,7 @@ echo "***"
 #! *********************************************************
 
 #- Setup information needed for jsub.xml and proc_h10_lite
-PROCORDER="eid:efid:pid:pfid:evtsel_2pi:"
+PROCORDER="eid:pid:evtsel_2pi:" # [08-17-16] removied 'efid' and 'pfid' from "eid:efid:pid:pfid:evtsel_2pi:"
 ADTNL_OPT=":h10-skim-SS:14:19:"
 if [[ "$EXP" == "e1f" ]]; then
     PROJECT_NAME="E1F"
