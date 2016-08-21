@@ -61,18 +61,18 @@ SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9','sim10','si
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
 ('e1f','ER'):'TBD',
-('e16','ER'):'%s/e16/exp/h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
+('e16','ER'):'%s/e16/exp/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10-skim-SS_030116.lst,h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
 ('e1f','SR','sim-TBD'):'TBD',
-('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
-('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122115.lst
-('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_122915.lst
-('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_010816.lst 
-('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_030116.lst'%(H10PATH), #! h10-skim-e_012416.lst
-('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_030116.lst'%(H10PATH),  #! h10-skim-e_012416.lst
-('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_031516.lst'%(H10PATH),
-('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_031516.lst'%(H10PATH),
-('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_031516.lst'%(H10PATH),
-('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_031516.lst'%(H10PATH)
+('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
+('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
+('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122915.lst
+('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_010816.lst 
+('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
+('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
+('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_081716.lst'%(H10PATH)  #! h10_2_h10-skim-SS_031516.lst
 }
 #print H10LSTS
 DATE_ST={
@@ -160,14 +160,14 @@ BASIC_ADTNL_OPTS=':1:3:11:17:' #! ECin-on:zvtx-on:MM2_cut_EI-on:eff_scpd_atmod
 #!    + {lse,tgt}*{pmtC_NX,pmtC_av,pmtC_L,pmtC_R} = 2*4 = 8 
 #! => Total of 9 CUTSNCORS: 1 left from the 8 CUTSNCORS + 8 from CC_cut related systematic effects 
 #! 1 left over from the 8 CUTSNCORS:
-v1={'code':[':2:18:'],'tag':[':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF']}
-#! 8 CC_cut related = {lse,tgt}*{pmtC_NX,pmtC_av,pmtC_L,pmtC_R}(=vCC_1*vCC_2)
-vCC_1={'code':[':20:',':21:'],'tag':[':CC_cut_lse:',':CC_cut_tgt:']}
-vCC_2={'code':['',':22:',':23:',':24:'],'tag':[':pmtC_NX:',':pmtC_av:',':pmtC_L:',':pmtC_R:']}
-#! put it all together: 1+8
-ADTNL_OPTS_CODE_LIST=v1['code']+list(itertools.product(v1['code'],vCC_1['code'],vCC_2['code']))
-ADTNL_OPTS_TAG_LIST =v1['tag']+list(itertools.product(v1['tag'],vCC_1['tag'],vCC_2['tag']))
-#! output from debug of ADTNL_OPTS_CODE_LIST and ADTNL_OPTS_TAG_LIST (see below)
+# v1={'code':[':2:18:'],'tag':[':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF']}
+# #! 8 CC_cut related = {lse,tgt}*{pmtC_NX,pmtC_av,pmtC_L,pmtC_R}(=vCC_1*vCC_2)
+# vCC_1={'code':[':20:',':21:'],'tag':[':CC_cut_lse:',':CC_cut_tgt:']}
+# vCC_2={'code':['',':22:',':23:',':24:'],'tag':[':pmtC_NX:',':pmtC_av:',':pmtC_L:',':pmtC_R:']}
+# #! put it all together: 1+8
+# ADTNL_OPTS_CODE_LIST=v1['code']+list(itertools.product(v1['code'],vCC_1['code'],vCC_2['code']))
+# ADTNL_OPTS_TAG_LIST =v1['tag']+list(itertools.product(v1['tag'],vCC_1['tag'],vCC_2['tag']))
+#! output from debug of ADTNL_OPTS_CODE_LIST and ADTNL_OPTS_TAG_LIST (see code below on how to debug this)
 # len(ADTNL_OPTS_CODE_LIST)= 9
 # len(ADTNL_OPTS_TAG_LIST)= 9
 # 1 :2:18: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF
@@ -179,6 +179,29 @@ ADTNL_OPTS_TAG_LIST =v1['tag']+list(itertools.product(v1['tag'],vCC_1['tag'],vCC
 # 7 :2:18::21::22: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_av:
 # 8 :2:18::21::23: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_L:
 # 9 :2:18::21::24 -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt::pmtC_R:
+#
+#! [08-19-17] 3-CUTSNCORS-test: Use only a part of the 9-CUTSNCORS from [08-02-17] to see effect of following changes:
+#! 1. Making of Observables from new h10-skim-SS, of 081716, where 'efid' and 'pfid' are removed
+#!      + In these skims files that were missing for sim4,sim5,sim6 were updated. This, I expect, to have an insignificant
+#!        increase in the Acceptance, and therefore an insignificant decrease in xsec for the lowerQ2 bins.       
+#! 2. Fixing of bug in 'h10_2_Obs' where option of 'ECin_on' was not correctly coded: ':1' in BASIC_ADTNL_OPTS was changed to ':1:'
+#!		+ Code for 'eff_scpd_atmod' was also not correctly coded in BASIC_ADTNL_OPTS (':17' -> ':17:'), however
+#!        this error is mitigated by addition of other adtnl_opts which begin with a colon
+#!      + In this sense, a code in 'vCC_2' was also changed from ':24' -> ':24:', but I expect to not see any
+#!        difference because of this change since all the variations of CC cut had no observable difference.
+#! 1 left over from the 8 CUTSNCORS:
+v1={'code':[':2:18:'],'tag':[':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF']}
+#! 2 CC_cut related (reduced from 8 of [08-02-17]) = {lse,tgt}=vCC_1
+vCC_1={'code':[':20:',':21:'],'tag':[':CC_cut_lse:',':CC_cut_tgt:']}
+#! put it all together: 1+2
+ADTNL_OPTS_CODE_LIST=v1['code']+list(itertools.product(v1['code'],vCC_1['code']))
+ADTNL_OPTS_TAG_LIST =v1['tag']+list(itertools.product(v1['tag'],vCC_1['tag']))
+#! output from debug code
+# len(ADTNL_OPTS_CODE_LIST)= 3
+# len(ADTNL_OPTS_TAG_LIST)= 3
+# 1 :2:18: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF
+# 2 :2:18::20: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse:
+# 3 :2:18::21: -> :ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_tgt:
 
 # #! To debug ADTNL_OPTS_CODE_LIST and ADTNL_OPTS_TAG_LIST
 # print "len(ADTNL_OPTS_CODE_LIST)=",len(ADTNL_OPTS_CODE_LIST)
