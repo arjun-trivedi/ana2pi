@@ -50,15 +50,25 @@ WBINW=0.025 # GeV
 #! 		+VST1: Delta++ => (p,pip)pim
 #! 		+VST2: Rho     => (pip,pim)p
 #! 		+VST3: Delta0  => (p,pim)pip
-VAR_NAMES={(1,VARS[0]):"M_{p#pi^{+}}",(1,VARS[1]):"M_{#pi^{+}#pi^{-}}",
+VAR_NAMES={(1,VARS[0]):"M_{p#pi^{+}}",    (1,VARS[1]):"M_{#pi^{+}#pi^{-}}",
 		   (1,VARS[2]):"#theta_{#pi^{-}}",(1,VARS[3]):"#phi_{#pi^{-}}",
 		   (1,VARS[4]):"#alpha_{[p_{f}#pi^{+}][p#pi^{-}]}",
 		   (2,VARS[0]):"M_{p#pi^{+}}",(2,VARS[1]):"M_{#pi^{+}#pi^{-}}",
-		   (2,VARS[2]):"#theta_{p}",(2,VARS[3]): "#phi_{p}",
+		   (2,VARS[2]):"#theta_{p}",  (2,VARS[3]): "#phi_{p}",
 		   (2,VARS[4]):"#alpha_{[#pi^{+}#pi^{-}][pp_{f}]}",
-		   (3,VARS[0]):"M_{p#pi^{+}}",(3,VARS[1]):"M_{p#pi^{-}}",
+		   (3,VARS[0]):"M_{p#pi^{+}}",    (3,VARS[1]):"M_{p#pi^{-}}",
 		   (3,VARS[2]):"#theta_{#pi^{+}}",(3,VARS[3]): "#phi_{#pi^{+}}",
 		   (3,VARS[4]):"#alpha_{[p_{f}#pi^{-}][p#pi^{+}]}"}
+#! Create a non-coded, simpler version of VAR_NAMES that can be used with plain text
+VAR_NAMES_PLAIN={(1,VARS[0]):"M_ppip",   (1,VARS[1]):"M_pippim",
+		         (1,VARS[2]):"theta_pim",(1,VARS[3]):"phi_pim",
+		         (1,VARS[4]):"alpha_pfpip_ppim",
+		         (2,VARS[0]):"M_ppip", (2,VARS[1]):"M_pippim",
+		         (2,VARS[2]):"theta_p",(2,VARS[3]): "phi_p",
+		         (2,VARS[4]):"alpha_pippim_ppf",
+		         (3,VARS[0]):"M_ppip",   (3,VARS[1]):"M_ppim",
+		         (3,VARS[2]):"theta_pip",(3,VARS[3]): "phi_pip",
+		         (3,VARS[4]):"alpha_pfpim_ppip"}
 
 VAR_UNIT_NAMES={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"deg",VARS[3]:"deg",VARS[4]:"deg"}
 VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC={VARS[0]:"GeV",VARS[1]:"GeV",VARS[2]:"",VARS[3]:"rad",VARS[4]:"rad"}
@@ -152,8 +162,9 @@ MRKS_N=[ROOT.gROOT.ProcessLine("kFullCircle"),ROOT.gROOT.ProcessLine("kFullTrian
        ROOT.gROOT.ProcessLine("kFullTriangleDown"),ROOT.gROOT.ProcessLine("kFullSquare"),
        ROOT.gROOT.ProcessLine("kFullCross"),ROOT.gROOT.ProcessLine("kFullStar"),
        ROOT.gROOT.ProcessLine("kFullDiamond")]
-CLRS_N=[ROOT.gROOT.ProcessLine("kRed"),ROOT.gROOT.ProcessLine("kMagenta"),ROOT.gROOT.ProcessLine("kBlue"),
-        ROOT.gROOT.ProcessLine("kCyan"),ROOT.gROOT.ProcessLine("kGreen"),ROOT.gROOT.ProcessLine("kYellow")]
+CLRS_N=[ROOT.gROOT.ProcessLine("kRed"),    ROOT.gROOT.ProcessLine("kMagenta"),ROOT.gROOT.ProcessLine("kBlue"),
+        ROOT.gROOT.ProcessLine("kCyan"),   ROOT.gROOT.ProcessLine("kGreen"),  ROOT.gROOT.ProcessLine("kYellow"),
+        ROOT.gROOT.ProcessLine("kPink+1"), ROOT.gROOT.ProcessLine("kGreen+3")]
         #! Get all coordinates in this space, where coordinate def.eq. (mrkr,clr)
 MRKS_CLRS_N_COORDS=list(itertools.product(MRKS_N,CLRS_N))
 #! Now put them into a dictionary labelled by numbers
@@ -232,7 +243,7 @@ class DispObs:
 			self.OBSD=SSargs['obsd']
 
 			#! Set up SEQS
-			self.SEQS=['EC','EF']
+			self.SEQS=['EF']
 
 			#! OUTDIR
 			SS_tag=SSargs['SS_tag']
@@ -475,31 +486,35 @@ class DispObs:
 		print "*** plot_1D() Done ***\n"
 		return
 
-	def plot_1D_SS(self,h1,h1_SS_err,q2wbin):
+	def plot_per_non_vst_SE_results_1D(self,h1,results,q2wbin):
 		'''
 		[02-29-16]
 		+ 'plot_1D' was used as a tempate for this method
 		+ The idea is extend the method to incorporate plotting of a 
-		  list of SS-Obs and the associated SS-err
+		  list of SE-Obs and the associated set of 'results'
 		+ Therefore only details relevant to the above were changed and the core functionality left intact
-
-		+ Process details:
-			+ NOTE that 1D-Obs and SS_err_1D_Obs are plotted for each of [EC,EH]
+		
 		'''
 
-		print "In DispObs::plot_1D_SS()"
+		print "In DispObs::plot_per_non_vst_SE_results_1D()"
+
+		#! unpack results(=h1_obs,h1_err,h1_rel_err,rslts)
+		h1_obs,h1_err,h1_rel_err,rslts=results[0],results[1],results[2],results[3]
 
 		#! Set up plotting aesthetics
 		self.plot_1D_athtcs()
 		self.hist_1D_athtcs(h1)
-		self.hist_1D_athtcs(h1_SS_err)
+		self.hist_1D_athtcs(h1_obs)
+		self.hist_1D_athtcs(h1_err,"err")
+		self.hist_1D_athtcs(h1_rel_err,"rel_err")
 				
 		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
 		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
 				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
 				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
 			
-		#! Make plots for each of [EC,EH]
+		#! Make plots only for EH 
+		#! (EC vs EH should be checked out at level where each SE is displayed in $OBSDIR/<SE>/cutncorsX)
 		#! + Setup variable: nlegend_canvas=0
 		#! + The idea is to draw one master legend that will be used for all plots, Obs-1D and intg_xsec
 		#! + This is because this legend is too large to draw on the same canvas as the plots.
@@ -521,24 +536,39 @@ class DispObs:
 			pt.Draw()
 			pad_p_c.Divide(3,3)
 
-			#! Canvas for h1_SS_err
-			cerr=ROOT.TCanvas("cerr","cerr",1000,1000)
-			pad_t_cerr=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
-			pad_p_cerr=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
-			pad_p_cerr.Draw()
-			pad_t_cerr.Draw()
-			pad_t_cerr.cd()
+			#! Canvas for h1_obs and h1_err
+			c_obs_err=ROOT.TCanvas("c_obs_err","c_obs_err",1000,1000)
+			pad_t_c_obs_err=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
+			pad_p_c_obs_err=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+			pad_p_c_obs_err.Draw()
+			pad_t_c_obs_err.Draw()
+			pad_t_c_obs_err.cd()
 			# pt=ROOT.TPaveText(.05,.1,.95,.8)
 			# pt.AddText("Q2_W bin=%s"%q2wbin)
 			# pt.SetTextSize(0.40)
 			pt.Draw()
-			pad_p_cerr.Divide(3,3)
+			pad_p_c_obs_err.Divide(3,3)
+
+			#! Canvas for h1_rel_err
+			c_err=ROOT.TCanvas("c_err","c_err",1000,1000)
+			pad_t_c_err=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
+			pad_p_c_err=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+			pad_p_c_err.Draw()
+			pad_t_c_err.Draw()
+			pad_t_c_err.cd()
+			# pt=ROOT.TPaveText(.05,.1,.95,.8)
+			# pt.AddText("Q2_W bin=%s"%q2wbin)
+			# pt.SetTextSize(0.40)
+			pt.Draw()
+			pad_p_c_err.Divide(3,3)
+
 
 			for item in pad_map:
 				pad,vst,var=item[0],item[1],item[2]
 				print "pad,vst,var=",pad,vst,var
 						
-				#! Draw h1
+				#! Draw h1[obsnum,seq,vst,var] for visual verification
+				#! + Draw h1_obs,h1_err also to directly verify mu,sg etc calculated from obsum
 				#! First set minimum and maximum of hists
 				fctr=1.1
 				maxl=[h1[obsnum,seq,vst,var].GetMaximum() for obsnum in self.OBSD.keys()]
@@ -551,7 +581,10 @@ class DispObs:
 				for i,obsnum in enumerate(self.OBSD.keys()):
 					draw_opt="" if i==0 else "same"
 					h1[obsnum,seq,vst,var].Draw(draw_opt)
-				
+				#! Draw h1_obs and h1_err also 	
+				h1_obs[seq,vst,var].Draw("same")
+				h1_err[seq,vst,var].Draw("hist e same")
+
 				#! legend canvas
 				if nlegend_canvas==0:
 					#! Setup legend
@@ -571,34 +604,56 @@ class DispObs:
 					clm.Close()
 					nlegend_canvas+=1
 
-				#! Draw h1_SS_err
-				gpad=pad_p_cerr.cd(pad)
-				h1_SS_err[seq,vst,var].SetMinimum(0)
-				h1_SS_err[seq,vst,var].Draw()
+				#! Draw h1_obs and h1_err
+				gpad=pad_p_c_obs_err.cd(pad)
+				h1_obs[seq,vst,var].SetMinimum(0)
+				h1_err[seq,vst,var].SetMinimum(0)
+				h1_obs[seq,vst,var].Draw()
+				h1_err[seq,vst,var].Draw("hist e same")
 
-			#! Save canvases for h1 and h1_SS_err
+				#! Draw h1_rel_err
+				gpad=pad_p_c_err.cd(pad)
+				#! SetMinimum and SetMaximum so that relative errors 
+				#! appear on the same scale for all observables
+				h1_rel_err[seq,vst,var].SetMinimum(0)
+				h1_rel_err[seq,vst,var].SetMaximum(40)
+				h1_rel_err[seq,vst,var].Draw()
+				
+
+			#! Save canvases for h1,h1_obs & h1_err, h1_rel_err
 			q2bin=self.get_q2bin(q2wbin)
 			wbin=self.get_wbin(q2wbin)
-			#! h1 in self.OUTDIR_1D/seq/q2bin
-			outdir_seq=os.path.join(self.OUTDIR_1D,seq)
-			outdir_q2bin=os.path.join(outdir_seq,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin):
-				os.makedirs(outdir_q2bin)
-			if not os.path.exists(outdir_seq):
-				os.makedirs(outdir_seq)
-			c.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
-			c.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
-			#! h1_SS_err in self.OUTDIR_1D_SS_ERR/seq/q2bin
-			outdir_seq_err=os.path.join(self.OUTDIR_1D_SS_ERR,seq)
-			outdir_q2bin_SS_err=os.path.join(outdir_seq_err,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin_SS_err):
-				os.makedirs(outdir_q2bin_SS_err)
-			if not os.path.exists(outdir_seq_err):
-				os.makedirs(outdir_seq_err)
-			cerr.SaveAs("%s/cerr_w%s_q%s.png"%(outdir_q2bin_SS_err,wbin,q2bin))
-			cerr.SaveAs("%s/cerr_w%s_q%s.eps"%(outdir_q2bin_SS_err,wbin,q2bin))
 
-		print "*** plot_1D_SS() Done ***\n"
+			#! c_obs_err => self.OUTDIR_1D
+			#! c_err     => self.OUTDIR_1D_ERR
+			#! c         => self.OUTDIR_1D_ERR_VSL
+			for cvs,outdir in zip([c_obs_err,c_err,c],[self.OUTDIR_1D,self.OUTDIR_1D_ERR,self.OUTDIR_1D_ERR_VSL]):
+				outdir_q2bin=os.path.join(outdir,"q%s"%q2bin)
+				if not os.path.exists(outdir_q2bin):
+					os.makedirs(outdir_q2bin)
+				cvs.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+				cvs.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+
+			#! + Save results in text file
+			#!   rslts     => self.OUTDIR_1D_TXT_RSLT/q2/w_vsr_var.text
+			#! + Write out full results (9 pieces of information) in text file as:
+			#!   bin,bin_le,bin_ue = mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err
+			outdir_txt_q2bin=os.path.join(self.OUTDIR_1D_TXT_RSLT,"q%s"%q2bin)
+			if not os.path.exists(outdir_txt_q2bin):
+				os.makedirs(outdir_txt_q2bin)
+			for seq in self.SEQS:
+				for item in pad_map:
+					pad,vst,var=item[0],item[1],item[2]
+					#!ftxt=open("%s/w%s_vst%s_%s.txt"%(outdir_txt_q2bin,wbin,vst,var),"w")
+					ftxt=open("%s/w%s_%s.txt"%(outdir_txt_q2bin,wbin,VAR_NAMES_PLAIN[vst,var]),"w")
+			 		#! Loop over rslts per bin in rslts and write to file
+					for d in rslts[seq,vst,var]:
+						bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
+						ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
+					ftxt.close()
+			
+
+		print "*** plot_per_non_vst_SE_results_1D() Done ***\n"
 		return
 
 	def disp_1D(self):
@@ -715,62 +770,76 @@ class DispObs:
 		print "*** disp_1D() Done ***\n"
 
 
-	def disp_1D_SS(self):
+	def disp_per_non_vst_SE_results_1D(self):
 		"""
-		[04-12-16]
-		This function uses the following output .root file from observables in self.OBSD:
-		+ For Obs_1D:   Obs_1D_norm/obs_1D.root
-		+ For Itg-xsec: Obs_Itg_Yld_norm/obs_itg_yld.root
+		[08-24-16]
+		+ This function displays results, which includes errors, for Obs:itg,1D based on all variations
+		within a non-vst SE
+
+		+ This function uses the following output .root file from observables in self.OBSD:
+		  + For Obs_1D:   Obs_1D_norm/obs_1D.root
+		  + For Itg-xsec: Obs_Itg_Yld_norm/obs_itg_yld.root
 
 		0. Make all needed output directories
 		
-		1. Make SS plots for Obs_1D
+		1. Make displays for Obs_1D
 		1.i.   Get Q2-W binning from any of the obs_1D.root files in self.OBSD
 		1.ii.  Looper over Q2-W bins and for every Q2-W bin: 
 			1.iii  Create h1(obsnum,seq,vst,var)
-			1.iv.  For a particular seq,vst,var, using all obsnum, obtain h1_SS_err(seq,vst,var)
-			1.v.   Plot h1(obsnum,seq,vst,var) and h1_SS_err(seq,vst,var)
+			1.iv.  For a [seq,vst,var], using all obsnum, obtain 'results'(seq,vst,var) from 
+			       'get_per_non_vst_SE_results()' where 'results' are (see function for details):
+			       	+ h1_obs[seq,vst,var]
+			       	+ h1_err[seq,vst,var]
+			       	+ h1_rel_err[seq,vst,var]
+			       	+ rslts[seq,vst,var]
+			1.v.   Display 
+					i.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: h1_obs[seq,vst,var] and h1_err[seq,vst,var] together
+					ii.  To just see relative error (rel_err, sg_rel_err):      h1_rel_err[seq,vst,var]
+					iii. To visually see SE variations:                         h1(obsnum,seq,vst,var) directly
+					iv.  Text file of full results:                             put rslts[seq,vst,var] in a text file
 		
-		2. Make SS plots for Obs_Itg_Yld
+		2. Make displays for Obs_Itg_Yld
 		2.i.   Get Q2-W bin list from any of the obs_itg_yld.root files from self.OBSD
 		2.ii.  Create hW(q2wbin,obsnum,seq,vst,var) to store integrated yields
 		2.iii. Plot hW(q2wbin,obsnum,seq,vst,var)
 		"""
-		print "*** In DispObs::disp_1D_SS() ***"
+		print "*** In DispObs::disp_per_non_vst_SE_results_1D() ***"
 
 		#! 0. Make output directories
-		#! Make OUTDIR_1D,OUTDIR_1D_SS_ERR
-		self.OUTDIR_1D=os.path.join(self.OUTDIR,"Obs_1D")
-		self.OUTDIR_1D_SS_ERR=os.path.join(self.OUTDIR,"Obs_1D_SS_err")
-		if not os.path.exists(self.OUTDIR_1D):
-			os.makedirs(self.OUTDIR_1D)
-		if not os.path.exists(self.OUTDIR_1D_SS_ERR):
-			os.makedirs(self.OUTDIR_1D_SS_ERR)
+		#! Make OUTDIR_1D,OUTDIR_1D_ERR,OUTDIR_1D_ERR_VSL,OUTDIR_1D_TXT_RSTLS
+		self.OUTDIR_1D              =os.path.join(self.OUTDIR,"Obs_1D")          #! Display i.
+		self.OUTDIR_1D_ERR          =os.path.join(self.OUTDIR,"Obs_1D_err")      #! Display ii.
+		self.OUTDIR_1D_ERR_VSL      =os.path.join(self.OUTDIR,"Obs_1D_err_vsl")  #! Display iii.
+		self.OUTDIR_1D_TXT_RSLT     =os.path.join(self.OUTDIR,"Obs_1D_txt_rslt") #! Display iv.
+		for d in [self.OUTDIR_1D, self.OUTDIR_1D_ERR, self.OUTDIR_1D_ERR_VSL, self.OUTDIR_1D_TXT_RSLT]:
+			if not os.path.exists(d):
+				os.makedirs(d)
 
-		#! Make OUTDIR_ITG_YLD,OUTDIR_ITG_YLD_SS_ERR
-		self.OUTDIR_ITG_YLD=os.path.join(self.OUTDIR,"Obs_Itg_Yld")
-		self.OUTDIR_ITG_YLD_SS_ERR=os.path.join(self.OUTDIR,"Obs_Itg_Yld_SS_err")
-		if not os.path.exists(self.OUTDIR_ITG_YLD):
-			os.makedirs(self.OUTDIR_ITG_YLD)
-		if not os.path.exists(self.OUTDIR_ITG_YLD_SS_ERR):
-			os.makedirs(self.OUTDIR_ITG_YLD_SS_ERR)
-
-		#! 1. Make SS plots for Obs_1D
+		#! Make OUTDIR_ITG,OUTDIR_ITG_ERR,OUTDIR_ITG_ERR_VSL,OUTDIR_ITG_TXT_RSTLS
+		self.OUTDIR_ITG              =os.path.join(self.OUTDIR,"Obs_itg")          #! Display i.
+		self.OUTDIR_ITG_ERR          =os.path.join(self.OUTDIR,"Obs_itg_err")      #! Display ii.
+		self.OUTDIR_ITG_ERR_VSL      =os.path.join(self.OUTDIR,"Obs_itg_err_vsl")  #! Display iii.
+		self.OUTDIR_ITG_TXT_RSLT     =os.path.join(self.OUTDIR,"Obs_itg_txt_rslt") #! Display iv.
+		for d in [self.OUTDIR_ITG, self.OUTDIR_ITG_ERR, self.OUTDIR_ITG_ERR_VSL, self.OUTDIR_ITG_TXT_RSLT]:
+			if not os.path.exists(d):
+				os.makedirs(d)
+		
+		#! 1. Make displays for Obs_1D
 		#! 1.i. Get Q2-W binning from file
 		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
-		print "DispObs::disp_1D_SS():Obs_1D Q2-W bins got from obs_1D.root=",q2wbinl
+		print "DispObs::disp_per_non_vst_SE_results_1D():Obs_1D Q2-W bins got from obs_1D.root=",q2wbinl
 
 		#! 1.ii. Looper over Q2-W bins and get h1(obsnum,seq,vst,var)
-		print "DispObs::disp_1D_SS():Obs_1D Going to begin processing Q2-W bins from file"
+		print "DispObs::disp_per_non_vst_SE_results_1D():Obs_1D Going to begin processing Q2-W bins from file"
 		for q2wbin in q2wbinl:
-			print"Processing q2wbin=",q2wbin
+			print"DispObs::disp_per_non_vst_SE_results_1D(): Processing q2wbin=",q2wbin
 
 			#! 1.iii. Create h1(obsnum,seq,vst,var)
 			h1=OrderedDict()
 			for k in self.OBSD:
 				obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
-				print "DispObs::disp_1D_SS():Obs_1D Processing obsnum:obs:obstag=",obsnum,obs,obstag
+				print "DispObs::disp_per_non_vst_SE_results_1D():Obs_1D Processing obsnum:obs:obstag=",obsnum,obs,obstag
 
 				#! Open file for this obs
 				obsdir=os.path.join(self.OBSDIR,obs)
@@ -801,29 +870,29 @@ class DispObs:
 				#f.Close() 
 			#! End of OBSD loop
 
-			#! 1.iv. Get h1_SS_err(seq,vst,var) from h1(obs,seq,vst,var)
-			h1_SS_err=self.get_SS_err_1D(h1)
+			#! 1.iv. Get results(seq,vst,var) from h1(obs,seq,vst,var)
+			rslts=self.get_per_non_vst_SE_results(h1)
 
 			#! 1.v. Plot h1(obsnum,seq,vst,var)
-			self.plot_1D_SS(h1,h1_SS_err,q2wbin)
+			self.plot_per_non_vst_SE_results_1D(h1,rslts,q2wbin)
 		#! End of q2wbin loop
 
-		#! 2. Make SS plots for Obs_Itg_Yld 
+		#! 2. Make displays for Obs_Itg_Yld 
 		#! 2.i. Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
 		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,dbg=True,dbg_bins=2,from_obs_itg_yld=True)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,from_obs_itg_yld=True)
-		print "DispObs::disp_1D_SS():Obs_Itg_Yld Q2-W bins got from obs_itg_yld.root=",q2wbinl
+		print "DispObs::disp_per_non_vst_SE_results_1D():Obs_Itg_Yld Q2-W bins got from obs_itg_yld.root=",q2wbinl
 
 		#! 2.ii. Create hW(q2wbin,obsnum,seq,vst,var) to store integrated yields
 		hW=OrderedDict()
-		print "DispObs::disp_1D_SS():Obs_Itg_Yld Going to create hW(q2wbin,obsnum,seq,vst,var)"
+		print "DispObs::disp_per_non_vst_SE_results_1D():Obs_Itg_Yld Going to create hW(q2wbin,obsnum,seq,vst,var)"
 		for q2wbin in q2wbinl:
 			print"Processing q2wbin=",q2wbin
 
 			for k in self.OBSD:
 				obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
-				print "DispObs::disp_1D_SS():Obs_Itg_Yld Processing obsnum:obs:obstag=",obsnum,obs,obstag
+				print "DispObs::disp_per_non_vst_SE_results_1D():Obs_Itg_Yld Processing obsnum:obs:obstag=",obsnum,obs,obstag
 
 				#! Open file for this obs
 				obsdir=os.path.join(self.OBSDIR,obs)
@@ -855,29 +924,36 @@ class DispObs:
 		#! end q2wbinl loop
 				
 		#! 2.iii. Plot hW(q2wbin,obsnum,seq,vst,var)
-		self.plot_hW_SS(hW)
+		self.plot_per_non_vst_SE_results_W(hW)
 
-		print "*** disp_1D_SS() Done ***\n"
-		print "DispObs::disp_1D_SS() If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
+		print "*** disp_per_non_vst_SE_results_1D() Done ***\n"
+		print "DispObs::disp_per_non_vst_SE_results_1D() If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
 
-	def get_SS_err_1D(self,h1):
+	def get_per_non_vst_SE_results(self,h1):
 		'''
-		[03-01-16]
+		[08-24-16]
 		+ General comments:
-			+ 'h1' here refers to any of the 1 dim. histograms for Obs_1D,Itg-xsec, Obs_R2
-			+ NOTE that the method actually returns the *relative* SS error.
-			+ NOTE that the calculation of the error on this *relative* SS error is not yet implemented.
-			+ Currently, h1 is either 1D-Obs or itg_xsec(W) and have keys [osbnum,seq,vst,var]
-
+			+ 'h1' here refers to any of the 1 dim. histograms for Obs: itg,1D,R2
+				+ if nkeys==4, then h1=hW[obsnum,seq,vst,var] or h1D[obsnum,seq,vst,var]
+				+ if nkeys==5, then h1=hR2[obsnum,R2,seq,vst,var]
+		
 		+ Details:
-			+ Using h1[osbnum,seq,vst,var] calculate and return h1_SS_err[seq,vst,var]
-			+ Currently, the relative SS error is calcualated as follows:
-				1. Calcualate arithmetic mean for all entries in a bin (mu_bin)
-				2. Calcualate arithmetic sigma for all entries in a bin (sg_bin)
-				3. Relative error = (sg_bin/mu_bin)*100
-		  	+ In that sense, I still have to find a way to obtain the error of this SS error.
+			+ Using h1[keys] calculate (obsnum is the iterated index here and relate to numbered non_vst_SEs):
+			 (for details on formulae used, see handwritten notes)
+				1. (mu         +/- sg_mu)[keys]
+				2. (sg         +/  sg_sg)[keys] 
+				3. (rel_err[%] +/- sg_rel_err[%])[keys]
+					+ where rel_err=sg/fabs(mu) (Absolute value is required for Obs_R2 which can be negative)
+
+			  and return various display of these results, including the full array of results:
+				1. h1_obs[keys]:     histogrammed (mu +/- sg_mu)[keys]
+				2. h1_err[keys]:     histogrammed (sg +/- sg_sg)[keys] 
+				3. h1_rel_err[keys]: histogrammed (rel_err +/- sg_rel_err)[keys]
+				4. rslts[keys]:      results array in the following order (9 pieces of information):
+					+ bin, bin_le, bin_ue, mu, sg_mu, sg, sg_sg, rel_err, sg_rel_err
 		'''
-		h1_SS_err=OrderedDict()
+		#! Create output object dicts
+		h1_obs,h1_err,h1_rel_err,rslts=OrderedDict(),OrderedDict(),OrderedDict(),OrderedDict()		
 
 		#! get nkeys to determine if h1 is h1D/hW or hR2 (hR2 has an additional key for R2)
 		nkeys=len(h1.keys()[0])
@@ -888,27 +964,82 @@ class DispObs:
 				if   vst==1:           varl=['M1','THETA','ALPHA']
 				elif vst==2 or vst==3: varl=['M2','THETA','ALPHA']
 				for var in varl:
-					#! Create h1_SS_err[seq,vst,var] by Cloning and then resetting
-					#! the contents of the h1 of 1st SS-Obs in self.OBSD i.e. h1[1,seq,vst,var]
-					h1_SS_err[seq,vst,var]=h1[1,seq,vst,var].Clone()
-					h1_SS_err[seq,vst,var].Reset()
-					h1_SS_err[seq,vst,var].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-					h1_SS_err[seq,vst,var].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-					h1_SS_err[seq,vst,var].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
-					#! Now loop over all bins can calculate SS err using all obsnum
-					nbins=h1_SS_err[seq,vst,var].GetNbinsX()
+					#! Create output-h1s[seq,vst,var] by Cloning and then resetting
+					#! the contents of the h1 of 1st obsnum in self.OBSD i.e. h1[1,seq,vst,var]
+					h1_obs[seq,vst,var]=h1[1,seq,vst,var].Clone()
+					h1_err[seq,vst,var]=h1[1,seq,vst,var].Clone()
+					h1_rel_err[seq,vst,var]=h1[1,seq,vst,var].Clone()
+					for h in [h1_obs[seq,vst,var],h1_err[seq,vst,var],h1_rel_err[seq,vst,var]]:
+						h.Reset()
+						h.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+						h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+						h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+					#! Create output-rslts
+					rslts[seq,vst,var]=[]
+					#! Now loop over all bins can calculate results using all obsnum
+					nbins=h1_obs[seq,vst,var].GetNbinsX()
 					for ibin in range(nbins):
 						binc,binerr=[],[]
 						for obsnum in self.OBSD:
 							binc.append(h1[obsnum,seq,vst,var].GetBinContent(ibin+1))
 							binerr.append(h1[obsnum,seq,vst,var].GetBinError(ibin+1))
-						SS_mu_bin=np.mean(binc)
-						SS_sg_bin=np.std(binc)
-						if SS_mu_bin==0: SS_rel_err=0
-						else:            SS_rel_err=(SS_sg_bin/SS_mu_bin)*100
-						h1_SS_err[seq,vst,var].SetBinContent(ibin+1,SS_rel_err)
-						#! Till error on SS err is calculated, set err=0 (actually to an insignificantly small value so that ROOT can draw hist with "e" option)
-						h1_SS_err[seq,vst,var].SetBinError(ibin+1,0.00000001)
+						
+						if self.DBG:
+							print "**** DispObs::get_per_non_vst_SE_results():: binc,binerr for seq,vst,var,bin=",seq,vst,var,ibin+1,"***"
+							print "binc=",binc
+							print "binerr=",binerr
+							print "******"
+
+						#! Now calculate results (see handwritten notes for formulae)
+						#! mu,sg_mu 
+						n=len(binc)
+						mu=np.mean(binc)
+						sg_mu=math.sqrt(sum([x**2 for x in binerr]))/n
+						if self.DBG:
+							if n==0: 
+								print "DispObs::get_per_non_vst_SE_results(): n=0 for seq,vst,var,bin=",seq,vst,var,ibin+1
+							print "**** DispObs::get_per_non_vst_SE_results():: binc,binerr for seq,vst,var,bin=",seq,vst,var,ibin+1,"***"
+							print "mu,sg_mu=",mu,sg_mu
+							print "******"
+						#! sg,sg_sg
+						sg=np.std(binc)
+						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
+							sg_sg=0
+						else:
+							sg_sg_1=( 1/(math.sqrt(sg)*n) )
+							sg_sg_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(binc,binerr) ))
+							sg_sg=sg_sg_1*sg_sg_2 
+						#! rel_err,sg_rel_err
+						if mu==0 or sg==0: 
+							rel_err=0
+							sg_rel_err=0
+						else:
+							rel_err=(sg/mu)*100
+							sg_rel_err=(rel_err)*math.sqrt((sg_sg/sg)**2+(sg_mu/mu)**2)
+						#! Store bin information (will be used for passing for full results rslts dict)
+						#! Check to make sure h1 is not hW because for those binning has labels of form:[wmin-wmax]
+						xtitle=h1_obs[seq,vst,var].GetXaxis().GetTitle()
+						if "W" in xtitle:
+							bin_label=h1_obs[seq,vst,var].GetXaxis().GetBinLabel(ibin+1)
+							bin_le=float(bin_label.split(",")[0].strip("["))
+							bin_ue=float(bin_label.split(",")[0].strip("["))
+						else:
+							bin_le=h1_obs[seq,vst,var].GetBinLowEdge(ibin+1)
+							bin_ue=h1_obs[seq,vst,var].GetBinLowEdge(ibin+1+1)
+
+						#! Now fill results in output objects
+						#! mu,sg_mu => h1_obs
+						h1_obs[seq,vst,var].SetBinContent(ibin+1,mu)
+						h1_obs[seq,vst,var].SetBinError(ibin+1,sg_mu)
+						#! sg,sg_sg => h1_err
+						h1_err[seq,vst,var].SetBinContent(ibin+1,sg)
+						h1_err[seq,vst,var].SetBinError(ibin+1,sg_sg)
+						#! rel_err,sg_rel_err => h1_rel_err
+						h1_rel_err[seq,vst,var].SetBinContent(ibin+1,rel_err)
+						h1_rel_err[seq,vst,var].SetBinError(ibin+1,sg_rel_err)
+						#! [bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err] => rslts
+						rslts[seq,vst,var].append([ibin+1, bin_le, bin_ue, mu, sg_mu, sg, sg_sg, rel_err, sg_rel_err])
+						
 		elif nkeys==5: #! i.e. h1 is hR2(obsnum,R2,seq,vst,var)
 			for item in list(itertools.product(R2S,self.SEQS,VSTS)):
 				R2,seq,vst=item[0],item[1],item[2]
@@ -916,27 +1047,62 @@ class DispObs:
 					if var=='PHI': continue
 					#! Create hR2_SS_err[R2,seq,vst,var] by Cloning and then resetting
 					#! the contents of the hR2 of 1st SS-Obs in self.OBSD i.e. hR2[1,R2,seq,vst,var]
-					h1_SS_err[R2,seq,vst,var]=h1[1,R2,seq,vst,var].Clone()
-					h1_SS_err[R2,seq,vst,var].Reset()
-					h1_SS_err[R2,seq,vst,var].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-					h1_SS_err[R2,seq,vst,var].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-					h1_SS_err[R2,seq,vst,var].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+					h1_obs[R2,seq,vst,var]=h1[1,R2,seq,vst,var].Clone()
+					h1_err[R2,seq,vst,var]=h1[1,R2,seq,vst,var].Clone()
+					h1_rel_err[R2,seq,vst,var]=h1[1,R2,seq,vst,var].Clone()
+					for h in [h1_obs[R2,seq,vst,var],h1_err[R2,seq,vst,var],h1_rel_err[R2,seq,vst,var]]:
+						h.Reset()
+						h.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+						h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+						h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
+					#! Create output-rslts
+					rslts[R2,seq,vst,var]=[]
 					#! Now loop over all bins can calculate SS err using all obsnum
-					nbins=h1_SS_err[R2,seq,vst,var].GetNbinsX()
+					nbins=h1_obs[R2,seq,vst,var].GetNbinsX()
 					for ibin in range(nbins):
 						binc,binerr=[],[]
 						for obsnum in self.OBSD:
 							binc.append(h1[obsnum,R2,seq,vst,var].GetBinContent(ibin+1))
 							binerr.append(h1[obsnum,R2,seq,vst,var].GetBinError(ibin+1))
-						SS_mu_bin=np.mean(binc)
-						SS_sg_bin=np.std(binc)
-						if SS_mu_bin==0: SS_rel_err=0
-						else:            SS_rel_err=(SS_sg_bin/SS_mu_bin)*100
-						h1_SS_err[R2,seq,vst,var].SetBinContent(ibin+1,SS_rel_err)
-						#! Till error on SS err is calculated, set err=0 (actually to an insignificantly small value so that ROOT can draw hist with "e" option)
-						h1_SS_err[R2,seq,vst,var].SetBinError(ibin+1,0.00000001)
 
-		return h1_SS_err
+						#! Now calculate results (see handwritten notes for formulae)
+						#! mu,sg_mu 
+						n=len(binc)
+						mu=np.mean(binc)
+						sg_mu=math.sqrt(sum([x**2 for x in binerr]))/n
+						#! sg,sg_sg
+						sg=np.std(binc)
+						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
+							sg_sg=0
+						else:
+							sg_sg_1=( 1/(math.sqrt(sg)*n) )
+							sg_sg_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(binc,binerr) ))
+							sg_sg=sg_sg_1*sg_sg_2 
+						#! rel_err,sg_rel_err
+						if mu==0 or sg==0: 
+							rel_err=0
+							sg_rel_err=0
+						else:
+							rel_err=(sg/math.fabs(mu))*100
+							sg_rel_err=(rel_err)*math.sqrt((sg_sg/sg)**2+(sg_mu/mu)**2)
+						#! Store bin information (will be used for passing for full results rslts dict)
+						bin_le=h1_obs[R2,seq,vst,var].GetBinLowEdge(ibin+1)
+						bin_ue=h1_obs[R2,seq,vst,var].GetBinLowEdge(ibin+1+1)
+
+						#! Now fill results in output objects
+						#! mu,sg_mu => h1_obs
+						h1_obs[R2,seq,vst,var].SetBinContent(ibin+1,mu)
+						h1_obs[R2,seq,vst,var].SetBinError(ibin+1,sg_mu)
+						#! sg,sg_sg => h1_err
+						h1_err[R2,seq,vst,var].SetBinContent(ibin+1,sg)
+						h1_err[R2,seq,vst,var].SetBinError(ibin+1,sg_sg)
+						#! rel_err,sg_rel_err => h1_rel_err
+						h1_rel_err[R2,seq,vst,var].SetBinContent(ibin+1,rel_err)
+						h1_rel_err[R2,seq,vst,var].SetBinError(ibin+1,sg_rel_err)
+						#! [bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err] => rslts
+						rslts[R2,seq,vst,var].append([ibin+1, bin_le, bin_ue, mu, sg_mu, sg, sg_sg, rel_err, sg_rel_err])
+		
+		return h1_obs,h1_err,h1_rel_err,rslts
 
 	def norm_1D(self,h1,q2wbin):
 		print "*** In DispObs::norm_1D() ***"
@@ -1441,15 +1607,26 @@ class DispObs:
 
 		print "*** Done DispObs::plot_h2_itg_yld_all_Q2_same_canvas ***"
 
-	def plot_hW_SS(self,hW):
+	def plot_per_non_vst_SE_results_W(self,hW):
 		'''
 		1. Get q2wbinl from hW(q2wbin,obsnum,seq,vst,var)
 		2. Loop over the q2wbins and for each bin:
 			2.i.   Collect all hW for a particular q2wbin in _hW(obsnum,seq,vst,var)
-			2.ii.  For a particular seq,vst,var, using all obsnum, obtain SS err in hW_SS_err(seq,vst,var)
-			2.iii. For every [EC,EF]*[vst] plot _hW(obsnum,var) and hW_SS_err(var) 
+			2.ii.  For a particular seq,vst,var, using all obsnum, obtain 'results'(seq,vst,var), where 'results':
+				+ hW_obs[seq,vst,var]
+			    + hW_err[seq,vst,var]
+			    + hW_rel_err[seq,vst,var]
+			    + rslts[seq,vst,var]	 
+			2.iii. For every EF*[vst]*THETA display:
+				   (+ Note that full display i.e. [seq]*[vst]*[var] should be done individual SE results: $OBSDIR_E16/SE/cutsncorsX
+				   	+ From there I have already learned that there is only variations due to vst and not in vars within a vst)
+				i.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
+				ii.  To just see relative error (rel_err, sg_rel_err):      hW_rel_err[seq,vst,var]
+				iii. To visually see SE variations:                         _hW(obsnum,seq,vst,var) directly
+				iv.  Text file of full results:                             put rslts[seq,vst,var] in a text file
+				
 		'''
-		print "*** In DispObs::plot_hW_SS() ***"
+		print "*** In DispObs::plot_per_non_vst_SE_results_W() ***"
 		#! Plotting aesthetics
 		ROOT.gStyle.Reset() #! Reset aesthetics which may have been set by some other plot function
 		ROOT.gStyle.SetOptStat("neiuo")
@@ -1460,7 +1637,7 @@ class DispObs:
 		q2wbinl=[k[0] for k in hW.keys()]
 		#! Keep only unique bins
 		q2wbinl=list(set(q2wbinl))
-		print "DispObs::plot_hW_SS() q2wbinl in hW=",q2wbinl
+		print "DispObs::plot_per_non_vst_SE_results_W() q2wbinl in hW=",q2wbinl
 
 		#! 2. Loop over the q2wbins
 		for iq2wbin,q2wbin_sel in enumerate(q2wbinl):
@@ -1478,143 +1655,147 @@ class DispObs:
 				_hW[k].SetMinimum(0.)
 				_hW[k].SetMaximum(maximum)
 
-			#! 2.ii. Get SS err from these _hW 
-			hW_SS_err=self.get_SS_err_1D(_hW)
-			#! fix labels for these histogram
-			for k in hW_SS_err:
-				htitle="Systematic error for %s"%hW_SS_err[k].GetTitle()
-				hW_SS_err[k].SetTitle(htitle)
-				hW_SS_err[k].SetYTitle("Systematic error [%] for itg. xsec")
+			#! 2.ii. Get 'results' from these _hW 
+			results=self.get_per_non_vst_SE_results(_hW)
+			#! unpack results(=h1_obs,h1_err,h1_rel_err,rslts)
+			hW_obs,hW_err,hW_rel_err,rslts=results[0],results[1],results[2],results[3]
 
-			#! 2.iii. For every [EC,EF]*[vst] plot _hW(obsnum,var) and hW_SS_err(var) 
-			#! + First construct vst_vard to obtains vars in a vst
-			vst_vard={1:['M1','THETA','ALPHA'],
-					  2:['M2','THETA','ALPHA'],
-					  3:['M2','THETA','ALPHA']}
-			#! + Now constructed [EC,EF]*[vst] domain to loop over and make plots
+			#! 2.iii. For every EF*[vst]*THETA plot 'results'
+			#! + Now constructed EF*[vst] domain to loop over and make plots
 			d1=list(itertools.product(self.SEQS,VSTS))
 			for r1 in d1:
 				seq,vst=r1[0],r1[1]
-				#! prepare outdir for hW and hW_SS_err
-				outdir_hW=       os.path.join(self.OUTDIR_ITG_YLD,       seq,"VST%d"%(vst))
-				outdir_hW_SS_err=os.path.join(self.OUTDIR_ITG_YLD_SS_ERR,seq,"VST%d"%(vst))
-				if not os.path.exists(outdir_hW):
-					os.makedirs(outdir_hW)
-				if not os.path.exists(outdir_hW_SS_err):
-					os.makedirs(outdir_hW_SS_err)
-
-				#! Plot _hW(obsnum,var) for a particular seq,vst 
+				#! prepare outdirs
+				outdir_hW_obs_err =os.path.join(self.OUTDIR_ITG,"VST%d"%(vst))
+				outdir_hW_err     =os.path.join(self.OUTDIR_ITG_ERR,"VST%d"%(vst))
+				outdir_hW_err_vsl =os.path.join(self.OUTDIR_ITG_ERR_VSL,"VST%d"%(vst))
+				outdir_hW_txt_rslt=os.path.join(self.OUTDIR_ITG_TXT_RSLT,"VST%d"%(vst))
+				for d in [outdir_hW_obs_err,outdir_hW_err,outdir_hW_err_vsl,outdir_hW_txt_rslt]:
+					if not os.path.exists(d):
+						os.makedirs(d)
+				
+				#! Display i: Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
 				ROOT.gStyle.SetOptStat(0)
 				c=ROOT.TCanvas("c","c",1200,800)
-				c.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-				pad_l=ROOT.TPad("pad_l","Title pad",0.80,0.00,1.00,0.90)
-				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,0.80,0.90)
+				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
 				pad_t=ROOT.TPad("pad_p","Plots pad",0.00,0.90,1.00,1.00)
-				pad_l.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-				pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-				pad_l.Draw()
 				pad_p.Draw()
 				pad_t.Draw()
 
 				pad_t.cd()
 				pt=ROOT.TPaveText(.05,.1,.95,.8)
 				q2bin=self.get_q2bin(q2wbin_sel)
-				pt.AddText("Integrated cross-section for Q2=%s from %s,VST%d"%(q2bin,seq,vst))
+				pt.AddText("Integrated cross-section for Q2=%s,VST%d"%(q2bin,vst))
   				pt.SetTextSize(0.32)
   				pt.Draw()
 
 				pad_p.cd()
 				#! Set up some aesthetics particular to hW
 				#! + Give already rotated bin labels by 90 deg. more space
+				#! + Move xaxis title lower to accomodate 90 deg. rotated titles
 				pad_p.SetBottomMargin(0.20)
-				
-				#! legend
-				l=ROOT.TLegend(0.0,0.50,1.00,1.00)
-				l.SetFillStyle(0)
-				l.SetBorderSize(0)
-				l.SetTextSize(0.06)#0.02
-				
-				#! Obtain obsnum*var domain for particular seq,vst
-				obsnuml=self.OBSD.keys()
-				varl=vst_vard[vst]
-				d2=list(itertools.product(obsnuml,varl))
-				i=0
-				for r2 in d2:
-					obsnum,var=r2[0],r2[1]
+				hW_obs[seq,vst,'THETA'].GetXaxis().SetTitleOffset(2.80)
+				hW_err[seq,vst,'THETA'].GetXaxis().SetTitleOffset(2.80)
+				#! Setup aesthetics for hW_err
+				#! Since transparency is not working (for details see hist_R2_athtcs_non_vst_SE) , the following is a good replacement
+				hW_err[seq,vst,'THETA'].SetFillColor(ROOT.gROOT.ProcessLine("kBlue"))
+				hW_err[seq,vst,'THETA'].SetFillStyle(3003)
+				hW_err[seq,vst,'THETA'].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+				hW_err[seq,vst,'THETA'].SetMarkerStyle(ROOT.gROOT.ProcessLine("kDot"))
+				hW_err[seq,vst,'THETA'].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
+				#! Draw
+				hW_obs[seq,vst,'THETA'].SetTitle("")
+				hW_err[seq,vst,'THETA'].SetTitle("")
+				hW_obs[seq,vst,'THETA'].SetMinimum(0)
+				hW_err[seq,vst,'THETA'].SetMinimum(0)
+				hW_obs[seq,vst,'THETA'].Draw()
+				hW_err[seq,vst,'THETA'].Draw("hist e same")
+				c.SaveAs("%s/c_q%s.png"%(outdir_hW_obs_err,q2wbin_sel))
+
+				#! Display ii.  To just see relative error (rel_err, sg_rel_err):      hW_rel_err[seq,vst,var]
+				ROOT.gStyle.SetOptStat(0)
+				c=ROOT.TCanvas("c","c",1200,800)
+				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
+				pad_t=ROOT.TPad("pad_p","Plots pad",0.00,0.90,1.00,1.00)
+				pad_p.Draw()
+				pad_t.Draw()
+
+				pad_t.cd()
+				pt=ROOT.TPaveText(.05,.1,.95,.8)
+				q2bin=self.get_q2bin(q2wbin_sel)
+				pt.AddText("Relative error for integrated cross-section for Q2=%s,VST%d"%(q2bin,vst))
+  				pt.SetTextSize(0.32)
+  				pt.Draw()
+
+				pad_p.cd()
+				#! Set up some aesthetics particular to hW
+				#! + Give already rotated bin labels by 90 deg. more space
+				#! + Move xaxis title lower to accomodate 90 deg. rotated titles
+				pad_p.SetBottomMargin(0.20)
+				hW_rel_err[seq,vst,'THETA'].GetXaxis().SetTitleOffset(2.80)
+				#! Draw
+				hW_rel_err[seq,vst,'THETA'].SetTitle("")
+				hW_rel_err[seq,vst,'THETA'].SetYTitle("error [%] in #sigma")
+				hW_rel_err[seq,vst,'THETA'].SetMinimum(0)
+				hW_rel_err[seq,vst,'THETA'].SetMaximum(40)
+				hW_rel_err[seq,vst,'THETA'].Draw()
+				c.SaveAs("%s/c_q%s.png"%(outdir_hW_err,q2wbin_sel))
+
+				#! Display iii.: Plot _hW(obsnum,seq,vst,var) directly
+				ROOT.gStyle.SetOptStat(0)
+				c=ROOT.TCanvas("c","c",1200,800)
+				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
+				pad_t=ROOT.TPad("pad_p","Plots pad",0.00,0.90,1.00,1.00)
+				pad_p.Draw()
+				pad_t.Draw()
+
+				pad_t.cd()
+				pt=ROOT.TPaveText(.05,.1,.95,.8)
+				q2bin=self.get_q2bin(q2wbin_sel)
+				pt.AddText("Integrated cross-section for Q2=%s,VST%d"%(q2bin,vst))
+  				pt.SetTextSize(0.32)
+  				pt.Draw()
+
+				pad_p.cd()
+				#! Set up some aesthetics particular to hW
+				#! + Give already rotated bin labels by 90 deg. more space
+				#! + Move xaxis title lower to accomodate 90 deg. rotated titles
+				pad_p.SetBottomMargin(0.20)
+				#! _hW[obsnum,seq,vst,var].GetXaxis().SetTitleOffset(2.80) is done inside obsnum loop that follows	
+								
+				for i,obsnum in enumerate(self.OBSD.keys()):#obsnum in obsnuml: 
+					var='THETA'
 					obstag=self.OBSD[obsnum][1]
 					draw_opt=""
 					if i>0: draw_opt="same"
 					#! setup histogram aesthetics
 					_hW[obsnum,seq,vst,var].SetTitle("")
-					mrk=MRKS_N2[obsnum-1]
-					if   var=='M1' or var=='M2':clr=CLRS_N2[0]
-					elif var=='THETA':          clr=CLRS_N2[1]
-					elif var=='ALPHA':          clr=CLRS_N2[2]
+					#! + Move xaxis title lower to accomodate 90 deg. rotated titles
+					_hW[obsnum,seq,vst,var].GetXaxis().SetTitleOffset(2.80)
+					mrk=ROOT.gROOT.ProcessLine("kFullDotLarge")
+					clr=CLRS_N[obsnum-1]
 					_hW[obsnum,seq,vst,var].SetMarkerStyle(mrk)
 					_hW[obsnum,seq,vst,var].SetMarkerColor(clr)
 					_hW[obsnum,seq,vst,var].SetLineColor(clr)
 					#! Draw
 					_hW[obsnum,seq,vst,var].Draw(draw_opt)
-					#! Add to legend
-					l.AddEntry(_hW[obsnum,seq,vst,var],"obsnum-%d_%s"%(obsnum,var),"p")
-					i+=1
-				pad_l.cd()
-				l.Draw()
-				c.SaveAs("%s/c_q%s.png"%(outdir_hW,q2wbin_sel))
+				#! Also draw hW_obs and hW_err here
+				hW_obs[seq,vst,'THETA'].Draw("same")
+				hW_err[seq,vst,'THETA'].Draw("hist e same")
+				c.SaveAs("%s/c_q%s.png"%(outdir_hW_err_vsl,q2wbin_sel))
 
-				#! Plot _hW_SS_err(obsnum,var) for a particular seq,vst 
-				ROOT.gStyle.SetOptStat(0)
-				cerr=ROOT.TCanvas("cerr","cerr",1200,800)
-				pad_l=ROOT.TPad("pad_l","Title pad",0.80,0.00,1.00,0.90)
-				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,0.80,0.90)
-				pad_t=ROOT.TPad("pad_p","Plots pad",0.00,0.90,1.00,1.00)
-				pad_l.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-				pad_p.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
-				pad_l.Draw()
-				pad_p.Draw()
-				pad_t.Draw()
+				#! Display iv.  Text file of full results: put rslts[EF,vst,THETA] in a text file
+				outdir_hW_txt_rslt_q2wbin=("%s/%s"%(outdir_hW_txt_rslt,q2wbin_sel))
+				if not os.path.exists(outdir_hW_txt_rslt_q2wbin):
+					os.makedirs(outdir_hW_txt_rslt_q2wbin)
+				ftxt=open("%s/vst%s.txt"%(outdir_hW_txt_rslt_q2wbin,vst),"w")
+			 	#! Loop over rslts per bin in rslts and write to file
+				for d in rslts[seq,vst,'THETA']:
+					bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
+					ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
+				ftxt.close()
 
-				pad_t.cd()
-				pt=ROOT.TPaveText(.05,.1,.95,.8)
-				q2bin=self.get_q2bin(q2wbin_sel)
-				pt.AddText("Systematic error on integrated cross-section for Q2=%s from %s,VST%d"%(q2bin,seq,vst))
-  				pt.SetTextSize(0.32)
-  				pt.Draw()
-
-				pad_p.cd()
-				#! Set up some aesthetics particular to hW
-				#! + Give already rotated bin labels by 90 deg. more space
-				pad_p.SetBottomMargin(0.20)
-				
-				#! legend
-				l=ROOT.TLegend(0.0,0.50,1.00,1.00)
-				l.SetFillStyle(0)
-				l.SetBorderSize(0)
-				l.SetTextSize(0.06)#0.02
-				
-				j=0
-				for var in varl:
-					hW_SS_err[seq,vst,var].SetMinimum(0)
-					hW_SS_err[seq,vst,var].SetMaximum(20)
-					draw_opt=""
-					if j>0: draw_opt="same"
-					#! setup histogram aesthetics
-					hW_SS_err[seq,vst,var].SetTitle("")
-					if   var=='M1' or var=='M2':clr=CLRS_N2[0]
-					elif var=='THETA':          clr=CLRS_N2[1]
-					elif var=='ALPHA':          clr=CLRS_N2[2]
-					hW_SS_err[seq,vst,var].SetMarkerColor(clr)
-					hW_SS_err[seq,vst,var].SetLineColor(clr)
-					#! Draw
-					hW_SS_err[seq,vst,var].Draw(draw_opt)
-					#! Add to legend
-					l.AddEntry(hW_SS_err[seq,vst,var],var,"p")
-					j+=1
-				pad_l.cd()
-				l.Draw()
-				cerr.SaveAs("%s/c_q%s.png"%(outdir_hW_SS_err,q2wbin_sel))
-
-		print "*** plot_hW_SS() Done ***\n"
+		print "*** plot_per_non_vst_SE_results_W() Done ***\n"
 
 	def fill_h2_itg_yld(self,h2,h1,iq2bin,iwbin):
 		print "*** In DispObs::fill_h2_itg_yld ***"
@@ -2118,15 +2299,17 @@ class DispObs:
 	def get_wbin_ue(self,q2wbin):
 		return float(self.get_wbin(q2wbin).split('-')[1])
 	
-	def hist_1D_athtcs(self,h1):
+	def hist_1D_athtcs(self,h1,err_type=None):
 		'''
 		[03-02-16]
 		After addition of self.DO_SS_STUDY, this method was modified so that it can understand 
 		the type of h1 being passed, which could be either of the following depending on the condition (noted
 		in parenthesis and programmed into the logic of this function):
-		+ h1(seq,vst,var)        (nkeys=3)
+		+ h1(seq,vst,var)        (nkeys=3 and self.DO_SS_STUDY=false)
 		+ h1(obsnum,seq,vst,var) (nkeys=4)
-		+ h1_SS_err(seq,vst,var) (nkeys=3 and self.DO_SS_STUDY=true)
+		+ h1_obs(seq,vst,var) (nkeys=3)
+		+ h1_err(seq,vst,var) (nkeys=3 and self.DO_SS_STUDY=true and err_type="err")
+		+ h1_rel_err(seq,vst,var) (nkeys=3 and self.DO_SS_STUDY=true and err_type="rel_err")
 		'''
 		#! First determine if h1 has 3 or 4 keys(3 keys=seq,vst,var; 4 keys=obsnum,seq,vst,var)
 		#! + This structure of h1 depends on self.DO_SS_STUDY
@@ -2157,24 +2340,41 @@ class DispObs:
 				# mrk=MRKS_CLRS_N_COORDS_DICT[obsnum][0]
 				# clr=MRKS_CLRS_N_COORDS_DICT[obsnum][1]
 
-				mrk=MRKS_N2[obsnum-1]
-				clr=ROOT.gROOT.ProcessLine("kBlack")
-				# if var=='M1' or var=='M2':clr=CLRS_N2[0]
-				# elif var=='THETA':        clr=CLRS_N2[1]
-				# elif var=='ALPHA':        clr=CLRS_N2[2]
+				# mrk=MRKS_N2[obsnum-1]
+				# clr=ROOT.gROOT.ProcessLine("kBlack")
+				# # if var=='M1' or var=='M2':clr=CLRS_N2[0]
+				# # elif var=='THETA':        clr=CLRS_N2[1]
+				# # elif var=='ALPHA':        clr=CLRS_N2[2]
+				clr=CLRS_N[obsnum-1]
+				mrk=ROOT.gROOT.ProcessLine("kFullDotLarge")
 				h1[k].SetMarkerStyle(mrk)
 				h1[k].SetMarkerColor(clr)
 				h1[k].SetLineColor(clr)
-			elif nkeys==3 and self.DO_SS_STUDY: #! i.e. self.DO_SS_STUDY=true and it is h1_SS_err
+			elif nkeys==3 and self.DO_SS_STUDY==True and err_type=="err": #! i.e. self.DO_SS_STUDY=true and it is h1_SS_err
 				if var!='THETA':
-					h1[k].SetYTitle("Systematic error [%%] for #Delta#sigma/#Delta%s"%(VAR_NAMES[(vst,var)]))
+					h1[k].SetYTitle("Absolute error in #Delta#sigma/#Delta%s"%(VAR_NAMES[(vst,var)]))
 				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
-					h1[k].SetYTitle("Systematic error [%%] for #Delta#sigma/#Deltacos(%s)"%(VAR_NAMES[(vst,var)]))
+					h1[k].SetYTitle("Absolute error in #Delta#sigma/#Deltacos(%s)"%(VAR_NAMES[(vst,var)]))
+				
+				#! Since transparency is not working (for details see hist_R2_athtcs_non_vst_SE) , the following is a good replacement
+				h1[k].SetFillColor(ROOT.gROOT.ProcessLine("kBlue"))
+				h1[k].SetFillStyle(3003)
+				h1[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+				h1[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kDot"))
+				h1[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
+
+			elif nkeys==3 and self.DO_SS_STUDY==True and err_type=="rel_err": #! i.e. self.DO_SS_STUDY=true and it is h1_SS_err
+				if var!='THETA':
+					#! Remove "Relative from title to save space"
+					h1[k].SetYTitle("Error [%%] in #Delta#sigma/#Delta%s"%(VAR_NAMES[(vst,var)]))
+				elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
+					#! Remove "Relative from title to save space"
+					h1[k].SetYTitle("Error [%%] in #Delta#sigma/#Deltacos(%s)"%(VAR_NAMES[(vst,var)]))
 				
 				h1[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 				h1[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				h1[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
-			elif nkeys==3:
+			elif nkeys==3 and self.DO_SS_STUDY==False:
 				if self.VIEW=="norm":
 					if var!='THETA':
 						h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
@@ -2223,74 +2423,146 @@ class DispObs:
 			hR2d[k].GetYaxis().SetTitleSize(0.10)
 		print("DispObs::hist_R2_athtcs()")
 
-	def hist_R2_athtcs_SS(self,hR2,hR2_SS_err):
+	def hist_R2_athtcs_non_vst_SE(self,hR2,err_type=None):
 		'''
 		[04-14-16]
-		+ The only difference between 'hist_R2_athtcs()' and 'hist_R2_athtcs_SS()' is in
+		+ The only difference between 'hist_R2_athtcs()' and 'hist_R2_athtcs_non_vst_SE()' is in
 		  the arguments of the functions and this is related to the differences of the process
-		  of 'disp_R2' and 'disp_R2_SS': while the former process a single R2 at a time, the latter 
+		  of 'disp_R2' and 'disp_per_non_vst_SE_results_R2': while the former process a single R2 at a time, the latter 
 		  not only processes all R2s, but also calculates SS err on them
+
+		+ The aesthetic setup below is as per the hR2 which are reconized by:
+			+ hR2(obsnum,R2,seq,vst,var)  (nkeys=5)
+			+ hR2_obs(R2,seq,vst,var)     (nkeys=4 and err_type=None)
+			+ hR2_err(R2,seq,vst,var)     (nkeys=4 and err_type="err")
+			+ hR2_rel_err(seq,vst,var)    (nkeys=4 and err_type="rel_err")
 		'''
-		print("DispObs::hist_R2_athtcs_SS()")
+		print("DispObs::hist_R2_athtcs_non_vst_SE()")
 
-		#! First setup aesthetics for hR2
-		for k in hR2:
-			obsnum,R2,seq,vst,var=k[0],k[1],k[2],k[3],k[4]
+		#! First determine number of keys in hR2 on which the subsequent algorithm depends
+		nkeys=len(hR2.keys()[0])
 
-			mrk=MRKS_N2[obsnum-1]
-			clr=ROOT.gROOT.ProcessLine("kBlack")
-			hR2[k].SetMarkerStyle(mrk) 
-			hR2[k].SetMarkerColor(clr)
-			hR2[k].SetLineColor(clr)
+		if nkeys==5:
+			for k in hR2:
+				obsnum,R2,seq,vst,var=k[0],k[1],k[2],k[3],k[4]
 
-			hR2[k].SetTitle("")
-			hR2[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
-			#! post VM-fdbk
-			#hR2[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			#! tchncl problem with following
-			#hR2[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
-			hR2[k].SetYTitle("%s ^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			#! Solution 2: _{phi_{i}}R2^{X_{ij}}
-			#hR2[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				mrk=ROOT.gROOT.ProcessLine("kFullDotLarge")
+				clr=CLRS_N[obsnum-1]
+				hR2[k].SetMarkerStyle(mrk) 
+				hR2[k].SetMarkerColor(clr)
+				hR2[k].SetLineColor(clr)
 
-			#! X-axis title aesthetics
-			hR2[k].GetXaxis().SetTitleOffset(0.7)
-			hR2[k].GetXaxis().SetLabelSize(0.05)
-			hR2[k].GetXaxis().SetTitleSize(0.10)
-			#! Y-axis title aesthetics
-			hR2[k].GetYaxis().SetTitleOffset(0.7)
-			hR2[k].GetYaxis().SetLabelSize(0.05)
-			hR2[k].GetYaxis().SetTitleSize(0.10)
+				hR2[k].SetTitle("")
+				hR2[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+				#! post VM-fdbk
+				#hR2[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! tchncl problem with following
+				#hR2[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
+				hR2[k].SetYTitle("%s ^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! Solution 2: _{phi_{i}}R2^{X_{ij}}
+				#hR2[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 
-		#! Now setup aesthetics for hR2_SS_err
-		for k in hR2_SS_err:
-			R2,seq,vst,var=k[0],k[1],k[2],k[3]
+				#! X-axis title aesthetics
+				hR2[k].GetXaxis().SetTitleOffset(0.7)
+				hR2[k].GetXaxis().SetLabelSize(0.05)
+				hR2[k].GetXaxis().SetTitleSize(0.10)
+				#! Y-axis title aesthetics
+				hR2[k].GetYaxis().SetTitleOffset(0.7)
+				hR2[k].GetYaxis().SetLabelSize(0.05)
+				hR2[k].GetYaxis().SetTitleSize(0.10)
+		elif nkeys==4 and err_type==None:
+			for k in hR2:
+				R2,seq,vst,var=k[0],k[1],k[2],k[3]
 			
-			hR2_SS_err[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge")) 
-			hR2_SS_err[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-			hR2_SS_err[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hR2[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge")) 
+				hR2[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hR2[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 
-			hR2_SS_err[k].SetTitle("")
-			hR2_SS_err[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
-			#! post VM-fdbk
-			#hR2[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			#! tchncl problem with following
-			#hR2[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
-			hR2_SS_err[k].SetYTitle("Systematic error [%%] for %s ^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
-			#! Solution 2: _{phi_{i}}R2^{X_{ij}}
-			#hR2[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				hR2[k].SetTitle("")
+				hR2[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+				#! post VM-fdbk
+				#hR2[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! tchncl problem with following
+				#hR2[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
+				hR2[k].SetYTitle("%s ^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! Solution 2: _{phi_{i}}R2^{X_{ij}}
+				#hR2[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
 
-			#! X-axis title aesthetics
-			hR2_SS_err[k].GetXaxis().SetTitleOffset(0.7)
-			hR2_SS_err[k].GetXaxis().SetLabelSize(0.05)
-			hR2_SS_err[k].GetXaxis().SetTitleSize(0.10)
-			#! Y-axis title aesthetics
-			hR2_SS_err[k].GetYaxis().SetTitleOffset(0.7)
-			hR2_SS_err[k].GetYaxis().SetLabelSize(0.05)
-			hR2_SS_err[k].GetYaxis().SetTitleSize(0.10)
-		print("DispObs::hist_R2_athtcs_SS()")
+				#! X-axis title aesthetics
+				hR2[k].GetXaxis().SetTitleOffset(0.7)
+				hR2[k].GetXaxis().SetLabelSize(0.05)
+				hR2[k].GetXaxis().SetTitleSize(0.10)
+				#! Y-axis title aesthetics
+				hR2[k].GetYaxis().SetTitleOffset(0.7)
+				hR2[k].GetYaxis().SetLabelSize(0.05)
+				hR2[k].GetYaxis().SetTitleSize(0.10)
+		elif nkeys==4 and err_type=="err":
+			for k in hR2:
+				R2,seq,vst,var=k[0],k[1],k[2],k[3]
+			
+				#! Transparency for SetFillColor, which worked using the same code
+				#! in iPython, does not work here and also in a simpler test.py
+				# colmg=ROOT.gROOT.GetColor(ROOT.gROOT.ProcessLine("kBlue"))
+				# colmg.SetAlpha(0.05)
+				# print "colmg=",colmg.GetNumber()
+				# hR2[k].SetFillColor(colmg.GetNumber())
+				
+				#! Since transparency is not working, the following is a good replacement
+				hR2[k].SetFillColor(ROOT.gROOT.ProcessLine("kBlue"))
+				hR2[k].SetFillStyle(3003)
+				hR2[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+				hR2[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kDot"))
+				hR2[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlue"))
+
+				hR2[k].SetTitle("")
+				hR2[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+				#! post VM-fdbk
+				#hR2[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! tchncl problem with following
+				#hR2[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
+				hR2[k].SetYTitle(" Absolute error in %s ^{%s}_{%s}"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')]))
+				#! Solution 2: _{phi_{i}}R2^{X_{ij}}
+				#hR2[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+
+				#! X-axis title aesthetics
+				hR2[k].GetXaxis().SetTitleOffset(0.7)
+				hR2[k].GetXaxis().SetLabelSize(0.05)
+				hR2[k].GetXaxis().SetTitleSize(0.10)
+				#! Y-axis title aesthetics
+				hR2[k].GetYaxis().SetTitleOffset(0.7)
+				hR2[k].GetYaxis().SetLabelSize(0.05)
+				hR2[k].GetYaxis().SetTitleSize(0.10)
+		elif nkeys==4 and err_type=="rel_err":
+			for k in hR2:
+				R2,seq,vst,var=k[0],k[1],k[2],k[3]
+			
+				hR2[k].SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge")) 
+				hR2[k].SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				hR2[k].SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+
+				hR2[k].SetTitle("")
+				hR2[k].SetXTitle( "%s%s"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES[var]) )
+				#! post VM-fdbk
+				#hR2[k].SetYTitle("%s [#mub/%s]"%(R2_NAMED[R2],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! tchncl problem with following
+				#hR2[k].SetYTitle("%s^{%s}_{%s} [#mub/%s]"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+				#! Solution 2: _R2 ^{X_{ij}}_{phi_{i}}
+				hR2[k].SetYTitle("Error [%%] in %s ^{%s}_{%s}"%(R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')]))
+				#! Solution 2: _{phi_{i}}R2^{X_{ij}}
+				#hR2[seq,vst,var].SetYTitle("_{%s}%s^{%s}_{%s} [#mub/%s]"%(VAR_NAMES[(vst,'PHI')],R2_NAMED[R2],VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+
+				#! X-axis title aesthetics
+				hR2[k].GetXaxis().SetTitleOffset(0.7)
+				hR2[k].GetXaxis().SetLabelSize(0.05)
+				hR2[k].GetXaxis().SetTitleSize(0.10)
+				#! Y-axis title aesthetics
+				hR2[k].GetYaxis().SetTitleOffset(0.7)
+				hR2[k].GetYaxis().SetLabelSize(0.05)
+				hR2[k].GetYaxis().SetTitleSize(0.10) #0.10->0.08 to accomodate "Error (...)"
+		print("DispObs::hist_R2_athtcs_non_vst_SE()")
 
 
 	def plot_1D_athtcs(self):
@@ -2384,41 +2656,48 @@ class DispObs:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_R2_SS(self):
+	def disp_per_non_vst_SE_results_R2(self):
 		"""
-		[04-14-16]
+		[08-26-16]
 		This function uses the following output .root file from observables in self.OBSD:
 		+ For Obs_R2: Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root 
 		
 		0. Make all needed output directories
 		
-		1. Make SS plots for Obs_R2
+		1. Make displays for Obs_R2
 		1.i.   Get Q2-W binning from any of the obs_R2.root files in self.OBSD
 		1.ii.  Looper over Q2-W bins and for every Q2-W bin: 
-			1.iii  Create hR2(obsnum,R2,seq,vst,var)
-			1.iv.  For a particular R2,seq,vst,var, using all obsnum, obtain hR2_SS_err(R2,seq,vst,var)
-			1.v.   Plot hR2(obsnum,seq,vst,var) and hR2_SS_err(R2,seq,vst,var)
+			1.iii  Create hR2[obsnum,R2,seq,vst,var]
+			1.iv.  For [R2,seq,vst,var] using all obsnum, obtain 'results'(R2,seq,vst,var) from 
+	       'get_per_non_vst_SE_results()' where 'results' are (see function for details):
+	       		+ hR2_obs[R2,seq,vst,var]
+	       		+ hR2_err[R2,seq,vst,var]
+	       		+ hR2_rel_err[R2,seq,vst,var]
+	       		+ rslts[R2,seq,vst,var]
+			1.v.   Display Obs_R2
+				i.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hR2_obs[R2,seq,vst,var] and hR2_err[seq,vst,var] together
+				ii.  To just see relative error (rel_err, sg_rel_err):      hR2_rel_err[R2,seq,vst,var]
+				iii. To visually see SE variations:                         hR2(R2,obsnum,seq,vst,var) directly
+				iv.  Text file of full results: 							put rslts[R2,seq,vst,var] in a text file
 		
 		"""
-		print "*** In DispObs::disp_R2_SS() ***"
+		print "*** In DispObs::disp_per_non_vst_SE_results_R2() ***"
 
 		#! 0. Make output directories
-		#! Make OUTDIR_R2,OUTDIR_R2_SS_ERR
-		self.OUTDIR_R2=os.path.join(self.OUTDIR,"Obs_R2")
-		self.OUTDIR_R2_SS_ERR=os.path.join(self.OUTDIR,"Obs_R2_SS_err")
-		if not os.path.exists(self.OUTDIR_R2):
-			os.makedirs(self.OUTDIR_R2)
-		if not os.path.exists(self.OUTDIR_R2_SS_ERR):
-			os.makedirs(self.OUTDIR_R2_SS_ERR)
+		self.OUTDIR_R2              =os.path.join(self.OUTDIR,"Obs_R2")          #! Display i.
+		self.OUTDIR_R2_ERR          =os.path.join(self.OUTDIR,"Obs_R2_err")      #! Display ii.
+		self.OUTDIR_R2_ERR_VSL      =os.path.join(self.OUTDIR,"Obs_R2_err_vsl")  #! Display iii.
+		self.OUTDIR_R2_TXT_RSLT     =os.path.join(self.OUTDIR,"Obs_R2_txt_rslt") #! Display iv.
+		
 
-		#! 1. Make SS plots for Obs_R2
+		#! 1. Make displays for Obs_R2
 		#! 1.i. Get Q2-W binning from file
 		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2,from_obs_R2=True)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,from_obs_R2=True)
-		print "DispObs::disp_R2_SS():Obs_1D Q2-W bins got from obs_R2.root=",q2wbinl
+		print "DispObs::disp_per_non_vst_SE_results_R2():Obs_1D Q2-W bins got from obs_R2.root=",q2wbinl
 
 		#! 1.ii. Looper over Q2-W bins and get hR2(obsnum,R2,seq,vst,var)
-		print "DispObs::disp_R2_SS():Obs_1D Going to begin processing Q2-W bins from file"
+		print "DispObs::disp_per_non_vst_SE_results_R2():Obs_1D Going to begin processing Q2-W bins from file"
 		for q2wbin in q2wbinl:
 			print"Processing q2wbin=",q2wbin
 
@@ -2426,7 +2705,7 @@ class DispObs:
 			hR2=OrderedDict()
 			for k in self.OBSD:
 				obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
-				print "DispObs::disp_R2_SS():Obs_R2 Processing obsnum:obs:obstag=",obsnum,obs,obstag
+				print "DispObs::disp_per_non_vst_SE_results_R2():Obs_R2 Processing obsnum:obs:obstag=",obsnum,obs,obstag
 
 				#! Open file for this obs
 				obsdir=os.path.join(self.OBSDIR,obs)
@@ -2456,12 +2735,12 @@ class DispObs:
 				#f.Close() 
 			#! End of OBSD loop
 
-			#! 1.iv. Get h1_SS_err(seq,vst,var) from h1(obs,seq,vst,var)
-			hR2_SS_err=self.get_SS_err_1D(hR2)
+			#! 1.iv. Get results(R2,seq,vst,var) from hR2(obsnum,R2,seq,vst,var)
+			rslts=self.get_per_non_vst_SE_results(hR2)
 			#print "debug",hR2_SS_err.keys()
 
 			#! 1.v. Plot hR2(obsnum,R2,seq,vst,var)
-			self.plot_R2_SS(hR2,hR2_SS_err,q2wbin)
+			self.plot_per_non_vst_SE_results_R2(hR2,rslts,q2wbin)
 		#! End of q2wbin loop
 
 	def extract_and_plot_R2(self,q2wbin,h5d,R2l,mthd,plotphiproj):
@@ -2789,20 +3068,26 @@ class DispObs:
 		print "Done DispObs::plot_R2()"
 		return
 
-	def plot_R2_SS(self,hR2,hR2_SS_err,q2wbin):
+	def plot_per_non_vst_SE_results_R2(self,hR2,results,q2wbin):
 		"""
 		[04-14-16]
 		+ 'plot_R2' was used as a tempate for this method
 		+ The idea is extend the method to incorporate plotting of a 
-		  list of SS-Obs and the associated SS-err
+		  list of SE-Obs and the associated set of 'results'
 		+ Therefore only details relevant to the above were changed and the core functionality left intact
 		"""
 
-		print "In DispObs::plot_R2_SS()"
+		print "In DispObs::plot_per_non_vst_SE_results_R2()"
+
+		#! unpack results(=h1_obs,h1_err,h1_rel_err,rslts)
+		hR2_obs,hR2_err,hR2_rel_err,rslts=results[0],results[1],results[2],results[3]
 
 		#! Set up some plotting related styles and aesthetics 
 		self.plot_R2_athtcs()
-		self.hist_R2_athtcs_SS(hR2,hR2_SS_err)
+		self.hist_R2_athtcs_non_vst_SE(hR2)
+		self.hist_R2_athtcs_non_vst_SE(hR2_obs)
+		self.hist_R2_athtcs_non_vst_SE(hR2_err,"err")
+		self.hist_R2_athtcs_non_vst_SE(hR2_rel_err,"rel_err")
 
 		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
 		#! post VM-fdbk
@@ -2817,11 +3102,16 @@ class DispObs:
 		npadsy=4
 		npads=npadsx*npadsy
 
-		#! First plot hR2 for every {R2}*{EC,EF}
 		for item in list(itertools.product(R2S,self.SEQS)):
 			R2,seq=item[0],item[1]
-			print "DispObs::plot_R2_SS() Plotting hR2 for q2wbin=%s,R2=%s,seq=%s"%(q2wbin,R2,seq)
-			c=ROOT.TCanvas("c","c",1000,1000)
+			print "DispObs::plot_per_non_vst_SE_results_R2() Plotting hR2 for q2wbin=%s,R2=%s,seq=%s"%(q2wbin,R2,seq)
+
+			#! Get q2wbin information that will be used below
+			q2bin=self.get_q2bin(q2wbin)
+			wbin=self.get_wbin(q2wbin)
+
+			#! 1. Draw hR2_obs,hR2_err to directly verify mu,sg etc calculated from obsum
+			c1=ROOT.TCanvas("c1","c1",1000,1000)
 			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
 			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
   			pad_p.Draw()
@@ -2840,12 +3130,91 @@ class DispObs:
 				gpad=pad_p.cd(pad)
 
 				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_R2_SS' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
+				#! because for 'disp_per_non_vst_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
+				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+
+				#! 3. Finally draw
+				hR2_obs[R2,seq,vst,var].Draw()
+				hR2_err[R2,seq,vst,var].Draw("hist e same")
+							
+				#! Draw TLine only if ymin<0 for any of hR2 for various obsnum
+				if hR2_obs[R2,seq,vst,var].GetMinimum()<0:
+					ln[pad-1]=ROOT.TLine(hR2_obs[R2,seq,vst,var].GetXaxis().GetXmin(),0,hR2_obs[R2,seq,vst,var].GetXaxis().GetXmax(),0)
+					ln[pad-1].Draw("same")
+			
+			outdir_R2=os.path.join(self.OUTDIR_R2,R2)
+			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
+			if not os.path.exists(outdir_q2bin):
+				os.makedirs(outdir_q2bin)
+			c1.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+			c1.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			c1.Close()
+
+			#! 2. Draw hR2_rel_err 
+			c2=ROOT.TCanvas("c2","c2",1000,1000)
+			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
+			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  			pad_p.Draw()
+  			pad_t.Draw()
+  			pad_t.cd()
+  			pt=ROOT.TPaveText(.05,.1,.95,.8)
+  			pt.AddText("Error in %s for Q2,W = %s,seq=%s"%(R2_NAMED[R2],q2wbin,seq))
+  			pt.SetTextSize(0.42)
+  			pt.Draw()
+  			pad_p.Divide(npadsx,npadsy)
+  			
+			for item in pad_map:
+				pad,vst,var=item[0],item[1],item[2]
+				print "pad,vst,var=",pad,vst,var
+				gpad=pad_p.cd(pad)
+
+				#! The following check is not applicable here as is for 'plot_R2()''
+				#! because for 'disp_per_non_vst_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
+				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+
+				#! 3. Finally draw
+				hR2_rel_err[R2,seq,vst,var].SetMinimum(0)
+				hR2_rel_err[R2,seq,vst,var].SetMaximum(200)
+				hR2_rel_err[R2,seq,vst,var].Draw()
+							
+			outdir_R2=os.path.join(self.OUTDIR_R2_ERR,R2)
+			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
+			if not os.path.exists(outdir_q2bin):
+				os.makedirs(outdir_q2bin)
+			c2.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+			c2.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			c2.Close()
+
+			#! 3. Draw hR2[obsnum,R2,seq,vst,var] for visual verification
+			#! + Draw hR2_obs,hR2_err also to directly verify mu,sg etc calculated from obsum
+			#!c=ROOT.TCanvas("c","c",1000,1000)
+			c3=ROOT.TCanvas("c3","c3",1000,1000)
+			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
+			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  			pad_p.Draw()
+  			pad_t.Draw()
+  			pad_t.cd()
+  			pt=ROOT.TPaveText(.05,.1,.95,.8)
+  			pt.AddText("%s for Q2,W = %s,seq=%s"%(R2_NAMED[R2],q2wbin,seq))
+  			pt.SetTextSize(0.42)
+  			pt.Draw()
+  			pad_p.Divide(npadsx,npadsy)
+  			#! TLine, for each pad, for ln at y=0
+  			ln=[0 for i in range(npads)]
+			for item in pad_map:
+				pad,vst,var=item[0],item[1],item[2]
+				print "pad,vst,var=",pad,vst,var
+				gpad=pad_p.cd(pad)
+
+				#! The following check is not applicable here as is for 'plot_R2()''
+				#! because for 'disp_per_non_vst_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
 				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
 				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 
 				#! Prepare to draw histograms
-				#! [04-14-16] I am not sure why the following is not working as expected for plot_R2_SS:
+				#! [04-14-16] I am not sure why the following is not working as expected for plot_per_non_vst_SE_results_R2:
 				#! the scale gets very large here when I do this. 
 				#!	+ This could be because these histograms already have max and min set via plot_R2
 				#!    and therefore saved accordinly in the .root file from where I am getting them.
@@ -2870,6 +3239,9 @@ class DispObs:
 					if i>0: draw_opt="sames"
 					hR2[obsnum,R2,seq,vst,var].Draw(draw_opt)
 					i+=1
+				#! Draw hR2_obs and hR2_err here also
+				hR2_obs[R2,seq,vst,var].Draw("same")
+				hR2_err[R2,seq,vst,var].Draw("hist e same")
 							
 				#! Draw TLine only if ymin<0 for any of hR2 for various obsnum
 				for obsnum in self.OBSD.keys():
@@ -2878,61 +3250,29 @@ class DispObs:
 						ln[pad-1].Draw("same")
 						break #! once a line is drawn, no more needed; break out of the loop		
 
-			q2bin=self.get_q2bin(q2wbin)
-			wbin=self.get_wbin(q2wbin)
-			outdir_R2_seq=os.path.join(self.OUTDIR_R2,R2,seq)
-			outdir_q2bin=os.path.join(outdir_R2_seq,"q%s"%q2bin)
+			outdir_R2=os.path.join(self.OUTDIR_R2_ERR_VSL,R2)
+			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
 			if not os.path.exists(outdir_q2bin):
 				os.makedirs(outdir_q2bin)
-			if not os.path.exists(outdir_R2_seq):
-				os.makedirs(outdir_seq)
-			c.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
-			c.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
-			c.Close()
+			c3.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+			c3.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			c3.Close()
 
-		#! Now plot hR2_SS_err
-		for item in list(itertools.product(R2S,self.SEQS)):
-			R2,seq=item[0],item[1]
-			print "DispObs::plot_R2_SS() Plotting hR2_SS_err for q2wbin=%s,R2=%s,seq=%s"%(q2wbin,R2,seq)
-			c=ROOT.TCanvas("c","c",1000,1000)
-			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
-			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
-  			pad_p.Draw()
-  			pad_t.Draw()
-  			pad_t.cd()
-  			pt=ROOT.TPaveText(.05,.1,.95,.8)
-  			pt.AddText("%s for Q2,W = %s,seq=%s"%(R2_NAMED[R2],q2wbin,seq))
-  			pt.SetTextSize(0.42)
-  			pt.Draw()
-  			pad_p.Divide(npadsx,npadsy)
-  			#! TLine, for each pad, for ln at y=0
-  			ln=[0 for i in range(npads)]
+			#! 4. Save full results in text file
+			outdir_R2=os.path.join(self.OUTDIR_R2_TXT_RSLT,R2)
+			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
+			if not os.path.exists(outdir_q2bin):
+				os.makedirs(outdir_q2bin)
 			for item in pad_map:
 				pad,vst,var=item[0],item[1],item[2]
-				print "pad,vst,var=",pad,vst,var
-				gpad=pad_p.cd(pad)
+				ftxt=open("%s/w%s_%s_%s.txt"%(outdir_q2bin,wbin,VAR_NAMES_PLAIN[vst,var],VAR_NAMES_PLAIN[(vst,'PHI')]),"w")
+				#! Loop over rslts per bin in rslts and write to file
+				for d in rslts[R2,seq,vst,var]:
+					bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
+					ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
+				ftxt.close()
 
-				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_R2_SS' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
-				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
-				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
-
-				#! 3. Finally draw
-				hR2_SS_err[R2,seq,vst,var].Draw()
-							
-			q2bin=self.get_q2bin(q2wbin)
-			wbin=self.get_wbin(q2wbin)
-			outdir_R2_seq=os.path.join(self.OUTDIR_R2_SS_ERR,R2,seq)
-			outdir_q2bin=os.path.join(outdir_R2_seq,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin):
-				os.makedirs(outdir_q2bin)
-			if not os.path.exists(outdir_R2_seq):
-				os.makedirs(outdir_seq)
-			c.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
-			c.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
-			c.Close()
-
-		print "Done DispObs::plot_R2_SS()"
+		print "Done DispObs::plot_per_non_vst_SE_results_R2()"
 		return
 
 	def extract_R2_from_phiproj(self,q2wbin,h5d,fpard,R2):
