@@ -243,7 +243,7 @@ class DispObs:
 			self.OBSD=SSargs['obsd']
 
 			#! Set up SEQS
-			self.SEQS=['EF']
+			self.SEQS=['EC','EF']
 
 			#! OUTDIR
 			SS_tag=SSargs['SS_tag']
@@ -251,6 +251,12 @@ class DispObs:
 			self.OUTDIR=os.path.join(self.OBSDIR,'SS','%s_%s'%(SS_tag,date))
 			if self.DBG==True:
 				self.OUTDIR=os.path.join(self.OBSDIR,'SS','dbg','%s_%s'%(SS_tag,date))
+			if not os.path.exists(self.OUTDIR):
+				os.makedirs(self.OUTDIR) 
+			#! FOUT = OUTDIR/results.root for Obs_1D,Obs_R2,Obs_itg
+			self.FOUT_OBS_1D=ROOT.TFile("%s/Obs_1D.root"%self.OUTDIR,"RECREATE")
+			self.FOUT_OBS_ITG=ROOT.TFile("%s/Obs_itg.root"%self.OUTDIR,"RECREATE")
+			self.FOUT_OBS_R2=ROOT.TFile("%s/Obs_R2.root"%self.OUTDIR,"RECREATE")
 
 			print "OBSDIR=",self.OBSDIR
 			#! pretty-print OBSD
@@ -259,6 +265,9 @@ class DispObs:
 				print k,":",self.OBSD[k][0],self.OBSD[k][1]
 			print "SEQS=",self.SEQS
 			print "OUTDIR=",self.OUTDIR
+			print "FOUT_OBS_1D=",self.FOUT_OBS_1D.GetName()
+			print "FOUT_OBS_ITG=",self.FOUT_OBS_ITG.GetName()
+			print "FOUT_OBS_R2=",self.FOUT_OBS_R2.GetName()
 			
 		else: #! do Regular init	
 			self.OBSDIR=obsdir
@@ -488,11 +497,17 @@ class DispObs:
 
 	def plot_per_non_vst_SE_results_1D(self,h1,results,q2wbin):
 		'''
-		[02-29-16]
+		[08-29-16]
 		+ 'plot_1D' was used as a tempate for this method
 		+ The idea is extend the method to incorporate plotting of a 
 		  list of SE-Obs and the associated set of 'results'
 		+ Therefore only details relevant to the above were changed and the core functionality left intact
+
+		+ The following are the ways in which the results are displayed:
+			1. EH: display all 'results' for 'EH'
+			2. EC: write only text part of 'results'
+			3. EC_EH comparison: Display only 'h1_obs'*['EC','EH']
+			4. Results stored in FOUT_OBS_1D: [EC,EH]* [h1_obs,h1_err,h1_rel_err] 
 		
 		'''
 
@@ -501,6 +516,17 @@ class DispObs:
 		#! unpack results(=h1_obs,h1_err,h1_rel_err,rslts)
 		h1_obs,h1_err,h1_rel_err,rslts=results[0],results[1],results[2],results[3]
 
+		#! Get q2wbin information
+		q2bin=self.get_q2bin(q2wbin)
+		wbin=self.get_wbin(q2wbin)
+
+		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display for Obs_1D
+		#! + Note that this pad_map is also used by non-canvas,related displays (for example when writing text
+		#!   version of resutls, div,, or when writing results to FOUT, 4.)  simply due to its value of organizing Obs_1D
+		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
+				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
+				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
+
 		#! Set up plotting aesthetics
 		self.plot_1D_athtcs()
 		self.hist_1D_athtcs(h1)
@@ -508,21 +534,20 @@ class DispObs:
 		self.hist_1D_athtcs(h1_err,"err")
 		self.hist_1D_athtcs(h1_rel_err,"rel_err")
 				
-		#! TCanvas's pad_map[pad,vst,var] defined as per Gleb's display
-		pad_map=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
-				 (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
-				 (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
-			
-		#! Make plots only for EH 
-		#! (EC vs EH should be checked out at level where each SE is displayed in $OBSDIR/<SE>/cutncorsX)
+		#! 1. Make all displays (di,dii,diii and div) for only for EH 
+		#! +  Note that text results of the displays, i.e. div., which also contain EC results, will be created outside
+		#!    of the following loop, where "EC" is skipped
+		#! +  For the same reason,EC-EH comparison, see 2., is also done outside this loop
+		#! 
 		#! + Setup variable: nlegend_canvas=0
 		#! + The idea is to draw one master legend that will be used for all plots, Obs-1D and intg_xsec
 		#! + This is because this legend is too large to draw on the same canvas as the plots.
 		#! + Once this master legend in drawn and saved, no other such legend will be drawn.
 		#! nlegend canvas
 		nlegend_canvas=0	
-		for seq in self.SEQS:			  
-			#! Canvas for h1
+		for seq in self.SEQS: #! di,dii and diii in this loop. div outside of loop since "EC" is skipped here.			  
+			if seq=="EC": continue
+			#! di. Canvas for h1
 			c=ROOT.TCanvas("c","c",1000,1000)
 			pad_t_c=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
 			pad_p_c=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
@@ -536,7 +561,7 @@ class DispObs:
 			pt.Draw()
 			pad_p_c.Divide(3,3)
 
-			#! Canvas for h1_obs and h1_err
+			#! dii. Canvas for h1_obs and h1_err
 			c_obs_err=ROOT.TCanvas("c_obs_err","c_obs_err",1000,1000)
 			pad_t_c_obs_err=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
 			pad_p_c_obs_err=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
@@ -549,7 +574,7 @@ class DispObs:
 			pt.Draw()
 			pad_p_c_obs_err.Divide(3,3)
 
-			#! Canvas for h1_rel_err
+			#! diii. Canvas for h1_rel_err
 			c_err=ROOT.TCanvas("c_err","c_err",1000,1000)
 			pad_t_c_err=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
 			pad_p_c_err=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
@@ -606,24 +631,23 @@ class DispObs:
 
 				#! Draw h1_obs and h1_err
 				gpad=pad_p_c_obs_err.cd(pad)
-				h1_obs[seq,vst,var].SetMinimum(0)
-				h1_err[seq,vst,var].SetMinimum(0)
+				#! Make sure hist limits are Ok
+				self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100,minimum=0)
+				self.set_h1_maximum_minimum(h1_err[seq,vst,var],10/100,minimum=0)
+				#! Draw
 				h1_obs[seq,vst,var].Draw()
 				h1_err[seq,vst,var].Draw("hist e same")
 
 				#! Draw h1_rel_err
 				gpad=pad_p_c_err.cd(pad)
-				#! SetMinimum and SetMaximum so that relative errors 
-				#! appear on the same scale for all observables
-				h1_rel_err[seq,vst,var].SetMinimum(0)
-				h1_rel_err[seq,vst,var].SetMaximum(40)
+				#! Make sure hist limits are Ok
+				self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100,minimum=0)
+				#h1_rel_err[seq,vst,var].SetMaximum(40)
+				#! Draw
 				h1_rel_err[seq,vst,var].Draw()
 				
 
 			#! Save canvases for h1,h1_obs & h1_err, h1_rel_err
-			q2bin=self.get_q2bin(q2wbin)
-			wbin=self.get_wbin(q2wbin)
-
 			#! c_obs_err => self.OUTDIR_1D
 			#! c_err     => self.OUTDIR_1D_ERR
 			#! c         => self.OUTDIR_1D_ERR_VSL
@@ -634,24 +658,102 @@ class DispObs:
 				cvs.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
 				cvs.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
 
-			#! + Save results in text file
-			#!   rslts     => self.OUTDIR_1D_TXT_RSLT/q2/w_vsr_var.text
-			#! + Write out full results (9 pieces of information) in text file as:
-			#!   bin,bin_le,bin_ue = mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err
-			outdir_txt_q2bin=os.path.join(self.OUTDIR_1D_TXT_RSLT,"q%s"%q2bin)
-			if not os.path.exists(outdir_txt_q2bin):
-				os.makedirs(outdir_txt_q2bin)
-			for seq in self.SEQS:
-				for item in pad_map:
-					pad,vst,var=item[0],item[1],item[2]
-					#!ftxt=open("%s/w%s_vst%s_%s.txt"%(outdir_txt_q2bin,wbin,vst,var),"w")
-					ftxt=open("%s/w%s_%s.txt"%(outdir_txt_q2bin,wbin,VAR_NAMES_PLAIN[vst,var]),"w")
-			 		#! Loop over rslts per bin in rslts and write to file
-					for d in rslts[seq,vst,var]:
-						bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
-						ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
-					ftxt.close()
-			
+		#! + div. Save results in text file for EC and EH
+		#!   rslts        => self.OUTDIR_1D_TXT_RSLT/q2bin/wbin/
+		#!   rslts-EC     => self.OUTDIR_1D_TXT_RSLT/EC/q2vin/wbin
+		#! + Write out full results (9 pieces of information) in text file as:
+		#!   bin,bin_le,bin_ue = mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err
+		for seq in self.SEQS:
+			#! as per seq, choose outdir
+			if seq=="EC":
+				outdir_txt_q2bin_wbin=os.path.join(self.OUTDIR_1D_TXT_RSLT,"EC","q%s"%q2bin,"w%s"%wbin)
+			elif seq=="EF":
+				outdir_txt_q2bin_wbin=os.path.join(self.OUTDIR_1D_TXT_RSLT,"q%s"%q2bin,"w%s"%wbin)
+			else:
+				print "ERROR: plot_per_non_vst_SE_results_1D(): seq=%s not recognized while printing txt results"%seq
+			if not os.path.exists(outdir_txt_q2bin_wbin):
+				os.makedirs(outdir_txt_q2bin_wbin)
+			#! Print results
+			for item in pad_map:
+				pad,vst,var=item[0],item[1],item[2]
+				ftxt=open("%s/%s.txt"%(outdir_txt_q2bin_wbin,VAR_NAMES_PLAIN[vst,var]),"w")
+				#! Loop over rslts per bin in rslts and write to file
+				for d in rslts[seq,vst,var]:
+					bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
+					ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
+				ftxt.close()
+		
+		#! 2. EC-EH comparison: h1_obs only
+		#! Canvas for h1
+		c=ROOT.TCanvas("c","c",1000,1000)
+		pad_t_c=ROOT.TPad("pad_l","Title pad",0.25,0.935,0.75,1.00)
+		pad_p_c=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+		#pad_p_c.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+		pad_p_c.Draw()
+		pad_t_c.Draw()
+		pad_t_c.cd()
+		pt=ROOT.TPaveText(.05,.1,.95,.8)
+		pt.AddText("Q2_W bin=%s"%q2wbin)
+		pt.SetTextSize(0.40)
+		pt.Draw()
+		pad_p_c.Divide(3,3)	
+
+		for item in pad_map:
+			pad,vst,var=item[0],item[1],item[2]
+			print "pad,vst,var=",pad,vst,var
+						
+			#! Draw h1_obs and h1_err
+			gpad=pad_p_c.cd(pad)
+			for i,seq in enumerate(['EF','EC']): #! self.SEQS purposely modified so that 'EF' is drawn first 
+				#! Make sure hist limits are Ok
+				self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100,minimum=0)
+				#! Setup aesthetics as per EC-EH comparison
+				h1_obs[seq,vst,var].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+				h1_obs[seq,vst,var].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+				draw_opt=""
+				if i>0: draw_opt="same"
+				#! Draw
+				h1_obs[seq,vst,var].Draw(draw_opt)
+
+			#! Draw TLegend if pad==1 (since this pad contain Mppip distribution that tapers off towards the right)
+			if pad==1:
+				l=ROOT.TLegend(0.7,0.75,0.9,0.90)
+				for seq in self.SEQS:
+					l.AddEntry(h1_obs[seq,vst,var],seq,"p")
+				l.Draw()
+
+		outdir_q2bin=os.path.join(self.OUTDIR_1D,"EC_EH","q%s"%q2bin)
+		if not os.path.exists(outdir_q2bin):
+			os.makedirs(outdir_q2bin)
+		c.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+		c.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))					
+
+		#! 4. Results stored in FOUT_OBS_1D: [EC,EH]* [h1_obs,h1_err,h1_rel_err] 
+		#! output structure: q2wbin/h1_obs(err/rel_err)_seq_vst_var
+		fout_q2wdir=self.FOUT_OBS_1D.GetDirectory(q2wbin)
+		if fout_q2wdir==None:
+			fout_q2wdir=self.FOUT_OBS_1D.mkdir(q2wbin)
+		fout_q2wdir.cd()
+
+		#! Now save [EC,EH]*h1_obs,h1_err,h1_rel_err
+		for item in pad_map:
+			pad,vst,var=item[0],item[1],item[2]
+			print "pad,vst,var=",pad,vst,var
+			#! per seq, obtain h1_obs and h1_err and save them appropriately
+			for i,seq in enumerate(self.SEQS): 
+				#! Save hists
+				#! + Note the hists have to be named, again because:
+				#! 		i. somewhere earlier their titles are reset to "" 
+				#!		AND, more importantly,
+				#!		ii. 'obs','err', and 'rel_err' need to be added to their names
+				h1_obs[seq,vst,var].SetName("h1_obs_%s_%d_%s"%(seq,vst,var))
+				h1_obs[seq,vst,var].Write()
+				h1_err[seq,vst,var].SetName("h1_err_%s_%d_%s"%(seq,vst,var))
+				h1_err[seq,vst,var].Write()
+				if seq=="EC": #! then set maximum (note already done so for EF in canvas displays)
+					self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100,minimum=0)
+				h1_rel_err[seq,vst,var].SetName("h1_rel_err_%s_%d_%s"%(seq,vst,var))		
+				h1_rel_err[seq,vst,var].Write()
 
 		print "*** plot_per_non_vst_SE_results_1D() Done ***\n"
 		return
@@ -792,16 +894,16 @@ class DispObs:
 			       	+ h1_err[seq,vst,var]
 			       	+ h1_rel_err[seq,vst,var]
 			       	+ rslts[seq,vst,var]
-			1.v.   Display 
-					i.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: h1_obs[seq,vst,var] and h1_err[seq,vst,var] together
-					ii.  To just see relative error (rel_err, sg_rel_err):      h1_rel_err[seq,vst,var]
-					iii. To visually see SE variations:                         h1(obsnum,seq,vst,var) directly
-					iv.  Text file of full results:                             put rslts[seq,vst,var] in a text file
+			1.v.   Display: call plot_per_non_vst_SE_results_1D(h1,rslts,q2wbin) to plot:
+					di.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: h1_obs[seq,vst,var] and h1_err[seq,vst,var] together
+					dii.  To just see relative error (rel_err, sg_rel_err):      h1_rel_err[seq,vst,var]
+					diii. To visually see SE variations:                         h1(obsnum,seq,vst,var) directly
+					div.  Text file of full results:                             put rslts[seq,vst,var] in a text file
 		
 		2. Make displays for Obs_Itg_Yld
 		2.i.   Get Q2-W bin list from any of the obs_itg_yld.root files from self.OBSD
 		2.ii.  Create hW(q2wbin,obsnum,seq,vst,var) to store integrated yields
-		2.iii. Plot hW(q2wbin,obsnum,seq,vst,var)
+		2.iii. Plot hW(q2wbin,obsnum,seq,vst,var) by calling 'plot_per_non_vst_SE_results_W(hW)'
 		"""
 		print "*** In DispObs::disp_per_non_vst_SE_results_1D() ***"
 
@@ -873,7 +975,7 @@ class DispObs:
 			#! 1.iv. Get results(seq,vst,var) from h1(obs,seq,vst,var)
 			rslts=self.get_per_non_vst_SE_results(h1)
 
-			#! 1.v. Plot h1(obsnum,seq,vst,var)
+			#! 1.v. Display: call plot_per_non_vst_SE_results_1D(h1,rslts,q2wbin)
 			self.plot_per_non_vst_SE_results_1D(h1,rslts,q2wbin)
 		#! End of q2wbin loop
 
@@ -984,23 +1086,23 @@ class DispObs:
 							binc.append(h1[obsnum,seq,vst,var].GetBinContent(ibin+1))
 							binerr.append(h1[obsnum,seq,vst,var].GetBinError(ibin+1))
 						
-						if self.DBG:
-							print "**** DispObs::get_per_non_vst_SE_results():: binc,binerr for seq,vst,var,bin=",seq,vst,var,ibin+1,"***"
-							print "binc=",binc
-							print "binerr=",binerr
-							print "******"
+						# if self.DBG:
+						# 	print "**** DispObs::get_per_non_vst_SE_results():: binc,binerr for seq,vst,var,bin=",seq,vst,var,ibin+1,"***"
+						# 	print "binc=",binc
+						# 	print "binerr=",binerr
+						# 	print "******"
 
 						#! Now calculate results (see handwritten notes for formulae)
 						#! mu,sg_mu 
 						n=len(binc)
 						mu=np.mean(binc)
 						sg_mu=math.sqrt(sum([x**2 for x in binerr]))/n
-						if self.DBG:
-							if n==0: 
-								print "DispObs::get_per_non_vst_SE_results(): n=0 for seq,vst,var,bin=",seq,vst,var,ibin+1
-							print "**** DispObs::get_per_non_vst_SE_results():: binc,binerr for seq,vst,var,bin=",seq,vst,var,ibin+1,"***"
-							print "mu,sg_mu=",mu,sg_mu
-							print "******"
+						# if self.DBG:
+						# 	if n==0: 
+						# 		print "DispObs::get_per_non_vst_SE_results(): n=0 for seq,vst,var,bin=",seq,vst,var,ibin+1
+						# 	print "**** DispObs::get_per_non_vst_SE_results():: binc,binerr for seq,vst,var,bin=",seq,vst,var,ibin+1,"***"
+						# 	print "mu,sg_mu=",mu,sg_mu
+						# 	print "******"
 						#! sg,sg_sg
 						sg=np.std(binc)
 						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
@@ -1238,6 +1340,7 @@ class DispObs:
 			c=ROOT.TCanvas()
 			h2[k].Draw("colz")
 			c.SaveAs("%s/c_%s.png"%(outdir_h2,h2[k].GetName()))
+			c.SaveAs("%s/c_%s.eps"%(outdir_h2,h2[k].GetName()))
 
 		#! 2. Plot projection h2 on W bins i.e. int_yld(W) for various Q2 bins
 		outdir_w_proj=os.path.join(self.OUTDIR_ITG_YLD,"W")
@@ -1332,6 +1435,7 @@ class DispObs:
 					l.Draw()
 					#! Save canvas
 					c.SaveAs("%s/c_qbin%d_%s.png"%(outdir_w_proj,iq2bin+1,seq))
+					c.SaveAs("%s/c_qbin%d_%s.eps"%(outdir_w_proj,iq2bin+1,seq))
 
 			elif self.VIEW=="fullana": 
 				#! Plotting aesthetics
@@ -1389,6 +1493,7 @@ class DispObs:
 				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				l1.Draw()
 				c1.SaveAs("%s/c_qbin%d_ER_SR.png"%(outdir_w_proj,iq2bin+1))
+				c1.SaveAs("%s/c_qbin%d_ER_SR.eps"%(outdir_w_proj,iq2bin+1))
 
 				#! Draw ST,SC,SF
 				#! First set max of Y-axis
@@ -1428,6 +1533,7 @@ class DispObs:
 				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				l2.Draw()
 				c2.SaveAs("%s/c_qbin%d_ST_SC_SF.png"%(outdir_w_proj,iq2bin+1))
+				c2.SaveAs("%s/c_qbin%d_ST_SC_SF.eps"%(outdir_w_proj,iq2bin+1))
 
 				#! Draw EC,EF
 				#! First set max of Y-axis
@@ -1458,6 +1564,7 @@ class DispObs:
 				gpad.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
 				l3.Draw()
 				c3.SaveAs("%s/c_qbin%d_EC_EH.png"%(outdir_w_proj,iq2bin+1))
+				c3.SaveAs("%s/c_qbin%d_EC_EH.eps"%(outdir_w_proj,iq2bin+1))
 
 			elif self.VIEW=="ERyield":
 				#! Plotting aesthetics
@@ -1513,6 +1620,7 @@ class DispObs:
 				l.Draw()
 				#! Save canvas
 				c.SaveAs("%s/c_qbin%d.png"%(outdir_w_proj,iq2bin+1))
+				c.SaveAs("%s/c_qbin%d.eps"%(outdir_w_proj,iq2bin+1))
 
 		print "*** plot_h2_itg_yld() Done ***\n"
 
@@ -1603,12 +1711,20 @@ class DispObs:
 		#! Finally draw legend and save canvas
 		l.Draw()
 		#! Save canvas
-		c.SaveAs("%s/c_all-qbin_vst-av_var-THETA.png"%(outdir_w_proj))			
+		c.SaveAs("%s/c_all-qbin_vst-av_var-THETA.png"%(outdir_w_proj))	
+		c.SaveAs("%s/c_all-qbin_vst-av_var-THETA.eps"%(outdir_w_proj))		
 
 		print "*** Done DispObs::plot_h2_itg_yld_all_Q2_same_canvas ***"
 
 	def plot_per_non_vst_SE_results_W(self,hW):
 		'''
+		The following are the ways in which the results are displayed:
+			1. EH: display all 'results' for 'EH'
+			2. EC: write only text part of 'results'
+			3. EC_EH comparison: Display only 'h1_obs'*['EC','EH']
+			4. Results stored in FOUT: [EC,EH]* [hW_obs,hW_err,hW_rel_err] 
+
+		Process:
 		1. Get q2wbinl from hW(q2wbin,obsnum,seq,vst,var)
 		2. Loop over the q2wbins and for each bin:
 			2.i.   Collect all hW for a particular q2wbin in _hW(obsnum,seq,vst,var)
@@ -1616,14 +1732,19 @@ class DispObs:
 				+ hW_obs[seq,vst,var]
 			    + hW_err[seq,vst,var]
 			    + hW_rel_err[seq,vst,var]
-			    + rslts[seq,vst,var]	 
-			2.iii. For every EF*[vst]*THETA display:
+			    + rslts[seq,vst,var]
+			2.iii. Collect all hW_obs in q2-dict: This will be used later to plot all xsec(W) for all Q2 in one canvas (step 3.)	 
+			2.iv. For every EF*[vst]*THETA display:
 				   (+ Note that full display i.e. [seq]*[vst]*[var] should be done individual SE results: $OBSDIR_E16/SE/cutsncorsX
 				   	+ From there I have already learned that there is only variations due to vst and not in vars within a vst)
-				i.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
-				ii.  To just see relative error (rel_err, sg_rel_err):      hW_rel_err[seq,vst,var]
-				iii. To visually see SE variations:                         _hW(obsnum,seq,vst,var) directly
-				iv.  Text file of full results:                             put rslts[seq,vst,var] in a text file
+				di.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
+				dii.  To just see relative error (rel_err, sg_rel_err):      hW_rel_err[seq,vst,var]
+				diii. To visually see SE variations:                         _hW(obsnum,seq,vst,var) directly
+				For every [EC,EF]*[vst]*THETA display:
+				div.  Text file of full results:                             put rslts[seq,vst,var] in a text file
+			2.v. EC-EH comparison:  For every [EC,EH]*[vst]*THETA display:
+				i.   Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var]
+		3. Plot, per vst, xsec(W;EF,THETA) for all Q2 in one canvas.
 				
 		'''
 		print "*** In DispObs::plot_per_non_vst_SE_results_W() ***"
@@ -1639,6 +1760,8 @@ class DispObs:
 		q2wbinl=list(set(q2wbinl))
 		print "DispObs::plot_per_non_vst_SE_results_W() q2wbinl in hW=",q2wbinl
 
+		#! Create a dictionary to keep all hW_obs labelled by Q2 (see steps 2.iii. and 3.)
+		hW_obs_Q2=OrderedDict()
 		#! 2. Loop over the q2wbins
 		for iq2wbin,q2wbin_sel in enumerate(q2wbinl):
 			#! 2.i. Collect all hW for a particular q2wbin in _hW(obsnum,seq,vst,var)
@@ -1660,21 +1783,26 @@ class DispObs:
 			#! unpack results(=h1_obs,h1_err,h1_rel_err,rslts)
 			hW_obs,hW_err,hW_rel_err,rslts=results[0],results[1],results[2],results[3]
 
-			#! 2.iii. For every EF*[vst]*THETA plot 'results'
-			#! + Now constructed EF*[vst] domain to loop over and make plots
+			#! 2.iii. Collect all hW_obs in q2-dict: This will be used later to plot all xsec(W) for all Q2 in one canvas (step 3.)
+			hW_obs_Q2[q2wbin_sel]=hW_obs
+
+			#! 2.iv. For every EF*[vst]*THETA plot 'results'
+			#! + Note that text results are written after the following loop, which skips "EC"
+			#!   since text results also include EC
+			#!Now constructed EF*[vst] domain to loop over and make plots
 			d1=list(itertools.product(self.SEQS,VSTS))
 			for r1 in d1:
 				seq,vst=r1[0],r1[1]
+				if seq=="EC": continue
 				#! prepare outdirs
 				outdir_hW_obs_err =os.path.join(self.OUTDIR_ITG,"VST%d"%(vst))
 				outdir_hW_err     =os.path.join(self.OUTDIR_ITG_ERR,"VST%d"%(vst))
 				outdir_hW_err_vsl =os.path.join(self.OUTDIR_ITG_ERR_VSL,"VST%d"%(vst))
-				outdir_hW_txt_rslt=os.path.join(self.OUTDIR_ITG_TXT_RSLT,"VST%d"%(vst))
-				for d in [outdir_hW_obs_err,outdir_hW_err,outdir_hW_err_vsl,outdir_hW_txt_rslt]:
+				for d in [outdir_hW_obs_err,outdir_hW_err,outdir_hW_err_vsl]:
 					if not os.path.exists(d):
 						os.makedirs(d)
 				
-				#! Display i: Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
+				#! di: Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
 				ROOT.gStyle.SetOptStat(0)
 				c=ROOT.TCanvas("c","c",1200,800)
 				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
@@ -1706,13 +1834,18 @@ class DispObs:
 				#! Draw
 				hW_obs[seq,vst,'THETA'].SetTitle("")
 				hW_err[seq,vst,'THETA'].SetTitle("")
-				hW_obs[seq,vst,'THETA'].SetMinimum(0)
-				hW_err[seq,vst,'THETA'].SetMinimum(0)
+				#! Make sure hist limits are Ok
+				#print "old for hW_obs", q2wbin_sel," =",hW_obs[seq,vst,'THETA'].GetMaximum()
+				self.set_h1_maximum_minimum(hW_obs[seq,vst,'THETA'],10/100,minimum=0)
+				#print "new for hW_obs", q2wbin_sel," =",hW_obs[seq,vst,'THETA'].GetMaximum()
+				self.set_h1_maximum_minimum(hW_err[seq,vst,'THETA'],10/100,minimum=0)
+				#! Draw
 				hW_obs[seq,vst,'THETA'].Draw()
 				hW_err[seq,vst,'THETA'].Draw("hist e same")
 				c.SaveAs("%s/c_q%s.png"%(outdir_hW_obs_err,q2wbin_sel))
+				c.SaveAs("%s/c_q%s.eps"%(outdir_hW_obs_err,q2wbin_sel))
 
-				#! Display ii.  To just see relative error (rel_err, sg_rel_err):      hW_rel_err[seq,vst,var]
+				#! dii.  To just see relative error (rel_err, sg_rel_err):      hW_rel_err[seq,vst,var]
 				ROOT.gStyle.SetOptStat(0)
 				c=ROOT.TCanvas("c","c",1200,800)
 				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
@@ -1737,11 +1870,17 @@ class DispObs:
 				hW_rel_err[seq,vst,'THETA'].SetTitle("")
 				hW_rel_err[seq,vst,'THETA'].SetYTitle("error [%] in #sigma")
 				hW_rel_err[seq,vst,'THETA'].SetMinimum(0)
-				hW_rel_err[seq,vst,'THETA'].SetMaximum(40)
+				#! Make sure maximum is displayed
+				#print "old for", q2wbin_sel," =",hW_rel_err[seq,vst,'THETA'].GetMaximum()
+				self.set_h1_maximum_minimum(hW_rel_err[seq,vst,'THETA'],10/100,minimum=0)
+				#hW_rel_err[seq,vst,'THETA'].SetMaximum(40)
+				#print "new for", q2wbin_sel," =",hW_rel_err[seq,vst,'THETA'].GetMaximum()
+				#! Draw
 				hW_rel_err[seq,vst,'THETA'].Draw()
 				c.SaveAs("%s/c_q%s.png"%(outdir_hW_err,q2wbin_sel))
+				c.SaveAs("%s/c_q%s.eps"%(outdir_hW_err,q2wbin_sel))
 
-				#! Display iii.: Plot _hW(obsnum,seq,vst,var) directly
+				#! diii.: Plot _hW(obsnum,seq,vst,var) directly
 				ROOT.gStyle.SetOptStat(0)
 				c=ROOT.TCanvas("c","c",1200,800)
 				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
@@ -1783,17 +1922,153 @@ class DispObs:
 				hW_obs[seq,vst,'THETA'].Draw("same")
 				hW_err[seq,vst,'THETA'].Draw("hist e same")
 				c.SaveAs("%s/c_q%s.png"%(outdir_hW_err_vsl,q2wbin_sel))
+				c.SaveAs("%s/c_q%s.eps"%(outdir_hW_err_vsl,q2wbin_sel))
 
-				#! Display iv.  Text file of full results: put rslts[EF,vst,THETA] in a text file
-				outdir_hW_txt_rslt_q2wbin=("%s/%s"%(outdir_hW_txt_rslt,q2wbin_sel))
+			#! div.  Text file of full results: put rslts:
+			#! + EF,vst,THETA -> OUTDIR_ITG_TXT_RSLT/vst/
+			#! + EC,vst,THETA -> OUTDIR_ITG_TXT_RSLT/EC/vst/
+			#! Prepate main outdir
+			d1=list(itertools.product(self.SEQS,VSTS))
+			for r1 in d1:
+				seq,vst=r1[0],r1[1]
+				#! make outdir
+				if seq=="EF":
+					outdir_hW_txt_rslt_q2wbin=os.path.join(self.OUTDIR_ITG_TXT_RSLT,"VST%d"%(vst),q2wbin_sel)
+				elif seq=="EC":
+					outdir_hW_txt_rslt_q2wbin=os.path.join(self.OUTDIR_ITG_TXT_RSLT,"EC","VST%d"%(vst),q2wbin_sel)
+				else:
+					print "ERROR: plot_per_non_vst_SE_results_W(): seq=%s not recognized while printing txt results"%seq		
 				if not os.path.exists(outdir_hW_txt_rslt_q2wbin):
 					os.makedirs(outdir_hW_txt_rslt_q2wbin)
+				#! now write
 				ftxt=open("%s/vst%s.txt"%(outdir_hW_txt_rslt_q2wbin,vst),"w")
-			 	#! Loop over rslts per bin in rslts and write to file
+					#! Loop over rslts per bin in rslts and write to file
 				for d in rslts[seq,vst,'THETA']:
 					bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
 					ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
 				ftxt.close()
+			
+
+			#! 2.v. For every [EF,EC]*[vst]*THETA plot only hW_obs
+			for vst in VSTS:
+				#! prepare outdirs
+				outdir_hW_obs=os.path.join(self.OUTDIR_ITG,"EC-EH","VST%d"%(vst))
+				if not os.path.exists(outdir_hW_obs):
+						os.makedirs(outdir_hW_obs)
+
+				ROOT.gStyle.SetOptStat(0)
+				c=ROOT.TCanvas("c","c",1200,800)
+				pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
+				pad_t=ROOT.TPad("pad_p","Plots pad",0.00,0.90,1.00,1.00)
+				pad_p.Draw()
+				pad_t.Draw()
+				pad_t.cd()
+				pt=ROOT.TPaveText(.05,.1,.95,.8)
+				q2bin=self.get_q2bin(q2wbin_sel)
+				pt.AddText("Integrated cross-section for Q2=%s,VST%d"%(q2bin,vst))
+  				pt.SetTextSize(0.32)
+  				pt.Draw()
+				#! Display i: Final result(mu,sg_mu,sg,sg_sg_sg) from SE variations: hW_obs[seq,vst,var] and hW_err[seq,vst,var] together
+				for i,seq in enumerate(['EF','EC']): #! self.SEQS purposefully modified in this manner so that 'EF' is drawn first
+					pad_p.cd()
+					#! Set up some aesthetics particular to hW
+					#! + Give already rotated bin labels by 90 deg. more space
+					#! + Move xaxis title lower to accomodate 90 deg. rotated titles
+					pad_p.SetBottomMargin(0.20)
+					hW_obs[seq,vst,'THETA'].GetXaxis().SetTitleOffset(2.80)
+					#! Remove title
+					hW_obs[seq,vst,'THETA'].SetTitle("")
+					#! Make sure hist limits are Ok
+					self.set_h1_maximum_minimum(hW_obs[seq,vst,'THETA'],10/100,minimum=0)
+					#! Setup aesthetics as per EC-EH comparison
+					hW_obs[seq,vst,'THETA'].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+					hW_obs[seq,vst,'THETA'].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+					#! Draw
+					draw_opt=""
+					if i>0: draw_opt="sames"
+					hW_obs[seq,vst,'THETA'].Draw(draw_opt)
+
+				#! Draw TLegend 
+				l=ROOT.TLegend(0.7,0.80,0.9,0.90)
+				for seq in self.SEQS:
+					l.AddEntry(hW_obs[seq,vst,'THETA'],seq,"p")
+				l.Draw()
+
+				c.SaveAs("%s/c_q%s.png"%(outdir_hW_obs,q2wbin_sel))
+				c.SaveAs("%s/c_q%s.eps"%(outdir_hW_obs,q2wbin_sel))
+
+			#! Results stored in FOUT: [EC,EH]* [hW_obs,hW_err,hW_rel_err]
+			#! output structure: q2wbin/hW_obs(err/rel_err)_seq_vst_var
+			fout_q2wdir=self.FOUT_OBS_ITG.GetDirectory(q2wbin_sel)
+			if fout_q2wdir==None:
+				fout_q2wdir=self.FOUT_OBS_ITG.mkdir(q2wbin_sel)
+			fout_q2wdir.cd()
+
+			#! Now save [EC,EH]*hW_obs,hW_err,hW_rel_err
+			d1=list(itertools.product(self.SEQS,VSTS))
+			for r1 in d1:
+				seq,vst=r1[0],r1[1]
+				#! Save hists
+				#! + Note the hists have to be named, again because:
+				#! 		i. somewhere earlier their titles are reset to "" 
+				#!		AND, more importantly,
+				#!		ii. 'obs','err', and 'rel_err' need to be added to their names
+				hW_obs[seq,vst,'THETA'].SetName("hW_obs_%s_%d_%s"%(seq,vst,var))
+				hW_obs[seq,vst,'THETA'].Write()
+				hW_err[seq,vst,'THETA'].SetName("hW_err_%s_%d_%s"%(seq,vst,var))
+				hW_err[seq,vst,'THETA'].Write()
+				if seq=="EC": #! Set maximum for hW_rel_err (for EF is already set in canvas displays) 
+					self.set_h1_maximum_minimum(hW_rel_err[seq,vst,'THETA'],10/100,minimum=0)
+				hW_rel_err[seq,vst,'THETA'].SetName("hW_rel_err_%s_%d_%s"%(seq,vst,var))
+				hW_rel_err[seq,vst,'THETA'].Write()
+					
+		#! 3. Plot, per vst, xsec(W;EF,THETA) for all Q2 in one canvas.
+		for vst in VSTS:
+			#! create canvas for vst
+			c=ROOT.TCanvas("c","c",1200,800)
+			pad_p=ROOT.TPad("pad_p","Plots pad",0.00,0.00,1.00,0.90)
+			pad_t=ROOT.TPad("pad_p","Plots pad",0.00,0.90,1.00,1.00)
+			pad_p.Draw()
+			pad_t.Draw()
+			pad_t.cd()
+			pt=ROOT.TPaveText(.05,.1,.95,.8)
+			pt.AddText("Integrated cross-section for VST%d"%(vst))
+  			pt.SetTextSize(0.32)
+  			pt.Draw()
+  			#! create legend for this canvas
+  			l=ROOT.TLegend(0.7,0.8,0.9,1.0)
+  			#! Setup maximum of hists that depends on q2
+  			maxl=[hW_obs['EF',vst,'THETA'].GetMaximum() for q2wbin in hW_obs_Q2.keys()]
+  			mxm=max(maxl)
+  			mxm=mxm+((10/100)*mxm)
+			#! Loop over q2wbin keys in hW_obs_Q2.keys()
+			for i,q2wbin in enumerate(hW_obs_Q2.keys()):
+				#! get q2wbin information to be used later for, mainly, aesthetic reasons
+				q2bin=self.get_q2bin(q2wbin)
+				wbin=self.get_wbin(q2wbin)
+				#! get histogram for this q2wbin
+				hW_obs=hW_obs_Q2[q2wbin]
+				#! Setup aesthetics
+				hW_obs['EF',vst,'THETA'].SetLineColor(CLRS_N[i+1])
+				hW_obs['EF',vst,'THETA'].SetMarkerColor(CLRS_N[i+1])
+				#! Set up maximum
+				hW_obs['EF',vst,'THETA'].SetMaximum(mxm)
+				#! Draw
+				pad_p.cd()
+				draw_opt=""
+				if i>0: draw_opt="sames"				
+				hW_obs['EF',vst,'THETA'].Draw(draw_opt)
+				#! add to legend
+				l.AddEntry(hW_obs['EF',vst,'THETA'],"Q2=%s"%q2bin,"p")
+			#! Draw legend
+			l.Draw()
+			#! Save canvas
+			outdir=os.path.join(self.OUTDIR_ITG,"VST%d"%(vst))
+			#! outdir should already exists, but I see no harm in still doing following
+			if not os.path.exists(outdir):
+				os.makedirs(outdir)
+			c.SaveAs("%s/c_qall_w%s.png"%(outdir,wbin))
+			c.SaveAs("%s/c_qall_w%s.eps"%(outdir,wbin))
 
 		print "*** plot_per_non_vst_SE_results_W() Done ***\n"
 
@@ -2314,7 +2589,7 @@ class DispObs:
 		#! First determine if h1 has 3 or 4 keys(3 keys=seq,vst,var; 4 keys=obsnum,seq,vst,var)
 		#! + This structure of h1 depends on self.DO_SS_STUDY
 		nkeys=len(h1.keys()[0])
-		print("DispObs::hist_1D_athtcs(): nkeys=%d"%nkeys)
+		#print("DispObs::hist_1D_athtcs(): nkeys=%d"%nkeys)
 		for k in h1.keys():	
 			if   nkeys==4: obsnum,seq,vst,var=k[0],k[1],k[2],k[3]
 			elif nkeys==3: seq,vst,var=k[0],k[1],k[2]
@@ -3075,6 +3350,12 @@ class DispObs:
 		+ The idea is extend the method to incorporate plotting of a 
 		  list of SE-Obs and the associated set of 'results'
 		+ Therefore only details relevant to the above were changed and the core functionality left intact
+
+		The following are the ways in which the results are displayed:
+			1. EH: display all 'results' for 'EH'
+			2. EC: write only text part of 'results'
+			3. EC_EH comparison: Display only 'h1_obs'*['EC','EH']
+			4. Results stored in FOUT: [EC,EH]* [hR2_obs,hR2_err,hR2_rel_err] 
 		"""
 
 		print "In DispObs::plot_per_non_vst_SE_results_R2()"
@@ -3102,15 +3383,19 @@ class DispObs:
 		npadsy=4
 		npads=npadsx*npadsy
 
-		for item in list(itertools.product(R2S,self.SEQS)):
+		#! Get q2wbin information that will be used below
+		q2bin=self.get_q2bin(q2wbin)
+		wbin=self.get_wbin(q2wbin)
+
+		#! 1. EH: display all results for 'EH'
+		#! + NOTE, text results are plotted outside of this loop because EC results are written alongwith EF
+		#!   and EC is skipped in this loop
+		for item in list(itertools.product(R2S,self.SEQS)): #! di,dii, and diii in this loop. div outside since it needs "EC" which this loop skips
 			R2,seq=item[0],item[1]
+			if seq=="EC": continue
 			print "DispObs::plot_per_non_vst_SE_results_R2() Plotting hR2 for q2wbin=%s,R2=%s,seq=%s"%(q2wbin,R2,seq)
 
-			#! Get q2wbin information that will be used below
-			q2bin=self.get_q2bin(q2wbin)
-			wbin=self.get_wbin(q2wbin)
-
-			#! 1. Draw hR2_obs,hR2_err to directly verify mu,sg etc calculated from obsum
+			#! di. Draw hR2_obs,hR2_err to directly verify mu,sg etc calculated from obsum
 			c1=ROOT.TCanvas("c1","c1",1000,1000)
 			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
 			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
@@ -3118,7 +3403,7 @@ class DispObs:
   			pad_t.Draw()
   			pad_t.cd()
   			pt=ROOT.TPaveText(.05,.1,.95,.8)
-  			pt.AddText("%s for Q2,W = %s,seq=%s"%(R2_NAMED[R2],q2wbin,seq))
+  			pt.AddText("%s for Q2,W = %s"%(R2_NAMED[R2],q2wbin))
   			pt.SetTextSize(0.42)
   			pt.Draw()
   			pad_p.Divide(npadsx,npadsy)
@@ -3135,6 +3420,10 @@ class DispObs:
 				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 
 				#! 3. Finally draw
+				#! Make sure maximum and minimum are displayed
+				#! Note that for the following the methods are commented out because default plotting looks OK
+				# self.set_h1_maximum_minimum(hR2_obs[R2,seq,vst,var],10/100)
+				# self.set_h1_maximum_minimum(hR2_err[R2,seq,vst,var],10/100,minimum=0)
 				hR2_obs[R2,seq,vst,var].Draw()
 				hR2_err[R2,seq,vst,var].Draw("hist e same")
 							
@@ -3143,15 +3432,17 @@ class DispObs:
 					ln[pad-1]=ROOT.TLine(hR2_obs[R2,seq,vst,var].GetXaxis().GetXmin(),0,hR2_obs[R2,seq,vst,var].GetXaxis().GetXmax(),0)
 					ln[pad-1].Draw("same")
 			
-			outdir_R2=os.path.join(self.OUTDIR_R2,R2)
-			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin):
-				os.makedirs(outdir_q2bin)
-			c1.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
-			c1.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			# outdir_R2=os.path.join(self.OUTDIR_R2,R2)
+			# outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
+			outdir_q2bin=os.path.join(self.OUTDIR_R2,"q%s"%q2bin)
+			outdir_R2=os.path.join(outdir_q2bin,R2)
+			if not os.path.exists(outdir_R2):
+				os.makedirs(outdir_R2)
+			c1.SaveAs("%s/c_w%s_q%s.png"%(outdir_R2,wbin,q2bin))
+			c1.SaveAs("%s/c_w%s_q%s.eps"%(outdir_R2,wbin,q2bin))
 			c1.Close()
 
-			#! 2. Draw hR2_rel_err 
+			#! dii. Draw hR2_rel_err 
 			c2=ROOT.TCanvas("c2","c2",1000,1000)
 			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
 			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
@@ -3159,7 +3450,7 @@ class DispObs:
   			pad_t.Draw()
   			pad_t.cd()
   			pt=ROOT.TPaveText(.05,.1,.95,.8)
-  			pt.AddText("Error in %s for Q2,W = %s,seq=%s"%(R2_NAMED[R2],q2wbin,seq))
+  			pt.AddText("Error in %s for Q2,W = %s"%(R2_NAMED[R2],q2wbin))
   			pt.SetTextSize(0.42)
   			pt.Draw()
   			pad_p.Divide(npadsx,npadsy)
@@ -3176,18 +3467,31 @@ class DispObs:
 
 				#! 3. Finally draw
 				hR2_rel_err[R2,seq,vst,var].SetMinimum(0)
-				hR2_rel_err[R2,seq,vst,var].SetMaximum(200)
+				#! Make sure maximum is drawn
+				#! + Note that minimum,maximum=0,200 work better for these
+				#!   because some errors are far in excess of 200 (up to >~ 1000) and pcnt method, therefore,
+				#!   blows up the scale too much
+				self.set_h1_maximum_minimum(hR2_rel_err[R2,seq,vst,var],10/100,minimum=0, maximum=200)
+				#hR2_rel_err[R2,seq,vst,var].SetMaximum(200)
+				#! Draw
 				hR2_rel_err[R2,seq,vst,var].Draw()
 							
-			outdir_R2=os.path.join(self.OUTDIR_R2_ERR,R2)
-			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin):
-				os.makedirs(outdir_q2bin)
-			c2.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
-			c2.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			# outdir_R2=os.path.join(self.OUTDIR_R2_ERR,R2)
+			# outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
+			# if not os.path.exists(outdir_q2bin):
+			# 	os.makedirs(outdir_q2bin)
+			# c2.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
+			# c2.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			# c2.Close()
+			outdir_q2bin=os.path.join(self.OUTDIR_R2_ERR,"q%s"%q2bin)
+			outdir_R2=os.path.join(outdir_q2bin,R2)
+			if not os.path.exists(outdir_R2):
+				os.makedirs(outdir_R2)
+			c2.SaveAs("%s/c_w%s_q%s.png"%(outdir_R2,wbin,q2bin))
+			c2.SaveAs("%s/c_w%s_q%s.eps"%(outdir_R2,wbin,q2bin))
 			c2.Close()
 
-			#! 3. Draw hR2[obsnum,R2,seq,vst,var] for visual verification
+			#! diii. Draw hR2[obsnum,R2,seq,vst,var] for visual verification
 			#! + Draw hR2_obs,hR2_err also to directly verify mu,sg etc calculated from obsum
 			#!c=ROOT.TCanvas("c","c",1000,1000)
 			c3=ROOT.TCanvas("c3","c3",1000,1000)
@@ -3197,7 +3501,7 @@ class DispObs:
   			pad_t.Draw()
   			pad_t.cd()
   			pt=ROOT.TPaveText(.05,.1,.95,.8)
-  			pt.AddText("%s for Q2,W = %s,seq=%s"%(R2_NAMED[R2],q2wbin,seq))
+  			pt.AddText("%s for Q2,W = %s"%(R2_NAMED[R2],q2wbin))
   			pt.SetTextSize(0.42)
   			pt.Draw()
   			pad_p.Divide(npadsx,npadsy)
@@ -3250,27 +3554,130 @@ class DispObs:
 						ln[pad-1].Draw("same")
 						break #! once a line is drawn, no more needed; break out of the loop		
 
-			outdir_R2=os.path.join(self.OUTDIR_R2_ERR_VSL,R2)
-			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin):
-				os.makedirs(outdir_q2bin)
-			c3.SaveAs("%s/c_w%s_q%s.png"%(outdir_q2bin,wbin,q2bin))
-			c3.SaveAs("%s/c_w%s_q%s.eps"%(outdir_q2bin,wbin,q2bin))
+			outdir_q2bin=os.path.join(self.OUTDIR_R2_ERR_VSL,"q%s"%q2bin)
+			outdir_R2=os.path.join(outdir_q2bin,R2)
+			if not os.path.exists(outdir_R2):
+				os.makedirs(outdir_R2)
+			c3.SaveAs("%s/c_w%s_q%s.png"%(outdir_R2,wbin,q2bin))
+			c3.SaveAs("%s/c_w%s_q%s.eps"%(outdir_R2,wbin,q2bin))
 			c3.Close()
 
-			#! 4. Save full results in text file
-			outdir_R2=os.path.join(self.OUTDIR_R2_TXT_RSLT,R2)
-			outdir_q2bin=os.path.join(outdir_R2,"q%s"%q2bin)
-			if not os.path.exists(outdir_q2bin):
-				os.makedirs(outdir_q2bin)
+		#! div. Save full results in text file
+		#! + EF,vst,var -> OUTDIR_R2_TXT_RSLT/q2bin/wbin/
+		#! + EC,vst,var -> OUTDIR_R2_TXT_RSLT/EC/q2bin/wbin/
+		for item in list(itertools.product(R2S,self.SEQS)):
+			R2,seq=item[0],item[1]
+			#! create outdir as per seq
+			if seq=="EC":
+				outdir_q2bin_wbin=os.path.join(self.OUTDIR_R2_TXT_RSLT,"EC","q%s"%q2bin,"w%s"%wbin)
+			elif seq=="EF":
+				outdir_q2bin_wbin=os.path.join(self.OUTDIR_R2_TXT_RSLT,"q%s"%q2bin,"w%s"%wbin)
+			else:
+				print "ERROR: plot_per_non_vst_SE_results_R2: seq=%s not recognized while written txt results"%seq
+			outdir_R2=os.path.join(outdir_q2bin_wbin,R2)
+			if not os.path.exists(outdir_R2):
+				os.makedirs(outdir_R2)
+			#! now write
 			for item in pad_map:
 				pad,vst,var=item[0],item[1],item[2]
-				ftxt=open("%s/w%s_%s_%s.txt"%(outdir_q2bin,wbin,VAR_NAMES_PLAIN[vst,var],VAR_NAMES_PLAIN[(vst,'PHI')]),"w")
+				ftxt=open("%s/%s_%s.txt"%(outdir_R2,VAR_NAMES_PLAIN[vst,var],VAR_NAMES_PLAIN[(vst,'PHI')]),"w")
 				#! Loop over rslts per bin in rslts and write to file
 				for d in rslts[R2,seq,vst,var]:
 					bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err=d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]
 					ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
 				ftxt.close()
+
+		#! 3. EC-EH comparison
+		for R2 in R2S:
+			c1=ROOT.TCanvas("c1","c1",1000,1000)
+			pad_t=ROOT.TPad("pad_t","Title pad",0.15,0.945,0.85,1.00)
+			pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.97,0.99,0.01)
+  			pad_p.Draw()
+  			pad_t.Draw()
+  			pad_t.cd()
+  			pt=ROOT.TPaveText(.05,.1,.95,.8)
+  			pt.AddText("%s for Q2,W = %s"%(R2_NAMED[R2],q2wbin))
+  			pt.SetTextSize(0.42)
+  			pt.Draw()
+  			pad_p.Divide(npadsx,npadsy)
+
+			print "DispObs::plot_per_non_vst_SE_results_R2() Plotting hR2:EC-EH comparison for q2wbin=%s,R2=%s"%(q2wbin,R2)
+
+			#! TLine, for each pad, for ln at y=0
+  			ln=[0 for i in range(npads)]
+			for item in pad_map:
+				pad,vst,var=item[0],item[1],item[2]
+				print "pad,vst,var=",pad,vst,var
+				gpad=pad_p.cd(pad)
+
+				#! The following check is not applicable here as is for 'plot_R2()''
+				#! because for 'disp_per_non_vst_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
+				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				for i,seq in enumerate(['EF','EC']): #! self.SEQS purposefully modified thus to plot 'EF' first
+					#! Setup aesthetics for EC-EH comparison
+					hR2_obs[R2,seq,vst,var].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+					hR2_obs[R2,seq,vst,var].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+					#! 3. Finally draw
+					#! Make sure maximum and minimum are displayed
+					#! Note that for the following the methods are commented out because default plotting looks OK
+					# self.set_h1_maximum_minimum(hR2_obs[R2,seq,vst,var],10/100)
+					# self.set_h1_maximum_minimum(hR2_err[R2,seq,vst,var],10/100,minimum=0)
+					draw_opt="" if i==0 else "same"
+					hR2_obs[R2,seq,vst,var].Draw(draw_opt)
+					
+							
+					#! Draw TLine only if ymin<0 for any of hR2 for various obsnum
+					if hR2_obs[R2,seq,vst,var].GetMinimum()<0:
+						ln[pad-1]=ROOT.TLine(hR2_obs[R2,seq,vst,var].GetXaxis().GetXmin(),0,hR2_obs[R2,seq,vst,var].GetXaxis().GetXmax(),0)
+						ln[pad-1].Draw("same")
+
+				#! Draw TLegend if pad==1 (since this pad contain Mppip distribution that tapers off towards the right)
+				if pad==1:
+					l=ROOT.TLegend(0.7,0.75,0.9,0.90)
+					for seq in self.SEQS:
+						l.AddEntry(hR2_obs[R2,seq,vst,var],seq,"p")
+					l.Draw()	
+			
+			outdir_q2bin=os.path.join(self.OUTDIR_R2,"EC-EH","q%s"%q2bin)
+			outdir_R2=os.path.join(outdir_q2bin,R2)
+			if not os.path.exists(outdir_R2):
+				os.makedirs(outdir_R2)
+			c1.SaveAs("%s/c_w%s_q%s.png"%(outdir_R2,wbin,q2bin))
+			c1.SaveAs("%s/c_w%s_q%s.eps"%(outdir_R2,wbin,q2bin))
+			c1.Close()
+
+		#! 4. Results stored in FOUT: [EC,EH]* [hR2_obs,hR2_err,hR2_rel_err]
+		#! output structure: q2wbin/hR2_obs(err/rel_err)_seq_vst_var
+		fout_q2wdir=self.FOUT_OBS_R2.GetDirectory(q2wbin)
+		if fout_q2wdir==None:
+			fout_q2wdir=self.FOUT_OBS_R2.mkdir(q2wbin)
+		fout_q2wdir.cd()
+		#! Now save [EC,EH]*hR2_obs,hR2_err,hR2_rel_err	
+		for R2 in R2S:
+			for item in pad_map:
+				pad,vst,var=item[0],item[1],item[2]
+				print "pad,vst,var=",pad,vst,var
+				
+				#! The following check is not applicable here as is for 'plot_R2()''
+				#! because for 'disp_per_non_vst_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
+				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				for i,seq in enumerate(self.SEQS): 
+					#! Save hists
+					#! + Note the hists have to be named, again because:
+					#! 		i. somewhere earlier their titles are reset to "" 
+					#!		AND, more importantly,
+					#!		ii. 'obs','err', and 'rel_err' need to be added to their names
+					hR2_obs[R2,seq,vst,var].SetName("hR2_obs_%s_%s_%d_%s"%(R2,seq,vst,var))
+					hR2_obs[R2,seq,vst,var].Write()
+					hR2_err[R2,seq,vst,var].SetName("hR2_err_%s_%s_%d_%s"%(R2,seq,vst,var))
+					hR2_err[R2,seq,vst,var].Write()
+					if seq=="EC": #! then set limits on rel_err (note this is already done for EF for canvas displays, where the upper limit of 200 was established)
+						self.set_h1_maximum_minimum(hR2_rel_err[R2,seq,vst,var],10/100,minimum=0, maximum=200)
+					hR2_rel_err[R2,seq,vst,var].SetName("hR2_rel_err_%s_%s_%d_%s"%(R2,seq,vst,var))
+					hR2_rel_err[R2,seq,vst,var].Write()
+				
 
 		print "Done DispObs::plot_per_non_vst_SE_results_R2()"
 		return
@@ -3569,3 +3976,44 @@ class DispObs:
 			xmax=wmax-MASS_PIP
 		#! Now set limits on h
 		h.GetXaxis().SetRangeUser(xmin,xmax)
+
+	# def set_h1_maximum(self,h1,pcnt=10/100):
+	# 	#! Get current maximum
+	# 	#! The following is susceptible to getting maximum being overridden due to various plotting related issues
+	# 	#mxm=h1.GetMaximum()
+	# 	#! To get the maximum value of bins in the histogram regardless of whether the value has been overridden
+	# 	#! + from https://root.cern.ch/doc/master/classTH1.html#acb53c99a65ab29a045cbdc2789e55250
+	# 	mxm=h1.GetBinContent(h1.GetMaximumBin())
+	# 	#print "old=",mxm
+	# 	#! Set new maximum=maximum+(pct*maximum)
+	# 	mxm=mxm+(pcnt*mxm)
+	# 	h1.SetMaximum(mxm)
+	# 	#print "new=",h1.GetMaximum()
+
+	def set_h1_maximum_minimum(self,h1,pcnt=10/100,**kwargs):
+		'''
+		+ Set maximum and minimum for h1 so that both are displayed based:
+			+ on pcnt
+			OR
+			+ 'minimum' and 'maximum' as kwargs, which overrides value based on pcnt
+
+		+ Note that the direct methods GetMaximum/Minumum are not used because they are susceptible to 
+		  obtaining overridden values from previous plotting related code and therefore the following is used:
+		  	+ mxm/mnm=h1.GetBinContent(h1.GetMaximumBin()/GetMinimumBin())
+		  	(from https://root.cern.ch/doc/master/classTH1.html#acb53c99a65ab29a045cbdc2789e55250)
+		'''
+		#! Get current maximum and minimum
+		mxm=h1.GetBinContent(h1.GetMaximumBin())
+		mnm=h1.GetBinContent(h1.GetMinimumBin())
+		#! Set new maximum/minimum=maximum/minimum +/-(pct*maximum/minimum)
+		mxm=mxm+(pcnt*mxm)
+		mnm=mnm-(pcnt*mnm)
+		h1.SetMaximum(mxm)
+		h1.SetMinimum(mnm)
+
+		#! Override minimum and maximum
+		if 'maximum' in kwargs.keys():
+			h1.SetMaximum(kwargs['maximum'])
+		if 'minimum' in kwargs.keys():
+			h1.SetMinimum(kwargs['minimum'])
+		
