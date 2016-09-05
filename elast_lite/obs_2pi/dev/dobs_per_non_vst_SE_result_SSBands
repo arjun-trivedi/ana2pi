@@ -1,0 +1,70 @@
+#!/usr/bin/python
+import sys,os
+
+#! The following to be able to use disp_obs.py 
+sys.path.insert(0, os.path.join(os.environ['ANA2PI'],'elast_lite/obs_2pi'))
+from disp_obs import DispObs
+
+#! ---------------------
+#  + Usage=dobs_SS [expt=e16] [dbg=False]
+#  + SS inputs (dobsd, SS_tag) have to be entered manually
+#  + NOTE, 'SS_tag' is used to name the output created
+#!----------------------
+
+#! *** Setup global parameters ***
+#! Q2 limits for lowQ2
+Q2MIN=2.00
+Q2MAX=3.00
+#! W limits
+WMIN=1.400
+WMAX=2.125
+
+#! Get inputs from user
+#if len(sys.argv)>1: #! User input expt 
+#        expt=sys.argv[1]
+#        if expt!='e1f' and expt!='e16':
+#                sys.exit("expt=e1f or e16 only.")
+#else:
+#        expt='e16'
+#
+#if len(sys.argv)>2: #! User input dbg, else use dbg=False
+#        if sys.argv[2]=="False":
+#                dbg=False
+#        elif sys.argv[2]=="True":
+#                dbg=True
+#        else:
+#                print "Please enter dbg=True or False!"
+#                sys.exit()
+#else:
+#        dbg="False"
+
+EXPT="e16"
+DBG=True
+
+#! Replaced following SS-bands, that contains cross-terms, with SS-bands that are kept for the analysis
+#obsd={
+#	1:['lowQ2_SS-bands_041516/cutsncors1/sim4', ':ECfid-ON::gpart-pid-ON:stat-pid-ON:'],
+#	2:['lowQ2_SS-bands_041516/cutsncors2/sim4', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF:'],
+#	3:['lowQ2_SS-bands_041516/cutsncors3/sim4', ':ECfid-ON::gpart-pid-ON:stat-pid-OFF:'],
+#	4:['lowQ2_SS-bands_041516/cutsncors4/sim4', ':ECfid-ON::gpart-pid-OFF:stat-pid-ON:'],
+#	5:['lowQ2_SS-bands_041516/cutsncors5/sim4', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON:'],
+#	6:['lowQ2_SS-bands_041516/cutsncors6/sim4', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF:'],
+#	7:['lowQ2_SS-bands_041516/cutsncors7/sim4', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-OFF:'],
+#	8:['lowQ2_SS-bands_041516/cutsncors8/sim4', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-ON:']
+#}
+#SS_tag='lowQ2_SS-bands_041516_sim4
+
+obsd={
+	1:['lowQ2_fixMM2cut_062416/cutsncors5/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON:'],
+	2:['lowQ2_fixMM2cut_062416/cutsncors6/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF:'],
+}
+
+SS_tag='lowQ2_fixMM2cut_062416_sim4_sim5_sim6_sim7_sim8_sim13'
+SS_type="per_non_vst_SE"
+print "Displaying per_non_vst_SE for q2min q2max wmin wmax expt dbg",'NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG
+print "obsd=",obsd
+print "SS_tag=",SS_tag
+print "SS_type=",SS_type
+do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag,SS_type=SS_type)
+do.disp_SE_results_1D() #do.disp_per_non_vst_SE_results_1D()
+do.disp_SE_results_R2() #do.disp_per_non_vst_SE_results_R2()

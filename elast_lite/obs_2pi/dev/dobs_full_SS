@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#! Prepare logdir
+logdir="/tmp/log"
+mkdir -p $logdir
+rm -rf $logdir/*
+
+#! 1. Obtain per_non_vst_SE results
+dev/dobs_per_non_vst_SE_result_SSBands >&  $logdir/dobs_per_non_vst_SE_result_SSBands.log & 
+dev/dobs_per_non_vst_SE_result_CCcut   >&  $logdir/dobs_per_non_vst_SE_result_CCcut.log &
+
+#! Wait for processes in 1 to finish before moving on
+wait
+
+#! 2. Using per_non_vst_SE results from 1, obtain cmb_non_vst_SE
+#! Note that the following script needs the correct date tagged results from 1. which is coded in the script.
+dev/dobs_cmb_non_vst_SE_result >& $logdir/dobs_cmb_non_vst_SE_result.log &

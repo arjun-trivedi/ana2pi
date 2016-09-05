@@ -42,19 +42,17 @@ EXPT="e16"
 DBG=True
 
 obsd={
-	1:['lowQ2_SS-bands_041516/cutsncors1/sim4', ':ECfid-ON::gpart-pid-ON:stat-pid-ON:'],
-	2:['lowQ2_SS-bands_041516/cutsncors2/sim4', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF:'],
-	3:['lowQ2_SS-bands_041516/cutsncors3/sim4', ':ECfid-ON::gpart-pid-ON:stat-pid-OFF:'],
-	4:['lowQ2_SS-bands_041516/cutsncors4/sim4', ':ECfid-ON::gpart-pid-OFF:stat-pid-ON:'],
-	5:['lowQ2_SS-bands_041516/cutsncors5/sim4', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON:'],
-	6:['lowQ2_SS-bands_041516/cutsncors6/sim4', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF:'],
-	7:['lowQ2_SS-bands_041516/cutsncors7/sim4', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-OFF:'],
-	8:['lowQ2_SS-bands_041516/cutsncors8/sim4', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-ON:']
+	1:['lowQ2_CC_cut_080216/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF'],
+	2:['lowQ2_CC_cut_080216/cutsncors2/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_NX:'],
+	3:['lowQ2_CC_cut_080216/cutsncors3/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_av:'],
+	4:['lowQ2_CC_cut_080216/cutsncors4/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON:gpart-pid-OFF:stat-pid-OFF:CC_cut_lse::pmtC_L:']
 }
-SS_tag='lowQ2_SS-bands_041516_sim4'
+SS_tag='lowQ2_CC_cut_080216_sim4_sim5_sim6_sim7_sim8_sim13'
+SS_type="per_non_vst_SE"
 print "Displaying per_non_vst_SE for q2min q2max wmin wmax expt dbg",'NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG
 print "obsd=",obsd
 print "SS_tag=",SS_tag
-do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag)
-do.disp_per_non_vst_SE_results_1D()
-do.disp_per_non_vst_SE_results_R2()
+print "SS_type=",SS_type
+do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag,SS_type=SS_type)
+do.disp_SE_results_1D() #do.disp_per_non_vst_SE_results_1D()
+do.disp_SE_results_R2() #do.disp_per_non_vst_SE_results_R2()
