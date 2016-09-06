@@ -15,3 +15,6 @@ wait
 #! 2. Using per_non_vst_SE results from 1, obtain cmb_non_vst_SE
 #! Note that the following script needs the correct date tagged results from 1. which is coded in the script.
 dev/dobs_cmb_non_vst_SE_result >& $logdir/dobs_cmb_non_vst_SE_result.log &
+
+#! To make SE plots for a particular OBSDIR
+#dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_cmb_non_vst_SE_090516

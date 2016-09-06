@@ -5,8 +5,19 @@ import math
 import os,sys
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.patches as patches
 
 
+'''
+[09-06-16]
++ Makes plots to visualize systematic errors
++ >plot_SE.py [OBSDIR]
+
++ First the functions needed are defined
++ These functions are then used in the code that follows
+'''
+
+#! 1. Define functions needed
 def get_err(line):
 	'''
 	+ For a given line in text results of Obs, 1D,itg or R2, obtain  rel_err,sg_rel_err (called err,err_err here)
@@ -30,14 +41,23 @@ def get_err(line):
 	return err,err_err
 
 def plot_1D(SE_1D,OUTDIR):	
-	fig,ax=plt.subplots(figsize=(12,8),nrows=1,ncols=1)
-	vals=[SE_1D[k][0] for k in SE_1D.keys()]
-	mnm=min(vals)
-	if mnm<0: mnm=int(round(min(vals))-1)
+	fig,axs=plt.subplots(figsize=(12,8),nrows=2,ncols=1)
+	errl    =[SE_1D[k][0] for k in SE_1D.keys()]
+	err_errl=[SE_1D[k][1] for k in SE_1D.keys()]
+	#! Plot err
+	mnm=min(errl)
+	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
-	mxm=int(round(max(vals))+1)
-	ax.set_title("1D %f"%np.mean(vals))
-	ax.hist(vals,bins=(range(mnm,mxm+1,1)))
+	mxm=int(round(max(errl))+1)
+	axs[0].set_title("Distribution of relative error [%%] (average=%.2f %%)"%np.mean(errl))
+	axs[0].hist(errl,bins=(range(mnm,mxm+1,1)))
+	#! Plot err_err
+	mnm=min(err_errl)
+	if mnm<0: mnm=int(round(min(err_errl))-1)
+	else: mnm=0
+	mxm=int(round(max(err_errl))+1)
+	axs[1].set_title("Distribution of error on relative error [%%] (average=%.2f %%)"%np.mean(err_errl))
+	axs[1].hist(err_errl,bins=(range(mnm,mxm+1,1)))
 	
 	outdir="%s/Obs_1D"%OUTDIR
 	if not os.path.exists(outdir):
@@ -46,15 +66,24 @@ def plot_1D(SE_1D,OUTDIR):
 	fig.savefig("%s/1D.eps"%(outdir))
 
 def plot_itg(SE_ITG,OUTDIR):	
-	fig,ax=plt.subplots(figsize=(12,8),nrows=1,ncols=1)
-	vals=[SE_ITG[k][0] for k in SE_ITG.keys()]
-	mnm=min(vals)
-	if mnm<0: mnm=int(round(min(vals))-1)
+	fig,axs=plt.subplots(figsize=(12,8),nrows=2,ncols=1)
+	errl    =[SE_ITG[k][0] for k in SE_ITG.keys()]
+	err_errl=[SE_ITG[k][1] for k in SE_ITG.keys()]
+	#! Plot err
+	mnm=min(errl)
+	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
-	mxm=int(round(max(vals))+1)
-	ax.set_title("1D %f"%np.mean(vals))
-	ax.hist(vals,bins=(range(mnm,mxm+1,1)))
-
+	mxm=int(round(max(errl))+1)
+	axs[0].set_title("Distribution of relative error [%%] (average=%.2f %%)"%np.mean(errl))
+	axs[0].hist(errl,bins=(range(mnm,mxm+1,1)))
+	#! Plot err_err
+	mnm=min(err_errl)
+	if mnm<0: mnm=int(round(min(err_errl))-1)
+	else: mnm=0
+	mxm=int(round(max(err_errl))+1)
+	axs[1].set_title("Distribution of error on relative error [%%] (average=%.2f %%)"%np.mean(err_errl))
+	axs[1].hist(err_errl,bins=(range(mnm,mxm+1,1)))
+	
 	outdir="%s/Obs_itg"%OUTDIR
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
@@ -73,6 +102,12 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	#! + for err_err: ax[1][0],ax[1][1],ax[1][2] (xaxis not yet spliced)
 	#fig,(ax1,ax2,ax3,ax4,ax5,ax6) = plt.subplots(figsize=(20,8),nrows=2,ncols=3, sharey=True)
 	fig,axs = plt.subplots(figsize=(20,15),nrows=2,ncols=3, sharey=True)
+	if R2==None:
+		figtitle="all R2s"
+	else:
+		figtitle=R2
+	fig.suptitle("Distribution of relative error and error on relative error [%%] and for %s"%(figtitle) ,fontsize='xx-large')
+
 	if R2==None:
 		errl    =[SE_R2[k][0] for k in SE_R2.keys()]
 		err_errl=[SE_R2[k][1] for k in SE_R2.keys()]
@@ -94,7 +129,7 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	#! err
 	nl=sum(1 for x in errl if x>=LMIN and x<=LMAX)
 	pl=(nl/nt)*100
-	axs[0][0].set_title("%f %%"%(pl))
+	axs[0][0].set_title("Fraction of data points %.2f %%(n=%d)"%(pl,nl))
 	axs[0][0].hist(errl,bins=(range(LMIN,LMAX+LBINW,LBINW)))
 	#! err_errl
 	#! Get appropriate data from err_errl
@@ -103,13 +138,20 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 		err,err_err=x[0],x[1]
 		if err>=LMIN and err<=LMAX:
 			d.append(err_err)
-	axs[1][0].hist(d)
+	mnm=min(d)
+	if mnm<0: mnm=int(round(min(errl))-1)
+	else: mnm=0
+	mxm=int(max(d)+1)
+	#axs[1][0].hist(d,bins=(range(mnm,mxm,1)))
+	bw=0.5
+	axs[1][0].set_title("n=%d"%len(d))
+	axs[1][0].hist(d,bins=(np.arange(mnm,mxm,bw)))
 
 
 	#! middle limit
 	nm=sum(1 for x in errl if x>MMIN and x<=MMAX)
 	pm=(nm/nt)*100
-	axs[0][1].set_title("%f %%"%(pm))
+	axs[0][1].set_title("Fraction of data points %.2f %%(n=%d)"%(pm,nm))
 	axs[0][1].hist(errl,bins=(range(MMIN,MMAX+MBINW,MBINW)))
 	#! err_errl
 	#! Get appropriate data from err_errl
@@ -118,22 +160,58 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 		err,err_err=x[0],x[1]
 		if err>MMIN and err<=MMAX:
 			d.append(err_err)
-	axs[1][1].hist(d)
+	mnm=min(d)
+	if mnm<0: mnm=int(round(min(errl))-1)
+	else: mnm=0
+	mxm=int(max(d)+1)
+	axs[1][1].set_title("n=%d"%len(d))
+	#axs[1][1].hist(d)
+	#! Note how binning is very fine between [0,1] to zoom in 0-spike
+	axs[1][1].hist(d,bins=np.concatenate((np.arange(0,1,0.5),np.arange(1,100,1))))
+	#! rectangular 'patch' to bring out 0-spike
+	px=0
+	pw=1
+	py=axs[1][1].get_ylim()[0]
+	ph=axs[1][1].get_ylim()[1]-axs[1][1].get_ylim()[0]
+	axs[1][1].add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
+	#! Annotate this patch
+	axs[1][1].annotate('[0,1,0.5]', xy=(1, axs[1][1].get_ylim()[1]/2), xytext=(5, axs[1][2].get_ylim()[1]/1.5),
+            arrowprops=dict(facecolor='red', shrink=0.05),
+            )
+
+	
 
 	#! upper limits
 	nh=sum(1 for x in errl if x>UMIN and x<=UMAX)
 	ph=(nh/nt)*100
-	axs[0][2].set_title("%f %%"%(ph))
+	axs[0][2].set_title("Fraction of data points %.2f %%(n=%d)"%(ph,nh))
 	axs[0][2].hist(errl,bins=(range(UMIN,UMAX+UBINW,UBINW)))
 	#! err_errl
 	#! Get appropriate data from err_errl
 	d=[]
 	for x in zip(errl,err_errl):
 		err,err_err=x[0],x[1]
-		if err>=LMIN and err<=LMAX:
+		if err>=UMIN and err<=UMAX:
 			d.append(err_err)
-	axs[1][2].hist(errl)
-
+	mnm=min(d)
+	if mnm<0: mnm=int(round(min(errl))-1)
+	else: mnm=0
+	mxm=int(max(d)+1)
+	axs[1][2].set_title("n=%d"%len(d))
+	#axs[1][2].hist(d)
+	#! Note how binning is very fine between [0,100] to zoom in 0-spike
+	axs[1][2].hist(d,bins=np.concatenate((np.arange(0,100,1),np.arange(100,10000,100))))
+	#! rectangular 'patch' to bring out 0-spike
+	px=0
+	pw=100
+	py=axs[1][2].get_ylim()[0]
+	ph=axs[1][2].get_ylim()[1]-axs[1][2].get_ylim()[0]
+	axs[1][2].add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
+	#! Annotate this patch
+	axs[1][2].annotate('[0,100,1]', xy=(100, axs[1][2].get_ylim()[1]/2), xytext=(500, axs[1][2].get_ylim()[1]/1.5),
+            arrowprops=dict(facecolor='red', shrink=0.05),
+            )
+	
 	# zoom-in / limit the view to different portions of the data
 	axs[0][0].set_xlim(LMIN,LMAX+LBINW) # most of the data
 	axs[0][1].set_xlim(MMIN,MMAX+MBINW) # outliers only
@@ -147,6 +225,8 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	axs[0][0].yaxis.tick_left()
 	axs[0][0].tick_params(labeltop='off') # don't put tick labels at the top
 	axs[0][2].yaxis.tick_right()
+
+	axs[1][2].yaxis.tick_right()
 
 	# Make the spacing between the two axes a bit smaller
 	plt.subplots_adjust(wspace=0.15)
@@ -167,8 +247,23 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 		fig.savefig("%s/%s.png"%(outdir,R2))
 		fig.savefig("%s/%s.eps"%(outdir,R2))
 
+#! 2. Use functions to make plots
+
+#! Get inputs from user
+if len(sys.argv)<2:
+	sys.exit("Please enter OBSDIR")
+else:
+	OBSDIR=sys.argv[1]
+print "OBSDIR=",OBSDIR
+#sys.exit()
+
+#! Define needed objects
 SE_1D,SE_ITG,SE_R2=OrderedDict(),OrderedDict(),OrderedDict()
-OBSDIR='/data/trivedia/e16/2pi/d2pi/SS/dbg/lowQ2_cmb_non_vst_SE_090516'
+#! OUTDIR
+OUTDIR="%s/SE_plots"%OBSDIR
+if not os.path.exists(OUTDIR):
+	os.makedirs(OUTDIR)
+
 
 #! Fill SE_1D
 print "*** Filling SE_1D ***"
@@ -180,14 +275,15 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 	#! Avoid "EC"
 	if "EC" in dirName: continue
 
+	#! Use following to debug
 	# print('Found directory: %s' % dirName)
 	# for fname in fileList:
 	# 	print('\t%s' % fname)
 
 	if len(fileList)==9: 
 		#! obtain q2,w info from dirName
-		q2=dirName.split("/")[10]
-		w=dirName.split("/")[11]
+		q2=dirName.split("/")[-2]#[10]
+		w=dirName.split("/")[-1]#[11]
 		q2=q2.replace("q","")
 		w=w.replace("w","")
 		#print "q2,w=",q2,w
@@ -216,14 +312,16 @@ for vst in [1,2,3]:
 		#! Avoid root path
 		if dirName==rootDir:continue
 	
+		#! Use following to debug
 		#print('Found directory: %s' % dirName)
 		#for fname in fileList:
 		#	print('\t%s' % fname)
+
 		f=open("%s/%s"%(dirName,fileList[0]),"r")
 		print "%s/%s"%(dirName,fileList[0])
 		#print f.name
 		#sys.exit()
-		q2w=dirName.split("/")[11]
+		q2w=dirName.split("/")[-1]#[11]
 		#print "q2w=",q2w
 		print "Reading data from", f.name
 		fdata=f.readlines()
@@ -248,9 +346,9 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 
 	if len(fileList)==12:
 		#! Obtain q2,w,R2 info from dirName 
-		q2=dirName.split("/")[10]
-		w=dirName.split("/")[11]
-		R2=dirName.split("/")[12]
+		q2=dirName.split("/")[-3]#[10]
+		w=dirName.split("/")[-2]#[11]
+		R2=dirName.split("/")[-1]#[12]
 		q2=q2.replace("q","")
 		w=w.replace("w","")
 		#print "q2,w,R2=",q2,w,R2
@@ -272,14 +370,8 @@ print "******"
 #sys.exit()
 
 
-outdir="/tmp/figs"
-if not os.path.exists(outdir):
-	os.makedirs(outdir)
-
-plot_R2(SE_R2,outdir)
+plot_1D(SE_1D,OUTDIR)
+plot_itg(SE_ITG,OUTDIR)
+plot_R2(SE_R2,OUTDIR)
 for R2 in ['A','B','C','D','E']:
-	plot_R2(SE_R2,outdir,R2)
-
-plot_1D(SE_1D,outdir)
-plot_itg(SE_ITG,outdir)
-
+	plot_R2(SE_R2,OUTDIR,R2)
