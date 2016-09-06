@@ -49,14 +49,14 @@ def plot_1D(SE_1D,OUTDIR):
 	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
 	mxm=int(round(max(errl))+1)
-	axs[0].set_title("Distribution of relative error [%%] (average=%.2f %%)"%np.mean(errl))
+	axs[0].set_title("Distribution of relative error (average=%.2f %%)"%np.mean(errl))
 	axs[0].hist(errl,bins=(range(mnm,mxm+1,1)))
 	#! Plot err_err
 	mnm=min(err_errl)
 	if mnm<0: mnm=int(round(min(err_errl))-1)
 	else: mnm=0
 	mxm=int(round(max(err_errl))+1)
-	axs[1].set_title("Distribution of error on relative error [%%] (average=%.2f %%)"%np.mean(err_errl))
+	axs[1].set_title("Distribution of error on relative error (average=%.2f %%)"%np.mean(err_errl))
 	axs[1].hist(err_errl,bins=(range(mnm,mxm+1,1)))
 	
 	outdir="%s/Obs_1D"%OUTDIR
@@ -74,14 +74,14 @@ def plot_itg(SE_ITG,OUTDIR):
 	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
 	mxm=int(round(max(errl))+1)
-	axs[0].set_title("Distribution of relative error [%%] (average=%.2f %%)"%np.mean(errl))
+	axs[0].set_title("Distribution of relative error (average=%.2f %%)"%np.mean(errl))
 	axs[0].hist(errl,bins=(range(mnm,mxm+1,1)))
 	#! Plot err_err
 	mnm=min(err_errl)
 	if mnm<0: mnm=int(round(min(err_errl))-1)
 	else: mnm=0
 	mxm=int(round(max(err_errl))+1)
-	axs[1].set_title("Distribution of error on relative error [%%] (average=%.2f %%)"%np.mean(err_errl))
+	axs[1].set_title("Distribution of error on relative error (average=%.2f %%)"%np.mean(err_errl))
 	axs[1].hist(err_errl,bins=(range(mnm,mxm+1,1)))
 	
 	outdir="%s/Obs_itg"%OUTDIR
@@ -97,6 +97,15 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	  http://stackoverflow.com/questions/5656798/python-matplotlib-is-there-a-way-to-make-a-discontinuous-axis/5669301#5669301
 	'''
 
+	if R2==None:
+		errl    =[SE_R2[k][0] for k in SE_R2.keys()]
+		err_errl=[SE_R2[k][1] for k in SE_R2.keys()]
+	else:
+		errl    =[SE_R2[k][0] for k in SE_R2.keys() if k[0]==R2]
+		err_errl=[SE_R2[k][1] for k in SE_R2.keys() if k[0]==R2]
+	#! keep track of all number of data points
+	nt=len(errl)
+
 	#! set up axes: 2*3
 	#! + for err:     ax[0][0],ax[0][1],ax[0][2] = xaxis split into lower,middle,upper 
 	#! + for err_err: ax[1][0],ax[1][1],ax[1][2] (xaxis not yet spliced)
@@ -106,16 +115,8 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 		figtitle="all R2s"
 	else:
 		figtitle=R2
-	fig.suptitle("Distribution of relative error and error on relative error [%%] and for %s"%(figtitle) ,fontsize='xx-large')
+	fig.suptitle("Distribution of relative error (average=%.2f %%) and error on relative error (average=%.2E %%) for %s"%(np.mean(errl),np.mean(err_errl),figtitle) ,fontsize='xx-large')
 
-	if R2==None:
-		errl    =[SE_R2[k][0] for k in SE_R2.keys()]
-		err_errl=[SE_R2[k][1] for k in SE_R2.keys()]
-	else:
-		errl    =[SE_R2[k][0] for k in SE_R2.keys() if k[0]==R2]
-		err_errl=[SE_R2[k][1] for k in SE_R2.keys() if k[0]==R2]
-	#! keep track of all number of data points
-	nt=len(errl)
 
 	LMIN,LMAX,LBINW=0,10,1
 	MMIN,MMAX,MBINW=10,100,10
@@ -127,11 +128,13 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	# plot the same data on all axes
 	#! lower limit
 	#! err
+	ax=axs[0][0]
 	nl=sum(1 for x in errl if x>=LMIN and x<=LMAX)
 	pl=(nl/nt)*100
-	axs[0][0].set_title("Fraction of data points %.2f %%(n=%d)"%(pl,nl))
-	axs[0][0].hist(errl,bins=(range(LMIN,LMAX+LBINW,LBINW)))
+	ax.set_title("Fraction of data points %.2f %%(n=%d)"%(pl,nl))
+	ax.hist(errl,bins=(range(LMIN,LMAX+LBINW,LBINW)))
 	#! err_errl
+	ax=axs[1][0]
 	#! Get appropriate data from err_errl
 	d=[]
 	for x in zip(errl,err_errl):
@@ -142,18 +145,31 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
 	mxm=int(max(d)+1)
-	#axs[1][0].hist(d,bins=(range(mnm,mxm,1)))
-	bw=0.5
-	axs[1][0].set_title("n=%d"%len(d))
-	axs[1][0].hist(d,bins=(np.arange(mnm,mxm,bw)))
+	ax.set_title("n=%d"%len(d))
+	#ax.hist(d)
+	#! Note how binning is very fine between [0,1] to zoom in 0-spike
+	ax.hist(d,bins=np.concatenate((np.arange(0,1,0.5),np.arange(1,100,1))))
+	#! rectangular 'patch' to bring out 0-spike
+	px=0
+	pw=1
+	py=ax.get_ylim()[0]
+	ph=ax.get_ylim()[1]-ax.get_ylim()[0]
+	ax.add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
+	#! Annotate this patch
+	ax.annotate('[0,1,0.5]', xy=(1, ax.get_ylim()[1]/2), xytext=(5, ax.get_ylim()[1]/1.5),
+            arrowprops=dict(facecolor='red', shrink=0.05),
+            )
 
 
 	#! middle limit
+	#! err
+	ax=axs[0][1]
 	nm=sum(1 for x in errl if x>MMIN and x<=MMAX)
 	pm=(nm/nt)*100
-	axs[0][1].set_title("Fraction of data points %.2f %%(n=%d)"%(pm,nm))
-	axs[0][1].hist(errl,bins=(range(MMIN,MMAX+MBINW,MBINW)))
+	ax.set_title("Fraction of data points %.2f %%(n=%d)"%(pm,nm))
+	ax.hist(errl,bins=(range(MMIN,MMAX+MBINW,MBINW)))
 	#! err_errl
+	ax=axs[1][1]
 	#! Get appropriate data from err_errl
 	d=[]
 	for x in zip(errl,err_errl):
@@ -164,29 +180,32 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
 	mxm=int(max(d)+1)
-	axs[1][1].set_title("n=%d"%len(d))
-	#axs[1][1].hist(d)
+	ax.set_title("n=%d"%len(d))
+	#ax.hist(d)
 	#! Note how binning is very fine between [0,1] to zoom in 0-spike
-	axs[1][1].hist(d,bins=np.concatenate((np.arange(0,1,0.5),np.arange(1,100,1))))
+	ax.hist(d,bins=np.concatenate((np.arange(0,1,0.5),np.arange(1,100,1))))
 	#! rectangular 'patch' to bring out 0-spike
 	px=0
 	pw=1
-	py=axs[1][1].get_ylim()[0]
-	ph=axs[1][1].get_ylim()[1]-axs[1][1].get_ylim()[0]
-	axs[1][1].add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
+	py=ax.get_ylim()[0]
+	ph=ax.get_ylim()[1]-ax.get_ylim()[0]
+	ax.add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
 	#! Annotate this patch
-	axs[1][1].annotate('[0,1,0.5]', xy=(1, axs[1][1].get_ylim()[1]/2), xytext=(5, axs[1][2].get_ylim()[1]/1.5),
+	ax.annotate('[0,1,0.5]', xy=(1, ax.get_ylim()[1]/2), xytext=(5, ax.get_ylim()[1]/1.5),
             arrowprops=dict(facecolor='red', shrink=0.05),
             )
 
 	
 
 	#! upper limits
+	#! err
+	ax=axs[0][2]
 	nh=sum(1 for x in errl if x>UMIN and x<=UMAX)
 	ph=(nh/nt)*100
-	axs[0][2].set_title("Fraction of data points %.2f %%(n=%d)"%(ph,nh))
-	axs[0][2].hist(errl,bins=(range(UMIN,UMAX+UBINW,UBINW)))
+	ax.set_title("Fraction of data points %.2f %%(n=%d)"%(ph,nh))
+	ax.hist(errl,bins=(range(UMIN,UMAX+UBINW,UBINW)))
 	#! err_errl
+	ax=axs[1][2]
 	#! Get appropriate data from err_errl
 	d=[]
 	for x in zip(errl,err_errl):
@@ -197,18 +216,18 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 	if mnm<0: mnm=int(round(min(errl))-1)
 	else: mnm=0
 	mxm=int(max(d)+1)
-	axs[1][2].set_title("n=%d"%len(d))
-	#axs[1][2].hist(d)
-	#! Note how binning is very fine between [0,100] to zoom in 0-spike
-	axs[1][2].hist(d,bins=np.concatenate((np.arange(0,100,1),np.arange(100,10000,100))))
+	ax.set_title("n=%d"%len(d))
+	#ax.hist(d)
+	#! Note how binning is very fine between [0,1] to zoom in 0-spike
+	ax.hist(d,bins=np.concatenate((np.arange(0,1,0.5),np.arange(1,10000,100))))
 	#! rectangular 'patch' to bring out 0-spike
 	px=0
-	pw=100
-	py=axs[1][2].get_ylim()[0]
-	ph=axs[1][2].get_ylim()[1]-axs[1][2].get_ylim()[0]
-	axs[1][2].add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
+	pw=1
+	py=ax.get_ylim()[0]
+	ph=ax.get_ylim()[1]-ax.get_ylim()[0]
+	ax.add_patch(patches.Rectangle((px,py),pw,ph,color='red',alpha=0.5))
 	#! Annotate this patch
-	axs[1][2].annotate('[0,100,1]', xy=(100, axs[1][2].get_ylim()[1]/2), xytext=(500, axs[1][2].get_ylim()[1]/1.5),
+	ax.annotate('[0,1,0.5]', xy=(100, ax.get_ylim()[1]/2), xytext=(500, ax.get_ylim()[1]/1.5),
             arrowprops=dict(facecolor='red', shrink=0.05),
             )
 	

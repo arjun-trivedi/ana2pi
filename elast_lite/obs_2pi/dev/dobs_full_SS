@@ -17,4 +17,9 @@ wait
 dev/dobs_cmb_non_vst_SE_result >& $logdir/dobs_cmb_non_vst_SE_result.log &
 
 #! To make SE plots for a particular OBSDIR
-#dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_cmb_non_vst_SE_090516
+#! NOTE that the date has to be manually adjusted
+#! 1. First do each of the per_non_vst_SE
+dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_fixMM2cut_062416_sim4_sim5_sim6_sim7_sim8_sim13_090516/
+dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_CC_cut_080216_sim4_sim5_sim6_sim7_sim8_sim13_090516/
+#! Now do the cmb_non_vst_SE
+dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_cmb_non_vst_SE_090516
