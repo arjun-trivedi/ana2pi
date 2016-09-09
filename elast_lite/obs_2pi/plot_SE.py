@@ -349,10 +349,10 @@ for vst in [1,2,3]:
 		#! Avoid "EC"
 		if "EC" in dirName: continue
 	
-		# #! Use following to debug
-		# print('Found directory: %s' % dirName)
-		# for fname in fileList:
-		# 	print('\t%s' % fname)
+		#! Use following to debug
+		print('Found directory: %s' % dirName)
+		for fname in fileList:
+			print('\t%s' % fname)
 
 		f=open("%s/%s"%(dirName,fileList[0]),"r")
 		print "%s/%s"%(dirName,fileList[0])

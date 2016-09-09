@@ -1,0 +1,41 @@
+#!/usr/bin/python
+import sys,os
+import time,datetime
+
+#! The following to be able to use disp_obs.py 
+sys.path.insert(0, os.path.join(os.environ['ANA2PI'],'elast_lite/obs_2pi'))
+from disp_obs import DispObs
+
+#! ---------------------
+#  + Usage=dobs_non_vst_SE_result [cmb_non_vst_SE_date=today(mmddyy)]
+#!----------------------
+
+#! *** Setup global parameters ***
+#! Q2 limits for lowQ2
+Q2MIN=2.00
+Q2MAX=3.00
+#! W limits
+WMIN=1.400
+WMAX=2.125
+
+#! Get inputs from user
+if len(sys.argv)>1: #! User input cmb_non_vst_SE_date
+        cmb_non_vst_SE_date=sys.argv[1]
+else:
+        cmb_non_vst_SE_date=datetime.datetime.now().strftime('%m%d%y')
+print "cmb_non_vst_SE_date=",cmb_non_vst_SE_date
+
+EXPT="e16"
+DBG=True
+
+obsd={
+	1:['SS/dbg/lowQ2_cmb_non_vst_SE_%s'%cmb_non_vst_SE_date, 'cmb_non_vst_SE'],
+}
+SS_tag='lowQ2_cmb_vst_SE'
+SS_type="cmb_vst_SE"
+print "Displaying per_non_vst_SE for q2min q2max wmin wmax expt dbg",'NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG
+print "obsd=",obsd
+print "SS_tag=",SS_tag
+print "SS_type=",SS_type
+do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag,SS_type=SS_type)
+do.disp_cmb_vst_SE_results_1D()

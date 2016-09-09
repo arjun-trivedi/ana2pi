@@ -13,8 +13,14 @@ dev/dobs_per_non_vst_SE_result_CCcut   >&  $logdir/dobs_per_non_vst_SE_result_CC
 wait
 
 #! 2. Using per_non_vst_SE results from 1, obtain cmb_non_vst_SE
-#! Note that the following script needs the correct date tagged results from 1. which is coded in the script.
+#! Note that the following script needs the correct date tagged results from 1,
+#! which can be entered in MMDDYY format, else it defaults to todays date 
 dev/dobs_cmb_non_vst_SE_result >& $logdir/dobs_cmb_non_vst_SE_result.log &
+
+#! 3. Using cmb_non_vst_SE from 1 to obtain cmb_vst_SE
+#! Note that the following script needs the correct date tagged results from 1,
+#! which can be entered in MMDDYY format, else it defaults to todays date
+./dobs_cmb_vst_SE_result >& $logdir/dobs_cmb_vst_SE_result.log &
 
 #! To make SE plots for a particular OBSDIR
 #! NOTE that the date has to be manually adjusted
@@ -23,3 +29,5 @@ dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_fixMM2cut_062416_sim4_sim5_sim6_sim7_sim
 dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_CC_cut_080216_sim4_sim5_sim6_sim7_sim8_sim13_090516/
 #! Now do the cmb_non_vst_SE
 dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_cmb_non_vst_SE_090516
+#! Now do the cmb_vst_SE
+dev/plot_SE.py $OBSDIR_E16/SS/dbg/lowQ2_cmb_vst_SE_<DATE?> cmb_vst_SE
