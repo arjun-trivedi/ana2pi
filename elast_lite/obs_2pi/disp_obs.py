@@ -6,7 +6,7 @@ from collections import OrderedDict
 import array
 import itertools
 
-import os,sys
+import os,sys,subprocess
 import time,datetime
 
 import numpy as np
@@ -259,7 +259,8 @@ class DispObs:
 			#! FOUT = OUTDIR/results.root for Obs_1D,Obs_R2,Obs_itg
 			self.FOUT_OBS_1D=ROOT.TFile("%s/Obs_1D.root"%self.OUTDIR,"RECREATE")
 			self.FOUT_OBS_ITG=ROOT.TFile("%s/Obs_itg.root"%self.OUTDIR,"RECREATE")
-			self.FOUT_OBS_R2=ROOT.TFile("%s/Obs_R2.root"%self.OUTDIR,"RECREATE")
+			if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
+				self.FOUT_OBS_R2=ROOT.TFile("%s/Obs_R2.root"%self.OUTDIR,"RECREATE")
 
 			print "OBSDIR=",self.OBSDIR
 			#! pretty-print OBSD
@@ -271,7 +272,8 @@ class DispObs:
 			print "OUTDIR=",self.OUTDIR
 			print "FOUT_OBS_1D=",self.FOUT_OBS_1D.GetName()
 			print "FOUT_OBS_ITG=",self.FOUT_OBS_ITG.GetName()
-			print "FOUT_OBS_R2=",self.FOUT_OBS_R2.GetName()
+			if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
+				print "FOUT_OBS_R2=",self.FOUT_OBS_R2.GetName()
 			
 		else: #! do Regular init	
 			self.OBSDIR=obsdir
@@ -505,10 +507,10 @@ class DispObs:
 		+ get_cmb_non_vst_SE_results() was used as a template for this method and that may be reflect in the code
 
 		+ Format for results_EC/EF in this function (results refer to those obtained for vst_SE, for passed q2wbin, from Obs_itg): 
-		  results_EC/EF=[mu,sg_mu,sg,sg_sg,
-		                 f_vst_1,sg_f_vst_1,
+		  results_EC/EF=[f_vst_1,sg_f_vst_1,
 		                 f_vst_2,sg_f_vst_2,
-		                 f_vst_2,sg_f_vst_2]
+		                 f_vst_2,sg_f_vst_2,
+		                 sg_vst_1D,sg_sg_vst_1D]
 
 		+ Process
 		'''
@@ -520,25 +522,26 @@ class DispObs:
 		wbin=self.get_wbin(q2wbin)
 
 		#! Get vst_SE results, per seq, for this qwbin
-		#! Create structure for mu_vst[seq],sg_mu_vst[seq],sg_vst[seq],sg_sg_vst[seq]
-		mu_vst,sg_mu_vst,sg_vst,sg_sg_vst=OrderedDict(),OrderedDict(),OrderedDict(),OrderedDict()
 		#! Create structure for, per seq, vst related normalization factors and its error:
 		#! + f[seq,vst]
 		#! + sg_f[seq,vst]
+		#! + sg_vst_1D[seq],sg_sg_vst_1D[seq]
 		f   =OrderedDict()
 		sg_f=OrderedDict()
+		sg_vst_1D=OrderedDict()
+		sg_sg_vst_1D=OrderedDict()
 		#! Now fill the structures
 		for seq in self.SEQS:
 			if   seq=='EC':results=results_EC
 			elif seq=='EF':results=results_EF
 			else: print "ERROR DispObs::plot_cmb_vst_SE_results_1D():seq=%s not recognized"
 
-			mu_vst[seq],sg_mu_vst[seq],sg_vst[seq],sg_sg_vst[seq]=results[0],results[1],results[2],results[3]
 			f[seq,1],sg_f[seq,1]=results[4],results[5]
 			f[seq,2],sg_f[seq,2]=results[6],results[7]
 			f[seq,3],sg_f[seq,3]=results[8],results[9]
+			sg_vst_1D[seq],sg_sg_vst_1D[seq]=results[10],results[11]
 
-		# #! debug structure
+		#! debug structure
 		# print "*** Results received for q2bin,wbin=%s,%s: ***"%(q2bin,wbin)
 		# for seq in self.SEQS:
 		# 	if   seq=='EC':results=results_EC
@@ -546,10 +549,10 @@ class DispObs:
 		# 	else: print "ERROR DispObs::plot_cmb_vst_SE_results_1D():seq=%s not recognized"
 
 		# 	print "For seq=%s:"%seq
-		# 	print "mu_vst,sg_mu_vst,sg_vst,sg_sg_vst=",mu_vst[seq],sg_mu_vst[seq],sg_vst[seq],sg_sg_vst[seq]
 		# 	print "f_vst_1,sg_f_vst_1=",f[seq,1],sg_f[seq,1]
 		# 	print "f_vst_2,sg_f_vst_2=",f[seq,2],sg_f[seq,2]
 		# 	print "f_vst_3,sg_f_vst_3=",f[seq,3],sg_f[seq,3]
+		# 	print "sg_vst_1D,sg_sg_vst_1D=",sg_vst_1D[seq],sg_sg_vst_1D[seq]
 		# print "******"
 
 		#! Apply vst_SE to Obs_1D to h1/h1err[obsnum,seq,vst,var] to obtain:
@@ -587,7 +590,7 @@ class DispObs:
 					mu_old   =h1[1,seq,vst,var].GetBinContent(ibin+1)
 					sg_mu_old=h1[1,seq,vst,var].GetBinError(ibin+1)
 					#! Now renormalize them
-					mu=(mu_old*f[seq,vst]) #! TEST
+					mu=(mu_old*f[seq,vst]) 
 					if mu==0: #! This can happen if cross-section=0 as can be for M1,M2, and perhaps even others
 						sg_mu=0 #! this is even mathematically true
 					else:
@@ -599,21 +602,22 @@ class DispObs:
 					# 	print "mu,sg_mu=",mu,sg_mu
 					# 	print "******"
 
-					#! sg,sg_sg: Add sg_vst in quadrature to sg_old
+					#! sg,sg_sg: Add sg_vst_1D in quadrature to sg_old
 					#! Get sg_old,sg_sg_old
 					sg_old   =h1err[1,seq,vst,var].GetBinContent(ibin+1)
 					sg_sg_old=h1err[1,seq,vst,var].GetBinError(ibin+1)
 					#! Calculate new sg,sg_sg
 					#! Get binw
 					binw=self.get_binw(h1[1,seq,vst,var],var)
-					print "binw for var=%s = %f"%(var,binw)
-					sg=math.sqrt( sg_old**2 + (sg_vst[seq]/(math.sqrt(nbins))*binw)**2 ) #! TEST math.sqrt(sg_old**2 + (sg_vst[seq]/math.sqrt(nbins))**2)
+					#print "binw for var=%s = %f"%(var,binw)
+					sg=math.sqrt( sg_old**2 + (sg_vst_1D[seq]/(math.sqrt(nbins))*binw)**2 )
 					if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 						sg_sg=0
 					else:
 						sg_sg_1=( 1/math.sqrt(sg) )
-						sg_sg_2=math.sqrt( (sg_old**2*sg_sg_old**2) + ( (sg_vst[seq]/nbins)**2*sg_sg_vst[seq]**2) ) #1 TEST
+						sg_sg_2=math.sqrt( (sg_old**2*sg_sg_old**2) + ( (sg_vst_1D[seq]/nbins)**2*sg_sg_vst_1D[seq]**2) ) 
 						sg_sg=sg_sg_1*sg_sg_2 
+
 					#! rel_err,sg_rel_err
 					if mu==0 or sg==0: 
 						rel_err=0
@@ -1288,7 +1292,7 @@ class DispObs:
 			+ For Obs_1D:   Obs_1D.root
 		  	+ For Itg-xsec: Obs_itg.root
 
-		+ For 'cmb_vst_SE', vst-SE are obtain from Obs_itg and therefore they are processed first, where
+		+ For 'cmb_vst_SE', vst-SE are obtain from Obs_itg and therefore they are processed first, from where
 		  errors are obtained, which are then used applied Obs_1D
 
 		-1. First make sure SS_TYPE is valid
@@ -1389,11 +1393,11 @@ class DispObs:
 				
 		#! 1.iv. Plot cmb_vst_SE_results for Obs_itg: self.plot_cmb_vst_SE_results_hW(hW,hWerr)
 		#!        NOTE that this functions also returns 'rslts' for cmb_vst_SE that are applied to Obs_1D, 
-		#!        where 'rslts[q2bin,wbin,seq]=[mu,sg_mu,sg,sg_sg]' related vst_SE 
+		#!        where 'rslts[q2bin,wbin,seq]' are the cmb_vst_SE 
 		#!        (for more details see self.plot_cmb_vst_SE_results_hW(hW,hWerr))
 		#!         
 		rslts_itg=self.plot_cmb_vst_SE_results_hW(hW,hWerr)
-		# #! To print results for debug
+		#! To print results for debug
 		# print "results_itg from Obs_itg:"
 		# for k in rslts_itg:
 		# 	q2bin,wbin,seq=k[0],k[1],k[2]
@@ -1401,10 +1405,12 @@ class DispObs:
 		# 	f_vst_1,sg_f_vst_1=rslts_itg[k][4],rslts_itg[k][5]
 		# 	f_vst_2,sg_f_vst_2=rslts_itg[k][6],rslts_itg[k][7]
 		# 	f_vst_3,sg_f_vst_3=rslts_itg[k][8],rslts_itg[k][9]
-		# 	print "%s,%s,%s=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f"%(q2bin,wbin,seq,mu,sg_mu,sg,sg_sg,
+		# 	sg_vst_1D,sg_sg_vst_1D=rslts_itg[k][10],rslts_itg[k][11]
+		# 	print "%s,%s,%s=%f,%f,%f,%f\n,%f,%f\n%f,%f\n %f,%f\n%f,%f"%(q2bin,wbin,seq,mu,sg_mu,sg,sg_sg,
 		# 		                          f_vst_1,sg_f_vst_1,
 		# 		                          f_vst_2,sg_f_vst_2,
-		# 		                          f_vst_3,sg_f_vst_3)
+		# 		                          f_vst_3,sg_f_vst_3,
+		# 		                          sg_vst_1D,sg_sg_vst_1D)
 		
 
 		#! 2. Make displays for Obs_1D
@@ -1471,6 +1477,37 @@ class DispObs:
 
 		print "*** disp_cmb_vst_SE_results_1D() Done ***\n"
 		print "DispObs::disp_cmb_vst_SE_results_1D If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
+
+	def disp_cmb_vst_SE_results_R2(self):
+		'''
+		[09-13-16] 
+		Since I did not find the process of obtain cmb_vst_SE results applicable for R2, this method simply links
+		'cmb_non_vst_SE' R2 results in the 'cmb_vst_SE' directory
+		be
+		'''
+		print "*** In DispObs::disp_cmb_vst_SE_results_R2 ***"
+
+		#! -1. Make sure SS_TYPE is valid
+		if self.SS_TYPE!="cmb_vst_SE":
+			print "DispObs::disp_cmb_vst_SE_results_R2(): self.SS_TYPE=%s is not valid. Exiting."%self.SS_TYPE
+
+		for k in self.OBSD:
+			obsnum,obs,obstag=k,self.OBSD[k][0],self.OBSD[k][1]
+			print "DispObs::disp_cmb_vst_SE_results_R2():Processing obsnum:obs:obstag=",obsnum,obs,obstag
+
+			#! Open file for this obs
+			obsdir=os.path.join(self.OBSDIR,obs)
+			#f=root_open(os.path.join(obsdir,'Obs_itg.root'))
+
+			for rslt in ["Obs_R2", "Obs_R2_err", "Obs_R2_err_vsl", "Obs_R2_txt_rslt", "Obs_R2.root"]:
+				cmd=["ln", "-s", "%s/%s"%(obsdir,rslt),"%s"%self.OUTDIR]
+				print">>>%s\n"%cmd
+				#mainlog.write(">>>%s\n"%cmd)
+				tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)#! stdout=logfile
+				tool.wait()
+
+		print "*** disp_cmb_vst_SE_results_R2() Done ***\n"
+		print "DispObs::disp_cmb_vst_SE_results_R2 If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
 
 	def get_per_non_vst_SE_results(self,h1):
 		'''
@@ -1865,7 +1902,9 @@ class DispObs:
 					+ where rel_err=sg/fabs(mu) (Absolute value is required for Obs_R2 which can be negative)
 				4. (f_vst_i        +/- sg_f_vst_i)
 					+ where f_vst_i=mu/mu_vst_i  i.e. the renormalization factor for Obs_1D within a VST
-						+ where i =VST index 
+						+ where i =VST index
+				5. (sg_vst_1D    +/- sg_sg_vst_1D) 
+					+ These errors are used for propagation vst_SE for 1D
 
 			  and return various display of these results, including the full array of results:
 				1. h1_obs[keys]:     histogrammed (mu +/- sg_mu)[keys]
@@ -1875,7 +1914,8 @@ class DispObs:
 					+ bin, bin_le, bin_ue, mu, sg_mu, sg, sg_sg, rel_err, sg_rel_err,
 					  f_vst_1,sg_f_vst_1,
 					  f_vst_2,sg_f_vst_2,
-					  f_vst_3,sg_f_vst_3
+					  f_vst_3,sg_f_vst_3,
+					  sg_vst_1D, sg_sg_vst_1D
 		'''
 		#! Create output object dicts
 		h1_obs,h1_err,h1_rel_err,rslts=OrderedDict(),OrderedDict(),OrderedDict(),OrderedDict()		
@@ -1930,15 +1970,6 @@ class DispObs:
 					sg_sg_2=math.sqrt(sum( (x**2) * (y**2) for x,y in zip(sg_l,sg_sg_l) ))
 					sg_sg=sg_sg_1*sg_sg_2 
 
-				#! TEST:std_dev,sg_std_dev
-				std_dev=np.std(mu_l)
-				if std_dev==0: #! This is true even in the analytical formulae used for cases when sg!=0
-					sg_std_dev=0
-				else:
-					sg_std_dev_1=( 1/(math.sqrt(std_dev)*n) )
-					sg_std_dev_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(mu_l,sg_mu_l) ))
-					sg_std_dev=sg_std_dev_1*sg_std_dev_2 
-
 				#! rel_err,sg_rel_err
 				if mu==0 or sg==0: 
 					rel_err=0
@@ -1953,6 +1984,17 @@ class DispObs:
 				for i,vst in enumerate(VSTS):
 					f_vst[i]=mu/mu_l[i]
 					sg_f_vst[i]=f_vst[i]*math.sqrt( (sg_mu/mu)**2 + (sg_mu_l[i]/mu_l[i])**2 )
+
+				#! Calculate sg_vst_1D and sg_sg_vst_1D which is nothing but RMS of mu_l and its prop. error
+				std_dev=np.std(mu_l)
+				if std_dev==0: #! This is true even in the analytical formulae used for cases when sg!=0
+					sg_std_dev=0
+				else:
+					sg_std_dev_1=( 1/(math.sqrt(std_dev)*n) )
+					sg_std_dev_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(mu_l,sg_mu_l) ))
+					sg_std_dev=sg_std_dev_1*sg_std_dev_2 
+				sg_vst_1D=std_dev
+				sg_sg_vst_1D=sg_std_dev
 
 
 				#! Store bin information (will be used for passing for full results rslts dict)
@@ -1970,17 +2012,11 @@ class DispObs:
 				#! rel_err,sg_rel_err => h1_rel_err
 				h1_rel_err[seq,'THETA'].SetBinContent(ibin+1,rel_err)
 				h1_rel_err[seq,'THETA'].SetBinError(ibin+1,sg_rel_err)
-				#! TEST
-				# #! [bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err,f_vst_i,sg_f_vst_i] => rslts
-				# rslts[seq,'THETA'].append([ibin+1, bin_le, bin_ue, mu, sg_mu, sg, sg_sg, rel_err, sg_rel_err,
-				# 	                       f_vst[0],sg_f_vst[0],
-				# 	                       f_vst[1],sg_f_vst[1],
-				# 	                       f_vst[2],sg_f_vst[2]])
-				#! [bin,bin_le,bin_ue,mu,sg_mu,std_dev,sg_std_dev,rel_err,sg_rel_err,f_vst_i,sg_f_vst_i] => rslts
-				rslts[seq,'THETA'].append([ibin+1, bin_le, bin_ue, mu, sg_mu, std_dev, sg_std_dev, rel_err, sg_rel_err,
+				rslts[seq,'THETA'].append([ibin+1, bin_le, bin_ue, mu, sg_mu, sg, sg_sg, rel_err, sg_rel_err,
 					                       f_vst[0],sg_f_vst[0],
 					                       f_vst[1],sg_f_vst[1],
-					                       f_vst[2],sg_f_vst[2]])
+					                       f_vst[2],sg_f_vst[2],
+					                       sg_vst_1D,sg_sg_vst_1D])
 		return h1_obs,h1_err,h1_rel_err,rslts
 
 	def norm_1D(self,h1,q2wbin):
@@ -2976,12 +3012,14 @@ class DispObs:
 					f_vst_1,sg_f_vst_1=d[9],d[10]
 					f_vst_2,sg_f_vst_2=d[11],d[12]
 					f_vst_3,sg_f_vst_3=d[13],d[14]
+					sg_vst_1D,sg_sg_vst_1D=d[15],d[16]
 
 					wbin="%.3f-%.3f"%(bin_le,bin_ue)
 					rslts[q2bin,wbin,seq]=[mu,sg_mu,sg,sg_sg,
 					                       f_vst_1,sg_f_vst_1,
 					                       f_vst_2,sg_f_vst_2,
-					                       f_vst_3,sg_f_vst_3]
+					                       f_vst_3,sg_f_vst_3,
+					                       sg_vst_1D,sg_sg_vst_1D]
 			
 			#! 2.iii. Collect all hW_obs in q2-dict: This will be used later to plot all xsec(W) for all Q2 in one canvas (step 3.)
 			hW_obs_Q2[q2wbin_sel]=hW_obs

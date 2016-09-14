@@ -39,3 +39,4 @@ print "SS_tag=",SS_tag
 print "SS_type=",SS_type
 do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag,SS_type=SS_type)
 do.disp_cmb_vst_SE_results_1D()
+do.disp_cmb_vst_SE_results_R2()

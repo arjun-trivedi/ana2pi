@@ -11,7 +11,7 @@ import matplotlib.patches as patches
 '''
 [09-06-16]
 + Makes plots to visualize systematic errors
-+ >plot_SE.py [OBSDIR] [SE_TYPE=""]
++ >plot_SE.py [OBSDIR] 
 
 + First the functions needed are defined
 + These functions are then used in the code that follows
@@ -283,9 +283,12 @@ else:
 	OBSDIR=sys.argv[1]
 print "OBSDIR=",OBSDIR
 
+#! Determine SE_TYPE
 SE_TYPE=""
-if len(sys.argv)>2:
-	SE_TYPE=sys.argv[2]
+#print os.listdir('%s/Obs_itg_txt_rslt'%OBSDIR)
+if not "VST" in os.listdir('%s/Obs_itg_txt_rslt'%OBSDIR):
+	SE_TYPE="cmb_vst_SE"
+print "SE_TYPE=",SE_TYPE
 #sys.exit()
 
 #! Define needed objects
@@ -294,6 +297,8 @@ SE_1D,SE_ITG,SE_R2=OrderedDict(),OrderedDict(),OrderedDict()
 OUTDIR="%s/SE_plots"%OBSDIR
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
+print "OBSDIR=",OBSDIR
+print "OUTDIR=",OUTDIR
 
 
 #! Fill SE_1D
@@ -354,63 +359,64 @@ for vst in [1,2,3]:
 		for fname in fileList:
 			print('\t%s' % fname)
 
-		f=open("%s/%s"%(dirName,fileList[0]),"r")
-		print "%s/%s"%(dirName,fileList[0])
-		#print f.name
-		#sys.exit()
-		q2w=dirName.split("/")[-1]#[11]
-		#print "q2w=",q2w
-		print "Reading data from", f.name
-		fdata=f.readlines()
-		for ibin,line in enumerate(fdata):
-			err,err_err=get_err(line)
-			SE_ITG[q2w,vst,ibin+1]=[err,err_err]
+		if len(fileList)==1 and fileList[0]=="result.txt":
+			f=open("%s/%s"%(dirName,fileList[0]),"r")
+			print "%s/%s"%(dirName,fileList[0])
+			#print f.name
+			#sys.exit()
+			q2w=dirName.split("/")[-1]#[11]
+			#print "q2w=",q2w
+			print "Reading data from", f.name
+			fdata=f.readlines()
+			for ibin,line in enumerate(fdata):
+				err,err_err=get_err(line)
+				SE_ITG[q2w,vst,ibin+1]=[err,err_err]
 print "******"
 
 #! Fill SE_R2
-if SE_TYPE!="cmb_vst_SE":
-	print "*** Filling SE_R2 ***"
-	rootDir = '%s/Obs_R2_txt_rslt'%(OBSDIR)
-	for dirName, subdirList, fileList in os.walk(rootDir):
-		#! Avoid root path
-		if dirName==rootDir:continue
+print "*** Filling SE_R2 ***"
+rootDir = '%s/Obs_R2_txt_rslt'%(OBSDIR)
+for dirName, subdirList, fileList in os.walk(rootDir):
+	#! Avoid root path
+	if dirName==rootDir:continue
 
-		#! Avoid "EC"
-		if "EC" in dirName: continue
+	#! Avoid "EC"
+	if "EC" in dirName: continue
 
-		# print('Found directory: %s' % dirName)
-		# for fname in fileList:
-		# 	print('\t%s' % fname)
+	# print('Found directory: %s' % dirName)
+	# for fname in fileList:
+	# 	print('\t%s' % fname)
 
-		if len(fileList)==12:
-			#! Obtain q2,w,R2 info from dirName 
-			q2=dirName.split("/")[-3]#[10]
-			w=dirName.split("/")[-2]#[11]
-			R2=dirName.split("/")[-1]#[12]
-			q2=q2.replace("q","")
-			w=w.replace("w","")
-			#print "q2,w,R2=",q2,w,R2
+	if len(fileList)==12:
+		#! Obtain q2,w,R2 info from dirName 
+		q2=dirName.split("/")[-3]#[10]
+		w=dirName.split("/")[-2]#[11]
+		R2=dirName.split("/")[-1]#[12]
+		q2=q2.replace("q","")
+		w=w.replace("w","")
+		#print "q2,w,R2=",q2,w,R2
 
-			for fname in fileList:
-				#! obtain vst,var information from file
-				#print fname
-				vst=int(fname.split(".txt")[0].split("_")[0])
-				var=fname.split(".txt")[0].split("_")[1]
-				#print "vst,var=",vst,var
-				#! now read file
-				f=open("%s/%s"%(dirName,fname),"r")
-				print "Reading data from", f.name
-				fdata=f.readlines()
-				for ibin,line in enumerate(fdata):
-					err,err_err=get_err(line)
-					SE_R2[R2,q2,w,vst,var,ibin+1]=[err,err_err]
+		for fname in fileList:
+			#! obtain vst,var information from file
+			#print fname
+			vst=int(fname.split(".txt")[0].split("_")[0])
+			var=fname.split(".txt")[0].split("_")[1]
+			#print "vst,var=",vst,var
+			#! now read file
+			f=open("%s/%s"%(dirName,fname),"r")
+			print "Reading data from", f.name
+			fdata=f.readlines()
+			for ibin,line in enumerate(fdata):
+				err,err_err=get_err(line)
+				SE_R2[R2,q2,w,vst,var,ibin+1]=[err,err_err]
 print "******"
 #sys.exit()
 
 
 plot_1D(SE_1D,OUTDIR)
 plot_itg(SE_ITG,OUTDIR)
-if SE_TYPE!="cmb_vst_SE":
-	plot_R2(SE_R2,OUTDIR)
-	for R2 in ['A','B','C','D','E']:
-		plot_R2(SE_R2,OUTDIR,R2)
+plot_R2(SE_R2,OUTDIR)
+for R2 in ['A','B','C','D','E']:
+	plot_R2(SE_R2,OUTDIR,R2)
+
+print "plot_SE.py done"
