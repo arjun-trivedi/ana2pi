@@ -41,19 +41,6 @@ WMAX=2.125
 EXPT="e16"
 DBG=True
 
-#! Replaced following SS-bands, that contains cross-terms, with SS-bands that are kept for the analysis
-#obsd={
-#	1:['lowQ2_SS-bands_041516/cutsncors1/sim4', ':ECfid-ON::gpart-pid-ON:stat-pid-ON:'],
-#	2:['lowQ2_SS-bands_041516/cutsncors2/sim4', ':ECfid-ON::gpart-pid-OFF:stat-pid-OFF:'],
-#	3:['lowQ2_SS-bands_041516/cutsncors3/sim4', ':ECfid-ON::gpart-pid-ON:stat-pid-OFF:'],
-#	4:['lowQ2_SS-bands_041516/cutsncors4/sim4', ':ECfid-ON::gpart-pid-OFF:stat-pid-ON:'],
-#	5:['lowQ2_SS-bands_041516/cutsncors5/sim4', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON:'],
-#	6:['lowQ2_SS-bands_041516/cutsncors6/sim4', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF:'],
-#	7:['lowQ2_SS-bands_041516/cutsncors7/sim4', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-OFF:'],
-#	8:['lowQ2_SS-bands_041516/cutsncors8/sim4', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-ON:']
-#}
-#SS_tag='lowQ2_SS-bands_041516_sim4
-
 obsd={
 	1:['lowQ2_fixMM2cut_062416/cutsncors5/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON::gpart-pid-ON:stat-pid-ON:'],
 	2:['lowQ2_fixMM2cut_062416/cutsncors6/sim4_sim5_sim6_sim7_sim8_sim13', ':ECfid_atmod_ON::gpart-pid-OFF:stat-pid-OFF:'],
@@ -66,5 +53,8 @@ print "obsd=",obsd
 print "SS_tag=",SS_tag
 print "SS_type=",SS_type
 do=DispObs('NA','NA','NA',Q2MIN,Q2MAX,WMIN,WMAX,EXPT,DBG,obsd=obsd,SS_tag=SS_tag,SS_type=SS_type)
-do.disp_SE_results_1D() #do.disp_per_non_vst_SE_results_1D()
-do.disp_SE_results_R2() #do.disp_per_non_vst_SE_results_R2()
+do.disp_SE_results_1D() 
+for EXTRACT_D_E_FOR_NON_ALPHA in [True, False]:
+	do.disp_SE_results_R2(EXTRACT_D_E_FOR_NON_ALPHA)
+
+print "dobs_per_non_vst_SE_result_SSBands Done"

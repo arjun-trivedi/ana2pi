@@ -1,0 +1,8 @@
+#!/bin/tcsh
+#! EXTRACT_D_E_FOR_NON_ALPHA=False
+#! dbg=True
+dobs_R2 mthd2:False False $OBSDIR_E16/lowQ2_fixMM2cut_062416/cutsncors5 sim4_sim5_sim6_sim7_sim8_sim13  EC_EF_ST 2.00 3.00 1.400 2.125 e16 True &
+dobs_R2 mthd2:False False $OBSDIR_E16/lowQ2_fixMM2cut_062416/cutsncors6 sim4_sim5_sim6_sim7_sim8_sim13  EC_EF_ST 2.00 3.00 1.400 2.125 e16 True &
+
+ln -s $OBSDIR_E16/lowQ2_fixMM2cut_062416/cutsncors5/sim4_sim5_sim6_sim7_sim8_sim13/dbg/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ $OBSDIR_E16/lowQ2_fixMM2cut_062416/cutsncors5/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST
+ln -s $OBSDIR_E16/lowQ2_fixMM2cut_062416/cutsncors6/sim4_sim5_sim6_sim7_sim8_sim13/dbg/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ $OBSDIR_E16/lowQ2_fixMM2cut_062416/cutsncors6/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST

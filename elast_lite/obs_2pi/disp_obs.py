@@ -256,11 +256,13 @@ class DispObs:
 				self.OUTDIR=os.path.join(self.OBSDIR,'SS','dbg','%s_%s'%(SS_tag,date))
 			if not os.path.exists(self.OUTDIR):
 				os.makedirs(self.OUTDIR) 
-			#! FOUT = OUTDIR/results.root for Obs_1D,Obs_R2,Obs_itg
-			self.FOUT_OBS_1D=ROOT.TFile("%s/Obs_1D.root"%self.OUTDIR,"RECREATE")
-			self.FOUT_OBS_ITG=ROOT.TFile("%s/Obs_itg.root"%self.OUTDIR,"RECREATE")
-			if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
-				self.FOUT_OBS_R2=ROOT.TFile("%s/Obs_R2.root"%self.OUTDIR,"RECREATE")
+			#! The following moved into 'disp_SE_results_1D()'
+			# self.FOUT_OBS_1D=ROOT.TFile("%s/Obs_1D.root"%self.OUTDIR,"RECREATE")
+			# self.FOUT_OBS_ITG=ROOT.TFile("%s/Obs_itg.root"%self.OUTDIR,"RECREATE")
+			#! The following moved into 'disp_SE_results_R2()' because name of .root file
+			#! depends on if EXTRACT_D_E_FOR_NON_ALPHA=True/False, which is known only to that method
+			# if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
+			# 	self.FOUT_OBS_R2=ROOT.TFile("%s/Obs_R2.root"%self.OUTDIR,"RECREATE")
 
 			print "OBSDIR=",self.OBSDIR
 			#! pretty-print OBSD
@@ -270,10 +272,13 @@ class DispObs:
 			print "SEQS=",self.SEQS
 			print "SS_TYPE=",self.SS_TYPE
 			print "OUTDIR=",self.OUTDIR
-			print "FOUT_OBS_1D=",self.FOUT_OBS_1D.GetName()
-			print "FOUT_OBS_ITG=",self.FOUT_OBS_ITG.GetName()
-			if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
-				print "FOUT_OBS_R2=",self.FOUT_OBS_R2.GetName()
+			#! The following moved into 'disp_SE_results_1D()'
+			# print "FOUT_OBS_1D=",self.FOUT_OBS_1D.GetName()
+			# print "FOUT_OBS_ITG=",self.FOUT_OBS_ITG.GetName()
+			#! The following moved into 'disp_SE_results_R2()' because name of .root file
+			#! depends on if EXTRACT_D_E_FOR_NON_ALPHA=True/False, which is known only to that method
+			# if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
+			# 	print "FOUT_OBS_R2=",self.FOUT_OBS_R2.GetName()
 			
 		else: #! do Regular init	
 			self.OBSDIR=obsdir
@@ -1118,6 +1123,8 @@ class DispObs:
 		for d in [self.OUTDIR_1D, self.OUTDIR_1D_ERR, self.OUTDIR_1D_ERR_VSL, self.OUTDIR_1D_TXT_RSLT]:
 			if not os.path.exists(d):
 				os.makedirs(d)
+		#! Make output root file
+		self.FOUT_OBS_1D=ROOT.TFile("%s/Obs_1D.root"%self.OUTDIR,"RECREATE")
 
 		#! Make OUTDIR_ITG,OUTDIR_ITG_ERR,OUTDIR_ITG_ERR_VSL,OUTDIR_ITG_TXT_RSTLS
 		self.OUTDIR_ITG              =os.path.join(self.OUTDIR,"Obs_itg")          #! Display i.
@@ -1127,6 +1134,8 @@ class DispObs:
 		for d in [self.OUTDIR_ITG, self.OUTDIR_ITG_ERR, self.OUTDIR_ITG_ERR_VSL, self.OUTDIR_ITG_TXT_RSLT]:
 			if not os.path.exists(d):
 				os.makedirs(d)
+		#! Make output root file
+		self.FOUT_OBS_ITG=ROOT.TFile("%s/Obs_itg.root"%self.OUTDIR,"RECREATE")
 		
 		#! 1. Make displays for Obs_1D
 		#! 1.i. Get Q2-W binning from file
@@ -1329,16 +1338,20 @@ class DispObs:
 		for d in [self.OUTDIR_1D, self.OUTDIR_1D_ERR, self.OUTDIR_1D_ERR_VSL, self.OUTDIR_1D_TXT_RSLT]:
 			if not os.path.exists(d):
 				os.makedirs(d)
+		#! Make output root file
+		self.FOUT_OBS_1D=ROOT.TFile("%s/Obs_1D.root"%self.OUTDIR,"RECREATE")
 
 		#! Make OUTDIR_ITG,OUTDIR_ITG_ERR,OUTDIR_ITG_ERR_VSL,OUTDIR_ITG_TXT_RSTLS
 		self.OUTDIR_ITG              =os.path.join(self.OUTDIR,"Obs_itg")          #! Display i.
 		self.OUTDIR_ITG_ERR          =os.path.join(self.OUTDIR,"Obs_itg_err")      #! Display ii.
 		self.OUTDIR_ITG_ERR_VSL      =os.path.join(self.OUTDIR,"Obs_itg_err_vsl")  #! Display iii.
 		self.OUTDIR_ITG_TXT_RSLT     =os.path.join(self.OUTDIR,"Obs_itg_txt_rslt") #! Display iv.
-
 		for d in [self.OUTDIR_ITG, self.OUTDIR_ITG_ERR, self.OUTDIR_ITG_ERR_VSL, self.OUTDIR_ITG_TXT_RSLT]:
 			if not os.path.exists(d):
 				os.makedirs(d)
+		#! Make output root file
+		self.FOUT_OBS_ITG=ROOT.TFile("%s/Obs_itg.root"%self.OUTDIR,"RECREATE")
+		
 		#! 1. Process Obs_itg and get vst_SE from them
 		#! 1.i. Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
@@ -1478,7 +1491,7 @@ class DispObs:
 		print "*** disp_cmb_vst_SE_results_1D() Done ***\n"
 		print "DispObs::disp_cmb_vst_SE_results_1D If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
 
-	def disp_cmb_vst_SE_results_R2(self):
+	def disp_cmb_vst_SE_results_R2(self,extract_D_E_for_non_alpha):
 		'''
 		[09-13-16] 
 		Since I did not find the process of obtain cmb_vst_SE results applicable for R2, this method simply links
@@ -1486,6 +1499,11 @@ class DispObs:
 		be
 		'''
 		print "*** In DispObs::disp_cmb_vst_SE_results_R2 ***"
+
+		self.EXTRACT_D_E_FOR_NON_ALPHA=extract_D_E_for_non_alpha
+		if self.EXTRACT_D_E_FOR_NON_ALPHA!=True and self.EXTRACT_D_E_FOR_NON_ALPHA!=False:
+			print "DispObs::disp_SE_results_R2(): self.EXTRACT_D_E_FOR_NON_ALPHA=%s is not valid. Exiting."%self.EXTRACT_D_E_FOR_NON_ALPHA
+			sys.exit()
 
 		#! -1. Make sure SS_TYPE is valid
 		if self.SS_TYPE!="cmb_vst_SE":
@@ -1499,8 +1517,15 @@ class DispObs:
 			obsdir=os.path.join(self.OBSDIR,obs)
 			#f=root_open(os.path.join(obsdir,'Obs_itg.root'))
 
-			for rslt in ["Obs_R2", "Obs_R2_err", "Obs_R2_err_vsl", "Obs_R2_txt_rslt", "Obs_R2.root"]:
-				cmd=["ln", "-s", "%s/%s"%(obsdir,rslt),"%s"%self.OUTDIR]
+			if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+				for rslt in ["Obs_R2", "Obs_R2_err", "Obs_R2_err_vsl", "Obs_R2_txt_rslt", "Obs_R2.root"]:
+					cmd=["ln", "-s", "%s/%s"%(obsdir,rslt),"%s"%self.OUTDIR] 
+					print">>>%s\n"%cmd
+					#mainlog.write(">>>%s\n"%cmd)
+					tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)#! stdout=logfile
+					tool.wait()
+			elif self.EXTRACT_D_E_FOR_NON_ALPHA==True: 
+				cmd=["ln", "-s", "%s/%s"%(obsdir,"Obs_R2_w_non-alpha_DE"),"%s"%self.OUTDIR]
 				print">>>%s\n"%cmd
 				#mainlog.write(">>>%s\n"%cmd)
 				tool=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)#! stdout=logfile
@@ -1625,6 +1650,8 @@ class DispObs:
 				R2,seq,vst=item[0],item[1],item[2]
 				for var in VARS:
 					if var=='PHI': continue
+					if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+						if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 					#! Create hR2_SS_err[R2,seq,vst,var] by Cloning and then resetting
 					#! the contents of the hR2 of 1st SS-Obs in self.OBSD i.e. hR2[1,R2,seq,vst,var]
 					h1_obs[R2,seq,vst,var]=h1[1,R2,seq,vst,var].Clone()
@@ -1814,6 +1841,10 @@ class DispObs:
 				R2,seq,vst=item[0],item[1],item[2]
 				for var in VARS:
 					if var=='PHI': continue
+
+					if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+						if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+
 					#! Create hR2_SS_err[R2,seq,vst,var] by Cloning and then resetting
 					#! the contents of the hR2 of 1st SS-Obs in self.OBSD i.e. hR2[1,R2,seq,vst,var]
 					h1_obs[R2,seq,vst,var]=h1[1,R2,seq,vst,var].Clone()
@@ -3730,8 +3761,12 @@ class DispObs:
 				if   self.SS_TYPE=="per_non_vst_SE": f=root_open(os.path.join(obsdir,'Obs_Itg_Yld_norm/obs_itg_yld.root'))
 				elif self.SS_TYPE=="cmb_non_vst_SE" or self.SS_TYPE=="cmb_vst_SE": f=root_open(os.path.join(obsdir,'Obs_itg.root'))
 			elif from_obs_R2==True:
-				if   self.SS_TYPE=="per_non_vst_SE": f=root_open(os.path.join(obsdir,'Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root'))
-				elif self.SS_TYPE=="cmb_non_vst_SE": f=root_open(os.path.join(obsdir,'Obs_R2.root'))
+				if   self.SS_TYPE=="per_non_vst_SE": 
+					if   self.EXTRACT_D_E_FOR_NON_ALPHA==True:  f=root_open(os.path.join(obsdir,'Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root'))
+					elif self.EXTRACT_D_E_FOR_NON_ALPHA==False: f=root_open(os.path.join(obsdir,'Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root'))
+				elif self.SS_TYPE=="cmb_non_vst_SE": 
+					if   self.EXTRACT_D_E_FOR_NON_ALPHA==True:  f=root_open(os.path.join(obsdir,'Obs_R2_w_non-alpha_DE','Obs_R2.root'))
+					elif self.EXTRACT_D_E_FOR_NON_ALPHA==False: f=root_open(os.path.join(obsdir,'Obs_R2.root'))
 				elif self.SS_TYPE=="cmb_vst_SE":
 					print "DispObs::get_q2wbinlist(): SS_TYPE=%s not applicable for Obs_R2"%self.SS_TYPE
 			else:
@@ -4234,14 +4269,16 @@ class DispObs:
 		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 		return
 
-	def disp_SE_results_R2(self):
+	def disp_SE_results_R2(self,extract_D_E_for_non_alpha):
 		"""
 		[08-26-16]
 		This function uses the following output .root file from observables in self.OBSD:
 			+ if self.SS_TYPE=="per_non_vst_SE"
-				+ Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root 
+				+ if self.EXTRACT_D_E_FOR_NON_ALPHA=True:  Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root 
+				+ if self.EXTRACT_D_E_FOR_NON_ALPHA=False: Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root
 			+ if self.SS_TYPE=="cmb_non_vst_SE"
-				+ Obs_R2.root
+				+ if self.EXTRACT_D_E_FOR_NON_ALPHA=True:  Obs_R2_w_non-alpha_DE/Obs_R2.root
+				+ if self.EXTRACT_D_E_FOR_NON_ALPHA=False: Obs_R2.root
 
 		-1. Make sure SS_TYPE is valid
 				
@@ -4280,15 +4317,31 @@ class DispObs:
 		print "*** In DispObs::disp_SE_results_R2() ***"
 
 		#! -1. Make sure SS_TYPE is valid
-		if self.SS_TYPE!="per_non_vst_SE" or self.SS_TYPE!="cmb_non_vst_SE":
+		if self.SS_TYPE!="per_non_vst_SE" and self.SS_TYPE!="cmb_non_vst_SE":
 			print "DispObs::disp_SE_results_R2(): self.SS_TYPE=%s is not valid. Exiting."%self.SS_TYPE
+			sys.exit()
 
-		#! 0. Make output directories
-		self.OUTDIR_R2              =os.path.join(self.OUTDIR,"Obs_R2")          #! Display i.
-		self.OUTDIR_R2_ERR          =os.path.join(self.OUTDIR,"Obs_R2_err")      #! Display ii.
-		self.OUTDIR_R2_ERR_VSL      =os.path.join(self.OUTDIR,"Obs_R2_err_vsl")  #! Display iii.
-		self.OUTDIR_R2_TXT_RSLT     =os.path.join(self.OUTDIR,"Obs_R2_txt_rslt") #! Display iv.
-		
+		self.EXTRACT_D_E_FOR_NON_ALPHA=extract_D_E_for_non_alpha
+		if self.EXTRACT_D_E_FOR_NON_ALPHA!=True and self.EXTRACT_D_E_FOR_NON_ALPHA!=False:
+			print "DispObs::disp_SE_results_R2(): self.EXTRACT_D_E_FOR_NON_ALPHA=%s is not valid. Exiting."%self.EXTRACT_D_E_FOR_NON_ALPHA
+			sys.exit()
+
+		#! 0. Make output directories and .root file
+		#! Use intermediate dir "Obs_R2_w_non-alpha_DE" only if self.EXTRACT_D_E_FOR_NON_ALPHA=True
+		dir_intrmdt=""
+		if self.EXTRACT_D_E_FOR_NON_ALPHA==True:  
+			dir_intrmdt="Obs_R2_w_non-alpha_DE"
+		self.OUTDIR_R2              =os.path.join(self.OUTDIR,dir_intrmdt,"Obs_R2")          #! Display i.
+		self.OUTDIR_R2_ERR          =os.path.join(self.OUTDIR,dir_intrmdt,"Obs_R2_err")      #! Display ii.
+		self.OUTDIR_R2_ERR_VSL      =os.path.join(self.OUTDIR,dir_intrmdt,"Obs_R2_err_vsl")  #! Display iii.
+		self.OUTDIR_R2_TXT_RSLT     =os.path.join(self.OUTDIR,dir_intrmdt,"Obs_R2_txt_rslt") #! Display iv.
+		for d in [self.OUTDIR_R2, self.OUTDIR_R2_ERR, self.OUTDIR_R2_ERR_VSL, self.OUTDIR_R2_TXT_RSLT]:
+			if not os.path.exists(d):
+				os.makedirs(d)
+		#! Make output root file
+		if self.SS_TYPE!="cmb_vst_SE": #! because if so, this result is simply linked in from "cmb_non_vst_SE"
+			self.FOUT_OBS_R2=ROOT.TFile("%s/Obs_R2.root"%(os.path.join(self.OUTDIR,dir_intrmdt)),"RECREATE")
+			
 
 		#! 1. Make displays for Obs_R2
 		#! 1.i. Get Q2-W binning from file
@@ -4314,13 +4367,19 @@ class DispObs:
 
 				#! Open file for this obs
 				obsdir=os.path.join(self.OBSDIR,obs)
-				if   self.SS_TYPE=="per_non_vst_SE": f=root_open(os.path.join(obsdir,'Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root'))
-				elif self.SS_TYPE=="cmb_non_vst_SE": f=root_open(os.path.join(obsdir,'Obs_R2.root'))
-			
+				if self.SS_TYPE=="per_non_vst_SE": 
+					if   self.EXTRACT_D_E_FOR_NON_ALPHA==True:  f=root_open(os.path.join(obsdir,'Obs_R2_EC_EF_ST/mthd_phi-proj-fit_w_non-alpha_DE_NQ/obs_R2.root'))
+					elif self.EXTRACT_D_E_FOR_NON_ALPHA==False: f=root_open(os.path.join(obsdir,'Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root'))
+				elif self.SS_TYPE=="cmb_non_vst_SE": 
+					if   self.EXTRACT_D_E_FOR_NON_ALPHA==True:  f=root_open(os.path.join(obsdir,'Obs_R2_w_non-alpha_DE','Obs_R2.root'))
+					elif self.EXTRACT_D_E_FOR_NON_ALPHA==False: f=root_open(os.path.join(obsdir,'Obs_R2.root'))
+					
 				for item in list(itertools.product(R2S,self.SEQS,VSTS)):
 					R2,seq,vst=item[0],item[1],item[2]
 					for var in VARS:
 						if var=='PHI': continue
+						if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+							if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 						if self.SS_TYPE=="per_non_vst_SE":
 							hR2[obsnum,R2,seq,vst,var]=f.Get("%s/hR2_%s_%s_%d_%s"%(q2wbin,R2,seq,vst,var))
 
@@ -4767,10 +4826,8 @@ class DispObs:
 				print "pad,vst,var=",pad,vst,var
 				gpad=pad_p.cd(pad)
 
-				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
-				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
-				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+					if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 
 				#! 3. Finally draw
 				#! Make sure maximum and minimum are displayed
@@ -4813,10 +4870,8 @@ class DispObs:
 				print "pad,vst,var=",pad,vst,var
 				gpad=pad_p.cd(pad)
 
-				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
-				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
-				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+					if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 
 				#! 3. Finally draw
 				hR2_rel_err[R2,seq,vst,var].SetMinimum(0)
@@ -4867,10 +4922,8 @@ class DispObs:
 				print "pad,vst,var=",pad,vst,var
 				gpad=pad_p.cd(pad)
 
-				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
-				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
-				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+					if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 
 				#! Prepare to draw histograms
 				#! [04-14-16] I am not sure why the following is not working as expected for plot_SE_results_R2:
@@ -4937,6 +4990,8 @@ class DispObs:
 			#! now write
 			for item in pad_map:
 				pad,vst,var=item[0],item[1],item[2]
+				if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+					if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 				#ftxt=open("%s/%s_%s.txt"%(outdir_R2,VAR_NAMES_PLAIN[vst,var],VAR_NAMES_PLAIN[(vst,'PHI')]),"w")
 				ftxt=open("%s/%d_%s.txt"%(outdir_R2,vst,var),"w")
 				#! Loop over rslts per bin in rslts and write to file
@@ -4968,10 +5023,8 @@ class DispObs:
 				print "pad,vst,var=",pad,vst,var
 				gpad=pad_p.cd(pad)
 
-				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
-				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
-				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+					if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 				for i,seq in enumerate(['EF','EC']): #! self.SEQS purposefully modified thus to plot 'EF' first
 					#! Setup aesthetics for EC-EH comparison
 					hR2_obs[R2,seq,vst,var].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
@@ -5017,10 +5070,8 @@ class DispObs:
 				pad,vst,var=item[0],item[1],item[2]
 				print "pad,vst,var=",pad,vst,var
 				
-				#! The following check is not applicable here as is for 'plot_R2()''
-				#! because for 'disp_SE_results_R2' uses R2 produced using self.EXTRACT_D_E_FOR_NON_ALPHA=True:
-				# if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
-				# 	if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
+				if self.EXTRACT_D_E_FOR_NON_ALPHA==False:
+					if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
 				for i,seq in enumerate(self.SEQS): 
 					#! Save hists
 					#! + Note the hists have to be named, again because:

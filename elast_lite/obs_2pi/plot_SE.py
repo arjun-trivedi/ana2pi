@@ -11,7 +11,7 @@ import matplotlib.patches as patches
 '''
 [09-06-16]
 + Makes plots to visualize systematic errors
-+ >plot_SE.py [OBSDIR] 
++ >plot_SE.py OBSDIR EXTRA EXTRACT_D_E_FOR_NON_ALPHA
 
 + First the functions needed are defined
 + These functions are then used in the code that follows
@@ -274,6 +274,129 @@ def plot_R2(SE_R2,OUTDIR,R2=None):
 		fig.savefig("%s/%s.png"%(outdir,R2))
 		fig.savefig("%s/%s.eps"%(outdir,R2))
 
+def fill_and_get_SE_1D(OBSDIR):
+	print "*** In  fill_and_get_SE_1D ()***"
+	
+	SE_1D=OrderedDict()
+
+	rootDir = '%s/Obs_1D_txt_rslt'%(OBSDIR)
+	for dirName, subdirList, fileList in os.walk(rootDir):
+		#! Avoid root path
+		if dirName==rootDir:continue
+
+		#! Avoid "EC"
+		if "EC" in dirName: continue
+
+		#! Use following to debug
+		# print('Found directory: %s' % dirName)
+		# for fname in fileList:
+		# 	print('\t%s' % fname)
+
+		if len(fileList)==9: 
+			#! obtain q2,w info from dirName
+			q2=dirName.split("/")[-2]#[10]
+			w=dirName.split("/")[-1]#[11]
+			q2=q2.replace("q","")
+			w=w.replace("w","")
+			#print "q2,w=",q2,w
+
+			for fname in fileList:
+				#! obtain vst,var information from file
+				#print fname
+				vst=int(fname.split(".txt")[0].split("_")[0])
+				var=fname.split(".txt")[0].split("_")[1]
+				#print "vst,var=",vst,var
+				#! now read file
+				f=open("%s/%s"%(dirName,fname),"r")
+				print "Reading data from", f.name
+				fdata=f.readlines()
+				for ibin,line in enumerate(fdata):
+					err,err_err=get_err(line)
+					SE_1D[q2,w,vst,var,ibin+1]=[err,err_err]
+	return SE_1D
+	print "*** Done  fill_and_get_SE_1D ()***"
+
+
+def fill_and_get_SE_ITG(OBSDIR,SE_TYPE):
+	print "*** In  fill_and_get_SE_ITG() ***"
+
+	SE_ITG=OrderedDict()
+
+	if SE_TYPE=="cmb_vst_SE": VST=[""]
+	else:                     VST=[1,2,3]
+	for vst in [1,2,3]:
+		if SE_TYPE=="cmb_vst_SE": rootDir = '%s/Obs_itg_txt_rslt'%(OBSDIR)
+		else:                     rootDir = '%s/Obs_itg_txt_rslt/VST%d'%(OBSDIR,vst)
+		for dirName, subdirList, fileList in os.walk(rootDir):
+			#! Avoid root path
+			if dirName==rootDir:continue
+
+			#! Avoid "EC"
+			if "EC" in dirName: continue
+	
+			#! Use following to debug
+			print('Found directory: %s' % dirName)
+			for fname in fileList:
+				print('\t%s' % fname)
+
+			if len(fileList)==1 and fileList[0]=="result.txt":
+				f=open("%s/%s"%(dirName,fileList[0]),"r")
+				print "%s/%s"%(dirName,fileList[0])
+				#print f.name
+				#sys.exit()
+				q2w=dirName.split("/")[-1]#[11]
+				#print "q2w=",q2w
+				print "Reading data from", f.name
+				fdata=f.readlines()
+				for ibin,line in enumerate(fdata):
+					err,err_err=get_err(line)
+					SE_ITG[q2w,vst,ibin+1]=[err,err_err]
+	return SE_ITG
+	print "*** Dobe fill_and_get_SE_ITG() ***"
+
+def fill_and_get_SE_R2(OBSDIR_R2,EXTRACT_D_E_FOR_NON_ALPHA):
+	print "*** In  fill_and_get_SE_R2() ***"
+
+	SE_R2=OrderedDict()
+
+	rootDir = '%s/Obs_R2_txt_rslt'%(OBSDIR_R2)
+	for dirName, subdirList, fileList in os.walk(rootDir):
+		#! Avoid root path
+		if dirName==rootDir:continue
+
+		#! Avoid "EC"
+		if "EC" in dirName: continue
+
+		# print('Found directory: %s' % dirName)
+		# for fname in fileList:
+		# 	print('\t%s' % fname)
+
+		if len(fileList)==12 or (EXTRACT_D_E_FOR_NON_ALPHA==False and len(fileList)==3):
+			#! Obtain q2,w,R2 info from dirName 
+			q2=dirName.split("/")[-3]#[10]
+			w=dirName.split("/")[-2]#[11]
+			R2=dirName.split("/")[-1]#[12]
+			q2=q2.replace("q","")
+			w=w.replace("w","")
+			#print "q2,w,R2=",q2,w,R2
+
+			for fname in fileList:
+				#! obtain vst,var information from file
+				#print fname
+				vst=int(fname.split(".txt")[0].split("_")[0])
+				var=fname.split(".txt")[0].split("_")[1]
+				#print "vst,var=",vst,var
+				#! now read file
+				f=open("%s/%s"%(dirName,fname),"r")
+				print "Reading data from", f.name
+				fdata=f.readlines()
+				for ibin,line in enumerate(fdata):
+					err,err_err=get_err(line)
+					SE_R2[R2,q2,w,vst,var,ibin+1]=[err,err_err]
+	return SE_R2
+	print "*** Done fill_and_get_SE_R2() ***"
+#sys.exit()
+
 #! 2. Use functions to make plots
 
 #! Get inputs from user
@@ -282,6 +405,14 @@ if len(sys.argv)<2:
 else:
 	OBSDIR=sys.argv[1]
 print "OBSDIR=",OBSDIR
+
+if len(sys.argv)<3:
+	sys.exit("Please enter EXTRACT_D_E_FOR_NON_ALPHA")
+else:
+	if   sys.argv[2]=="True":  EXTRACT_D_E_FOR_NON_ALPHA=True
+	elif sys.argv[2]=="False": EXTRACT_D_E_FOR_NON_ALPHA=False
+print "EXTRACT_D_E_FOR_NON_ALPHA=",EXTRACT_D_E_FOR_NON_ALPHA
+
 
 #! Determine SE_TYPE
 SE_TYPE=""
@@ -292,131 +423,30 @@ print "SE_TYPE=",SE_TYPE
 #sys.exit()
 
 #! Define needed objects
-SE_1D,SE_ITG,SE_R2=OrderedDict(),OrderedDict(),OrderedDict()
-#! OUTDIR
+#! OBSDIR,OUTDIR for 1D and ITG
 OUTDIR="%s/SE_plots"%OBSDIR
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
 print "OBSDIR=",OBSDIR
 print "OUTDIR=",OUTDIR
-
-
-#! Fill SE_1D
-print "*** Filling SE_1D ***"
-rootDir = '%s/Obs_1D_txt_rslt'%(OBSDIR)
-for dirName, subdirList, fileList in os.walk(rootDir):
-	#! Avoid root path
-	if dirName==rootDir:continue
-
-	#! Avoid "EC"
-	if "EC" in dirName: continue
-
-	#! Use following to debug
-	# print('Found directory: %s' % dirName)
-	# for fname in fileList:
-	# 	print('\t%s' % fname)
-
-	if len(fileList)==9: 
-		#! obtain q2,w info from dirName
-		q2=dirName.split("/")[-2]#[10]
-		w=dirName.split("/")[-1]#[11]
-		q2=q2.replace("q","")
-		w=w.replace("w","")
-		#print "q2,w=",q2,w
-
-		for fname in fileList:
-			#! obtain vst,var information from file
-			#print fname
-			vst=int(fname.split(".txt")[0].split("_")[0])
-			var=fname.split(".txt")[0].split("_")[1]
-			#print "vst,var=",vst,var
-			#! now read file
-			f=open("%s/%s"%(dirName,fname),"r")
-			print "Reading data from", f.name
-			fdata=f.readlines()
-			for ibin,line in enumerate(fdata):
-				err,err_err=get_err(line)
-				SE_1D[q2,w,vst,var,ibin+1]=[err,err_err]
-print "******"
-#sys.exit()
-
-#! Fill SE_ITG
-print "*** Filling SE_ITG ***"
-if SE_TYPE=="cmb_vst_SE": VST=[""]
-else:                     VST=[1,2,3]
-for vst in [1,2,3]:
-	if SE_TYPE=="cmb_vst_SE": rootDir = '%s/Obs_itg_txt_rslt'%(OBSDIR)
-	else:                     rootDir = '%s/Obs_itg_txt_rslt/VST%d'%(OBSDIR,vst)
-	for dirName, subdirList, fileList in os.walk(rootDir):
-		#! Avoid root path
-		if dirName==rootDir:continue
-
-		#! Avoid "EC"
-		if "EC" in dirName: continue
-	
-		#! Use following to debug
-		print('Found directory: %s' % dirName)
-		for fname in fileList:
-			print('\t%s' % fname)
-
-		if len(fileList)==1 and fileList[0]=="result.txt":
-			f=open("%s/%s"%(dirName,fileList[0]),"r")
-			print "%s/%s"%(dirName,fileList[0])
-			#print f.name
-			#sys.exit()
-			q2w=dirName.split("/")[-1]#[11]
-			#print "q2w=",q2w
-			print "Reading data from", f.name
-			fdata=f.readlines()
-			for ibin,line in enumerate(fdata):
-				err,err_err=get_err(line)
-				SE_ITG[q2w,vst,ibin+1]=[err,err_err]
-print "******"
-
-#! Fill SE_R2
-print "*** Filling SE_R2 ***"
-rootDir = '%s/Obs_R2_txt_rslt'%(OBSDIR)
-for dirName, subdirList, fileList in os.walk(rootDir):
-	#! Avoid root path
-	if dirName==rootDir:continue
-
-	#! Avoid "EC"
-	if "EC" in dirName: continue
-
-	# print('Found directory: %s' % dirName)
-	# for fname in fileList:
-	# 	print('\t%s' % fname)
-
-	if len(fileList)==12:
-		#! Obtain q2,w,R2 info from dirName 
-		q2=dirName.split("/")[-3]#[10]
-		w=dirName.split("/")[-2]#[11]
-		R2=dirName.split("/")[-1]#[12]
-		q2=q2.replace("q","")
-		w=w.replace("w","")
-		#print "q2,w,R2=",q2,w,R2
-
-		for fname in fileList:
-			#! obtain vst,var information from file
-			#print fname
-			vst=int(fname.split(".txt")[0].split("_")[0])
-			var=fname.split(".txt")[0].split("_")[1]
-			#print "vst,var=",vst,var
-			#! now read file
-			f=open("%s/%s"%(dirName,fname),"r")
-			print "Reading data from", f.name
-			fdata=f.readlines()
-			for ibin,line in enumerate(fdata):
-				err,err_err=get_err(line)
-				SE_R2[R2,q2,w,vst,var,ibin+1]=[err,err_err]
-print "******"
+#! OBSDIR,OUTDIR for R2
+if   EXTRACT_D_E_FOR_NON_ALPHA==True:    OBSDIR_R2='%s/%s'%(OBSDIR,"Obs_R2_w_non-alpha_DE")
+elif EXTRACT_D_E_FOR_NON_ALPHA==False:   OBSDIR_R2=OBSDIR
+OUTDIR_R2="%s/SE_plots"%(OBSDIR_R2)
+print "OBSDIR_R2=",OBSDIR_R2
+print "OUTDIR_R2=",OUTDIR_R2
 #sys.exit()
 
 
+SE_1D=fill_and_get_SE_1D(OBSDIR)
 plot_1D(SE_1D,OUTDIR)
+
+SE_ITG=fill_and_get_SE_ITG(OBSDIR,SE_TYPE)
 plot_itg(SE_ITG,OUTDIR)
-plot_R2(SE_R2,OUTDIR)
+
+SE_R2=fill_and_get_SE_R2(OBSDIR_R2,EXTRACT_D_E_FOR_NON_ALPHA)
+plot_R2(SE_R2,OUTDIR_R2)
 for R2 in ['A','B','C','D','E']:
-	plot_R2(SE_R2,OUTDIR,R2)
+	plot_R2(SE_R2,OUTDIR_R2,R2)
 
 print "plot_SE.py done"
