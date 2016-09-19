@@ -970,7 +970,7 @@ class DispObs:
 		#! + Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
 		if self.DBG==True:
-			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
 		else:
 			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		print "DispObs::disp_1D() Q2-W bins got from yield.root=",q2wbinl
@@ -1139,7 +1139,7 @@ class DispObs:
 		
 		#! 1. Make displays for Obs_1D
 		#! 1.i. Get Q2-W binning from file
-		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		print "DispObs::disp_SE_results_1D():Obs_1D Q2-W bins got from obs_1D.root=",q2wbinl
 
@@ -1218,7 +1218,7 @@ class DispObs:
 		#! 2. Make displays for Obs_itg
 		#! 2.i. Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
-		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,dbg=True,dbg_bins=2,from_obs_itg_yld=True)
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,dbg=True,dbg_bins=3,from_obs_itg_yld=True)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,from_obs_itg_yld=True)
 		print "DispObs::disp_SE_results_1D():Obs_Itg_Yld Q2-W bins got from obs_itg_yld.root=",q2wbinl
 
@@ -1355,7 +1355,7 @@ class DispObs:
 		#! 1. Process Obs_itg and get vst_SE from them
 		#! 1.i. Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
-		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,dbg=True,dbg_bins=2,from_obs_itg_yld=True)
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,dbg=True,dbg_bins=3,from_obs_itg_yld=True)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,1.400,2.125,from_obs_itg_yld=True)
 		print "DispObs::disp_cmb_vst_SE_results_1D():Obs_Itg_Yld Q2-W bins got from obs_itg_yld.root=",q2wbinl
 
@@ -1428,7 +1428,7 @@ class DispObs:
 
 		#! 2. Make displays for Obs_1D
 		#! 2.i. Get Q2-W binning from file
-		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		print "DispObs::disp_cmb_vst_SE_results_1D():Obs_1D Q2-W bins got from obs_1D.root=",q2wbinl
 
@@ -3467,7 +3467,7 @@ class DispObs:
 
 		#! 1. Get all q2wbins
 		if self.DBG==True:
-			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
 		else:
 			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		#print q2wbinl
@@ -4245,7 +4245,7 @@ class DispObs:
 
 		#! 1. Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
-		if self.DBG==True: 	q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2)
+		if self.DBG==True: 	q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
 		else:    			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		print "DispObs::disp_R2() Q2-W bins got from yield.root=",q2wbinl
 
@@ -4345,7 +4345,7 @@ class DispObs:
 
 		#! 1. Make displays for Obs_R2
 		#! 1.i. Get Q2-W binning from file
-		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=2,from_obs_R2=True)
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3,from_obs_R2=True)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,from_obs_R2=True)
 		print "DispObs::disp_SE_results_R2():Obs_1D Q2-W bins got from obs_R2.root=",q2wbinl
 
