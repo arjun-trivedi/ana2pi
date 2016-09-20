@@ -11,7 +11,7 @@ import matplotlib.patches as patches
 '''
 [09-06-16]
 + Makes plots to visualize systematic errors
-+ >plot_SE.py OBSDIR EXTRA EXTRACT_D_E_FOR_NON_ALPHA
++ >plot_SE.py OBSDIR EXTRACT_D_E_FOR_NON_ALPHA
 
 + First the functions needed are defined
 + These functions are then used in the code that follows
