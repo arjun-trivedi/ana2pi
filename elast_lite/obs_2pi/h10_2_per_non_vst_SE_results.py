@@ -43,9 +43,9 @@ import disp_SS as tool_disp_SS#! for plot_SS
 + The solution is hackish and not elegant (a more elegant solution is in development). 
 + This script is basically a copy of 'h10_2_Obs' with the following modifications:
 	1. BASIC_ADTNL_OPTS changed: 
-		+ ':1:3:11:17:' -> ':1:3:17:2:18:'
+		+ ':1:3:11:17:' -> ':1:3:17:2:18:20:'
 		  (ECin-on:zvtx-on:MM2_cut_EI-on:eff_scpd_atmod ->ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:)
-		+ This change is to update the BASIC_ADTNL_OPTS to include 'ECfid-ON:ECfid_atmod_ON:'
+		+ This change is to update the BASIC_ADTNL_OPTS to include 'ECfid-ON:ECfid_atmod_ON:'(:2:18:) and ':CC_cut_lse:' (:20:)
 		+ Note that ':11:' (':MM2_cut_EI-on:') is removed. However, this is purely due to technical reasons
 		  because in the MM SE variations I need to turn it off so that 'MM2_cut_AT' is used 
 		  and this I can only do by removing this option from BASIC_ADTNL_OPTS and toggling it ADTNL_OPTS_CODE_LIST
@@ -215,7 +215,7 @@ CUTSNCORS=OrderedDict()
 
 #! 1. First set up the Basic procorder and adtnl_opts that are common to all 16 CUTSNCORS
 BASIC_PROCORDER='eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:'
-BASIC_ADTNL_OPTS=':1:3:17:2:18:' #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:
+BASIC_ADTNL_OPTS=':1:3:17:2:18:20:' #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
 
 #! 2. Now as per SYSTEMATIC_EFFECT
 if SYSTEMATIC_EFFECT=="SSBands":

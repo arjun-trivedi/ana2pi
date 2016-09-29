@@ -619,8 +619,8 @@ class DispObs:
 					if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 						sg_sg=0
 					else:
-						sg_sg_1=( 1/math.sqrt(sg) )
-						sg_sg_2=math.sqrt( (sg_old**2*sg_sg_old**2) + ( (sg_vst_1D[seq]/nbins)**2*sg_sg_vst_1D[seq]**2) ) 
+						sg_sg_1=( 1/sg )
+						sg_sg_2=math.sqrt( (sg_old**2*sg_sg_old**2) + ( (sg_vst_1D[seq]/(math.sqrt(nbins))*binw)**2*sg_sg_vst_1D[seq]**2) ) 
 						sg_sg=sg_sg_1*sg_sg_2 
 
 					#! rel_err,sg_rel_err
@@ -1611,7 +1611,7 @@ class DispObs:
 						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 							sg_sg=0
 						else:
-							sg_sg_1=( 1/(math.sqrt(sg)*n) )
+							sg_sg_1=( 1/(sg*n) )
 							sg_sg_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(binc,binerr) ))
 							sg_sg=sg_sg_1*sg_sg_2 
 						#! rel_err,sg_rel_err
@@ -1682,7 +1682,7 @@ class DispObs:
 						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 							sg_sg=0
 						else:
-							sg_sg_1=( 1/(math.sqrt(sg)*n) )
+							sg_sg_1=( 1/(sg*n) )
 							sg_sg_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(binc,binerr) ))
 							sg_sg=sg_sg_1*sg_sg_2 
 						#! rel_err,sg_rel_err
@@ -1802,7 +1802,7 @@ class DispObs:
 						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 							sg_sg=0
 						else:
-							sg_sg_1=( 1/math.sqrt(sg) )
+							sg_sg_1=( 1/sg )
 							sg_sg_2=math.sqrt(sum( (x**2) * (y**2) for x,y in zip(sg_l,sg_sg_l) ))
 							sg_sg=sg_sg_1*sg_sg_2 
 						#! rel_err,sg_rel_err
@@ -1878,7 +1878,7 @@ class DispObs:
 						if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 							sg_sg=0
 						else:
-							sg_sg_1=( 1/math.sqrt(sg) )
+							sg_sg_1=( 1/sg )
 							sg_sg_2=math.sqrt(sum( (x**2) * (y**2) for x,y in zip(sg_l,sg_sg_l) ))
 							sg_sg=sg_sg_1*sg_sg_2 
 						#! rel_err,sg_rel_err
@@ -1997,7 +1997,7 @@ class DispObs:
 				if sg==0: #! This is true even in the analytical formulae used for cases when sg!=0
 					sg_sg=0
 				else: #! TEST
-					sg_sg_1=( 1/math.sqrt(sg) )
+					sg_sg_1=( 1/sg )
 					sg_sg_2=math.sqrt(sum( (x**2) * (y**2) for x,y in zip(sg_l,sg_sg_l) ))
 					sg_sg=sg_sg_1*sg_sg_2 
 
@@ -2021,7 +2021,7 @@ class DispObs:
 				if std_dev==0: #! This is true even in the analytical formulae used for cases when sg!=0
 					sg_std_dev=0
 				else:
-					sg_std_dev_1=( 1/(math.sqrt(std_dev)*n) )
+					sg_std_dev_1=( 1/(std_dev*n) )
 					sg_std_dev_2=math.sqrt(sum( (x-mu)**2 * (y**2+sg_mu**2) for x,y in zip(mu_l,sg_mu_l) ))
 					sg_std_dev=sg_std_dev_1*sg_std_dev_2 
 				sg_vst_1D=std_dev
@@ -5147,6 +5147,15 @@ class DispObs:
 			hR2d[seq,vst,var].SetBinContent(bin,r2)
 			hR2d[seq,vst,var].SetBinError(bin,r2_err)
 		
+		#! Call Sumw2() for hR2s since these errors will need to be propagated
+		#! [09-25-16]:
+		#! + Note that hitherto, this was done after applying EF*SF
+		#!   (However this change should not make a difference: see below)
+		#! + However, this shold not make a difference because calling TH1::SetBinError(),
+		#!   calls TH1::Sumw2(), and therefore, at this point it should already be set.
+		for k in hR2d:
+			hR2d[k].Sumw2()
+
 		#! + hR2s extracted thus far need to be divided by mthd2-dependent EF*SF, where
 		#! 		+ EF=Extraction Factor and CF=Correction Factor
 		#! (See handwritten notes for details)
@@ -5168,10 +5177,6 @@ class DispObs:
 				sf=1/math.radians(36)
 				hR2d[k].Scale(sf)
 		
-		#! Call Sumw2() for hR2s since these errors will need to be propagated
-		for k in hR2d:
-			hR2d[k].Sumw2()
-
 		#! Normalize and apply_rad_eff_corr to hR2
 		self.norm_1D(hR2d,q2wbin)
 		if self.APPLY_RAD_EFF_CORR==True:
