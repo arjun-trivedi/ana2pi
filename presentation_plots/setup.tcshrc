@@ -1,0 +1,12 @@
+#--
+setenv PRESENTATION_PLOTS "${ANA2PI}/presentation_plots"
+alias presentation_plots 'cd ${PRESENTATION_PLOTS}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${PRESENTATION_PLOTS}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${PRESENTATION_PLOTS}"
+
+##- Set up DATADIR
+setenv PRESENTATION_PLOTS_DATADIR "/home/trivedia/data/e16/presentation_plots"

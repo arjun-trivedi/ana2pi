@@ -18,7 +18,7 @@ ROOT.gROOT.ProcessLine(".L fidfuncs_electron_e16.C")
 #! For E16(currently: EI) hadron fiducial cuts
 ROOT.gROOT.ProcessLine(".L fidfuncs_hadrons_e16.C")
 
-def plot_fid(nentries=1000000000):
+def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 	NDTYP=2
 	EXP,SIM=range(NDTYP)
 	DTYP_NAME=["exp","sim"]
@@ -219,16 +219,23 @@ def plot_fid(nentries=1000000000):
 							f_l=ROOT.fphi_l(p,isctr+1)
 							f_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 							f_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))	
+							f_h.SetLineWidth(1)
+							f_l.SetLineWidth(1)
 						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
 							#! E1F:EP (tight and loose)
 							f_h_exp=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"exp",isctr+1,1);
 							f_l_exp=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"exp",isctr+1,1);
 							f_h_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
 							f_l_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+							f_h_exp.SetLineWidth(3)
+							f_l_exp.SetLineWidth(3)
 							f_h_sim=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"sim",isctr+1,1);
 							f_l_sim=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"sim",isctr+1,1);
 							f_h_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 							f_l_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+							f_h_sim.SetLineWidth(3)
+							f_l_sim.SetLineWidth(3)
+
 							#! t0
 							lt0_exp=ROOT.ROOT.lt0(PRT_ID[iprt],"exp");
 							lt0_sim=ROOT.ROOT.lt0(PRT_ID[iprt],"sim");
@@ -236,12 +243,14 @@ def plot_fid(nentries=1000000000):
 							lt0_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 							lt0_exp.SetLineWidth(3)
 							lt0_sim.SetLineWidth(3)
+
 							#! E16:EI
 							f_old_h=ROOT.fPhiFid_e16_hdrn_h_mod(isctr+1)
 							f_old_l=ROOT.fPhiFid_e16_hdrn_l_mod(isctr+1)
 							f_old_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 							f_old_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-
+							f_old_h.SetLineWidth(3)
+							f_old_l.SetLineWidth(3)
 
 						C[idtyp][ihst][iprt][ipbin][LIN].cd(isctr+1)
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN].Draw("colz")
@@ -272,19 +281,21 @@ def plot_fid(nentries=1000000000):
 							f_h.Draw("same")
 							f_l.Draw("same")
 						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
-							f_h_exp.Draw("same")
-							f_l_exp.Draw("same")
-							f_h_sim.Draw("same")
-							f_l_sim.Draw("same")
-							#! Set Y1 and Y2 for lt0 and draw
-							ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
-							ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
-							lt0_exp.SetY1(ymin)
-							lt0_exp.SetY2(ymax)
-							lt0_sim.SetY1(ymin)
-							lt0_sim.SetY2(ymax)
-							lt0_exp.Draw("same")
-							lt0_sim.Draw("same")
+							if not draw_EI_cuts_only:
+								f_h_exp.Draw("same")
+								f_l_exp.Draw("same")
+								f_h_sim.Draw("same")
+								f_l_sim.Draw("same")
+								#! Set Y1 and Y2 for lt0 and draw
+								ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
+								ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
+								lt0_exp.SetY1(ymin)
+								lt0_exp.SetY2(ymax)
+								lt0_sim.SetY1(ymin)
+								lt0_sim.SetY2(ymax)
+								lt0_exp.Draw("same")
+								lt0_sim.Draw("same")
+
 							#! old cuts
 							f_old_h.Draw("same")
 							f_old_l.Draw("same")
@@ -320,5 +331,7 @@ if __name__ == "__main__":
 	if len(sys.argv)==1:
 		plot_fid()
 	elif len(sys.argv)==2:
-		plot_fid(int(sys.argv[1])) 
+		plot_fid(int(sys.argv[1]))
+	elif len(sys.argv)==3:
+		plot_fid(int(sys.argv[1]),sys.argv[2]) 
 	

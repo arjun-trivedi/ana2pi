@@ -20,13 +20,18 @@ endif
 ##-- dir where obs_<date> are kepts (obs_<date> contains yields and their displays)
 setenv OBSDIR_E16 "$D2PIDIR_E16"
 
+#-- 2nd location of e16 data on /home/data (mounted on sda6) on gothe14
+setenv D2PIDIR_E162 "/home/trivedia/data/e16/2pi/d2pi"
+setenv D2PIDIR_EXP_E162 "${D2PIDIR_E162}/exp"
+setenv D2PIDIR_SIM_E162 "${D2PIDIR_E162}/sim"
+setenv OBSDIR_E162 "$D2PIDIR_E162"
+
 #-- Backup locations of above
 #- External HDD
 setenv D2PIDIR_E16_BK "/media/Seagate Expansion Drive/Backup/e16/2pi/d2pi"
 setenv OBSDIR_E16_BK "$D2PIDIR_E16_BK"
-#-- /home/data (mounted on sda6) on gothe14
-setenv D2PIDIR_E162 /home/trivedia/data/e16/2pi/d2pi
-setenv OBSDIR_E162 "$D2PIDIR_E162"
+setenv D2PIDIR_E16_BK2 "/media/Seagate Expansion Drive/Backup/e162/2pi/d2pi"
+setenv OBSDIR_E16_BK2 "$D2PIDIR_E16_BK2"
 
 #! reference to "old" Obs_R2 (old=e1f, hvy machinery)
 alias OLD_OBS_R2 'gqview /data/trivedia/e1f/2pi/d2pi/obs_pre_dbg-yield-nrmlztn_031615/sim01sim02sim03sim04/Obs_R2 &'

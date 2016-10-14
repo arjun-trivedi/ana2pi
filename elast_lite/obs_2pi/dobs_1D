@@ -18,8 +18,8 @@ else:
 
 if len(sys.argv)>3: #! User input view, else use view=norm 
 	view=sys.argv[3]
-	if view!="norm" and view!="fullana" and view!="ERyield":
-		sys.exit("view=norm/fullana/ERyield only")
+	if view!="norm" and view!="fullana" and view!="ERyield" and view!="norm_EC_EF_SF":
+		sys.exit("view=norm/fullana/ERyield/norm_EC_EF_SF only")
 else:
 	view="norm"	
 

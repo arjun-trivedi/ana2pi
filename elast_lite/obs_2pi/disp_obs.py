@@ -307,6 +307,8 @@ class DispObs:
 				self.SEQS=SEQ_ALL
 			elif self.VIEW=="ERyield":
 				self.SEQS=['ER']
+			elif self.VIEW=="norm_EC_EF_SF":
+				self.SEQS=['EC','EF','SF']
 			elif self.VIEW=="EC_SF_ST": #! views from this point on tuned for 'dobs_R2'
 				self.SEQS=['EC','SF','ST'] 
 			elif self.VIEW=="EC_EF":
@@ -316,7 +318,7 @@ class DispObs:
 			elif self.VIEW=="EC_EF_ST": 
 				self.SEQS=['EC','EF','ST']
 			else:
-				sys.exit("view={norm,fullana,ERyield,EC_SF_ST,EC_EF,EC_ST,EC_EF_ST} only")
+				sys.exit("view={norm,norm_EC_EF_SF,fullana,ERyield,EC_SF_ST,EC_EF,EC_ST,EC_EF_ST} only")
 
 			#! Setup related to applying rad-eff-corr
 			#! if expt=='e16': set self.APPLY_RAD_EFF_CORR to True and obtain rad-eff-corr factors
@@ -493,6 +495,42 @@ class DispObs:
 					l.SetTextSize(0.06)
 					for seq in seq_drct+seq_mnpl_sim+seq_mnpl_exp:
 						l.AddEntry(h1n[seq],seq,"p")#EF
+					l.Draw()
+			elif self.VIEW=="norm_EC_EF_SF":#! Draw SF hists normed to EF integral (since I want to compare their distributions)
+				print "DispObs::plot_1D() Scaling intgrl-ST to intgrl-EF"
+				intgrl_EF=h1['EF',vst,var].Integral()
+				intgrl_SF=h1['SF',vst,var].Integral()
+				#! First call Sumw2() so that errors are also scaled
+				h1['SF',vst,var].Sumw2()
+				#! Now get scale factor and scale bin contents
+				if intgrl_EF==0 or intgrl_SF==0: scale_factor=1
+				else:    						 scale_factor=intgrl_EF/intgrl_SF
+				h1['SF',vst,var].Scale(scale_factor)
+
+				#! Before drawing set minimum(=0) and maximum of y-axis
+				fctr=1.1
+				maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
+				maximum=max(maxl)
+				for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
+					htmp.SetMinimum(0.)
+					htmp.SetMaximum(maximum*fctr)
+
+				#! Now draw
+				h1['EC',vst,var].Draw()
+				h1['EF',vst,var].Draw("same")
+				h1['SF',vst,var].Draw("same")
+
+				gpad.Update()
+
+				#! Add TLegend if pad==1
+				if pad==1:
+					l=ROOT.TLegend(0.75,0.50,0.90,0.90)
+					#l.SetFillStyle(0)
+					l.SetFillColor(ROOT.gROOT.ProcessLine("kGray+2"))
+					l.SetBorderSize(0)
+					l.SetTextSize(0.06)
+					for seq in self.SEQS:
+						l.AddEntry(h1[seq,vst,var],seq,"p")#EF
 					l.Draw()
 		#! Save canvas by q2bin (create folder tagged by q2bin)
 		q2bin=self.get_q2bin(q2wbin)
@@ -938,11 +976,12 @@ class DispObs:
 					+ =EC,EF       if view="norm" 
 					+ =PLT_SEQ_ALL if view="fullana"
 					+ =ER          if view="ERyield"
+					+ =EC,EF,SF    if view="norm_EC_EF_SF"
 				+ var:	
 					+ if vst==1:           VARS=(M1,THETA,ALPHA)
 					+ if vst==2 or vst==3: VARS=(M2,THETA,ALPHA)
 
-			+ If self.VIEW="norm", then first Normalize and then, i.e. secondly, apply rad-effect-corr h1(seq,vst,var)
+			+ If self.VIEW="norm" or self.VIEW=="norm_EC_EF_SF", then first Normalize and then, i.e. secondly, apply rad-effect-corr h1(seq,vst,var)
 			+ Fill relevant bin of h2 (=Intg_yld)
 			+ Plot h1(seq,vst,var)
 		4. Plot h2(seq,vst,var) and its projection on W
@@ -1015,8 +1054,15 @@ class DispObs:
 					h1[seq,vst,var].Sumw2()
 			#! End of [seq,vst,var] loop
 
-			#! If norm, then (1.)normalize and then (2.) apply_rad_eff_corr to h1(SEQ,VSTS,VARS)
+			#! + If "norm", then (1.)normalize and then (2.) apply_rad_eff_corr to h1(SEQ,VSTS,VARS)
+			#! + If  "norm_EC_EF_SF", then also do the same, even for SF, since neither 1 or 2
+			#!   on SF should be adverse to comparing its distribution with EC & EF. In fact,
+			#!   applying rad_eff_corr on SF will only make this comparison truer
 			if self.VIEW=="norm":
+				self.norm_1D(h1,q2wbin)
+				if self.APPLY_RAD_EFF_CORR==True:
+					self.apply_rad_eff_corr(h1,q2wbin)
+			elif self.VIEW=="norm_EC_EF_SF": 
 				self.norm_1D(h1,q2wbin)
 				if self.APPLY_RAD_EFF_CORR==True:
 					self.apply_rad_eff_corr(h1,q2wbin)
@@ -2280,7 +2326,11 @@ class DispObs:
 					#! Save canvas
 					c.SaveAs("%s/c_qbin%d_%s.png"%(outdir_w_proj,iq2bin+1,seq))
 					c.SaveAs("%s/c_qbin%d_%s.eps"%(outdir_w_proj,iq2bin+1,seq))
-
+			if self.VIEW=="norm_EC_EF_SF":
+				#! Have not implemented plotting plotting for this view because not only
+				#! is this view used mainly for comparing Obs_1D, but since in there intgrl-SF
+				#! is normalized to intgrl-EF, here SF=EF and therefore not show anything new
+				print("DispObs::plot_h2_itg_yld(): self.VIEW=norm_EC_EF_SF. Plotting not implented.")
 			elif self.VIEW=="fullana": 
 				#! Plotting aesthetics
 				#ROOT.gROOT.SetOptStat("ne")
@@ -3929,6 +3979,16 @@ class DispObs:
 					h1[k].SetYTitle("\"Normalized\" counts")
 				elif self.VIEW=="ERyield":
 					h1[k].SetYTitle("Counts")
+				elif self.VIEW=="norm_EC_EF_SF":
+					if var!='THETA':
+						h1[k].SetYTitle("#Delta#sigma/#Delta%s [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+					elif var=='THETA': #! only difference is to add the 'Cos' of DCosTheta
+						h1[k].SetYTitle("#Delta#sigma/#Deltacos(%s) [#mub/%s]"%(VAR_NAMES[(vst,var)],VAR_UNIT_NAMES_AFTR_NORM_FCTR_CALC[var]))
+					#! marker color and style
+					h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
+					h1[k].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
+					h1[k].SetMarkerStyle(MRKS_PLT_SEQ_ALL[seq])
+				
 
 				if self.VIEW!="ERyield":
 					h1[k].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])

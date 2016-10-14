@@ -11,10 +11,18 @@ fi
 #-- Do $seq related setup
 if [ $seq == 'ER' ]; then
   dtyp="exp"
-  procorder='eid:pidnewmon:q2wskimR:d2piR_tree' #Note 'eid' has mon hists on by default
+  #procorder='eid:pidnewmon:q2wskimR:d2piR_tree' #Note 'eid' has mon hists on by default
+  #! [10-10-16] procorder modified to increase statistics for thesis-plots:
+  #! + q2wskimR: could be removed but accidental pions will distort true effect
+  #! + d2piR_tree -> d2piR_tree_BG to not cut away 2pi-background events
+  procorder='eid:pidnewmon:q2wskimR:d2piR_tree_BG' #Note 'eid' has mon hists on by default
 elif [ $seq == 'SR' ]; then
   dtyp="sim"
-  procorder='eid:pidnewmon:q2wskimR:d2piR_tree' #Note 'eid' has mon hists on by default
+  #procorder='eid:pidnewmon:q2wskimR:d2piR_tree' #Note 'eid' has mon hists on by default
+  #! [10-10-16] procorder modified to increase statistics for thesis-plots:
+  #! + q2wskimR: could be removed but accidental pions will distort true effect
+  #! + d2piR_tree -> d2piR_tree_BG to not cut away 2pi-background events
+  procorder='eid:pidnewmon:q2wskimR:d2piR_tree_BG' #Note 'eid' has mon hists on by default
 fi
 
 echo "seq="$seq
