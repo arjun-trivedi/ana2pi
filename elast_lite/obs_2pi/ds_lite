@@ -59,7 +59,7 @@ def make_h_nbins_vs_Q2W():
 	#! Set variable binning in Q2
 	h.GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 	h.SetXTitle("W [GeV]")
-	h.SetYTitle("Q^2 [GeV^2]")
+	h.SetYTitle("Q^{2} [GeV^{2}]")
 	#print("bins for h=%d,%d"%(h.GetXaxis().GetNbins(), h.GetYaxis().GetNbins()))
 
 	nbins=14*14*10*10*10
@@ -81,7 +81,7 @@ def divide(h1,h2):
 	#! Set variable binning in Q2
 	h.GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 	h.SetXTitle("W [GeV]")
-	h.SetYTitle("Q^2 [GeV^2]")
+	h.SetYTitle("Q^{2} [GeV^{2}]")
 	num_wbins=h.GetXaxis().GetNbins()
 	num_q2bins=h.GetYaxis().GetNbins()
 	for iwbin in range(num_wbins):
@@ -107,7 +107,7 @@ def subtract(h1,h2):
 	#! Set variable binning in Q2
 	h.GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 	h.SetXTitle("W [GeV]")
-	h.SetYTitle("Q^2 [GeV^2]")
+	h.SetYTitle("Q^{2} [GeV^{2}]")
 	num_wbins=h.GetXaxis().GetNbins()
 	num_q2bins=h.GetYaxis().GetNbins()
 	for iwbin in range(num_wbins):
@@ -128,7 +128,7 @@ for seq in ['ST','SR','SA','SH']:
 		#! Set variable binning in Q2
 		h[seq,par].GetYaxis().Set(NBINS_Q2_VAR_BINW_BNG,Q2_BINS_VAR_BINW_BNG)
 		h[seq,par].SetXTitle("W [GeV]")
-		h[seq,par].SetYTitle("Q^2 [GeV^2]")
+		h[seq,par].SetYTitle("Q^{2} [GeV^{2}]")
 		#print("bins for h(%s,%s)=%d,%d"%(seq,par,h[seq,par].GetXaxis().GetNbins(),
 		#	h[seq,par].GetYaxis().GetNbins()))
 		if seq=='A' and par=='mu':
