@@ -501,24 +501,37 @@ class DispObs:
 				intgrl_EF=h1['EF',vst,var].Integral()
 				intgrl_SF=h1['SF',vst,var].Integral()
 				#! First call Sumw2() so that errors are also scaled
-				h1['SF',vst,var].Sumw2()
+				#! [10-26-16] + Note that SF hist normalized here is a tmp one. 
+				#!            + This is because this normalization is not accurate ("old-normalization")
+				#!            + The original SF histogram I will save in in its original form in the .root file
+				#!              using which I can implement a "new normalization" when I make plots for the thesis
+				h1_SF_tmp=h1['SF',vst,var].Clone()
+				h1_SF_tmp.Sumw2()
 				#! Now get scale factor and scale bin contents
 				if intgrl_EF==0 or intgrl_SF==0: scale_factor=1
 				else:    						 scale_factor=intgrl_EF/intgrl_SF
-				h1['SF',vst,var].Scale(scale_factor)
+				h1_SF_tmp.Scale(scale_factor)
 
 				#! Before drawing set minimum(=0) and maximum of y-axis
 				fctr=1.1
-				maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
+				#! [10-26-16] code below had to be modified following "new-normalization" change of [10-26-16]
+				#maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
+				maxl=[h1['EC',vst,var].GetMaximum(),h1['EF',vst,var].GetMaximum(),h1_SF_tmp.GetMaximum()]
 				maximum=max(maxl)
-				for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
+				#for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
+				for htmp in [h1['EC',vst,var],h1['EF',vst,var],h1_SF_tmp]:
 					htmp.SetMinimum(0.)
 					htmp.SetMaximum(maximum*fctr)
 
 				#! Now draw
 				h1['EC',vst,var].Draw()
 				h1['EF',vst,var].Draw("same")
-				h1['SF',vst,var].Draw("same")
+				h1_SF_tmp.Draw("same")
+				#! Also write to .root file
+				if self.FOUT_1D!=None:
+					h1['EC',vst,var].Write()
+					h1['EF',vst,var].Write()
+					h1['SF',vst,var].Write()
 
 				gpad.Update()
 
@@ -994,7 +1007,7 @@ class DispObs:
 		if not os.path.exists(self.OUTDIR_1D):
 			os.makedirs(self.OUTDIR_1D)
 		self.FOUT_1D=None
-		if self.VIEW=="norm":
+		if self.VIEW=="norm" or self.VIEW=="norm_EC_EF_SF":
 			self.FOUT_1D=ROOT.TFile(os.path.join(self.OUTDIR_1D,"obs_1D.root"),"RECREATE")
 
 		#! Make OUTDIR_2D and .root and .txt file for output
@@ -4709,6 +4722,8 @@ class DispObs:
   		pad_p.Divide(npadsx,npadsy)
   		#! TLine, for each pad, for ln at y=0
   		ln=[0 for i in range(npads)]
+  		#! [10-26-16] In "new normalization" fix, "old normalization" hists are kept at tmp
+  		hR2d_tmp=OrderedDict()
 		for item in pad_map:
 			pad,vst,var=item[0],item[1],item[2]
 			print "pad,vst,var=",pad,vst,var
@@ -4722,55 +4737,116 @@ class DispObs:
 			#! [03-28-16] Normalization changed: max-amplitude of SF normalized to max-amplitude of EC
 			if "SF" in self.SEQS and "EC" in self.SEQS:
 				#![03-18-16] Max-amplitude normalization
+				#! [10-26-16] + Note that SF hist normalized here is a tmp one. 
+				#!            + This is because this normalization is not accurate ("old-normalization")
+				#!            + The original SF histogram I will save in in its original form in the .root file
+				#!              using which I can implement a "new normalization" when I make plots for the thesis
 				print "DispObs::plot_R2() Scaling ampltd-SF to ampltd-EC"
 				max_EC=hR2d['EC',vst,var].GetMaximum()
 				min_EC=hR2d['EC',vst,var].GetMinimum()
 				ampltd_EC=max([max_EC,math.fabs(min_EC)])
 				#! First call Sumw2() so that errors are also scaled
-				hR2d['SF',vst,var].Sumw2()
+				hR2d_tmp['SF',vst,var]=hR2d['SF',vst,var].Clone()
+				hR2d_tmp['SF',vst,var].Sumw2()
 				#! Now get scale factor and scale bin contents
-				max_SF=hR2d['SF',vst,var].GetMaximum()
-				min_SF=hR2d['SF',vst,var].GetMinimum()
+				max_SF=hR2d_tmp['SF',vst,var].GetMaximum()
+				min_SF=hR2d_tmp['SF',vst,var].GetMinimum()
 				ampltd_SF=max([max_SF,math.fabs(min_SF)])
 				if ampltd_EC==0 or ampltd_SF==0: scale_factor=1
 				else:    						 scale_factor=ampltd_EC/ampltd_SF
-				hR2d['SF',vst,var].Scale(scale_factor)
+				hR2d_tmp['SF',vst,var].Scale(scale_factor)
 
 			#! 1. If ST and EC in self.SEQS, then normalize its integral to that of EC
 			#! [03-28-16] Normalization changed: max-amplitude of SF normalized to max-amplitude of EC
 			if "ST" in self.SEQS and "EC" in self.SEQS:
 				#![03-18-16] Max-amplitude normalization
+				#! [10-26-16] + Note that ST hist normalized here is a tmp one. 
+				#!            + This is because this normalization is not accurate ("old-normalization")
+				#!            + The original SF histogram I will save in in its original form in the .root file
+				#!              using which I can implement a "new normalization" when I make plots for the thesis
 				print "DispObs::plot_R2() Scaling ampltd-ST to ampltd-EC"
 				max_EC=hR2d['EC',vst,var].GetMaximum()
 				min_EC=hR2d['EC',vst,var].GetMinimum()
 				ampltd_EC=max([max_EC,math.fabs(min_EC)])
 				#! First call Sumw2() so that errors are also scaled
-				hR2d['ST',vst,var].Sumw2()
+				hR2d_tmp['ST',vst,var]=hR2d['ST',vst,var].Clone()#"hR2d_ST_%s_%s"%(vst,var))
+				hR2d_tmp['ST',vst,var].Sumw2()
 				#! Now get scale factor and scale bin contents
-				max_ST=hR2d['ST',vst,var].GetMaximum()
-				min_ST=hR2d['ST',vst,var].GetMinimum()
+				max_ST=hR2d_tmp['ST',vst,var].GetMaximum()
+				min_ST=hR2d_tmp['ST',vst,var].GetMinimum()
 				ampltd_ST=max([max_ST,math.fabs(min_ST)])
 				if ampltd_EC==0 or ampltd_ST==0: scale_factor=1
 				else:    						 scale_factor=ampltd_EC/ampltd_ST
-				hR2d['ST',vst,var].Scale(scale_factor)
-
+				hR2d_tmp['ST',vst,var].Scale(scale_factor)
+			
 			#! 2. determine and set maximum
-			minl=[hR2d[seq,vst,var].GetMinimum() for seq in self.SEQS]
-			maxl=[hR2d[seq,vst,var].GetMaximum() for seq in self.SEQS]
+			#! #! [10-26-16] code below had to be modified following "new-normalization" change of [10-26-16]
+			if "SF" in self.SEQS and "EC" in self.SEQS:
+				#! Add hR2d_SF_tmp.GetMinimum() separately
+				minl=[hR2d[seq,vst,var].GetMinimum() for seq in self.SEQS if seq != "SF"]
+				minl.append(hR2d_tmp['SF',vst,var].GetMinimum())
+				#! Add hR2d_SF_tmp.GetMaximum() separately
+				maxl=[hR2d[seq,vst,var].GetMaximum() for seq in self.SEQS if seq != "SF"]
+				maxl.append(hR2d_tmp['SF',vst,var].GetMaximum())
+			elif "ST" in self.SEQS and "EC" in self.SEQS:
+				#! Add hR2d_ST_tmp.GetMinimum() separately
+				minl=[hR2d[seq,vst,var].GetMinimum() for seq in self.SEQS if seq != "ST"]
+				minl.append(hR2d_tmp['ST',vst,var].GetMinimum())
+				#! Add hR2d_ST_tmp.GetMaximum() separately
+				maxl=[hR2d[seq,vst,var].GetMaximum() for seq in self.SEQS if seq != "ST"]
+				maxl.append(hR2d_tmp['ST',vst,var].GetMaximum())
+			else:
+				minl=[hR2d[seq,vst,var].GetMinimum() for seq in self.SEQS]
+				maxl=[hR2d[seq,vst,var].GetMaximum() for seq in self.SEQS]
+			#! Set maximum and minimum
 			minimum=min(minl)
 			maximum=max(maxl)
 			fctr_not_A=1.5
 			fctr_A=1.1
-			for seq in self.SEQS:		
+			if "SF" in self.SEQS and "EC" in self.SEQS:
+				for seq in self.SEQS:
+					if seq=="SF":continue #! will be done separately		
+					if R2!="A": #! B,C,D can oscillate around 0
+						hR2d[seq,vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
+						hR2d[seq,vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
+					elif R2=="A": #! These distributions are same as Obs-1D
+						hR2d[seq,vst,var].SetMinimum(0)
+						hR2d[seq,vst,var].SetMaximum(fctr_A*maximum)
+				#! For SF
 				if R2!="A": #! B,C,D can oscillate around 0
-					hR2d[seq,vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
-					hR2d[seq,vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
+					hR2d_tmp['SF',vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
+					hR2d_tmp['SF',vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
 				elif R2=="A": #! These distributions are same as Obs-1D
-					hR2d[seq,vst,var].SetMinimum(0)
-					hR2d[seq,vst,var].SetMaximum(fctr_A*maximum)
+					hR2d_tmp['SF',vst,var].SetMinimum(0)
+					hR2d_tmp['SF',vst,var].SetMaximum(fctr_A*maximum)
+			elif "ST" in self.SEQS and "EC" in self.SEQS:
+				for seq in self.SEQS:
+					if seq=="ST":continue #! will be done separately		
+					if R2!="A": #! B,C,D can oscillate around 0
+						hR2d[seq,vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
+						hR2d[seq,vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
+					elif R2=="A": #! These distributions are same as Obs-1D
+						hR2d[seq,vst,var].SetMinimum(0)
+						hR2d[seq,vst,var].SetMaximum(fctr_A*maximum)
+				#! For ST
+				if R2!="A": #! B,C,D can oscillate around 0
+					hR2d_tmp['ST',vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
+					hR2d_tmp['ST',vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
+				elif R2=="A": #! These distributions are same as Obs-1D
+					hR2d_tmp['ST',vst,var].SetMinimum(0)
+					hR2d_tmp['ST',vst,var].SetMaximum(fctr_A*maximum)
+			else:
+				for seq in self.SEQS:		
+					if R2!="A": #! B,C,D can oscillate around 0
+						hR2d[seq,vst,var].SetMinimum(minimum-math.fabs(fctr_not_A*minimum))
+						hR2d[seq,vst,var].SetMaximum(maximum+math.fabs(fctr_not_A*maximum))
+					elif R2=="A": #! These distributions are same as Obs-1D
+						hR2d[seq,vst,var].SetMinimum(0)
+						hR2d[seq,vst,var].SetMaximum(fctr_A*maximum)
+
 			#! 3. Finally draw
 			if self.VIEW=="EC_SF_ST":
-				hR2d['SF',vst,var].Draw()
+				hR2d_tmp['SF',vst,var].Draw()
 				hR2d['ST',vst,var].Draw("same")
 				hR2d['EC',vst,var].Draw("same") #! Draw EC at the end so that its error bar is on top
 			elif self.VIEW=="EC_EF":
@@ -4780,7 +4856,7 @@ class DispObs:
 				hR2d['ST',vst,var].Draw()
 				hR2d['EC',vst,var].Draw("same") #! Draw EC at the end so that its error bar is on top			
 			elif self.VIEW=="EC_EF_ST":
-				hR2d['ST',vst,var].Draw()
+				hR2d_tmp['ST',vst,var].Draw()
 				hR2d['EF',vst,var].Draw("same")
 				hR2d['EC',vst,var].Draw("same")	#! Draw EC at the end so that its error bar is on top
 			#! save to .root file
@@ -4795,6 +4871,16 @@ class DispObs:
 			#! Draw TLegend if pad==3 (since this pad, in the upper right corner, is not shrouded by the TPaveText-Q2W label)
 			if pad==3:
 				l=ROOT.TLegend(0.7,0.8,0.9,1.0)
+				if "SF" in self.SEQS and "EC" in self.SEQS:
+					for seq in self.SEQS:
+						if seq=="SF": continue #! done separately
+						l.AddEntry(hR2d[seq,vst,var],seq,"p")
+					l.AddEntry(hR2d_tmp['SF',vst,var],seq,"p")
+				if "ST" in self.SEQS and "EC" in self.SEQS:
+					for seq in self.SEQS:
+						if seq=="ST": continue #! done separately
+						l.AddEntry(hR2d[seq,vst,var],seq,"p")
+					l.AddEntry(hR2d_tmp['ST',vst,var],seq,"p")
 				for seq in self.SEQS:
 					l.AddEntry(hR2d[seq,vst,var],seq,"p")
 				l.Draw()

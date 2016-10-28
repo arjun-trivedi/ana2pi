@@ -10,6 +10,7 @@ WBINL=np.arange(WMIN,WMAX+WBINW,WBINW)
 #! Q2 ranges for low and high sim
 NSIMRNG=2
 L,H=range(NSIMRNG)
+SIMRNG_IDTFR=["lowQ2","highQ2"]
 Q2MINSIM =[0 for i in range(NSIMRNG)]
 Q2MAXSIM =[0 for i in range(NSIMRNG)]
 Q2BINLSIM=[0 for i in range(NSIMRNG)]
