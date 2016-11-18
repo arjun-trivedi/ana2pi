@@ -50,18 +50,39 @@ print "FIN[PRE]=",FIN[PRE].GetName()
 print "FIN[PST=]",FIN[PST].GetName()
 #! ***
 
+#! Define function to modify histograms in cavnas by adding axes titles
+def mod_canvas(c):
+	for pnum in [1,2,3,4,5,6]:
+                p=c.GetPad(pnum)
+                l=p.GetListOfPrimitives()
+                for obj in l:
+                        if (obj.InheritsFrom("TH1")):
+                                print obj
+                                #! Axes title
+                                obj.SetXTitle("p [GeV]")
+				#! The following line to SetLeftMargin is purposefully commented out
+				#! because of a techincal issue
+                                #p.SetLeftMargin(0.20)
+                                obj.GetYaxis().SetTitleOffset(1.5)
+                                obj.SetYTitle("#theta [deg]")
 #! Now get relevant theta vs p TCanvas from the files and save them
 for cut in range(NCUTS):
 	#! Get TCanvas
 	c=[0 for i in range(NPRTCLS)]
 	if cut==PRE:
 		c[E]=FIN[cut].Get("2.00-5.00/c_e_theta_vs_p_ER_2.00-5.00")
+		mod_canvas(c[E])
 		c[P]=FIN[cut].Get("2.00-5.00/c_p_theta_vs_p_ER_2.00-5.00")
+		mod_canvas(c[P])
 		c[PIP]=FIN[cut].Get("2.00-5.00/c_pip_theta_vs_p_ER_2.00-5.00")
+		mod_canvas(c[PIP])
 	elif cut==PST:
 		c[E]=FIN[cut].Get("2.00-5.00/pdall/c_e_theta_vs_p_pdall_ER_2.00-5.00")
+		mod_canvas(c[E])
                 c[P]=FIN[cut].Get("2.00-5.00/pdall/c_p_theta_vs_p_pdall_ER_2.00-5.00")
+		mod_canvas(c[P])
 		c[PIP]=FIN[cut].Get("2.00-5.00/pdall/c_pip_theta_vs_p_pdall_ER_2.00-5.00")
+		mod_canvas(c[PIP])
 	#! Now save TCanvas
 	#outdir=("%s/%s"%(OUTDIR,CUT_NAME[cut]))
 	#if not os.path.exists(outdir):
