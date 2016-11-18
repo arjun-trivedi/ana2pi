@@ -252,8 +252,14 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							f_old_h.SetLineWidth(3)
 							f_old_l.SetLineWidth(3)
 
-						C[idtyp][ihst][iprt][ipbin][LIN].cd(isctr+1)
+						pad_lin=C[idtyp][ihst][iprt][ipbin][LIN].cd(isctr+1)
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN].Draw("colz")
+						#! Axes title
+						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetXTitle("#theta [deg]")
+						pad_lin.SetLeftMargin(0.20)
+						H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().SetTitleOffset(2.0)
+						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetYTitle("#phi [deg]")
+						#! Draw fit funcs
 						if PRT_NAME[iprt]=="e":
 							f_h.Draw("same")
 							f_l.Draw("same")
@@ -275,8 +281,14 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							f_old_h.Draw("same")
 							f_old_l.Draw("same")
 
-						C[idtyp][ihst][iprt][ipbin][NRM].cd(isctr+1)
+						pad_nrm=C[idtyp][ihst][iprt][ipbin][NRM].cd(isctr+1)
 						H[idtyp][ihst][iprt][isctr][ipbin][NRM].Draw("colz")
+						#! Axes title
+                                                H[idtyp][ihst][iprt][isctr][ipbin][NRM].SetXTitle("#theta [deg]")
+                                                pad_nrm.SetLeftMargin(0.20)
+                                                H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().SetTitleOffset(2.0)
+                                                H[idtyp][ihst][iprt][isctr][ipbin][NRM].SetYTitle("#phi [deg]")
+                                                #! Draw fit funcs
 						if PRT_NAME[iprt]=="e":
 							f_h.Draw("same")
 							f_l.Draw("same")
