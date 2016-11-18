@@ -2,6 +2,7 @@
   TFile* f[2];// 0=exp,1=sim
   TString dtyp_name[]={"exp","sim"};
   TString part_name[3]={"p","pip","pim"};
+  TString part_name_latex[3]={"p","#pi^{+}","#pi^{-}"};
   f[0]=TFile::Open("$D2PIDIR_EXP/mon_pid_new/dpid.root");
   f[1]=TFile::Open("$D2PIDIR_SIM/mon_pid_new/dpid.root");
  
@@ -123,11 +124,18 @@
         int bmin=h2_dtVp[i][j]->GetXaxis()->FindBin(pmin[j][ibin]);
         int bmax=h2_dtVp[i][j]->GetXaxis()->FindBin(pmax[j][ibin]);
         TH1F* h=(TH1F*)h2_dtVp[i][j]->ProjectionY(TString::Format("_py_%d",ibin+1),bmin,bmax);
-        h->SetTitle(TString::Format("%s_%s_p_%.2f-%.2f",dtyp_name[i].Data(),part_name[j].Data(),pmin[j][ibin],pmax[j][ibin]));
+        //h->SetTitle(TString::Format("%s_%s_p_%.2f-%.2f",dtyp_name[i].Data(),part_name[j].Data(),pmin[j][ibin],pmax[j][ibin]));
+        h->SetTitle(TString::Format("p=[%.2f GeV, %.2f GeV)",pmin[j][ibin],pmax[j][ibin]));
         //TCanvas* c=new TCanvas("c","c");
         TString cname=TString::Format("c_%02d_%s_%s",ibin+1,dtyp_name[i].Data(),part_name[j].Data());
         TCanvas* c=new TCanvas(cname,cname);
         h->Draw();
+        //! Axes title
+        h->SetXTitle("#Deltat (ns)");
+        c->SetLeftMargin(0.20);
+        h->GetYaxis().SetTitleOffset(1.5);
+        h->SetYTitle("N_{entries}");
+        //! Fit
         if (part_name[j]=="pip"){
           //! 100715
           //h->Fit("gaus","","",-0.20,0.30);
@@ -203,6 +211,14 @@
       cname=TString::Format("c_cut_%s_%s",dtyp_name[i].Data(),part_name[j].Data());
       TCanvas* ccut=new TCanvas(cname,cname);
       h2_dtVp[i][j]->Draw("colz");
+      //! Axes title
+      h2_dtVp[i][j]->SetXTitle("p [GeV]");
+      ccut->SetLeftMargin(0.20);
+      h2_dtVp[i][j]->GetYaxis().SetTitleOffset(1.5);
+      h2_dtVp[i][j]->SetYTitle("#Deltat [ns]");
+      //! Adjust title from TTree::Draw()
+      h2_dtVp[i][j]->SetTitle(TString::Format("#Deltat versus momentum for %s",part_name_latex[j].Data()));
+      //! cut functions
       hmean->Draw("P same");
       hcut_h->Draw("P same");
       hcut_l->Draw("P same");
