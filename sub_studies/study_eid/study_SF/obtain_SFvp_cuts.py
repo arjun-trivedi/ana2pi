@@ -199,6 +199,7 @@ def obtain_SFcut_pars():
 
 				#! Get hSFvp[NDTYP]
 				hSFvp=FIN.Get("h_%s_s%d"%(DTYP_NAME[idtyp],isctr+1))
+				hSFvp.SetTitle("sector=%d"%(isctr+1))
 
 				#! Create hcutSF[NMTHD][NFNC]
 				#! [04-28-16] thesis-phase: The following is now created outside sctr loop so that all the relevant
@@ -221,7 +222,7 @@ def obtain_SFcut_pars():
 					if pbin_min>=4.84: continue #! These bins have no data in them
 
 					hname="%s_s%d_pbin%d"%(DTYP_NAME[idtyp],isctr+1,ipbin+1)
-					htitle="p=[%.2f,%.2f)"%(pbin_min,pbin_max)
+					htitle="p=[%.2f GeV, %.2f GeV)"%(pbin_min,pbin_max)
 					print "Making SF projection and fitting for",hname
 					bin1=hSFvp.GetXaxis().FindBin(pbin_min)
 					bin2=hSFvp.GetXaxis().FindBin(pbin_max)
@@ -294,9 +295,16 @@ def obtain_SFcut_pars():
 					#! plotting aesthetics
 					ROOT.gStyle.SetOptStat("ne")
 					ROOT.gStyle.SetOptFit(1111)
-					ROOT.gStyle.SetStatX(0.4);
+					ROOT.gStyle.SetStatX(0.9)
+					ROOT.gStyle.SetStatW(0.1)
+					ROOT.gStyle.SetStatH(0.1)
 					c=ROOT.TCanvas("c_%s"%hSF.GetName(),"c_%s"%hSF.GetName())
 					hSF.Draw()
+					#! Axes title
+                                	hSF.SetXTitle("Sampling Fraction (SF) [GeV]")
+                                	c.SetLeftMargin(0.20)
+                                	hSF.GetYaxis().SetTitleOffset(1.5)
+                                	hSF.SetYTitle("N_{entries}")
 					#! Get fit funcs and draw them
 					gfF=hSF.GetFunction(gf[F].GetName())
 					gfP=hSF.GetFunction(gf[P].GetName())
@@ -305,7 +313,7 @@ def obtain_SFcut_pars():
 					if gfP!=None:
 						gfP.Draw("same")
 					#! legend
-					l=ROOT.TLegend(0.1,0.3,0.3,0.4)#,"","NDC");
+					l=ROOT.TLegend(0.8,0.5,0.9,0.6)#,"","NDC");
 					l.AddEntry(gfF,MTHD_NAME[F])
 					l.AddEntry(gfP,MTHD_NAME[P])
 					l.Draw("same")
@@ -338,6 +346,11 @@ def obtain_SFcut_pars():
 				ROOT.gStyle.SetOptStat("ne")
 				ROOT.gStyle.SetStatX(0.9);
 				hSFvp.Draw("colz")
+				#! Axes title
+				hSFvp.SetXTitle("p [GeV]")
+				c.SetLeftMargin(0.20)
+				hSFvp.GetYaxis().SetTitleOffset(2.0)
+				hSFvp.SetYTitle("Sampling Fraction (SF)")
 				for imthd in range(NMTHD):
 					hcutSFvp[imthd][H][isctr].Draw("P same")
 					hcutSFvp[imthd][L][isctr].Draw("P same")
@@ -354,18 +367,24 @@ def obtain_SFcut_pars():
 
 				#! + [04-28-16] Also add this histograms to cSFvp_thesis
 				print cSFvp_thesis.GetName()
-				cSFvp_thesis.cd(isctr+1)
+				pad=cSFvp_thesis.cd(isctr+1)
 				#! plotting aesthetics
-                                ROOT.gStyle.SetOptStat("ne")
+                                #ROOT.gStyle.SetOptStat("ne")
+				ROOT.gStyle.SetOptStat(0)
                                 ROOT.gStyle.SetStatX(0.9);
                                 hSFvp.Draw("colz")
+				#! Axes title
+                                hSFvp.SetXTitle("p [GeV]")
+                                pad.SetLeftMargin(0.20)
+                                hSFvp.GetYaxis().SetTitleOffset(2.0)
+                                hSFvp.SetYTitle("Sampling Fraction (SF)")
                                 for imthd in range(NMTHD):
                                         hcutSFvp[imthd][H][isctr].Draw("P same")
                                         hcutSFvp[imthd][L][isctr].Draw("P same")
                                         hcutSFvp[imthd][M][isctr].Draw("P same")
                                 #! legend
 				if (isctr+1==1):
-                                	l_thesis=ROOT.TLegend(0.1,0.8,0.3,0.9)#,"","NDC");
+                                	l_thesis=ROOT.TLegend(0.2,0.8,0.4,0.9)#,"","NDC");
                                 	for imthd in range(NMTHD):
                                         	l_thesis.AddEntry(hcutSFvp[imthd][H][isctr],MTHD_NAME[imthd],"p")
                                 	l_thesis.Draw("same")

@@ -291,12 +291,18 @@ for isct in range(NSCTRS):
 		c.Divide(6,3)
 		for isgm in range(NSGMNTS):
 			sgm=isgm+1
-			c.cd(isgm+1)
+			pad=c.cd(isgm+1)
 			#! Draw hist and associated fit function that is fitted to range specified in FITL
 			#! Set ymax for sgm=15,16,17
 			if sgm==15 or sgm==16 or sgm==17:
 				 hnphe[isct][isgm][ipmt].SetMaximum(YMAX[sgm])	
 			hnphe[isct][isgm][ipmt].Draw()
+			#! Axes title
+			hnphe[isct][isgm][ipmt].SetXTitle("nphe x 10")
+			pad.SetLeftMargin(0.20)
+			hnphe[isct][isgm][ipmt].GetYaxis().SetTitleOffset(2.0)
+			hnphe[isct][isgm][ipmt].SetYTitle("N_{entries}")
+			
 			#! FULLFIT: Draw a superimposed fit function that covers the full range to check the fits's integrity
 			#! if pmt==2 then there is not fit
 			if pmt==2: fitf=None

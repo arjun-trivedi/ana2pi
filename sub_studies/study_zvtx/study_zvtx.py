@@ -137,7 +137,7 @@ czvtx.Divide(3,2)
 for isctr in range(NSCTR):
 	#cname="sector%d"%(isctr+1)
 	#czvtx=ROOT.TCanvas(cname,cname)
-	czvtx.cd(isctr+1)
+	pad=czvtx.cd(isctr+1)
 	#l=ROOT.TLegend(0.1,0.3,0.3,0.4)#,"","NDC");
 	if expt=="e1f":#! both {ER,SR} exist for e1f
 		sys.exit("Not implemented for e1f for now")
@@ -149,6 +149,12 @@ for isctr in range(NSCTR):
 		h[ER][isctr][NZVTXCORR].SetLineWidth(2)
 		h[SR][isctr][NZVTXCORR].SetLineWidth(2)
 		h[ER][isctr][WZVTXCORR].Draw("HIST")
+		#! Axes title
+                h[ER][isctr][WZVTXCORR].SetXTitle("z-vertex position [cm]")
+		pad.SetLeftMargin(0.20)
+                h[ER][isctr][WZVTXCORR].GetYaxis().SetTitleOffset(2.0)
+                h[ER][isctr][WZVTXCORR].SetYTitle("N_{entries}")
+		#! Draw rest of hists
 		h[ER][isctr][NZVTXCORR].Draw("HIST sames")
 		 #! scale SR and then draw
 		if "SR-nzvtxcorr" in PLOTS:
