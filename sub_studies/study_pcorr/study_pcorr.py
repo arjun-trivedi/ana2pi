@@ -13,12 +13,12 @@ import numpy as np
 import math
 
 '''
-+ {e1f,e16}*{ER,SR}*{W-elastic,MM-t2}*{wpcorr,npcorr}
++ {e1f,e16}*{ER,SR}*{W-elastic,MM-t2,MM2-t2}*{wpcorr,npcorr}
 
-+ Usage: study_pcorr.py expt=<e1f/e16> plot=<pcorr/MM> debug=False
++ Usage: study_pcorr.py expt=<e1f/e16> plot=<pcorr/MM/MM2> debug=False
 '''
 
-USAGE='study_pcorr.py expt=<e1f/e16> plot=<pcorr/MM> debug=[False]'
+USAGE='study_pcorr.py expt=<e1f/e16> plot=<pcorr/MM/MM2> debug=[False]'
 
 #! Get input data from user
 if len(sys.argv)<2:
@@ -33,7 +33,7 @@ if expt=="e1f":
 if len(sys.argv)<3:
 	sys.exit('usage: %s'%USAGE)
 PLOT=sys.argv[2]
-if PLOT!='pcorr' and PLOT!="MM":
+if PLOT!='pcorr' and PLOT!="MM" and PLOT!='MM2':
 	sys.exit('PLOT=%s is not valid. usage: %s'%(PLOT,USAGE))
 
 DBG=False
@@ -244,12 +244,13 @@ MASS_PION_LINE.SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
 MASS_PION_LINE.SetLineWidth(3)
 
 #! outdir
-outdir=os.path.join(DATADIR_OUTPUT,"2pi-MM-top2")
+outdir=os.path.join(DATADIR_OUTPUT,"2pi-%s-top2"%PLOT)
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 #! draw_cmd
-if PLOT=='pcorr': draw_cmd="mmppip>>hmmcmd(100,0,0.4)" #! make hist x-range narrower to bring out pcorr
+if   PLOT=='pcorr': draw_cmd="mmppip>>hmmcmd(100,0,0.4)" #! make hist x-range narrower to bring out pcorr
 elif PLOT=='MM':  draw_cmd="mmppip>>hmmcmd(200,-0.5,1)" #! make hist x-range wider to show validity of MMcut
+elif PLOT=='MM2': draw_cmd="mm2ppip>>hmmcmd(100,-0.2,0.2)" #! make hist x-range wider to show validity of MM2cut
 #draw_cmd="mmppip>>hmmcmd(100,0,0.4)"#hmmcmd(200,-0.5,1) #debug
 #! Create h[dtyp][q2][w][corr]
 hmm=[[[[[]for l in range(NCORR)]for k in range(len(WBIN_LEL))]for j in range(len(Q2BIN_LEL))] for i in range(NDTYP)]
@@ -280,12 +281,16 @@ for i,q2bin_le in enumerate(Q2BIN_LEL):
 			#! Store histogram
 			#ROOT.gStyle.SetOptStat("ne")
 			htmp=ROOT.gDirectory.Get("hmmcmd")#(draw_cmd_hst_name[idtyp][isctr][icorr])
-			hmm[idtyp][i][j][icorr]=htmp.Clone()#"hmm_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
-			hmm[idtyp][i][j][icorr].SetName("hmm_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
-			hmm[idtyp][i][j][icorr].SetTitle("MM-top2 %.2f-%.2f_%.3f-%.3f"%(q2min,q2max,wmin,wmax))#("%s"%cut.GetTitle())
+                        hmm[idtyp][i][j][icorr]=htmp.Clone()#"hmm_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
+			if PLOT=='MM':
+				hmm[idtyp][i][j][icorr].SetName("hmm_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
+				hmm[idtyp][i][j][icorr].SetTitle("MM-top2 %.2f-%.2f_%.3f-%.3f"%(q2min,q2max,wmin,wmax))#("%s"%cut.GetTitle())
+			elif PLOT=='MM2':
+                                hmm[idtyp][i][j][icorr].SetName("hmm2_%s_%s"%(DTYP_NAME[idtyp],CORR_NAME[icorr]))
+                                hmm[idtyp][i][j][icorr].SetTitle("MM2-top2 %.2f-%.2f_%.3f-%.3f"%(q2min,q2max,wmin,wmax))#("%s"%cut.GetTitle())
 			#print hmm[idtyp][i][j][icorr].GetName()
 #! Plot and save hmm
-ROOT.gStyle.SetOptStat("n")
+ROOT.gStyle.SetOptStat("n") #"n"
 ROOT.gStyle.SetOptFit(1)#111)
 for i,q2bin_le in enumerate(Q2BIN_LEL):
 	if DBG==True and i>0: continue #! debug
@@ -309,11 +314,12 @@ for i,q2bin_le in enumerate(Q2BIN_LEL):
 		hmm[SR][i][j][NPCORR].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 		#! Draw hists
 		hER_MM=None #! Use this to easily select whether to use hmm_ER_WPCORR or hmm_ER_NPCORR for illustrating MM (NPCORR compares better with sim)
-		if PLOT=='MM': #! then for now draw ER-NPCORR and SR-NPCORR since ER-NPCORR agrees better with SR-NPCORR and together they justify the MM-cut
+		if PLOT=='MM' or PLOT=='MM2': #! then for now draw ER-NPCORR and SR-NPCORR since ER-NPCORR agrees better with SR-NPCORR and together they justify the MM-cut
 			hER_MM=hmm[ER][i][j][NPCORR] #! hmm[ER][i][j][WPCORR]
 			hER_MM.Draw()
 			#! Axes title
-			hER_MM.SetXTitle("MM [GeV]")
+			if   PLOT=='MM':  hER_MM.SetXTitle("MM [GeV]")
+			elif PLOT=='MM2': hER_MM.SetXTitle("MM^{2} [GeV^{2}]")
                         cmm.SetLeftMargin(0.20)
                         hER_MM.GetYaxis().SetTitleOffset(1.5)
                         hER_MM.SetYTitle("N_{entries}")	
@@ -347,7 +353,7 @@ for i,q2bin_le in enumerate(Q2BIN_LEL):
                 	y1=y2-diff
                 	pt_ER_wpcorr.SetY1NDC(y1)
                 	pt_ER_wpcorr.SetY2NDC(y2)
-		if PLOT=='MM': #! then adjust accordingly statbox for SR:npcorr
+		if PLOT=='MM' or PLOT=='MM2': #! then adjust accordingly statbox for SR:npcorr
 			pt_ER=hER_MM.GetListOfFunctions().FindObject("stats")
 			pt_ER.SetTextColor(hER_MM.GetLineColor())
 			#! statbox for SR:npcorr
@@ -367,6 +373,13 @@ for i,q2bin_le in enumerate(Q2BIN_LEL):
                 	MM_T2_CUTH_EI.SetY2(hmm[ER][i][j][WPCORR].GetMaximum())
                 	MM_T2_CUTL_EI.Draw("same")
                 	MM_T2_CUTH_EI.Draw("same")
+		elif PLOT=='MM2':
+			MM2_T2_CUTL_EI.SetY1(hmm[ER][i][j][WPCORR].GetMinimum())
+                        MM2_T2_CUTL_EI.SetY2(hmm[ER][i][j][WPCORR].GetMaximum())
+                        MM2_T2_CUTH_EI.SetY1(hmm[ER][i][j][WPCORR].GetMinimum())
+                        MM2_T2_CUTH_EI.SetY2(hmm[ER][i][j][WPCORR].GetMaximum())
+                        MM2_T2_CUTL_EI.Draw("same")
+                        MM2_T2_CUTH_EI.Draw("same")
 			#! Draw line depicting pion mass
 			#MASS_PION_LINE.SetY1(hmm[ER][i][j][WPCORR].GetMinimum())
 			#MASS_PION_LINE.SetY2(hmm[ER][i][j][WPCORR].GetMaximum())
