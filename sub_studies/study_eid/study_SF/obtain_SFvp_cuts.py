@@ -301,7 +301,7 @@ def obtain_SFcut_pars():
 					c=ROOT.TCanvas("c_%s"%hSF.GetName(),"c_%s"%hSF.GetName())
 					hSF.Draw()
 					#! Axes title
-                                	hSF.SetXTitle("Sampling Fraction (SF) [GeV]")
+                                	hSF.SetXTitle("Sampling Fraction (SF)")
                                 	c.SetLeftMargin(0.20)
                                 	hSF.GetYaxis().SetTitleOffset(1.5)
                                 	hSF.SetYTitle("N_{entries}")

@@ -167,6 +167,12 @@ if study_W_elast:
 			else:
 				h[ER][isctr][NPCORR].Fit("gaus","+0","",0.87,0.98)
 			h[ER][isctr][WPCORR].Draw()
+			#! Axes title
+                        h[ER][isctr][WPCORR].SetXTitle("W [GeV]")
+                        celast.SetLeftMargin(0.20)
+                        h[ER][isctr][WPCORR].GetYaxis().SetTitleOffset(1.5)
+                        h[ER][isctr][WPCORR].SetYTitle("N_{entries}")
+			#! other hists
 			h[ER][isctr][NPCORR].Draw("sames")
 			#! Draw the fit funtions
 			f_wpcorr=h[ER][isctr][WPCORR].GetFunction("gaus")
@@ -306,6 +312,11 @@ for i,q2bin_le in enumerate(Q2BIN_LEL):
 		if PLOT=='MM': #! then for now draw ER-NPCORR and SR-NPCORR since ER-NPCORR agrees better with SR-NPCORR and together they justify the MM-cut
 			hER_MM=hmm[ER][i][j][NPCORR] #! hmm[ER][i][j][WPCORR]
 			hER_MM.Draw()
+			#! Axes title
+			hER_MM.SetXTitle("MM [GeV]")
+                        cmm.SetLeftMargin(0.20)
+                        hER_MM.GetYaxis().SetTitleOffset(1.5)
+                        hER_MM.SetYTitle("N_{entries}")	
 			#! scale SR and then draw
 			max_ER=hER_MM.GetMaximum()
         	        if max_ER==0:max_ER=1
@@ -317,6 +328,12 @@ for i,q2bin_le in enumerate(Q2BIN_LEL):
                 	hmm[SR][i][j][NPCORR].Draw("sames")
 		elif PLOT=='pcorr': #!then draw ER-NPCORR and ER-WPCORR to show effect of pcorr
 			hmm[ER][i][j][WPCORR].Draw()
+			#! Axes title
+                        hmm[ER][i][j][WPCORR].SetXTitle("MM [GeV]")
+                        cmm.SetLeftMargin(0.20)
+                        hmm[ER][i][j][WPCORR].GetYaxis().SetTitleOffset(1.5)
+                        hmm[ER][i][j][WPCORR].SetYTitle("N_{entries}")
+			#! Now overlay NPCORR
 			hmm[ER][i][j][NPCORR].Draw("sames") #! Note only "sames" seems to work here (with "same" statbox with name=hxx is drawn?!)
 		#! Adjust statbox
 		cmm.Update()
