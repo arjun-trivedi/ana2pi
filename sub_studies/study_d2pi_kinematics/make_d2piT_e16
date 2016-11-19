@@ -1,0 +1,3 @@
+#!/bin/bash
+nentries=${1:-0}
+proc_h10 -i h10_e16_SR.lst -t e16:sim:2pi -p q2wskimT:d2piT_tree -o deidT.root -n $nentries
