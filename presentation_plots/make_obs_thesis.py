@@ -343,7 +343,10 @@ def plot_and_write_Obs_itg(q2wbin,hobs,herr,outdir,froot):
 			bin_ue=float(bin_label.split(",")[1].strip(")"))
 			wbin="%.3f-%.3f"%(bin_le,bin_ue)
 
-			SYST_ERR[q2bin,wbin]=rel_err
+			#SYST_ERR[q2bin,wbin]=rel_err
+			#! Add "rest of error estimates": see thesis: total error=sqrt(6.5**2+x**2)=11.1 =>x=8.99
+			rel_err_full=math.sqrt(rel_err**2+9**2)
+			SYST_ERR[q2bin,wbin]=rel_err_full
 								
 			ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
 		ftxt.close()
