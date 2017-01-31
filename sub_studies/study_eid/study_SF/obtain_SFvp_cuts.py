@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from __future__ import division
 
-import os,sys,time
+import os,sys,time,datetime,subprocess,fileinput
 import ROOT
 import matplotlib.pyplot as plt
 from rootpy.interactive import wait
@@ -10,7 +10,7 @@ from collections import OrderedDict
 import numpy as np
 
 '''
-Usage: obtain_SFvp_cuts.py expt=<e1f/e16> [any gibberish(!) for debug] 
+Usage: obtain_SFvp_cuts.py expt=<e1f/e16> dbg=False 
 '''
 #! Get args from user
 if len(sys.argv)<2:
@@ -20,19 +20,28 @@ else:
 	if expt!="e1f"and expt!="e16":
 		sys.exit("Valid type for expt=e1f/e16 only")
 
-DEBUG=False
-if len(sys.argv)==3:
-	DEBUG=True
+DBG=False
+if len(sys.argv)>2: #i.e. dbg info entered by user
+	if sys.argv[2]=="False":
+		DBG=False
+	elif sys.argv[2]=="True":
+		DBG=True
+	else:
+		print "Please enter dbg=True or False only."
+		sys.exit()
 
 print "Going to study SF for expt=",expt
+DATE=datetime.datetime.now().strftime('%m%d%y')
 if expt=="e1f":
 	INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP'],"data_SF_100115")
 	INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM'],"data_SF_100115")
-	OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_DATADIR']
+	OUTDIR="%s/results_SFvp_%s/"%os.environ['STUDY_EID_SF_DATADIR']
 elif expt=="e16":
-	INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP_E16'],"data_SF_010516")
-        INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM_E16'],"data_SF_010516")
-	OUTDIR="%s/results_SFvp/"%os.environ['STUDY_EID_SF_E16_DATADIR']
+	INDIR_EXP=os.path.join(os.environ['D2PIDIR_EXP_E16'],"data_SF_an_011517")#!data_SF_010516
+	INDIR_SIM=os.path.join(os.environ['D2PIDIR_SIM_E16'],"data_SF_an_011517")#!data_SF_010516
+	OUTDIR="%s/results_SFvp_%s"%(os.environ['STUDY_EID_SF_E16_DATADIR'],DATE)
+if DBG: 
+	OUTDIR+="_dbg"
 print "INDIR_EXP",INDIR_EXP
 print "INDIR_SIM",INDIR_SIM
 print "OUTDIR=",OUTDIR
@@ -47,18 +56,31 @@ NENTRIES=10000000000
 # 	NENTRIES=int(sys.argv[2])
 print "PBINW,NENTRIES=",PBINW,"GeV",NENTRIES
 
-#! Initial set up
-#! setup momentum binning
-PMIN=0.64
-PMAX=5.00
-PBIN_LE=np.arange(PMIN,PMAX,PBINW)
-NPBIN=len(PBIN_LE)
-print("NPBIN=",NPBIN)
-time.sleep(3)
-
 NDTYP=2
 EXP,SIM=range(2)
 DTYP_NAME=['exp','sim']
+
+#! Initial set up
+#! setup momentum binning for EXP and SIM
+PMIN=[0 for i in range(NDTYP)]
+PMAX=[0 for i in range(NDTYP)]
+PBIN_LE=[0 for i in range(NDTYP)]
+NPBIN=[0 for i in range(NDTYP)]
+#! + [01-19-16] Setup SIM P limits as per ana2pi kinematics
+PMIN[SIM]=1.14
+PMAX[SIM]=4.24
+PBIN_LE[SIM]=np.arange(PMIN[SIM],PMAX[SIM]-PBINW,PBINW)
+NPBIN[SIM]=len(PBIN_LE[SIM])
+print("NPBIN[SIM]=",NPBIN[SIM])
+time.sleep(3)
+#! + [01-19-16] Setup EXP P with loose p limits, mainly for the sake of statistics and related integrity of the overall fit
+#!              since because of low statistics at extremes, the overall fit can be biased
+PMIN[EXP]=0.64
+PMAX[EXP]=4.24#5.00
+PBIN_LE[EXP]=np.arange(PMIN[EXP],PMAX[EXP]-PBINW,PBINW)
+NPBIN[EXP]=len(PBIN_LE[EXP])
+print("NPBIN[EXP]=",NPBIN[EXP])
+time.sleep(3)
 
 NSCTR=6
 
@@ -70,18 +92,19 @@ def make_fout_SFvp_pre_fits():
 	T_2pi[EXP]=FIN_2pi[EXP].Get("d2piR/tR")
 	T_2pi[SIM]=FIN_2pi[SIM].Get("d2piR/tR")
 
-	if expt=="e1f":
-		FIN_elast=[0,0]
-		T_elast=[0,0]
-		FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
-		FIN_elast[SIM]=ROOT.TFile("%s/dSF_elast.root"%INDIR_SIM)#os.environ['D2PIDIR_SIM'])
-		T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
-		T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
-	elif expt=="e16": #! no elast sim  and therefore no elast data for e16
-		FIN_elast=[0]
-                T_elast=[0]
-		FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
-		T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
+	#! Do not process elast data for now
+	# if expt=="e1f":
+	# 	FIN_elast=[0,0]
+	# 	T_elast=[0,0]
+	# 	FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
+	# 	FIN_elast[SIM]=ROOT.TFile("%s/dSF_elast.root"%INDIR_SIM)#os.environ['D2PIDIR_SIM'])
+	# 	T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
+	# 	T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
+	# elif expt=="e16": #! no elast sim  and therefore no elast data for e16
+	# 	FIN_elast=[0]
+	# 	T_elast=[0]
+	# 	FIN_elast[EXP]=ROOT.TFile("%s/dSF_elast.root"%INDIR_EXP)#os.environ['D2PIDIR_EXP'])
+	# 	T_elast[EXP]=FIN_elast[EXP].Get("delast/cut/t")
 
 	#! Make hSFvp[NDTYP][NSCTR]
 	draw_cmd="etot/p:p>>hdcmd(100,0,5,100,0,0.5)"
@@ -97,12 +120,13 @@ def make_fout_SFvp_pre_fits():
 			hname="h_%s_s%d"%(DTYP_NAME[idtyp],isctr+1)
 			hSFvp[idtyp][isctr]=htmp.Clone(hname)
 
-			if expt=="e1f" or (expt=="e16" and idtyp==0):
-				#! Now draw hist from elast data
-				T_elast[idtyp].Draw(draw_cmd,cut_sector,"colz",NENTRIES)
-				#! Add hist to already created hSFvp[NDTYP][NSCTR]
-				htmp=ROOT.gDirectory.Get("hdcmd")
-				hSFvp[idtyp][isctr].Add(htmp)
+			#! Do not process elast data for now
+			# if expt=="e1f" or (expt=="e16" and idtyp==0):
+			# 	#! Now draw hist from elast data
+			# 	T_elast[idtyp].Draw(draw_cmd,cut_sector,"colz",NENTRIES)
+			# 	#! Add hist to already created hSFvp[NDTYP][NSCTR]
+			# 	htmp=ROOT.gDirectory.Get("hdcmd")
+			# 	hSFvp[idtyp][isctr].Add(htmp)
 			
 
 	#! Plot and write hSFvp[NDTYP][NSCTR] to file
@@ -119,7 +143,7 @@ def make_fout_SFvp_pre_fits():
 			hSFvp[idtyp][isctr].Write()
 	C[EXP].Write()
 	C[SIM].Write()
-	FOUT_SFvp.Close()
+	FOUT_SFvp.Close()	
 
 def obtain_SFcut_pars():
 	"""
@@ -142,8 +166,7 @@ def obtain_SFcut_pars():
 
 	#! Fit ranges for peakSF: peakSF_fit_range[NPRNG][NSCTR], where
 	#! +NPRNG: Number of momentum ranges where peakSF fit range needs to be tuned
-	PRNG=[[PMIN,0.94],[0.94,1.74],[1.74,4.04],[4.04,4.44],[4.44,PMAX]]
-	NPRNG=len(PRNG)
+	NPRNG=5
 	peakSF_fit_range=[[] for iprng in range(NPRNG)]
 	peakSF_fit_range[0]=[[0.23,0.32],[0.26,0.34],[0.26,0.34],[0.26,0.34],[0.23,0.32],[0.23,0.32]]
 	peakSF_fit_range[1]=[[0.26,0.32],[0.26,0.38],[0.26,0.36],[0.26,0.35],[0.26,0.32],[0.26,0.32]]
@@ -170,11 +193,9 @@ def obtain_SFcut_pars():
 		#gf[imthd].SetLineStyle(MTHD_LINE_STYLE[imthd])
 		
 	for idtyp in range(NDTYP):
-			if DEBUG and DTYP_NAME[idtyp]!="exp": continue
+			#if DBG and DTYP_NAME[idtyp]!="exp": continue
 
 			fout_name="%s/fSFvp_post_fits_%s.root"%(OUTDIR,DTYP_NAME[idtyp])
-			if DEBUG: 
-				fout_name="%s/fSFvp_post_fits_%s_dbg.root"%(OUTDIR,DTYP_NAME[idtyp])
 			FOUT=ROOT.TFile(fout_name,"RECREATE")
 
 			#! [04-28-16] thesis-phase addition
@@ -188,9 +209,9 @@ def obtain_SFcut_pars():
 			#! Create hcutSF[NMTHD][NFNC][NSCTR]
 			#! [04-28-16] thesis-phase: The following is now created outside sctr loop so that all the relevant
                         #!                          objects to be stored in cSFvp_thesis have their own index
-                        hcutSFvp=[[[[] for isctr in range(NSCTR)] for ifnc in range(NFNC)] for imthd in range(NMTHD)]
+			hcutSFvp=[[[[] for isctr in range(NSCTR)] for ifnc in range(NFNC)] for imthd in range(NMTHD)]
 			for isctr in range(NSCTR):
-				if DEBUG and (isctr+1)!=1: continue
+				if DBG and (isctr+1)!=1: continue
 
 				FOUT.mkdir("s%d"%(isctr+1)).cd()
 				outdir_png="%s/%s_pngs/s%d"%(OUTDIR,DTYP_NAME[idtyp],isctr+1)
@@ -199,7 +220,8 @@ def obtain_SFcut_pars():
 
 				#! Get hSFvp[NDTYP]
 				hSFvp=FIN.Get("h_%s_s%d"%(DTYP_NAME[idtyp],isctr+1))
-				hSFvp.SetTitle("sector=%d"%(isctr+1))
+				#hSFvp.SetTitle("sector=%d"%(isctr+1))
+				hSFvp.SetTitle("")
 
 				#! Create hcutSF[NMTHD][NFNC]
 				#! [04-28-16] thesis-phase: The following is now created outside sctr loop so that all the relevant
@@ -216,57 +238,70 @@ def obtain_SFcut_pars():
 						hcutSFvp[imthd][ifnc][isctr].SetMarkerStyle(ROOT.gROOT.ProcessLine(MTHD_MRKR_STYLE[imthd]))
 						hcutSFvp[imthd][ifnc][isctr].SetMarkerColor(ROOT.gROOT.ProcessLine(MTHD_CLR[imthd]))
 						
-				for ipbin in range(NPBIN):
-					pbin_min=round(PBIN_LE[ipbin],2)
-					pbin_max=round(PBIN_LE[ipbin]+PBINW,2)
+				for ipbin in range(NPBIN[idtyp]):
+					pbin_min=round(PBIN_LE[idtyp][ipbin],2)
+					pbin_max=round(PBIN_LE[idtyp][ipbin]+PBINW,2)
 					if pbin_min>=4.84: continue #! These bins have no data in them
 
 					hname="%s_s%d_pbin%d"%(DTYP_NAME[idtyp],isctr+1,ipbin+1)
-					htitle="p=[%.2f GeV, %.2f GeV)"%(pbin_min,pbin_max)
+					if DTYP_NAME[idtyp]=="exp": 
+						htitle="Experimental SF for momentum bin=[%.2f GeV, %.2f GeV)"%(pbin_min,pbin_max)
+					elif DTYP_NAME[idtyp]=="sim":
+						htitle="Simulation SF for momentum bin=[%.2f GeV, %.2f GeV)"%(pbin_min,pbin_max)
 					print "Making SF projection and fitting for",hname
 					bin1=hSFvp.GetXaxis().FindBin(pbin_min)
 					bin2=hSFvp.GetXaxis().FindBin(pbin_max)
 					hSF=hSFvp.ProjectionY(hname,bin1,bin2)
 					hSF.SetTitle(htitle)
+					hSF.SetStats(0)
 					#hSF.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 					#! fit projection and get SF-cut-pars(pbin)
 					if DTYP_NAME[idtyp]=="exp":
 						#! fullSF
-						if pbin_min>=0.84:
-							hSF.Fit(gf[F].GetName(),"+0","",0.25,hSF.GetXaxis().GetXmax())
-						else:
-							hSF.Fit(gf[F].GetName(),"+0","")
-						#! peakSF
-						if pbin_min<0.94:
-							sfmin=peakSF_fit_range[0][isctr][0]
-							sfmax=peakSF_fit_range[0][isctr][1]
-						if pbin_min>=0.94 and pbin_min<1.74:
-							sfmin=peakSF_fit_range[1][isctr][0]
-							sfmax=peakSF_fit_range[1][isctr][1]
-							#hSF.Fit(gf[P].GetName(),"+0","",0.26,0.32)
-						elif pbin_min>=1.74 and pbin_min<4.04:
-							sfmin=peakSF_fit_range[2][isctr][0]
-							sfmax=peakSF_fit_range[2][isctr][1]
-							#hSF.Fit(gf[P].GetName(),"+0","",0.29,0.35)
-						elif pbin_min>=4.04 and pbin_min<4.44:
-							sfmin=peakSF_fit_range[3][isctr][0]
-							sfmax=peakSF_fit_range[3][isctr][1]
-							#hSF.Fit(gf[P].GetName(),"+0","",0.30,0.36)
-						elif pbin_min>=4.44 and PMAX:
-							sfmin=peakSF_fit_range[4][isctr][0]
-							sfmax=peakSF_fit_range[4][isctr][1]
-							#hSF.Fit(gf[P].GetName(),"+0","",0.32,0.37)
+						# if pbin_min>=0.84:
+						# 	hSF.Fit(gf[F].GetName(),"+0","",0.25,hSF.GetXaxis().GetXmax())
 						# else:
-						# 	hSF.Fit(gf[P].GetName(),"+0","",0.24,0.32)
-						hSF.Fit(gf[P].GetName(),"+0","",sfmin,sfmax)
+						# 	hSF.Fit(gf[F].GetName(),"+0","")
+						if pbin_min<=1.44:
+							hSF.Fit(gf[F].GetName(),"+0","",0.23,hSF.GetXaxis().GetXmax())
+						else:
+							hSF.Fit(gf[F].GetName(),"+0","",0.25,hSF.GetXaxis().GetXmax())
+						#! peakSF
+						#! + [01-19-16] Ignore for now
+						# if pbin_min<0.94:
+						# 	sfmin=peakSF_fit_range[0][isctr][0]
+						# 	sfmax=peakSF_fit_range[0][isctr][1]
+						# if pbin_min>=0.94 and pbin_min<1.74:
+						# 	sfmin=peakSF_fit_range[1][isctr][0]
+						# 	sfmax=peakSF_fit_range[1][isctr][1]
+						# 	#hSF.Fit(gf[P].GetName(),"+0","",0.26,0.32)
+						# elif pbin_min>=1.74 and pbin_min<4.04:
+						# 	sfmin=peakSF_fit_range[2][isctr][0]
+						# 	sfmax=peakSF_fit_range[2][isctr][1]
+						# 	#hSF.Fit(gf[P].GetName(),"+0","",0.29,0.35)
+						# elif pbin_min>=4.04 and pbin_min<4.44:
+						# 	sfmin=peakSF_fit_range[3][isctr][0]
+						# 	sfmax=peakSF_fit_range[3][isctr][1]
+						# 	#hSF.Fit(gf[P].GetName(),"+0","",0.30,0.36)
+						# elif pbin_min>=4.44 and PMAX:
+						# 	sfmin=peakSF_fit_range[4][isctr][0]
+						# 	sfmax=peakSF_fit_range[4][isctr][1]
+						# 	#hSF.Fit(gf[P].GetName(),"+0","",0.32,0.37)
+						# # else:
+						# # 	hSF.Fit(gf[P].GetName(),"+0","",0.24,0.32)
+						# hSF.Fit(gf[P].GetName(),"+0","",sfmin,sfmax)
 					else:#! i.e. DTYP="sim"
 						#! fullSF
 						hSF.Fit(gf[F].GetName(),"+0","")
 						#! peakSF
-						hSF.Fit(gf[P].GetName(),"+0","",0.2,0.25)
+						#! + [01-19-16] Ignore for now
+						# hSF.Fit(gf[P].GetName(),"+0","",0.2,0.25)
 
 					#! Now get fit pars
 					for imthd in range(NMTHD):
+						#! [01-19-16] Ignore peakSF for now
+						if MTHD_NAME[imthd]=="peakSF": continue
+
 						ff=hSF.GetFunction(gf[imthd].GetName());
 						if ff==None:
 							mu,sg,mu_err,sg_err=0,0,0,0
@@ -301,10 +336,13 @@ def obtain_SFcut_pars():
 					c=ROOT.TCanvas("c_%s"%hSF.GetName(),"c_%s"%hSF.GetName())
 					hSF.Draw()
 					#! Axes title
-                                	hSF.SetXTitle("Sampling Fraction (SF)")
-                                	c.SetLeftMargin(0.20)
-                                	hSF.GetYaxis().SetTitleOffset(1.5)
-                                	hSF.SetYTitle("N_{entries}")
+					if DTYP_NAME[idtyp]=="exp": 
+						hSF.SetXTitle("Experimental Sampling Fraction (SF)")
+					elif DTYP_NAME[idtyp]=="sim":
+						hSF.SetXTitle("Simulation Sampling Fraction (SF)")
+					c.SetLeftMargin(0.20)
+					hSF.GetYaxis().SetTitleOffset(1.5)
+					hSF.SetYTitle("N_{entries}")
 					#! Get fit funcs and draw them
 					gfF=hSF.GetFunction(gf[F].GetName())
 					gfP=hSF.GetFunction(gf[P].GetName())
@@ -313,10 +351,11 @@ def obtain_SFcut_pars():
 					if gfP!=None:
 						gfP.Draw("same")
 					#! legend
-					l=ROOT.TLegend(0.8,0.5,0.9,0.6)#,"","NDC");
-					l.AddEntry(gfF,MTHD_NAME[F])
-					l.AddEntry(gfP,MTHD_NAME[P])
-					l.Draw("same")
+					#! + [01-19-16] Not needed when ignoring peakSF for now
+					# l=ROOT.TLegend(0.8,0.5,0.9,0.6)#,"","NDC");
+					# l.AddEntry(gfF,MTHD_NAME[F])
+					# l.AddEntry(gfP,MTHD_NAME[P])
+					# l.Draw("same")
 					#! .png and .pdf  save
 					c.SaveAs("%s/c_pbin%02d.png"%(outdir_png,ipbin+1))
 					c.SaveAs("%s/c_pbin%02d.pdf"%(outdir_png,ipbin+1))
@@ -325,17 +364,20 @@ def obtain_SFcut_pars():
 					c.Write()
 				#! Now fit hcutSFvp[NMTHD][NFNC][NSCTR], save fit pars in fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR]
 				for imthd in range(NMTHD):
+					#! [01-19-16] Ignore peakSF for now
+					if MTHD_NAME[imthd]=="peakSF": continue
+
 					fitf=[0,0,0]
 					for ifnc in range(NFNC):
-						fitf[ifnc]=ROOT.TF1("fitf_%s"%FNC_NAME[ifnc],"pol3",PMIN,PMAX)
+						fitf[ifnc]=ROOT.TF1("fitf_%s"%FNC_NAME[ifnc],"pol3",PMIN[idtyp],PMAX[idtyp])
 						fitf[ifnc].SetLineColor(ROOT.gROOT.ProcessLine(MTHD_CLR[imthd]))
 						#fitf[ifnc].SetLineStyle(MTHD_LINE_STYLE[imthd])
 					print "Fitting hcutSFvp for mthd:fnc:sctr=%s,%s,%d"%(MTHD_NAME[imthd],FNC_NAME[H],isctr+1)
-					hcutSFvp[imthd][H][isctr].Fit(fitf[H].GetName(),"","",PMIN,PMAX)
+					hcutSFvp[imthd][H][isctr].Fit(fitf[H].GetName(),"","",PMIN[idtyp],PMAX[idtyp])
 					print "Fitting hcutSFvp for mthd:fnc:sctr=%s,%s,%d"%(MTHD_NAME[imthd],FNC_NAME[L],isctr+1)
-					hcutSFvp[imthd][L][isctr].Fit(fitf[L].GetName(),"","",PMIN,PMAX)
+					hcutSFvp[imthd][L][isctr].Fit(fitf[L].GetName(),"","",PMIN[idtyp],PMAX[idtyp])
 					print "Fitting hcutSFvp for mthd:fnc:sctr=%s,%s,%d"%(MTHD_NAME[imthd],FNC_NAME[M],isctr+1)
-					hcutSFvp[imthd][M][isctr].Fit(fitf[M].GetName(),"","",PMIN,PMAX)
+					hcutSFvp[imthd][M][isctr].Fit(fitf[M].GetName(),"","",PMIN[idtyp],PMAX[idtyp])
 					for ipar in range(NPAR):
 						fpSFvp[idtyp][isctr][imthd][H][ipar]=fitf[H].GetParameter(ipar)
 						fpSFvp[idtyp][isctr][imthd][L][ipar]=fitf[L].GetParameter(ipar)
@@ -350,14 +392,23 @@ def obtain_SFcut_pars():
 				hSFvp.SetXTitle("p [GeV]")
 				c.SetLeftMargin(0.20)
 				hSFvp.GetYaxis().SetTitleOffset(2.0)
-				hSFvp.SetYTitle("Sampling Fraction (SF)")
+				if DTYP_NAME[idtyp]=="exp": 
+					hSFvp.SetYTitle("Experimental Sampling Fraction (SF)")
+				elif DTYP_NAME[idtyp]=="sim":
+					hSFvp.SetYTitle("Simulation Sampling Fraction (SF)")
+				#! Remove stats box
+				hSFvp.SetStats(0)
 				for imthd in range(NMTHD):
+					#! [01-19-16] Ignore peakSF for now
+					if MTHD_NAME[imthd]=="peakSF": continue
 					hcutSFvp[imthd][H][isctr].Draw("P same")
 					hcutSFvp[imthd][L][isctr].Draw("P same")
 					hcutSFvp[imthd][M][isctr].Draw("P same")
 				#! legend
 				l=ROOT.TLegend(0.1,0.8,0.3,0.9)#,"","NDC");
 				for imthd in range(NMTHD):
+					#! [01-19-16] Ignore peakSF for now
+					if MTHD_NAME[imthd]=="peakSF": continue
 					l.AddEntry(hcutSFvp[imthd][H][isctr],MTHD_NAME[imthd],"p")
 				l.Draw("same")
 				#! save as .png
@@ -369,25 +420,29 @@ def obtain_SFcut_pars():
 				print cSFvp_thesis.GetName()
 				pad=cSFvp_thesis.cd(isctr+1)
 				#! plotting aesthetics
-                                #ROOT.gStyle.SetOptStat("ne")
+				#ROOT.gStyle.SetOptStat("ne")
 				ROOT.gStyle.SetOptStat(0)
-                                ROOT.gStyle.SetStatX(0.9);
-                                hSFvp.Draw("colz")
+				ROOT.gStyle.SetStatX(0.9);
+				hSFvp.Draw("colz")
 				#! Axes title
-                                hSFvp.SetXTitle("p [GeV]")
-                                pad.SetLeftMargin(0.20)
-                                hSFvp.GetYaxis().SetTitleOffset(2.0)
-                                hSFvp.SetYTitle("Sampling Fraction (SF)")
-                                for imthd in range(NMTHD):
-                                        hcutSFvp[imthd][H][isctr].Draw("P same")
-                                        hcutSFvp[imthd][L][isctr].Draw("P same")
-                                        hcutSFvp[imthd][M][isctr].Draw("P same")
-                                #! legend
-				if (isctr+1==1):
-                                	l_thesis=ROOT.TLegend(0.2,0.8,0.4,0.9)#,"","NDC");
-                                	for imthd in range(NMTHD):
-                                        	l_thesis.AddEntry(hcutSFvp[imthd][H][isctr],MTHD_NAME[imthd],"p")
-                                	l_thesis.Draw("same")
+				hSFvp.SetXTitle("p [GeV]")
+				pad.SetLeftMargin(0.20)
+				hSFvp.GetYaxis().SetTitleOffset(2.0)
+				if DTYP_NAME[idtyp]=="exp":
+					hSFvp.SetYTitle("Experimental Sampling Fraction (SF)")
+				elif DTYP_NAME[idtyp]=="sim":
+					hSFvp.SetYTitle("Simulation Sampling Fraction (SF)")
+				for imthd in range(NMTHD):
+					hcutSFvp[imthd][H][isctr].Draw("P same")
+					hcutSFvp[imthd][L][isctr].Draw("P same")
+ 					hcutSFvp[imthd][M][isctr].Draw("P same")
+				#! legend
+				#! + [01-19-16] ignored when peakSF ignored
+				# if (isctr+1==1):
+				# 	l_thesis=ROOT.TLegend(0.2,0.8,0.4,0.9)#,"","NDC");
+				# 	for imthd in range(NMTHD):
+				# 		l_thesis.AddEntry(hcutSFvp[imthd][H][isctr],MTHD_NAME[imthd],"p")
+				# 		l_thesis.Draw("same")
 
 			#! Write cSFvp_thesis in .root file and as .png and .pdf
 			FOUT.cd()
@@ -400,13 +455,17 @@ def obtain_SFcut_pars():
 			
 				
 				
-	#! Write fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR] to file
-	#print "fpSFvp[idtyp][isctr][imthd][H][0]=",fpSFvp[0][0][0][H][0]
+	#! Write fpSFvp[NDTYP][NSCTR][NMTHD][NFNC][NPAR] to files: h/l for 'lite' and mu/sg for 'hvy'
+	#! [01-17-16] Writing of 'hvy' pars now being done so tht 'hvy' machinery, which is used for substudies,
+	#!            is updated with latest SF parameters.
 	for idtyp in range(NDTYP):
 		for imthd in range(NMTHD):
+			#! [01-19-16] Ignore peakSF for now
+			if MTHD_NAME[imthd]=="peakSF": continue
 			outdir=("%s/cutpars"%OUTDIR)
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
+			#! First write 'lite' pars
 			fcutpars=open("%s/%s_%s.txt"%(outdir,DTYP_NAME[idtyp],MTHD_NAME[imthd]), "w")
 			for isctr in range(NSCTR):
 				#! First write the high cut pars
@@ -418,7 +477,44 @@ def obtain_SFcut_pars():
 					fpSFvp[idtyp][isctr][imthd][L][0],fpSFvp[idtyp][isctr][imthd][L][1],
 					fpSFvp[idtyp][isctr][imthd][L][2],fpSFvp[idtyp][isctr][imthd][L][3]))
 			fcutpars.close()
-	#fcutpars.write("Purchase Amount: %s" % TotalAmount)
+
+			#! Now write 'hvy' pars	which require transformation from H/L -> MU,SG using the fact that:
+			#! +H=MU+3*SG
+			#! +L=MU-3*SG
+			#! and from these, MU=(H+L)/2 and SG=(H-L)/6
+
+			#! First create file by making a copy of the existing file in $ANA2I/eid/eid.exp(mc).e16.out
+			#! + The SF pars in this file will then be overwritten with the newly obtained pars
+			if   DTYP_NAME[idtyp]=="exp": fcutpars="%s/eid.exp.e16.out_%s"%(outdir,MTHD_NAME[imthd])
+			elif DTYP_NAME[idtyp]=="sim": fcutpars="%s/eid.mc.e16.out_%s"%(outdir,MTHD_NAME[imthd])
+			cmd=["cp","%s/eid/eid.exp.e16.out"%os.environ['ANA2PI'], fcutpars]
+			#! The following solution from: http://stackoverflow.com/questions/4760215/running-shell-command-from-python-and-capturing-the-output
+			p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)#,stdout=subprocess.STDOUT)#,stderr=subprocess.STDOUT)
+			out,err=p.communicate()
+			if out!='': 
+				print "output when executing cmd=%s:%s"%(cmd,out)
+			if err!='':
+				sys.exit("error when executing cmd=%s:%s"%(cmd,err))
+			#! Now start to write to file
+			for isctr in range(NSCTR):
+				#! Get pars for sector
+				mu=[0 for i in range(4)]
+				sg=[0 for i in range(4)]
+				for ipar in range(4):
+					mu[ipar]=(fpSFvp[idtyp][isctr][imthd][H][ipar]+fpSFvp[idtyp][isctr][imthd][L][ipar])/2
+					sg[ipar]=(fpSFvp[idtyp][isctr][imthd][H][ipar]-fpSFvp[idtyp][isctr][imthd][L][ipar])/6
+				#! Write pars by replacing appropriate line in file using python library 'fileinput'
+				#! + Solution taken from http://stackoverflow.com/questions/39086/search-and-replace-a-line-in-a-file-in-python
+				#!   and therein post by Eli Bendersky.
+				for ipar in range(4):
+					for line in fileinput.input(fcutpars, inplace=True):
+						words=line.split()
+						mu_tag='%d_SFmean_a%d'%(isctr+1,ipar)
+						sg_tag='%d_SFsigma_a%d'%(isctr+1,ipar)
+						if   words[0]==mu_tag: 	print "%s = %f\n"%(mu_tag,mu[ipar]),
+						elif words[0]==sg_tag:  print "%s = %f\n"%(sg_tag,sg[ipar]),
+						else:
+							print "%s"%(line), 					
 	
 
 #! Start of main program

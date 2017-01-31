@@ -15,9 +15,9 @@ fi
 
 #! Setup procorder=f(expt,dtyp)
 if [ $dtyp == 'exp' ]; then
-  procorder='eid:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree_BG'
+  procorder='eid_study_zvtx:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree'
 elif [ $dtyp == 'sim' ]; then
-  procorder='eid:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree_BG'
+  procorder='eid_study_zvtx:efid:pidnewmon:pfidnew:q2wskimR:d2piR_tree'
 fi
 
 echo "expt=",$expt

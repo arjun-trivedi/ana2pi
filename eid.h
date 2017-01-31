@@ -42,6 +42,7 @@ public:
 
 private:
 	string _fname;
+	string _expt; //! [01-15-17] Derived from _fname
 	fstream _f;
 	epconfig::data _cutParMap;
 	Double_t _ecThreshold;

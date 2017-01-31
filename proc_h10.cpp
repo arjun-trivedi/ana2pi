@@ -239,6 +239,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("eid_tree_study_zvtx"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kFALSE,kTRUE,kFALSE);
          else if (str.EqualTo("eid_tree_study_nphe"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kFALSE,kFALSE,kTRUE);
          else if (str.EqualTo("eid_study_nphe"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kFALSE,kFALSE,kFALSE,kTRUE);
+         else if (str.EqualTo("eid_study_zvtx"))  proc = new ProcEid(mkdir("eid"),dH10,dAna,kFALSE,kFALSE,kTRUE,kFALSE);
          /*else if (str.EqualTo("eidmon"))     proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE);
          else if (str.EqualTo("eidmononly")) proc = new ProcEid(mkdir("eid"),dH10,dAna,kTRUE,kTRUE);*/
          else if (str.EqualTo("eidplay"))             proc = new ProcEidPlay(mkdir("eid"),dH10,dAna);
@@ -261,6 +262,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("qskimelast"))      proc = new ProcSkimQElast(mkdir("qskimelast"),dH10,dAna);
          else if (str.EqualTo("q2wskimT"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,kTRUE,kFALSE);
          else if (str.EqualTo("q2wskimR"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,kFALSE,kTRUE);
+         else if (str.EqualTo("q2wskimR_Wlse"))    proc = new ProcSkimQ2W(mkdir("q2wskim"),dH10,dAna,kFALSE,kTRUE,1.25,5.25,1.000,2.500); //loosen W-ana=[1.300,2.125]
          else if (str.EqualTo("q2wskimT_A"))    proc = new ProcSkimQ2W(mkdir("q2wskimA"),dH10,dAna,kTRUE,kFALSE,1.25,1.75,1.575,1.725);
          else if (str.EqualTo("q2wskimR_A"))    proc = new ProcSkimQ2W(mkdir("q2wskimA"),dH10,dAna,kFALSE,kTRUE,1.25,1.75,1.575,1.725);
          //at-h8 else if (str.Contains(TRegexp("q2wskim[0-9]+[0-9]?"))) proc = SetupProcSkimQ2W(str);

@@ -1,0 +1,6 @@
+#!/bin/bash
+nentries=${1:-0}
+#! Note, that 'q2wskimR_Wlse' used here to get more statistics at the low and high limits of the SF vs. p distribution
+#proc_h10 -i h10.lst -t e16:exp:2pi -p eidplay:efidnew:pidnewmon:q2wskimR_Wlse:d2piR_tree -o dSF_2pi.root -n $nentries
+#! 'q2wskimR_Wlse': removed to get more statistics in the low and high limits of the SF vs. p distribution, even going beyond the p range of ana2pi for the sake of integrity of the fits
+proc_h10 -i h10.lst -t e16:exp:2pi -p eidplay:efidnew:pidnewmon:d2piR_tree -o dSF_2pi.root -n $nentries

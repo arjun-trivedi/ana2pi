@@ -33,6 +33,9 @@
 	+ 2. zvtx:  added used option '_study_zvtx'
 	+ 3. SF:    this already has its own specialized processor 'study_eid_play.h', which was made earlier, before I though
 	            of this new way.
+
++ [01-15-17] _eidTool is now updated to support all e16 cuts. In fact, now it is e1f that is not
+  	         optimal, but that is OK because I am concentration only on e16 for now.
 */
 
 using namespace TMath;
@@ -91,11 +94,20 @@ ProcEid::ProcEid(TDirectory *td, DataH10* dataH10, DataAna* dataAna,
    	//! + For exp:e16, I created eid.exp.e16.out where I have updated the SFpars from 
     //!   'study_eid/study_SF/results_SFvp_e16/cutpars/exp_peakSF.txt' 
     //!   (Used study_eid/study_SF/dev/SFpars_H-L_2_MU-SG.py to convert pars in above file from cut_h/l to mean/sgma)
-    if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+    /*if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->dtyp=="exp") {
 		if      (dH10->expt=="e1f") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 		else if (dH10->expt=="e16") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
+	}*/
+	//! 01-15-17] Initialize _eidTool in *dependence* of expt (For details see comments on top of file)
+  	if (dH10->expt=="e1f") {
+		if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+		else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	}
+	else if (dH10->expt=="e16") {
+		if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.e16.out",path.Data())).Data());
+		else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
+	}else  Info("ProcEid::ProcEid()", "_eidTool not initialized");
 	
 	_make_tree=make_tree;
 	_study_ECfid=study_ECfid;
@@ -196,11 +208,20 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
    	//! + For exp:e16, I created eid.exp.e16.out where I have updated the SFpars from 
     //!   'study_eid/study_SF/results_SFvp_e16/cutpars/exp_peakSF.txt' 
     //!   (Used study_eid/study_SF/dev/SFpars_H-L_2_MU-SG.py to convert pars in above file from cut_h/l to mean/sgma)
-    if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+    /*if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
 	else if (dH10->dtyp=="exp") {
 		if      (dH10->expt=="e1f") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 		else if (dH10->expt=="e16") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
+	}*/
+	//! 01-15-17] Initialize _eidTool in *dependence* of expt (For details see comments on top of file)
+  	if (dH10->expt=="e1f") {
+		if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.out",path.Data())).Data());
+		else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.out",path.Data())).Data());
 	}
+	else if (dH10->expt=="e16") {
+		if      (dH10->dtyp=="sim") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.mc.e16.out",path.Data())).Data());
+		else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
+	}else  Info("ProcEid::ProcEid()", "_eidTool not initialized");
 
 	//! [01-17-16] if e16:ER then corr_zvtx() 
     if (dH10->expt=="e16" and dH10->dtyp=="exp") {
@@ -251,7 +272,7 @@ void ProcEid::handle() {
     	updateEid_zvtx_only();
     	//! 4. pstc monitoring
     	if (sctr!=0)_hzvtxcorr[sctr-1][1]->Fill(dAna->eid.vz);
-	    }
+	}
 
     gE=goodE();
     
