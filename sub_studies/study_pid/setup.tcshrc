@@ -3,3 +3,7 @@ setenv STUDY_PID "${ANA2PI}/sub_studies/study_pid"
 alias study_pid 'cd ${STUDY_PID}'
 
 setenv STUDY_PID_DATADIR "/data/trivedia/e1f/study_pid"
+
+#! [02-01-17] Added for e16
+setenv STUDY_PID_DTVP_E16 "${STUDY_PID}/e16"
+setenv STUDY_PID_DTVP_E16_DATADIR "/data/trivedia/e16/study_pid_dtvp"

@@ -1,0 +1,5 @@
+#!/bin/bash
+nentries=${1:-0}
+proc_h10 -i h10.lst -t e16:exp:2pi -p eid:efidnew:q2wskimR:d2piR_tree_study_pid:pidnewtree -o dpid_dtvp_2pi.root -n $nentries
+#! Remove 'd2piR' to remove 'ana2pi-correlation'(see hand-note), between p and pip, in analysis
+#proc_h10 -i h10.lst -t e16:exp:2pi -p eid:efidnew:q2wskimR:pidnewtree -o dpid_dtvp_2pi.root -n $nentries

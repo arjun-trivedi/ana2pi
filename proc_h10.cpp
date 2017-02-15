@@ -302,6 +302,7 @@ EpProcessor* SetupProcs(){
          else if (str.EqualTo("d2piR_tree"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE,kTRUE);
          else if (str.EqualTo("d2piTR_tree"))     proc = new ProcD2pi(mkdir("d2piTR"),dH10,dAna,kTRUE,kTRUE,kTRUE);
          else if (str.EqualTo("d2piR_tree_BG"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE,kTRUE,kTRUE);
+         else if (str.EqualTo("d2piR_tree_study_pid"))      proc = new ProcD2pi(mkdir("d2piR"),dH10,dAna,kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
          else {
             Info("Init","%s unrecognized processor\n",str.Data());
             continue;

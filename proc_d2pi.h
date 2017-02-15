@@ -38,13 +38,21 @@ using namespace ParticleConstants;
 + ProcD2pi() now takes in 'study_BG' as a parameter which is used for 'study_BG'. When study_BG=kTRUE,
   then missing mass cuts are not applied and therefore the TTree made contains the entire MM spectrum,
   which can be studied.
+
+[02-02-17]
++ ProcD2pi() now takes in 'study_pid' as a parameter which is used to study PID: when study_pid=kTRUE,
+  then h10 indices for p,pip,pim is not obtained from ProcPidNew (infact ProcPidNew is not even called before this
+  processor in this case; see $SUBSTUDIES/study_pid/e16/make_dpid_dtvp_2pi_e16_ER(SR)) and instead the code here obtains the 
+  indices from bank-pid. 
++ Therefore, I can make a data sample which can be used to study PID with all cuts applied (including bank-pid), 
+  but refined PID, whose parameters are obtained as a part of this study.
 *******************************************************/
 
 class ProcD2pi : public EpProcessor {
 
 public:
 	ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-			 bool procT, bool procR, bool make_tree=kFALSE, bool study_BG=kFALSE);
+			 bool procT, bool procR, bool make_tree=kFALSE, bool study_BG=kFALSE, bool study_pid=kFALSE);
 	~ProcD2pi();
 	void handle();
 	//at-h8 void write();
@@ -64,6 +72,8 @@ protected:
 	Float_t getPhi(TLorentzVector lv);   //spherical phi angle in degrees for lv 
 	Float_t getAlpha(TVector3 uv_Gf,TVector3 uv_Gp,TVector3 uv_Bf,TVector3 uv_Bp);
 	Float_t invTan(Float_t y, Float_t x); //returns angle in radians [0, 2pi]; uses ATan which returns angle in radians [-pi/2, pi/2]
+
+	void get_h10idx_using_bank_pid();
 	
 	TRandom* _rand; //atrivedi[06-13-14]: for _rand
 	ProcEid* _proc_eid;
@@ -71,6 +81,7 @@ protected:
 	bool _procT,_procR;
 	bool _make_tree;
 	bool _study_BG;
+	bool _study_pid;
 	TObjArray* _hists_ana_MM;    
 	TObjArray** _h8R[NTOPS];
 	TObjArray* _hists_MM_R[NTOPS];
@@ -105,7 +116,7 @@ protected:
 };
 
 ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
-				   bool procT, bool procR, bool make_tree/*=kFALSE*/,bool study_BG/*=kFALSE*/)
+				   bool procT, bool procR, bool make_tree/*=kFALSE*/,bool study_BG/*=kFALSE*/, bool study_pid/*=kFALSE*/)
 				 :EpProcessor(td, dataH10, dataAna) {
 	_rand=new TRandom(); //atrivedi[06-13-14]: for _rand
 	_proc_eid=new ProcEid(dataH10,dataAna);
@@ -114,6 +125,7 @@ ProcD2pi::ProcD2pi(TDirectory *td,DataH10* dataH10,DataAna* dataAna,
 	_procR=procR;
 	_make_tree=make_tree;
 	_study_BG=study_BG;
+	_study_pid=study_pid;
 	_lvE0 = dH10->lvE0;
 	_lvP0 = dH10->lvP0;
 		
@@ -225,17 +237,20 @@ void ProcD2pi::handle() {
 	//! (In case of _procT, Lvs will have been set to Thrown values)
 	ResetLvs(); 
 
-	//! + Set particles' h10 indices as per ProcEid,ProcPidNew (or ProcPid, in which case manual changes required!)
+	//! + Set particles' h10 indices 
 	//! + hevtsum filling for EID and PID is redundant, but helps in debugging in ProcD2pi correctly followed
 	//!	  EID and PID processors
 
 	//! e: Since events have passed ProcEid, h10 index of e=0
 	dAna->h10idxE=0;
-	//! p,pip,pim
-	//! pidnew
-	dAna->h10idxP=dAna->pidnew.h10IdxP;
-	dAna->h10idxPip=dAna->pidnew.h10IdxPip;
-	dAna->h10idxPim=dAna->pidnew.h10IdxPim;
+	//! p,pip,pim: if !_study_pid, then get from ProcPidNew, else get using bank-pid
+	if (!_study_pid) { //! then get h10 indices for p, pip, and pim from pidnew
+		dAna->h10idxP  =dAna->pidnew.h10IdxP;
+		dAna->h10idxPip=dAna->pidnew.h10IdxPip;
+		dAna->h10idxPim=dAna->pidnew.h10IdxPim;
+	} else { //! else determine it here from bank-pid
+		get_h10idx_using_bank_pid();
+	}
 	if (dAna->pidnew.h10IdxP>0)   hevtsum->Fill(EVT_P_FOUND);
 	if (dAna->pidnew.h10IdxPip>0) hevtsum->Fill(EVT_PIP_FOUND);
 	if (dAna->pidnew.h10IdxPim>0) hevtsum->Fill(EVT_PIM_FOUND);
@@ -929,6 +944,28 @@ Float_t ProcD2pi::invTan(Float_t y, Float_t x){
 	if (x == 0 && y > 0) retVal = Pi()/2;
 	if (x == 0 && y < 0) retVal = 3*Pi()/2; 
 	return retVal;  
+}
+
+void ProcD2pi::get_h10idx_using_bank_pid(){
+	for (Int_t i=1;i<dH10->gpart;i++) {
+		if (dH10->q[i]==1){
+			if (dH10->dc[i] && dH10->sc[i]>0){
+				if (dH10->id[i]==PROTON){
+					dAna->h10idxP=i;
+				}
+				if (dH10->id[i]==PIP){
+					dAna->h10idxPip=i;
+				}
+			}
+		}
+		if (dH10->q[i]==-1){
+			if (dH10->dc[i] && dH10->sc[i]>0){
+				if (dH10->id[i]==PIM){
+					dAna->h10idxPim=i;
+				}
+			}
+		}
+	}
 }
 
 
