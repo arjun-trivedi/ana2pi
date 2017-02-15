@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#! sim1:   /mss/clas/caa/atrivedi/batchdata/e16/2pi/sim/3piPS_lQ2_100M_020217 (991)
+#! sim2:   /mss/clas/caa/atrivedi/batchdata/e16/2pi/sim/3piPS_hQ2_100M_020217 (996)
+
+simnamel=(3piPS_lQ2_100M_020217 3piPS_hQ2_100M_020217)
+#! Following list obtained by ls /mss-path-to-sim/recon/*.root |grep -v ana |wc -l 
+#! (Information matches what I originally noted in at-sim/README.3PIPS.SIM for each simulation)
+sim_nfmssl=(991 996)
+
+isim=0
+for simname in "${simnamel[@]}";do
+  nfmss=${sim_nfmssl[isim]}
+  simnum=$((isim + 1))
+  echo "*** Processing simnum:simname=$simnum:$simname ***"
+  #! Check number .root files in $H10DIR_SIM/recon/
+  echo '>nfvltl=$(ls $H10DIR_SIM_E16/3pi-PS-sim/$simname/recon/*.root |wc -l)'
+  nfvltl=$(ls $H10DIR_SIM_E16/3pi-PS-sim/$simname/recon/*.root |wc -l)
+  diff=$((nfmss-nfvltl))
+  echo "simnum:simname:nfmss:nfvltl:diff=$simnum:$simname:$nfmss:$nfvltl:$diff"
+  echo "***" 
+  isim=$((isim + 1))
+done
+
+if [[ -n $1 && $1 == "touch" ]]; then
+  echo "Going to touch simuluation data in /volatile"
+  isim=0
+  for simname in "${simnamel[@]}";do
+    simnum=$((isim + 1))
+    echo "touching simnum:simname=$simnum:$simname"
+    for f in `ls $H10DIR_SIM_E16/3pi-PS-sim/$simname/recon/*.root`;do
+      echo ">touch $f"
+      touch $f
+    done
+    isim=$((isim + 1))
+    echo "***"
+  done
+fi
