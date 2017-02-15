@@ -31,12 +31,20 @@ for simoutdir in "${simoutdirl[@]}";do
      continue
   fi
 
-  #! Remove any existing file in $H10DIR_SIM
-  echo ">rm $H10DIR_SIM_E16/$simname/recon/*.root"
-  rm $H10DIR_SIM_E16/$simname/recon/*.root
-  #! Now get files from /mss
-  echo ">jget `ls $simoutdir/recon/*.root|grep -v ana` $H10DIR_SIM_E16/$simname/recon/ >& /tmp/atrivedi/jget_$simname.log&"
-  jget `ls $simoutdir/recon/*.root|grep -v ana` $H10DIR_SIM_E16/$simname/recon/ >& /tmp/atrivedi/jget_$simname.log&
+  #! Use 'comm' to find out which /mss file is missing in /volatile and use that to get missing files
+  ls $simoutdir/recon/*.root               | xargs -n 1 basename > /tmp/atrivedi/"$simname"_mss.lst
+  ls $H10DIR_SIM_E16/$simname/recon/*.root | xargs -n 1 basename > /tmp/atrivedi/"$simname"_vltl.lst
+  comm -23 /tmp/atrivedi/"$simname"_mss.lst /tmp/atrivedi/"$simname"_vltl.lst > /tmp/atrivedi/"$simname"_mss_unique.lst
+  nmissing=$(wc -l < /tmp/atrivedi/"$simname"_mss_unique.lst)
+  echo "Number of files missing in /volatile="$nmissing
+  echo "Submitting jget jobs to get these missing files..."
+  for f in `cat /tmp/atrivedi/"$simname"_mss_unique.lst`
+  do
+    echo ">jget $simoutdir/recon/$f $H10DIR_SIM_E16/$simname/recon/ >& /tmp/atrivedi/jget_"$simname"_$f.log&"
+    jget $simoutdir/recon/$f $H10DIR_SIM_E16/$simname/recon/ >& /tmp/atrivedi/jget_"$simname"_$f.log&
+  done
+  echo "Done submitting jget jobs to get these files. See logs for updates on these jobs."
+  echo "***"
   
   isim=$((isim + 1))
 done
