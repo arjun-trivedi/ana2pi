@@ -31,6 +31,14 @@ for simoutdir in "${simoutdirl[@]}";do
      continue
   fi
 
+  #! [02-24-17] For some reason, for simnum=13 this script counted 0 files in mss, vltl, and therefore, mss_unique
+  #! + Therefore, the following block of code was resued to run this script again for simnum=13 and then it worked
+  #if [ $simnum -ne 13 ]; then
+    #echo "simnum -ne 13 continuing"
+    #isim=$((isim + 1))
+    #continue
+  #33fi
+
   #! Use 'comm' to find out which /mss file is missing in /volatile and use that to get missing files
   ls $simoutdir/recon/*.root               | xargs -n 1 basename > /tmp/atrivedi/"$simname"_mss.lst
   ls $H10DIR_SIM_E16/$simname/recon/*.root | xargs -n 1 basename > /tmp/atrivedi/"$simname"_vltl.lst
