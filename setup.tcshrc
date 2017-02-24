@@ -62,6 +62,8 @@ source ${ANA2PI}/sub_studies/study_efid/e16/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_SS_bands/setup.tcshrc
 #-- [10-12-16] env for e16:presentation_plots
 source ${ANA2PI}/presentation_plots/setup.tcshrc
+#-- [10-12-16] env for e16:study_evtsel_BG
+source ${ANA2PI}/sub_studies/study_evtsel_BG/setup.tcshrc
 
 setenv SUBSTUDIES "${WORKSPACE}/ana2pi/sub_studies"
 alias substudies 'cd ${SUBSTUDIES}'
