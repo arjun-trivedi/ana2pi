@@ -12,6 +12,9 @@ import numpy as np
 
 import math
 
+#atlib
+import atlib as atlib
+
 '''
 + Usage: study_evtsel.py debug=False
 '''
@@ -88,6 +91,21 @@ if DBG:
 	Q2BIN_LEL=[2.00]
 	Q2BIN_UEL=[5.00]
 WBIN_LEL=np.arange(WMIN,WMAX,WBINW)
+#! [05-10-17] Remove 2.125 if it occures in WBIN_LEL
+#! + Sometimes because of using decimal numbers with np.arange, 2.125 is not omitted 
+#!   and therefore it has to be done manually
+del_val=False
+idel_val=-9999
+for i,x in enumerate(WBIN_LEL):
+	if np.isclose(x,2.125): 
+		del_val=True
+		idel_val=i
+#print len(WBIN_LEL)
+if del_val: 
+    print "In WBIN_LEL going to delete",WBIN_LEL[idel_val],"at index",idel_val
+WBIN_LEL=np.delete(WBIN_LEL,[idel_val])
+#print WBIN_LEL
+#sys.exit()
 #print Q2BIN_LEL
 #print WBIN_LEL
 
@@ -132,6 +150,18 @@ DRAW_CMD=[0 for i in range(NPLTS)]
 DRAW_CMD[MM] ="mmppip>>hmmcmd(200,-0.5,1)"
 DRAW_CMD[MM2]="mm2ppip>>hmmcmd(100,-0.2,0.2)"
 
+#! Leading Edge limits for leading-edge norm
+LE=[0 for i in range(NPLTS)]
+LE[MM]=[0.278,0.417]
+LE[MM2]=[LE[MM][0]**2,LE[MM][1]**2]
+
+#! TLine showing 0 of y-axis (after making y-axis go below to see fluctuations in hdiff=exp-sim)
+ZERO_YAXIS=[0 for i in range(NPLTS)]
+ZERO_YAXIS[MM]=ROOT.TLine( -0.5, 0, 1.0, 0)
+ZERO_YAXIS[MM2]=ROOT.TLine(-0.2, 0, 0.2, 0)
+DRAW_CMD[MM] ="mmppip>>hmmcmd(200,-0.5,1)"
+DRAW_CMD[MM2]="mm2ppip>>hmmcmd(100,-0.2,0.2)"
+
 #! Create hmm[dtyp][q2][w][plt]
 hmm=[[[[0 for l in range(NPLTS)] for k in range(len(WBIN_LEL))] for j in range(len(Q2BIN_LEL))] for i in range(NDTYP)]
 #print "hmm=",hmm
@@ -147,7 +177,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 	q2min=q2bin_le
 	q2max=Q2BIN_UEL[iq]
 	for iw,wbin_le in enumerate(WBIN_LEL):
-		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug
+		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #! (iw!=0 and iw!=15 and iw!=28)
 		wmin=wbin_le
 		wmax=wbin_le+WBINW
 		cut_q2w=ROOT.TCut("Q2>%f && Q2<%f && W>%f && W<%f"%(q2min,q2max,wmin,wmax))
@@ -194,7 +224,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 	if not os.path.exists(outdir_q2w):
 		os.makedirs(outdir_q2w)
 	for iw,wbin_le in enumerate(WBIN_LEL):
-		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug
+		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
 		wmin=wbin_le
 		wmax=wbin_le+WBINW
 		
@@ -218,12 +248,19 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 			hER=hmm[ER][iq][iw][iplt]
 			hSR=hmm[SR][iq][iw][iplt]
 			hSR3PI=hmm[SR3PI][iq][iw][iplt]
+			hER.Sumw2()
+			hSR.Sumw2()
+			hSR3PI.Sumw2()
 			#! First draw hER
 			hER.SetXTitle("%s [%s]"%(PLT_TITLE[iplt], PLT_UNIT[iplt]))
 			cmm[iplt].SetLeftMargin(0.20)
 			hER.GetYaxis().SetTitleOffset(1.5)
 			hER.SetYTitle("N_{entries}")
+			#! Adjust lims of y-axis to go below 0 to show fluctuations in hdiff 
+			#! and draw line at y=0
+			hER.SetMinimum(-400)
 			hER.Draw()
+			ZERO_YAXIS[iplt].Draw("same")
 			#! scale SR and then draw
 			max_ER=hER.GetMaximum()
 			if max_ER==0:max_ER=1
@@ -233,23 +270,38 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 			if scl_fctr_SR==0:scl_fctr_SR=1
 			hSR.Scale(scl_fctr_SR)
 			hSR.Draw("same")
-			#! Now scale SR3PI to hER-hSR and draw
+
+			# #! Now scale SR3PI to hER-hSR (=hdiff) and draw
+			# #! First get hdiff=hER-hSR
+			# hdiff=hER.Clone("hdiff")
+			# hdiff.Add(hSR,-1)
+			# hdiff.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+			# hdiff.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+			# hdiff.Draw("same")
+			# #! scale
+			# max_diff=hdiff.GetMaximum()
+			# if max_diff==0:max_diff=1
+			# max_SR3PI=hSR3PI.GetMaximum()
+			# if max_SR3PI==0:max_SR3PI=1
+			# scl_fctr_SR3PI=max_diff/max_SR3PI
+			# if scl_fctr_SR3PI==0:scl_fctr_SR3PI=1
+			# hSR3PI.Scale(scl_fctr_SR3PI)
+			# #! Draw
+			# hSR3PI.Draw("same")
+
+			#! Now leading-edge normalize SR3PI to hER-hSR (=hdiff) and draw
 			#! First get hdiff=hER-hSR
 			hdiff=hER.Clone("hdiff")
+			hdiff.Sumw2()
 			hdiff.Add(hSR,-1)
 			hdiff.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 			hdiff.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
 			hdiff.Draw("same")
-			#! scale
-			max_diff=hdiff.GetMaximum()
-			if max_diff==0:max_diff=1
-			max_SR3PI=hSR3PI.GetMaximum()
-			if max_SR3PI==0:max_SR3PI=1
-			scl_fctr_SR3PI=max_diff/max_SR3PI
-			if scl_fctr_SR3PI==0:scl_fctr_SR3PI=1
-			hSR3PI.Scale(scl_fctr_SR3PI)
+			#! leading-edge norm (note that the obtained hist has Sumw2() set in the method)
+			hSR3PIn=atlib.norm_hist_leading_edge(hdiff,hSR3PI,LE[iplt])
 			#! Draw
-			hSR3PI.Draw("same")
+			hSR3PIn.Draw("same")
+
 			#! Create and add entries: hists and cut-lines
 			#! legend
 			l=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
