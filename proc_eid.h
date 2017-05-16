@@ -223,10 +223,30 @@ ProcEid::ProcEid(DataH10* dataH10, DataAna* dataAna)
 		else if (dH10->dtyp=="exp") _eidTool = new Eid((char *)(TString::Format("%s/ana2pi/eid/eid.exp.e16.out",path.Data())).Data());
 	}else  Info("ProcEid::ProcEid()", "_eidTool not initialized");
 
-	//! [01-17-16] if e16:ER then corr_zvtx() 
-    if (dH10->expt=="e16" and dH10->dtyp=="exp") {
-    	Info("ProcEid::ProcEid()", "expt:exp=e16:ER and therefore will do corr_zvtx()");
-    }
+	//! [05-15-17] 
+	//! + 'hevtsum' was earlier not created for this constructor
+	//! + It is now added, but since 'td' does not exists for this case, 'eid' is made explicit in the 
+	//! name of the histogram
+	//td->cd();
+	hevtsum = new TH1D("eid_hevtsum","Event Statistics from ProcEid",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
+	//hevtsum->SetMinimum(0);
+	hevtsum->GetXaxis()->SetBinLabel(EVT_TRIG,"Trigger");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_GPART1,"gpart>0");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_STAT1,"stat>0");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_Q1,"q=-1");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_DC1,"DC");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_CC1,"CC");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_SC1,"SC");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_EC1,"EC");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_NPHE,"NPHE");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_DCSTAT1,"dc_stat>0");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_ECLOW1,"EC Threshold");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_ECFID,"EC Fid.");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_ECIN_MIN,"ec_ei > ECmin");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_ZVTX,"pass zvrtx");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_SF,"SF");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_BOS11,"EVNT.id=11");
+	hevtsum->SetMinimum(0.);
 }
 
 ProcEid::~ProcEid(){

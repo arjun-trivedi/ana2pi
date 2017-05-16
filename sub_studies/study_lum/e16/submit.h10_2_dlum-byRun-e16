@@ -1,0 +1,77 @@
+#!/bin/bash
+
+##########################################################
+# [05-15-17]
+# + Get h10.lst files for all E16 Runs from ${HOME}/ongoing/e16_EI_lst
+#   and submit h10->dlum jobs for each of them.
+
+# + Note, that unlike E1F, for E1F there are 2 lists: rz/runnum.lst and root/runnum.lst;
+#     + The rz/runnum.lst is used to get files from /mss
+#     + 'ah2root_e16' is used to convert .rz to .root
+#     + The root/runnum.lst is the corresponding file with .root extensions and is used as
+#       h10.lst 
+#
+# [15-15-17]
+# + Usage:
+#   >$SUBSTUDIES/study_lum/e16/submit.h10_2_dlum-e16 
+###########################################################
+
+#! List usage 
+usage="$SUBSTUDIES/study_lum/e16/submit.h10_2_dlum-e16"
+
+#-- Now submit jobs
+date=`date +%m%d%y`
+SUBDIR=$BSUBDIR/e16/2pi/exp/h10_2_dlum-byRun-e16"_"$date
+if [[ ! -d ${SUBDIR} ]]; then
+    mkdir -p $SUBDIR
+fi
+OUTDIR=$D2PIDIR_EXP_E16/h10_2_dlum-byRun-e16"_"$date
+if [[ ! -d $OUTDIR ]]; then
+    mkdir -p $OUTDIR
+fi
+OUTDIR_LOG=$OUTDIR/log
+if [[ ! -d $OUTDIR_LOG ]]; then
+    mkdir -p $OUTDIR_LOG
+fi
+
+for h10lst_rz in $(ls ${HOME}/ongoing/e16_EI_lst/rz/*.lst);
+do
+  runnum=$(echo $h10lst_rz | awk -F/ '{print $7}' | awk -F. '{print $1}')
+  echo "runnum=$runnum"
+  JSUBFILE=$SUBDIR/$runnum.sub
+  if [ -f "${JSUBFILE}" ]; then
+    echo $runnum".sub exists. Will delete it before creating new one."
+    rm $JSUBFILE
+  fi
+
+  echo "\
+  <Request>
+    <Name name=\"e16_h10_2_d2piR-exp_$runnum\"/>
+    <Project name=\"E1-6a\"/>
+    <OS name=\"centos65\"/>
+    <DiskSpace space=\"500\" unit=\"MB\"/>
+    <Memory space=\"1500\" unit=\"MB\"/>
+    <Track name=\"analysis\"/>
+    <TimeLimit unit=\"minutes\" time=\"60\"/>
+    <Command><![CDATA[
+      ah2root_e16
+      check_e16_h10lst
+      proc_h10 -i h10.lst -t e16:exp:2pi -p lum -o lum.root
+    ]]></Command>
+
+    <Job>
+	<Input src=\"${HOME}/ongoing/e16_EI_lst/root/$runnum.lst\" dest=\"h10.lst\" />
+        `for f in $(cat $h10lst_rz)
+         do
+           echo \<Input src='"'mss:$E16D_EI/$f'"' dest='"'$f'"' /\> 
+         done`
+        <Output src=\"lum.root\" dest=\"$OUTDIR/$runnum.root\"/>
+        <Output src=\"job.out\" dest=\"$OUTDIR_LOG/$runnum.out\"/>
+        <Output src=\"job.err\" dest=\"$OUTDIR_LOG/$runnum.err\"/>
+    </Job>
+
+  </Request>
+  " > $JSUBFILE 
+  echo "jsub -xml $JSUBFILE"
+  jsub -xml $JSUBFILE
+done

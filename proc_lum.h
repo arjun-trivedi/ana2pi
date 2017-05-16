@@ -42,6 +42,9 @@ ProcLum::ProcLum(TDirectory *td,DataH10* dataH10,DataAna* dataAna) : EpProcessor
 	proc_eid=new ProcEid(dataH10,dataAna);
 	dirout->cd();
 	hevtsum = new TH1D("hevtsum","Event Statistics",NUM_EVTCUTS,0.5,NUM_EVTCUTS+0.5);
+	hevtsum->GetXaxis()->SetBinLabel(EVT,"Trigger");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_GOODE,"eid");
+	hevtsum->GetXaxis()->SetBinLabel(EVT_GOODE_BOS,"eid_bos");
 	_hQ=new TH1F("hQ","Total charge",1,0,1);
 	_totalQ=0.0;
  	_qcurr=0.0 ;
