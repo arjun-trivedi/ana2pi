@@ -1,0 +1,5 @@
+#--
+setenv STUDY_TGT_BG_E16 "${SUBSTUDIES}/study_tgt_BG/e16"
+alias study_tgt_BG_e16 'cd ${STUDY_TGT_BG_E16}'
+
+setenv STUDY_TGT_BG_E16_DATADIR "/data/trivedia/e16/study_tgt_BG"

@@ -1,0 +1,17 @@
+#!/bin/bash
+nentries=${1:-0}
+tgt=$1
+nentries=${2:-0}
+
+#! Check if input data is ok
+if [ -z $tgt ];then
+  echo "Please provide tgt information as the argument: make_dtgt <ptgt/etgt>"
+  exit
+fi
+if [ $tgt != 'ptgt' ] && [ $tgt != 'etgt' ];then
+  echo "tgt=$tgt is not valid. tgt=ptgt or etgt only"
+  exit
+fi
+
+echo ">proc_h10 -i h10_$tgt.lst -t e16:exp:2pi -p eid_study_zvtx:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree -o dtgt_$tgt.root -n $nentries"
+proc_h10 -i h10_$tgt.lst -t e16:exp:2pi -p eid_study_zvtx:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree -o dtgt_$tgt.root -n $nentries

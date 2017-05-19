@@ -68,27 +68,28 @@ def disp_lum(flumname):
 	axs[3].scatter(runnuml,norm_Ngoodebos)
 	return Q
 
-KHETARPAL_Q=21.287*1e-3
+#KHETARPAL_Q_E1F=21.287*1e-3
+KHETARPAL_Q_E16=21.287*1e-3 #(from page 98 of this thesis)
 def calc_lum(Q):
-    	'''
+ 	'''
 	+ Q=Total Faraday Cup charge in Coulombs
-    	+ Returns Luminosity in fb^-1 (inverse femtobarns)
+	+ Returns Luminosity in fb^-1 (inverse femtobarns)
 
-        The formula for Luminosity for me is not an exact calculation. It makes sense to me if think of it
+	The formula for Luminosity for me is not an exact calculation. It makes sense to me if think of it
 	as following:
 	+ The goal is to calculate total number of possible interactions per unit area.
 	Therefore, 
 	1. Target: Even though it has a 5 cm length, the formula seems to be such that the incoming beam particles "see" all the target particles distributed in 2D space
 	2. Beam: The beam is such that within the 2D extent of the target, all target particles present to the particles in the beam the same probability of interaction. 
 	
-    	'''
+	'''
 	#! + The formula for Luminosity calculation is as per Kijun Park's thesis, page 139
-        #! + If I enter Q as obtained by Khetarpal for E16(=21.287 mC), L returned ~29 fb^-1 (=E16 Lum)
-    	rho=0.073 #[g/cm^3] Liquid Hydrogen target density (Kijun=0.0708 at 20K)
-    	Na=6.022e23 #[mol^-1] Avogadro's number
-    	Ltg=5 #[cm] E1F target length
-    	M_H=1.007 #[g/mol] Molar mass of Hydrogen 
-    	e=1.602e-19 #[C] electron charge
+	#! + If I enter Q as obtained by Khetarpal for E16(=21.287 mC), L returned ~29 fb^-1 (=E16 Lum)
+	rho=0.073 #[g/cm^3] Liquid Hydrogen target density (Kijun=0.0708 at 20K)
+	Na=6.022e23 #[mol^-1] Avogadro's number
+	Ltg=5 #[cm] E16 and E1F target length
+	M_H=1.007 #[g/mol] Molar mass of Hydrogen 
+	e=1.602e-19 #[C] electron charge
     
-    	L=(Q/e)*((Na*rho*Ltg)/M_H) #[cm^-2]
-    	return L*1e-39 #[fb^-1]
+	L=(Q/e)*((Na*rho*Ltg)/M_H) #[cm^-2]
+	return L*1e-39 #[fb^-1]
