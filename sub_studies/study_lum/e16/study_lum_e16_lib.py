@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-def make_dlum_txt(dlumdir,flumname,runl=None,runl_ignore=None):
+def make_dlum_txt(dlumdir,d2pidir,flumname,runl=None,runl_ignore=None):
 	'''
 	+ dlumdir=directory where dlum is located
 	+ flumname=name of output text file that contains lum data
@@ -27,7 +27,7 @@ def make_dlum_txt(dlumdir,flumname,runl=None,runl_ignore=None):
 				continue
 		#! Get dlum and d2piR files for run
 		flum=ROOT.TFile(lumd)
-		fd2pi=ROOT.TFile(os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-skim-SS_2_d2piR-byRun_052217/%d.root'%runnum))
+		fd2pi=ROOT.TFile('%s/%d.root'%(d2pidir,runnum))
 		#print f.GetName()
 		#! Get info from dlum
 		hevtsum=flum.Get("lum/hevtsum")

@@ -6,21 +6,99 @@ import study_lum_e16_lib as lib
 import matplotlib.pyplot as plt
 import numpy as np
 import ROOT
+import time
+
+'''
+> study_lum_e16 tgt[=ptgt]<ptgt/etgt>
+'''
+
+#! Get input from user
+TGT='ptgt'
+if len(sys.argv)==2: #i.e. tgt info entered by user
+	TGT=sys.argv[1]
+print "TGT=%s"%TGT
+if TGT!='ptgt' and TGT!='etgt':
+	sys.exit('TGT=%s is not valid. TGT=ptgt or etgt only'%TGT)
+#sys.exit()
 
 DATE=datetime.datetime.now().strftime('%m%d%y')
-INDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10_2_dlum-byRun-e16_051717')
-OUTDIR=os.path.join(os.environ['STUDY_LUM_E16_DATADIR'],'results_%s'%DATE)
+if TGT=='ptgt':
+	DLUMDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10_2_dlum-byRun-e16_051717')
+	D2PIDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-skim-SS_2_d2piR-byRun_052217')
+	OUTDIR=os.path.join(os.environ['STUDY_LUM_E16_DATADIR'],'results_%s'%DATE)
+if TGT=='etgt':
+	DLUMDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-etgt_2_dlum-byRun_052517')
+	D2PIDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-etgt_2_d2piR-byRun_052517')
+	OUTDIR=os.path.join(os.environ['STUDY_LUM_E16_DATADIR'],'results_etgt_%s'%DATE)
+
+print "Going to analyze and calculate luminosity for TGT=%s"%TGT
+print "DLUMDIR=",DLUMDIR
+print "D2PIDIR=",D2PIDIR
+print "OUTDIR=",OUTDIR
+time.sleep(5)
+
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
 
 #! dlum => dlum.txt	
 dlumtxt=os.path.join(os.path.join(OUTDIR,'dlum.txt'))
-lib.make_dlum_txt(INDIR,dlumtxt)
+lib.make_dlum_txt(DLUMDIR,D2PIDIR,dlumtxt)
 
 #! Obtain data from dlum.txt in DataFrame format
 lumd=lib.make_lum_df(dlumtxt)
 #print lumd.head() # debug
 
+#! begin etgt analysis
+if TGT=='etgt': #! Then do simplified anaylysis and exit
+	#! Make some diagnostic plots
+	fig,axs=plt.subplots(figsize=(20,25),nrows=3,ncols=2)
+	plt.subplots_adjust(wspace=0.15)
+	#! q vs run
+	axs[0][0].scatter(lumd['run'],lumd['q'])
+	axs[0][0].set_ylabel("q")
+	#! nrm_Ntrg vs run
+	axs[1][0].scatter(lumd['run'],lumd['nrm_Ntrg'])
+	axs[1][0].set_ylabel("nrm_Ntrg")
+	#! nrm_N2pi vs run
+	axs[2][0].scatter(lumd['run'],lumd['nrm_N2pi'])
+	axs[2][0].set_ylabel("nrm_N2pi")
+	#! histogram for nrm_Ntrg
+	ret=axs[1][1].hist(lumd['nrm_Ntrg'],bins=100,range=(0,100000))
+	axs[1][1].set_xlabel("nrm_Ntrg")
+	#! histogram for nrm_N2pi
+	ret=axs[2][1].hist(lumd['nrm_N2pi'],bins=100,range=(0,40))
+	axs[2][1].set_xlabel("nrm_N2pi")
+	fig.savefig("%s/goodruns_cut_ana_plts.png"%(OUTDIR))
+
+	#! print out relevant information
+	fout=open(os.path.join('%s/lum_results.txt'%OUTDIR), 'w')
+	
+	#! First calculate print out some integrity related sanity-check data 
+	#! which ensure that the number of runs=606
+	truns=len(lumd)
+	fout.write("*** Sanity-check based on total number of selected E16 etgt runs for analysis =%d ***\n"%8)
+	fout.write("#total etgt runs selected for analysis=%d\n"%(truns))
+	if (truns!=8):fout.write("ERROR! Something is wrong. #total selected etgt runs != 8")
+	#fout.write("******\n")
+	fout.write("\n")
+
+	#! Print etgt run list
+	runs=list(lumd['run'])
+	fout.write("*** etgt runs used for analysis ***\n")
+	fout.write("selected etgt runs=%s\n"%runs)
+	#fout.write("******\n")
+	fout.write("\n")
+
+	#! Print out charge information (in mC, converted directly in print statement)
+	fout.write("*** Q from selected etgt runs ***\n")
+	q=sum(lumd['q']) #! in microC here
+	fout.write("Q=%.2f mC"%(q/1000))
+	#fout.write("******\n")
+	fout.write("\n")
+	sys.exit()
+#! begin etgt analysis
+
+#! begin ptgt analysis 
 #! Make some diagnostic plots
 fig,axs=plt.subplots(figsize=(20,25),nrows=4,ncols=2)
 plt.subplots_adjust(wspace=0.15)
@@ -86,6 +164,7 @@ for i in range(len(CUTS)):
 	XRUNL[i]=list(lumd['run'][lumd['nrm_N2pi']<CUTS[i]])
 #print XRUNL[0]
 #print XRUNL[1]
+#sys.exit()
 
 #! Now using CUTRUNL make XQL, XN2PIL (X=cut) and their complements, GQL, GN2PIL (G=good)
 XQL,    GQL   =[0 for i in range(len(CUTS))], [0 for i in range(len(CUTS))]

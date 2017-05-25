@@ -25,7 +25,7 @@ BASIC_PROCORDER='eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:'
 BASIC_ADTNL_OPTS=':1:3:17:2:18:20:' #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
 
 #! Make temporary directory to keep all runnum.lst files
-h10lstdir='/tmp/h10lst'
+h10lstdir='/tmp/h10lst_%s'%DATE
 if not os.path.exists(h10lstdir):
 	os.makedirs(h10lstdir)
 
