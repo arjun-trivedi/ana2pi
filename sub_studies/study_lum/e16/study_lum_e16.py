@@ -68,33 +68,54 @@ if TGT=='etgt': #! Then do simplified anaylysis and exit
 	#! histogram for nrm_N2pi
 	ret=axs[2][1].hist(lumd['nrm_N2pi'],bins=100,range=(0,40))
 	axs[2][1].set_xlabel("nrm_N2pi")
+	#! Draw cut values
+	#! Note compared to ptgt, there is only cut value, but with a min and max limit
+	CUTS=[[0.35,0.45]]
+	CLRS=['r']
+	xmin,xmax=axs[2][0].get_xlim()[0],axs[2][0].get_xlim()[1]
+	for i in range(len(CUTS)):
+		cutmin,cutmax=CUTS[0][0],CUTS[0][1]
+		axs[2][0].hlines(cutmin,xmin,xmax,color=CLRS[i],label="nrm_N2pi cut min = %.3f"%cutmin)
+		axs[2][0].hlines(cutmax,xmin,xmax,color=CLRS[i],label="nrm_N2pi cut max = %.3f"%cutmax)
+	axs[2][0].legend()
 	fig.savefig("%s/goodruns_cut_ana_plts.png"%(OUTDIR))
+
+	#! Make a copy of runs that are within cuts i.e. good runs(=G)
+	GRUNL=[None for i in range(len(CUTS))]
+	for i in range(len(CUTS)):
+		cutmin,cutmax=CUTS[0][0],CUTS[0][1]
+		GRUNL[i]=list(lumd['run'][(lumd['nrm_N2pi']>cutmin) & (lumd['nrm_N2pi']<cutmax)])
 
 	#! print out relevant information
 	fout=open(os.path.join('%s/lum_results.txt'%OUTDIR), 'w')
+	for i in range(len(CUTS)):
+		cutmin,cutmax=CUTS[0][0],CUTS[0][1]
+		fout.write("Information for nrm_N2pi cutmin,cutmax=%f,%f\n"%(cutmin,cutmax))
+		fout.write("================================\n")
+		fout.write("\n")
 	
-	#! First calculate print out some integrity related sanity-check data 
-	#! which ensure that the number of runs=606
-	truns=len(lumd)
-	fout.write("*** Sanity-check based on total number of selected E16 etgt runs for analysis =%d ***\n"%8)
-	fout.write("#total etgt runs selected for analysis=%d\n"%(truns))
-	if (truns!=8):fout.write("ERROR! Something is wrong. #total selected etgt runs != 8")
-	#fout.write("******\n")
-	fout.write("\n")
+		#! First calculate print out some integrity related sanity-check data 
+		#! which ensure that the number of runs=606
+		truns=len(lumd)
+		fout.write("*** Sanity-check based on total number of selected E16 etgt runs for analysis =%d ***\n"%8)
+		fout.write("#total etgt runs selected for analysis=%d\n"%(truns))
+		if (truns!=8):fout.write("ERROR! Something is wrong. #total selected etgt runs != 8")
+		#fout.write("******\n")
+		fout.write("\n")
 
-	#! Print etgt run list
-	runs=list(lumd['run'])
-	fout.write("*** etgt runs used for analysis ***\n")
-	fout.write("selected etgt runs=%s\n"%runs)
-	#fout.write("******\n")
-	fout.write("\n")
+		#! Print etgt run list
+		runs=list(lumd['run'][lumd['run'].isin(GRUNL[i])])
+		fout.write("*** etgt runs used for analysis ***\n")
+		fout.write("selected etgt runs=%s\n"%runs)
+		#fout.write("******\n")
+		fout.write("\n")
 
-	#! Print out charge information (in mC, converted directly in print statement)
-	fout.write("*** Q from selected etgt runs ***\n")
-	q=sum(lumd['q']) #! in microC here
-	fout.write("Q=%.2f mC"%(q/1000))
-	#fout.write("******\n")
-	fout.write("\n")
+		#! Print out charge information (in mC, converted directly in print statement)
+		fout.write("*** Q from selected etgt runs ***\n")
+		q=sum(lumd['q'][lumd['run'].isin(GRUNL[i])]) #! in microC here
+		fout.write("Q=%.2f mC"%(q/1000))
+		#fout.write("******\n")
+		fout.write("\n")
 	sys.exit()
 #! begin etgt analysis
 

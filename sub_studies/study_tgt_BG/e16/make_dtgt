@@ -15,7 +15,7 @@ fi
 
 if [ $tgt == 'etgt' ]; then
  echo ">proc_h10 -i h10_$tgt.lst -t e16:exp:2pi -p eid_study_zvtx:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree -o dtgt_$tgt.root -n $nentries"
- proc_h10 -i h10_$tgt.lst -t e16:exp:2pi -p eid_study_zvtx:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree -o dtgt_$tgt.root -n $nentries
+ proc_h10 -i h10_$tgt"_cutruns.lst" -t e16:exp:2pi -p eid_study_zvtx:efid:pidnewmon:pfidnew:mom:q2wskimR:d2piR_tree -o dtgt_$tgt"_cutruns".root -n $nentries
 fi
 
 if [ $tgt == 'ptgt' ]; then #! make for cutruns_lse and cutruns_tgt
