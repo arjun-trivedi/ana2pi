@@ -1,5 +1,5 @@
 #--
-setenv STUDY_LUM_E16 "${SUBSTUDIES}/study_lum/e16"
+setenv STUDY_LUM_E16 "${ANA2PI}/sub_studies/study_lum/e16"
 alias study_lum_e16 'cd ${STUDY_LUM_E16}'
 
 setenv STUDY_LUM_E16_DATADIR "/data/trivedia/e16/study_lum"
