@@ -46,13 +46,13 @@ do
 
   echo "\
   <Request>
-    <Name name=\"e16_h10_2_d2piR-exp_$runnum\"/>
+    <Name name=\"e16_h10_2_dlum-exp_$runnum\"/>
     <Project name=\"E1-6a\"/>
     <OS name=\"centos65\"/>
     <DiskSpace space=\"500\" unit=\"MB\"/>
     <Memory space=\"1500\" unit=\"MB\"/>
     <Track name=\"analysis\"/>
-    <TimeLimit unit=\"minutes\" time=\"60\"/>
+    <TimeLimit unit=\"minutes\" time=\"120\"/>
     <Command><![CDATA[
       ah2root_e16
       check_e16_h10lst
