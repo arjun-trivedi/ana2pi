@@ -1,0 +1,37 @@
+#!/bin/bash
+nentries=${1:-0}
+tgt=$1
+nentries=${2:-0}
+
+#! PROCORDER AND ADTNL_OPTS taken from 'h10_2_per_non_vst_SE_results.py'
+#! + Only difference is that zvtx cut is NOT turned on (option 3 not in ADTNL_OPTS),
+#!   as this would invalidate the purpose of this script, which is to make d2piR 
+#!   inclusive of the target wall and the foil from ptgt_lst/tgt and etgt
+PROCORDER='eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:'
+ADTNL_OPTS=':1:17:2:18:20:' #! ECin-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
+echo $PROCORDER
+echo $ADTNL_OPTS
+
+#! Check if input data is ok
+if [ -z $tgt ];then
+  echo "Please provide tgt information as the argument: make_dtgt <ptgt/etgt>"
+  exit
+fi
+if [ $tgt != 'ptgt' ] && [ $tgt != 'etgt' ];then
+  echo "tgt=$tgt is not valid. tgt=ptgt or etgt only"
+  exit
+fi
+
+if [ $tgt == 'etgt' ]; then
+ echo ">proc_h10_lite -i h10_$tgt"_cutruns.lst" -t e16:exp:2pi:recon -c $PROCORDER  -o d2piR_$tgt"_cutruns.root" $ADTNL_OPTS"
+ proc_h10_lite -i h10_$tgt"_cutruns.lst" -t e16:exp:2pi:recon -c $PROCORDER  -o d2piR_$tgt"_cutruns.root" $ADTNL_OPTS 
+fi
+
+if [ $tgt == 'ptgt' ]; then #! make for cutruns_lse and cutruns_tgt
+  echo ">proc_h10_lite -i h10_$tgt"_cutruns_lse.lst" -t e16:exp:2pi:recon -c $PROCORDER  -o d2piR_$tgt"_cutruns_lse.root" $ADTNL_OPTS"
+  proc_h10_lite -i h10_$tgt"_cutruns_lse.lst" -t e16:exp:2pi:recon -c $PROCORDER  -o d2piR_$tgt"_cutruns_lse.root" $ADTNL_OPTS
+  echo ">proc_h10_lite -i h10_$tgt"_cutruns_tgt.lst" -t e16:exp:2pi:recon -c $PROCORDER  -o d2piR_$tgt"_cutruns_tgt.root" $ADTNL_OPTS"
+  proc_h10_lite -i h10_$tgt"_cutruns_tgt.lst" -t e16:exp:2pi:recon -c $PROCORDER  -o d2piR_$tgt"_cutruns_tgt.root" $ADTNL_OPTS
+fi
+
+

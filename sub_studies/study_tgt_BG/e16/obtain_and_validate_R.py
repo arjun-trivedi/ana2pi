@@ -61,7 +61,7 @@ NSCTR=6
 #! *** Now make plots plots ***
 #! outdir
 DATE=datetime.datetime.now().strftime('%m%d%y')
-outdir=os.path.join(DATADIR_OUTPUT,"results_%s"%DATE)
+outdir=os.path.join(DATADIR_OUTPUT,"results_R_%s"%DATE)
 #outdir="/tmp/results" #! test
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
@@ -102,6 +102,16 @@ Q[ETGT]= 1.56 #! mC
 R=[0 for i in range(NDTYP)] #! Note that the last index is not used
 R[PTGT_LSE]=Q[PTGT_LSE]/Q[ETGT]
 R[PTGT_TGT]=Q[PTGT_TGT]/Q[ETGT]
+#! Write out these R factors to a file
+foutR=open('%s/R.txt'%outdir,'w')
+foutR.write('Q_etgt=%.2f mC\n'%Q[ETGT])
+foutR.write('***  for cutruns_lse ***\n')
+foutR.write("Q_ptgt_lse=%.2f mC\n"%Q[PTGT_LSE])
+foutR.write("R_ptgt_lse=%.2f\n"%R[PTGT_LSE])
+foutR.write('*** for cutruns_tgt ***\n')
+foutR.write("Q_ptgt_tgt=%.2f mC\n"%Q[PTGT_TGT])
+foutR.write("R_ptgt_tgt=%.2f\n"%R[PTGT_TGT])
+foutR.close()
 
 #! General ROOT plot aesthetics
 ROOT.gStyle.SetOptStat("n")
