@@ -66,6 +66,9 @@ if len(sys.argv)>2: #i.e. debug entered by user
 print "DBG=",DBG
 
 #! Setup other data
+Q2MIN,Q2MAX=2.0,5.0
+WMIN,WMAX=1.425,2.125
+
 DBGQ2WBIN1='1.50-2.00_1.600-1.625'
 DBGQ2WBIN2='2.00-2.40_1.600-1.625'
 #! Input data
@@ -139,7 +142,7 @@ def get_q2w_bng(h8,q2wbng_opt):
 		+ Return the 2D binning information for all Q2-W bins in the h8
 		+ Enables the user to make projections from each Q2-W bin
 	+ q2wbng_opt='none': 
-		+ Return the entire expanse of 2D Q2-W space as one bin
+		+ Return the entire expanse of 2D ana2pi-Q2-W (Q2MIN,Q2MAX,WMIN,WMAX defined in code) space as one bin
 		+ Enables the user to project out, as a single bin, the entire Q2-W space
 	'''
 	#! Obtain q2wb_crds
@@ -164,14 +167,27 @@ def get_q2w_bng(h8,q2wbng_opt):
     
 			q2wb_lmts.append(((q2b_min,q2b_max),(wb_min,wb_max)))
 	if q2wbng_opt=='none': #! note that the q2wb_crds has a different form here
-		q2wb_crds=[((1,nq2bins),(1,nwbins))]
-
 		q2b_min=(float)("%.2f"%h8.GetAxis(H8_DIM['Q2']).GetBinLowEdge(1))
 		q2b_max=(float)("%.2f"%h8.GetAxis(H8_DIM['Q2']).GetBinLowEdge(nq2bins+1))
-   
+		#! Make sure q2b_min/max are within Q2MIN/MAX
+		if q2b_min<Q2MIN: q2b_min=Q2MIN
+		if q2b_max>Q2MAX: q2b_max=Q2MAX
+		#! Now get q2 crds
+		q2b_crd_min=h8.GetAxis(H8_DIM['Q2']).FindBin(q2b_min)
+		q2b_crd_max=h8.GetAxis(H8_DIM['Q2']).FindBin(q2b_max)
+
+
 		wb_min=(float)("%.3f"%h8.GetAxis(H8_DIM['W']).GetBinLowEdge(1))
-		wb_max=(float)("%.3f"%h8.GetAxis(H8_DIM['W']).GetBinLowEdge(nwbins+1))
-    
+		wb_max=(float)("%.3f"%h8.GetAxis(H8_DIM['W']).GetBinLowEdge(nwbins+1))		
+		#! Make sure wb_min/max are within WMIN/MAX
+		if wb_min<WMIN: wb_min=WMIN
+		if wb_max>WMAX: wb_max=WMAX
+		#! Now get w crds
+		wb_crd_min=h8.GetAxis(H8_DIM['W']).FindBin(wb_min)
+		wb_crd_max=h8.GetAxis(H8_DIM['W']).FindBin(wb_max)
+
+		#! Form objects to be returned
+		q2wb_crds=[((q2b_crd_min,q2b_crd_max),(wb_crd_min,wb_crd_min))]
 		q2wb_lmts=[((q2b_min,q2b_max),(wb_min,wb_max))]
 
 	return q2wb_crds,q2wb_lmts
@@ -190,6 +206,10 @@ For very Crs-W bin:
 """
 #! Before beginning prepare fout
 fout=ROOT.TFile(os.path.join(OUTDIR,"CF.root"),"RECREATE")
+
+#! Create structure to store h1(q2wb,tgt,vst,var) 
+#! + This needs to be done so that later I can get q2wb averaged values
+h1=OrderedDict()
 
 #! Loop over Crw-W bins
 for iw in range(q2w_bng.NBINS_WCRS):
@@ -264,7 +284,7 @@ for iw in range(q2w_bng.NBINS_WCRS):
 		#!    saved when fout is written.
 
 		#3.iii.  h5(TGT,VST) => h1(TGT,VST,VARS) (note h1 includes hW)
-		h1=OrderedDict()			
+		#h1=OrderedDict()			
 		q2wb_dir=fout.GetDirectory(q2wb_name)
 		if q2wb_dir==None: 
 			q2wb_dir=fout.mkdir(q2wb_name)
@@ -286,11 +306,11 @@ for iw in range(q2w_bng.NBINS_WCRS):
 			h5[tgt,vst].Write()
 			#! Create and save h1 for every [seq,vst,var]
 			for var in VARS:
-				h1[tgt,vst,var]=h5[tgt,vst].Projection(H5_DIM[var],"E")
-				h1[tgt,vst,var].SetName('h1_%s'%var)
-				h1[tgt,vst,var].SetTitle("%s_%s_%d_%s"%(q2wb_name,tgt,vst,var))
+				h1[q2wb_name,tgt,vst,var]=h5[tgt,vst].Projection(H5_DIM[var],"E")
+				h1[q2wb_name,tgt,vst,var].SetName('h1_%s'%var)
+				h1[q2wb_name,tgt,vst,var].SetTitle("%s_%s_%d_%s"%(q2wb_name,tgt,vst,var))
 				if var=='M1' or var=='M2':
-					setM1M2axisrange(h1[tgt,vst,var],vst,var,wb_max)
+					setM1M2axisrange(h1[q2wb_name,tgt,vst,var],vst,var,wb_max)
 
 		#! The following steps accmplished in this next loop
 		#!  3.iii. hCNTNF('ptgt_lse/tgt',VST,VAR)=( h1(ETGT,VST,VAR)*R(PTGT) )/h1(PTGT,VST,VAR)
@@ -315,10 +335,14 @@ for iw in range(q2w_bng.NBINS_WCRS):
 			if vst_dir==None:
 				vst_dir=CF_dir.mkdir(vst_name)
 			vst_dir.cd()
-			#! First make clone of h1['etgt',vst,var] so that the original is not affected by Scaling and other hist operations
-			hetgt=h1['etgt',vst,var].Clone("hetgt")
-			#! Now scale hetgt by R[ptgt_lse/tgt]
+			#! First make clones of h1['etgt',vst,var] and h1[tgt,vst,var] so that the originals 
+			#! are not affected by Scaling and other hist operations
+			#! + Call their Sumw2()
+			hetgt=h1[q2wb_name,'etgt',vst,var].Clone("hetgt")
 			hetgt.Sumw2()
+			hpgt =h1[q2wb_name,tgt,vst,var].Clone("%s"%tgt)
+			hpgt.Sumw2()
+			#! Now scale hetgt by R[ptgt_lse/tgt]
 			hetgt.Scale(R[tgt])
 			hetgt.SetName('hetgt_scaled_%s'%var)
 			hetgt.SetTitle("%s_%s_%d_%s"%(q2wb_name,'hetgt_scaled',vst,var))
@@ -326,16 +350,16 @@ for iw in range(q2w_bng.NBINS_WCRS):
 			#! Now obtain hCNTMNF
 			hCNTMNF[tgt,vst,var]=hetgt.Clone("hCNTMNF")
 			hCNTMNF[tgt,vst,var].Sumw2()
-			hCNTMNF[tgt,vst,var].Divide(h1[tgt,vst,var])
+			hCNTMNF[tgt,vst,var].Divide(hpgt)
 			hCNTMNF[tgt,vst,var].SetMinimum(0)
 			hCNTMNF[tgt,vst,var].SetName('hCNTMNF_%s'%var)
 			hCNTMNF[tgt,vst,var].SetTitle("%s_%s_%d_%s"%(q2wb_name,'hCNTMNF',vst,var))
 			hCNTMNF[tgt,vst,var].Write()
 			#! Now obtain hCF
 			#! First obtain hist-1
-			hist1=h1[tgt,vst,var].Clone("hist1")
+			hist1=hpgt.Clone("hist1")
 			hist1.Reset()
-			for ibin in range(h1[tgt,vst,var].GetNbinsX()):
+			for ibin in range(hpgt.GetNbinsX()):
 				hist1.SetBinContent(ibin+1,1)
 				hist1.SetBinError(ibin+1,0)
 			hist1.Sumw2()
@@ -349,6 +373,79 @@ for iw in range(q2w_bng.NBINS_WCRS):
 			hCF[tgt,vst,var].Write()
 	print "Done processing Crs-W bin %s"%(iw+1)		
 
+#! Now compute q2wb averages CF
+#! First make sure that h1(q2wb,tgt,vst,var) has 6*3*3*5=270 objects in it.
+print "Going to compute averaged q2wb averaged CF" 
+print "Total number of objects in h1(q2wb,tgt,vst,var)=%d (There should be 6*3*3*5=270)"%len(h1)
+#! Get all q2wb in h1
+q2wbl=[]
+for k in h1:
+	q2wbl.append(k[0])
+#! Keep only unique values
+q2wbl=list(set(q2wbl))
+print "q2wbs in h1=%s (total=%d)"%(q2wbl,len(q2wbl))
+
+#! Now compute averaged values
+q2wb_name="%0.2f-%0.2f_%0.3f-%0.3f_avg"%(Q2MIN,Q2MAX,WMIN,WMAX)
+q2wb_dir=fout.GetDirectory(q2wb_name)
+if q2wb_dir==None: 
+	q2wb_dir=fout.mkdir(q2wb_name)
+q2wb_dir.cd() 
+for item in list(itertools.product(['ptgt_lse','ptgt_tgt'],VSTS,VARS)):
+	tgt,vst,var=item[0],item[1],item[2]
+	#! Make sure CF_dir/vst_dir exists
+	#! CF_dir
+	CF_dir=q2wb_dir.GetDirectory("CF_%s"%tgt)
+	if CF_dir==None:
+		CF_dir=q2wb_dir.mkdir("CF_%s"%tgt)
+	CF_dir.cd()
+	#! CF_dir/vst_dir
+	vst_name="VST%d"%vst
+	vst_dir=CF_dir.GetDirectory(vst_name)
+	if vst_dir==None:
+		vst_dir=CF_dir.mkdir(vst_name)
+	vst_dir.cd()
+	#! First sum all h1['etgt',vst,var] and h1[tgt,vst,var] 
+	#! + Call their Sumw2()
+	for i,q2wb in enumerate(q2wbl):
+		if i==0: #! create by cloning
+			hetgt=h1[q2wb,'etgt',vst,var].Clone("hetgt")
+			hetgt.Sumw2()
+			hpgt=h1[q2wb,tgt,vst,var].Clone("%s"%tgt)
+			hpgt.Sumw2()
+		else: #! add
+			hetgt.Add(h1[q2wb,'etgt',vst,var])
+			hpgt.Add(h1[q2wb,tgt,vst,var])
+	#! Now scale hetgt by R[ptgt_lse/tgt]
+	hetgt.Scale(R[tgt])
+	hetgt.SetName('hetgt_scaled_%s'%var)
+	hetgt.SetTitle("%s_%s_%d_%s"%(q2wb_name,'hetgt_scaled',vst,var))
+	hetgt.Write()
+	#! Now obtain hCNTMNF
+	hCNTMNF[tgt,vst,var]=hetgt.Clone("hCNTMNF")
+	hCNTMNF[tgt,vst,var].Sumw2()
+	hCNTMNF[tgt,vst,var].Divide(hpgt)
+	hCNTMNF[tgt,vst,var].SetMinimum(0)
+	hCNTMNF[tgt,vst,var].SetName('hCNTMNF_%s'%var)
+	hCNTMNF[tgt,vst,var].SetTitle("%s_%s_%d_%s"%(q2wb_name,'hCNTMNF',vst,var))
+	hCNTMNF[tgt,vst,var].Write()
+	#! Now obtain hCF
+	#! First obtain hist-1
+	hist1=hpgt.Clone("hist1")
+	hist1.Reset()
+	for ibin in range(hpgt.GetNbinsX()):
+		hist1.SetBinContent(ibin+1,1)
+		hist1.SetBinError(ibin+1,0)
+	hist1.Sumw2()
+	#! Now do hCF=1-hCNTMNF
+	hCF[tgt,vst,var]=hist1.Clone("hCF")
+	hCF[tgt,vst,var].Sumw2()
+	hCF[tgt,vst,var].Add(hCNTMNF[tgt,vst,var],-1)
+	hCF[tgt,vst,var].SetMinimum(0)
+	hCF[tgt,vst,var].SetName('hCF_%s'%var)
+	hCF[tgt,vst,var].SetTitle("%s_%s_%d_%s"%(q2wb_name,'hCF',vst,var))
+	hCF[tgt,vst,var].Write()
+#! Write file
 fout.Write()
 fout.Close()
 print "If appearing to be stuck, then either fout is still being written or Python is probably doing \"garbage collection\"(?); Wait a while!"
