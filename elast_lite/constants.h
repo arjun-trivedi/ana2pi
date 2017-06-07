@@ -167,8 +167,9 @@ namespace E16{
   	//! [02-17-16]
   	//! + pars taken from 'sub_studies/study_eid/study_SF/results_SFvp_e16/cutpars/exp_fullSF.txt'
   	//! [01-30-17] 
-  	//! + ER and SR (note SR obtained for 1st time; hitherto E1F:SR pars were beig used),
-  	//!   pars re-obtained for ananote (see nb eid_SF:tag=013017)
+  	//! + ER and SR pars re-obtained for ananote (see Tomboy nb eid_SF:tag log=013017)
+  	//! + (note SR obtained for 1st time; hitherto E1F:SR pars were beig used)
+  	//! + pars taken from 'sub_studies/study_eid/study_SF/results_SFvp_e16/cutpars/exp(sim)_fullSF.txt'
 	const Float_t SF_HIGH_EXP[6][4]={
 		{0.399590, -0.040143, 0.011540, -0.001094},
 		{0.390926, 0.001999, -0.004236, 0.000599},
