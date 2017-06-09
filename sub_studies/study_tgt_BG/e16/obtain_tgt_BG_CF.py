@@ -111,7 +111,7 @@ if not os.path.exists(OUTDIR):
 #! Setup constants
 #! R 
 R=OrderedDict() #! Note last index, ETGT, is not used, but used for code-readability
-#! + from $STUDY_TGT_BG_E16_DATADIR/results_R_052917/R.txt
+#! + from $STUDY_TGT_BG_E16_DATADIR/results_R_060917/R.txt
 R['ptgt_lse']=13.67
 R['ptgt_tgt']=13.40
 
