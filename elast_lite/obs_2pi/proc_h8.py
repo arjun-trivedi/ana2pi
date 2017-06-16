@@ -74,7 +74,7 @@ class ProcH8:
 	"""
 	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,
 		         acc_rel_err_cut=-1,
-		         usehel=False,do_etgt_BG_sub=True,dbg=False):
+		         usehel=False,do_etgt_BG_sub=False,dbg=False):
 		self.SIMNUM=simnum
 
 		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax

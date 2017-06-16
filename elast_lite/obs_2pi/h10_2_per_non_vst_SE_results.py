@@ -18,7 +18,7 @@ import disp_SS as tool_disp_SS#! for plot_SS
 # 5:  hitSC (ON) 
 # 6:  dc_stat (ON)
 # 7:  ep_efid ( ON, only for E1F)
-# 8:  ep_pfid (ON, only for E1F)
+# 8:  ep_pfid (ON) ([06-12-17] On also for E16. Hitherto was only on for E1F)
 # 9:  Q2_var_binw_bng (ON)
 # 10: t2 (OFF)
 # 11: MM2_cut_EI (OFF)
@@ -35,6 +35,7 @@ import disp_SS as tool_disp_SS#! for plot_SS
 # 22: CC_cut_pmtC_av (OFF) (either of option #20 or #21 have to be ON for this to take effect)
 # 23: CC_cut_pmtC_L (OFF)  (either of option #20 or #21 have to be ON for this to take effect)
 # 24: CC_cut_pmtC_R (OFF)  (either of option #20 or #21 have to be ON for this to take effect) 
+# 25: cut_zvtx_etgt_bg_sub (ON, only for E16) (option #3 has to be on for this to take effect) (added on [06-12-17])
 # ----
 
 '''
@@ -84,18 +85,18 @@ SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9','sim10','si
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
 ('e1f','ER'):'TBD',
-('e16','ER'):'%s/e16/exp/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10-skim-SS_030116.lst,h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
+('e16','ER'):'%s/e16/exp/h10_2_h10-skim-SS_060717_lse.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst, h10-skim-SS_030116.lst,h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
 ('e1f','SR','sim-TBD'):'TBD',
-('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
-('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
-('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122915.lst
-('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_010816.lst 
-('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
-('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
-('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_081716.lst'%(H10PATH)  #! h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
+('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
+('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_122915.lst
+('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_010816.lst 
+('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
+('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
+('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_060717.lst'%(H10PATH)  #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
 }
 #print H10LSTS
 DATE_ST={

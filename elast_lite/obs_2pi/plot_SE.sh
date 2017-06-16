@@ -12,15 +12,39 @@
 #highQ2_cmb_vst_SE_091916
 #)
 
+#dirl=(
+#lowQ2_MM_092516_sim4_sim5_sim6_sim7_sim8_sim13_092716 
+#lowQ2_SSBands_092516_sim4_sim5_sim6_sim7_sim8_sim13_092716
+#highQ2_MM_092516_sim9_sim10_sim11_sim12_092716
+#highQ2_SSBands_092516_sim9_sim10_sim11_sim12_092716
+#lowQ2_cmb_non_vst_SE_092716
+#highQ2_cmb_non_vst_SE_092716
+#lowQ2_cmb_vst_SE_092716
+#highQ2_cmb_vst_SE_092716
+#)
+
+#DATE='061317'
+#dirl=(
+#lowQ2_MM_061217_sim4_sim5_sim6_sim7_sim8_sim13_061317
+#lowQ2_SSBands_061217_sim4_sim5_sim6_sim7_sim8_sim13_061317
+#highQ2_MM_061217_sim9_sim10_sim11_sim12_061317
+#highQ2_SSBands_061217_sim9_sim10_sim11_sim12_061317
+#lowQ2_cmb_non_vst_SE_061317
+#highQ2_cmb_non_vst_SE_061317
+#lowQ2_cmb_vst_SE_061317
+#highQ2_cmb_vst_SE_061317
+#)
+
+DATE='061517'
 dirl=(
-lowQ2_MM_092516_sim4_sim5_sim6_sim7_sim8_sim13_092716 
-lowQ2_SSBands_092516_sim4_sim5_sim6_sim7_sim8_sim13_092716
-highQ2_MM_092516_sim9_sim10_sim11_sim12_092716
-highQ2_SSBands_092516_sim9_sim10_sim11_sim12_092716
-lowQ2_cmb_non_vst_SE_092716
-highQ2_cmb_non_vst_SE_092716
-lowQ2_cmb_vst_SE_092716
-highQ2_cmb_vst_SE_092716
+lowQ2_MM_061417_sim4_sim5_sim6_sim7_sim8_sim13_061517
+lowQ2_SSBands_061417_sim4_sim5_sim6_sim7_sim8_sim13_061517
+highQ2_MM_061417_sim9_sim10_sim11_sim12_061517
+highQ2_SSBands_061417_sim9_sim10_sim11_sim12_061517
+lowQ2_cmb_non_vst_SE_061517
+highQ2_cmb_non_vst_SE_061517
+lowQ2_cmb_vst_SE_061517
+highQ2_cmb_vst_SE_061517
 )
 
 q2l=(
@@ -40,7 +64,7 @@ printf "%s\n" ${q2l[@]}
 printf "******\n"
 #exit
 
-logdir=/home/trivedia/plot_SE_logs
+logdir=/home/trivedia/plotSE_logs/plotSE_log_$DATE
 mkdir -p $logdir
 rm -rf $logdir/*
 

@@ -19,11 +19,14 @@ import time,datetime
 [10-24-16]
 + Makes plots that will be finally used in the thesis. Idea is to do further processing of observables that will be
   displayed in the thesis:
-  	1. Final results with systematic effects:
+  	1. Final results with systematic effects are processed in the following way (see next bullet point for why):
   		+ Only for 'Obs_itg', use results from the full process of systematic studies developed
   		+ For 'Obs_1D' and 'Obs_R2', use results from 'SSBands/cutsncors1' and propagate systematic errors estimated
   		  for 'Obs_itg' using full chain of results in 'cmb_vst_SE_<date>'
 			+ Adjust error on systematic error: currently setting it to 0.
+	+ Why plot systematic effects in this way?
+		+ This is because only for 'Obs_itg' are there enough statistics to determine precisely the error due to systematic effects i.e. the variations due to different systematic effects are beyond statistical errors. Therefore the determined error on the systematic error is low.
+		+ For 'Obs_1D' and 'Obs_R2', the variations are well within statistical errors because the statistics are much lower, which leads to unacceptable levels of precision on the determined systematic effects i.e. the error on the systematic error is too high, reaching levels of 100%. Therefore, it was decided to use the systematic effects as determined from 'Obs_itg' as a measure for systematic effects for these observables.
 
 	2. Display ST, EC and EF together for 'Obs_1D' and 'Obs_R2':
 		+ see which normalization scheme works best for displaying ST: currently normalizing in a way to compare shape with EF
@@ -91,25 +94,25 @@ print "OUTDIR=",OUTDIR
 
 #! Setup files that will be used to obtain ST data
 F_ST=OrderedDict()
-F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_092516/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16
-F_ST['1D',"highQ2"]="%s/highQ2_SSBands_092516/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16
+F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_061417/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_092516
+F_ST['1D',"highQ2"]="%s/highQ2_SSBands_061417/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_092516
 
 F_ST['itg',"lowQ2"]=None
 F_ST['itg',"highQ2"]=None
 
-F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_092516/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16
-F_ST['R2',"highQ2"]="%s/highQ2_SSBands_092516/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16
+F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_061417/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_092516
+F_ST['R2',"highQ2"]="%s/highQ2_SSBands_061417/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_092516
 
 #! Setup files that will be used to get results
 F_RSLT=OrderedDict()
-F_RSLT['1D',"lowQ2"] =F_ST['1D',"lowQ2"] #"%s/SS/lowQ2_cmb_vst_SE_092716/Obs_1D.root"%OBSDIR_E16
-F_RSLT['1D',"highQ2"]=F_ST['1D',"highQ2"] #"%s/SS/highQ2_cmb_vst_SE_092716/Obs_1D.root"%OBSDIR_E16
+F_RSLT['1D',"lowQ2"] =F_ST['1D',"lowQ2"]
+F_RSLT['1D',"highQ2"]=F_ST['1D',"highQ2"]
 
-F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_092716/Obs_itg.root"%OBSDIR_E16
-F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_092716/Obs_itg.root"%OBSDIR_E16
+F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_061517/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_092716
+F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_061517/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_092716
 
-F_RSLT['R2',"lowQ2"] =F_ST['R2',"lowQ2"] #"%s/SS/lowQ2_cmb_vst_SE_092716/Obs_R2.root"%OBSDIR_E16
-F_RSLT['R2',"highQ2"]=F_ST['R2',"highQ2"] #"%s/SS/highQ2_cmb_vst_SE_092716/Obs_R2.root"%OBSDIR_E16
+F_RSLT['R2',"lowQ2"] =F_ST['R2',"lowQ2"]
+F_RSLT['R2',"highQ2"]=F_ST['R2',"highQ2"]
 
 #! Setup Q2,W limits
 Q2MIN,Q2MAX=OrderedDict(),OrderedDict()
