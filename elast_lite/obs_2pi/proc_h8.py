@@ -332,11 +332,42 @@ class ProcH8:
 		return h8
 
 	
+	#! [06-23-17] 
+	#! + Replaced setM1M2axisrange() with "updated" version of function already in 
+	#!   use in disp_obs.py
+	#! + This "update" is with respect to the fact after inclusion of Obs_R2,
+	#!   vst*{M1,M2} possibilities are extended
+	#! + I expect, thus far, no impact of this change in proc_h8.py because no processing
+	#!   with respect to Obs_R2 is being done here. 
+	#! + Therefore, this change is mainly for integrity.
+	# def setM1M2axisrange(self,h,vst,var,wmax):
+	# 	if (vst==1 and var=='M1') or (vst==3 and var=='M2'):
+	# 		h.GetXaxis().SetRangeUser(1.1000,wmax-0.14)
+	# 	elif (vst==2 and var=='M2'):
+	# 		h.GetXaxis().SetRangeUser(0.2780,wmax-0.938)
+
+	#! [06-23-17] 
+	#! + Based on updated version from disp_obs.y
+	#! + Only difference is that wmax is directly passed in this version
+	#!	 (In disp_obs.py, q2wbin is passed from which wmax is obtained)
 	def setM1M2axisrange(self,h,vst,var,wmax):
-		if (vst==1 and var=='M1') or (vst==3 and var=='M2'):
-			h.GetXaxis().SetRangeUser(1.1000,wmax-0.14)
-		elif (vst==2 and var=='M2'):
-			h.GetXaxis().SetRangeUser(0.2780,wmax-0.938)
+		'''
+		1,M1=p,pip 1,M2=pip,pim
+		2,M1=p,pip 2,M2=pip,pim
+		3,M1=p,pip 3,M2=p,pim
+		'''
+		#! Determine xmin,xmax=f(vst,M1/M2)
+		if (var=='M1' and (vst==1 or vst==2 or vst==3)):
+			xmin=MASS_P+MASS_PIP
+			xmax=wmax-MASS_PIM
+		elif (var=='M2' and (vst==1 or vst==2)):
+			xmin=MASS_PIP+MASS_PIM
+			xmax=wmax-MASS_P
+		elif (var=='M2' and (vst==3)):
+			xmin=MASS_P+MASS_PIM
+			xmax=wmax-MASS_PIP
+		#! Now set limits on h
+		h.GetXaxis().SetRangeUser(xmin,xmax)
 	
 	def calc_EH_scale_factor(self,hN_EC,hN_SC):
 		# scale_factor,nExpEvts,nSimEvts=0,0,0

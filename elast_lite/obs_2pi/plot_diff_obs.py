@@ -542,6 +542,9 @@ def proc_Obs_1D_and_R2():
 							xmax=hlindiff['Obs_1D'][k].GetXaxis().GetXmax()
 						dx=(xmax-xmin)/0.8 #!10 per cent margins left and right
 						crntpad2=pad_p2.cd(pad)
+						if crntpad2==None:
+							print "Null pointer at: proc_Obs_1D_and_R2(): Plot hlindiff 1D: crntpad2=pad_p2.cd(pad)\n"
+							sys.exit("q2wbin1,seq,vst,var=\n",q2wbin1,seq,vst,var)
 						crntpad2.SetFillStyle(4000)# transparent
 						print "ymin,ymax,xmin,xmax=",ymin,ymax,xmin,xmax
 						crntpad2.Range(xmin-0.1*dx,ymin-0.1*dy,xmax+0.1*dx,ymax+0.1*dy)
@@ -676,6 +679,9 @@ def proc_Obs_1D_and_R2():
 							xmax=hlindiff['Obs_R2'][k].GetXaxis().GetXmax()
 						dx=(xmax-xmin)/0.8 #!10 per cent margins left and right
 						crntpad2=pad_p2.cd(pad)
+						if crntpad2==None:
+							print "Null pointer at: proc_Obs_1D_and_R2(): Plot hlindiff R2: crntpad2=pad_p2.cd(pad)\n"
+							sys.exit("q2wbin1,R21,seq,vst,var=\n",q2wbin1,R21,seq,vst,var)
 						crntpad2.SetFillStyle(4000)# transparent
 						print "ymin,ymax,xmin,xmax=",ymin,ymax,xmin,xmax
 						crntpad2.Range(xmin-0.1*dx,ymin-0.1*dy,xmax+0.1*dx,ymax+0.1*dy)
@@ -759,19 +765,41 @@ def proc_Obs_1D_and_R2():
 	c=ROOT.TCanvas(hdiff_itg.GetName(),hdiff_itg.GetName())
 	hdiff_itg.Draw("hist")
 	hdiff_itg_gt_staterr.Draw("hist sames")
+	#! Reposition stat boxes
+	#! for hdiff_itg
+	c.Update()
+	st_itg=hdiff_itg.GetListOfFunctions().FindObject("stats")
+	st_itg.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+	st_itg.SetX1NDC(0.60)
+	st_itg.SetX2NDC(0.80)
+	st_itg.SetY1NDC(0.70)
+	st_itg.SetY2NDC(0.90)
+	c.Update()
+	#! for hdiff_itg_gt_staterr
+	st_itg_gt_staterr=hdiff_itg_gt_staterr.GetListOfFunctions().FindObject("stats")
+	st_itg_gt_staterr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+	st_itg_gt_staterr.SetX1NDC(0.80)
+	st_itg_gt_staterr.SetX2NDC(1.00)
+	st_itg_gt_staterr.SetY1NDC(0.70)
+	st_itg_gt_staterr.SetY2NDC(0.90)
+	c.Update()
+
 	#! Draw expctd_diff_line
 	for l in [expctd_diff_line,expctd_diff_tlrnc_line_min,expctd_diff_tlrnc_line_max]:
 		l.SetY1(hdiff_itg.GetMinimum())
 		l.SetY2(hdiff_itg.GetMaximum())
 		l.Draw("same")
 	#! legend
-	l=ROOT.TLegend(0.7,0.50,0.85,0.60)	
+	l=ROOT.TLegend(0.58,0.50,0.73,0.65)	
 	l.SetFillStyle(0)
 	l.SetBorderSize(0)
-	l.SetTextSize(0.05)
-	l.AddEntry(hdiff_itg,"all","l")
-	l.AddEntry(hdiff_itg_gt_staterr,"stat-sig","l")
-	l.AddEntry(expctd_diff_line,"\"expected diff\"","l")
+	l.SetTextSize(0.04)
+	n_itg=hdiff_itg.GetEntries()
+	n_itg_gt_staterr=hdiff_itg_gt_staterr.GetEntries()
+	prcnt_gt_st_staterr=(n_itg_gt_staterr/n_itg)*100
+	l.AddEntry(hdiff_itg,"all(%d bins)"%n_itg,"l")
+	l.AddEntry(hdiff_itg_gt_staterr,"stat-sig(%d bins)=%.2f%%"%(n_itg_gt_staterr,prcnt_gt_st_staterr),"l")
+	l.AddEntry(expctd_diff_line,"\"expected diff\"(%.2f%%)"%EXPCTD_DIFF,"l")
 	l.Draw()
 	#! save
 	c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
@@ -804,19 +832,40 @@ def proc_Obs_1D_and_R2():
 		c=ROOT.TCanvas(hdiff_itg.GetName(),hdiff_itg.GetName())
 		hdiff_itg.Draw("hist")
 		hdiff_itg_gt_staterr.Draw("hist sames")
+		#! Reposition stat boxes
+		#! for hdiff_itg
+		c.Update()
+		st_itg=hdiff_itg.GetListOfFunctions().FindObject("stats")
+		st_itg.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+		st_itg.SetX1NDC(0.60)
+		st_itg.SetX2NDC(0.80)
+		st_itg.SetY1NDC(0.70)
+		st_itg.SetY2NDC(0.90)
+		c.Update()
+		#! for hdiff_itg_gt_staterr
+		st_itg_gt_staterr=hdiff_itg_gt_staterr.GetListOfFunctions().FindObject("stats")
+		st_itg_gt_staterr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+		st_itg_gt_staterr.SetX1NDC(0.80)
+		st_itg_gt_staterr.SetX2NDC(1.00)
+		st_itg_gt_staterr.SetY1NDC(0.70)
+		st_itg_gt_staterr.SetY2NDC(0.90)
+		c.Update()
 		#! draw lines for expected diff
 		for l in [expctd_diff_line,expctd_diff_tlrnc_line_min,expctd_diff_tlrnc_line_max]:
 			l.SetY1(hdiff_itg.GetMinimum())
 			l.SetY2(hdiff_itg.GetMaximum())
 			l.Draw("same")
 		#! legend
-		l=ROOT.TLegend(0.7,0.50,0.85,0.60)	
+		l=ROOT.TLegend(0.58,0.50,0.73,0.65)	
 		l.SetFillStyle(0)
 		l.SetBorderSize(0)
-		l.SetTextSize(0.05)
-		l.AddEntry(hdiff_itg,"all","l")
-		l.AddEntry(hdiff_itg_gt_staterr,"stat-sig","l")
-		l.AddEntry(expctd_diff_line,"\"expected diff\"","l")
+		l.SetTextSize(0.04)
+		n_itg=hdiff_itg.GetEntries()
+		n_itg_gt_staterr=hdiff_itg_gt_staterr.GetEntries()
+		prcnt_gt_st_staterr=(n_itg_gt_staterr/n_itg)*100
+		l.AddEntry(hdiff_itg,"all(%d bins)"%n_itg,"l")
+		l.AddEntry(hdiff_itg_gt_staterr,"stat-sig(%d bins)=%.2f%%"%(n_itg_gt_staterr,prcnt_gt_st_staterr),"l")
+		l.AddEntry(expctd_diff_line,"\"expected diff\"(%.2f%%)"%EXPCTD_DIFF,"l")
 		l.Draw()
 		#! save
 		c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
@@ -845,19 +894,40 @@ def proc_Obs_1D_and_R2():
 	c=ROOT.TCanvas(hdiff_itg.GetName(),hdiff_itg.GetName())
 	hdiff_itg.Draw("hist")
 	hdiff_itg_gt_staterr.Draw("hist sames")
+	#! Reposition stat boxes
+	#! for hdiff_itg
+	c.Update()
+	st_itg=hdiff_itg.GetListOfFunctions().FindObject("stats")
+	st_itg.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+	st_itg.SetX1NDC(0.60)
+	st_itg.SetX2NDC(0.80)
+	st_itg.SetY1NDC(0.70)
+	st_itg.SetY2NDC(0.90)
+	c.Update()
+	#! for hdiff_itg_gt_staterr
+	st_itg_gt_staterr=hdiff_itg_gt_staterr.GetListOfFunctions().FindObject("stats")
+	st_itg_gt_staterr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+	st_itg_gt_staterr.SetX1NDC(0.80)
+	st_itg_gt_staterr.SetX2NDC(1.00)
+	st_itg_gt_staterr.SetY1NDC(0.70)
+	st_itg_gt_staterr.SetY2NDC(0.90)
+	c.Update()
 	#! Draw expctd_diff_line
 	for l in [expctd_diff_line,expctd_diff_tlrnc_line_min,expctd_diff_tlrnc_line_max]:
 		l.SetY1(hdiff_itg.GetMinimum())
 		l.SetY2(hdiff_itg.GetMaximum())
 		l.Draw("same")
 	#! legend
-	l=ROOT.TLegend(0.7,0.50,0.85,0.60)	
+	l=ROOT.TLegend(0.58,0.50,0.73,0.65)	
 	l.SetFillStyle(0)
 	l.SetBorderSize(0)
-	l.SetTextSize(0.05)
-	l.AddEntry(hdiff_itg,"all","l")
-	l.AddEntry(hdiff_itg_gt_staterr,"stat-sig","l")
-	l.AddEntry(expctd_diff_line,"\"expected diff\"","l")
+	l.SetTextSize(0.04)
+	n_itg=hdiff_itg.GetEntries()
+	n_itg_gt_staterr=hdiff_itg_gt_staterr.GetEntries()
+	prcnt_gt_st_staterr=(n_itg_gt_staterr/n_itg)*100
+	l.AddEntry(hdiff_itg,"all(%d bins)"%n_itg,"l")
+	l.AddEntry(hdiff_itg_gt_staterr,"stat-sig(%d bins)=%.2f%%"%(n_itg_gt_staterr,prcnt_gt_st_staterr),"l")
+	l.AddEntry(expctd_diff_line,"\"expected diff\"(%.2f%%)"%EXPCTD_DIFF,"l")
 	l.Draw()
 	#! save
 	c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
@@ -891,19 +961,40 @@ def proc_Obs_1D_and_R2():
 			c=ROOT.TCanvas(hdiff_itg.GetName(),hdiff_itg.GetName())
 			hdiff_itg.Draw("hist")
 			hdiff_itg_gt_staterr.Draw("hist sames")
+			#! Reposition stat boxes
+			#! for hdiff_itg
+			c.Update()
+			st_itg=hdiff_itg.GetListOfFunctions().FindObject("stats")
+			st_itg.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+			st_itg.SetX1NDC(0.60)
+			st_itg.SetX2NDC(0.80)
+			st_itg.SetY1NDC(0.70)
+			st_itg.SetY2NDC(0.90)
+			c.Update()
+			#! for hdiff_itg_gt_staterr
+			st_itg_gt_staterr=hdiff_itg_gt_staterr.GetListOfFunctions().FindObject("stats")
+			st_itg_gt_staterr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+			st_itg_gt_staterr.SetX1NDC(0.80)
+			st_itg_gt_staterr.SetX2NDC(1.00)
+			st_itg_gt_staterr.SetY1NDC(0.70)
+			st_itg_gt_staterr.SetY2NDC(0.90)
+			c.Update()
 			#! Draw expctd_diff_line
 			for l in [expctd_diff_line,expctd_diff_tlrnc_line_min,expctd_diff_tlrnc_line_max]:
 				expctd_diff_line.SetY1(hdiff_itg.GetMinimum())
 				expctd_diff_line.SetY2(hdiff_itg.GetMaximum())
 				expctd_diff_line.Draw("same")
 			#! legend
-			l=ROOT.TLegend(0.7,0.50,0.85,0.60)	
+			l=ROOT.TLegend(0.58,0.50,0.73,0.65)	
 			l.SetFillStyle(0)
 			l.SetBorderSize(0)
-			l.SetTextSize(0.05)
-			l.AddEntry(hdiff_itg,"all","l")
-			l.AddEntry(hdiff_itg_gt_staterr,"stat-sig","l")
-			l.AddEntry(expctd_diff_line,"\"expected diff\"","l")
+			l.SetTextSize(0.04)
+			n_itg=hdiff_itg.GetEntries()
+			n_itg_gt_staterr=hdiff_itg_gt_staterr.GetEntries()
+			prcnt_gt_st_staterr=(n_itg_gt_staterr/n_itg)*100
+			l.AddEntry(hdiff_itg,"all(%d bins)"%n_itg,"l")
+			l.AddEntry(hdiff_itg_gt_staterr,"stat-sig(%d bins)=%.2f%%"%(n_itg_gt_staterr,prcnt_gt_st_staterr),"l")
+			l.AddEntry(expctd_diff_line,"\"expected diff\"(%.2f%%)"%EXPCTD_DIFF,"l")
 			l.Draw()
 			#! save
 			c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
@@ -1164,19 +1255,40 @@ def proc_Obs_itg():
 	c=ROOT.TCanvas(hdiff_itg.GetName(),hdiff_itg.GetName())
 	hdiff_itg.Draw("hist")
 	hdiff_itg_gt_staterr.Draw("hist sames")
+	#! Reposition stat boxes
+	#! for hdiff_itg
+	c.Update()
+	st_itg=hdiff_itg.GetListOfFunctions().FindObject("stats")
+	st_itg.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+	st_itg.SetX1NDC(0.60)
+	st_itg.SetX2NDC(0.80)
+	st_itg.SetY1NDC(0.70)
+	st_itg.SetY2NDC(0.90)
+	c.Update()
+	#! for hdiff_itg_gt_staterr
+	st_itg_gt_staterr=hdiff_itg_gt_staterr.GetListOfFunctions().FindObject("stats")
+	st_itg_gt_staterr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+	st_itg_gt_staterr.SetX1NDC(0.80)
+	st_itg_gt_staterr.SetX2NDC(1.00)
+	st_itg_gt_staterr.SetY1NDC(0.70)
+	st_itg_gt_staterr.SetY2NDC(0.90)
+	c.Update()
 	#! Draw expctd_diff_line
 	for l in [expctd_diff_line,expctd_diff_tlrnc_line_min,expctd_diff_tlrnc_line_max]:
 		l.SetY1(hdiff_itg.GetMinimum())
 		l.SetY2(hdiff_itg.GetMaximum())
 		l.Draw("same")
 	#! legend
-	l=ROOT.TLegend(0.7,0.50,0.85,0.60)	
+	l=ROOT.TLegend(0.58,0.50,0.73,0.65)	
 	l.SetFillStyle(0)
 	l.SetBorderSize(0)
-	l.SetTextSize(0.05)
-	l.AddEntry(hdiff_itg,"all","l")
-	l.AddEntry(hdiff_itg_gt_staterr,"stat-sig","l")
-	l.AddEntry(expctd_diff_line,"\"expected diff\"","l")
+	l.SetTextSize(0.04)
+	n_itg=hdiff_itg.GetEntries()
+	n_itg_gt_staterr=hdiff_itg_gt_staterr.GetEntries()
+	prcnt_gt_st_staterr=(n_itg_gt_staterr/n_itg)*100
+	l.AddEntry(hdiff_itg,"all(%d bins)"%n_itg,"l")
+	l.AddEntry(hdiff_itg_gt_staterr,"stat-sig(%d bins)=%.2f%%"%(n_itg_gt_staterr,prcnt_gt_st_staterr),"l")
+	l.AddEntry(expctd_diff_line,"\"expected diff\"(%.2f%%)"%EXPCTD_DIFF,"l")
 	l.Draw()
 	#! save
 	c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
@@ -1209,19 +1321,40 @@ def proc_Obs_itg():
 		c=ROOT.TCanvas(hdiff_itg.GetName(),hdiff_itg.GetName())
 		hdiff_itg.Draw("hist")
 		hdiff_itg_gt_staterr.Draw("hist sames")
+		#! Reposition stat boxes
+		#! for hdiff_itg
+		c.Update()
+		st_itg=hdiff_itg.GetListOfFunctions().FindObject("stats")
+		st_itg.SetTextColor(ROOT.gROOT.ProcessLine("kBlue"))
+		st_itg.SetX1NDC(0.60)
+		st_itg.SetX2NDC(0.80)
+		st_itg.SetY1NDC(0.70)
+		st_itg.SetY2NDC(0.90)
+		c.Update()
+		#! for hdiff_itg_gt_staterr
+		st_itg_gt_staterr=hdiff_itg_gt_staterr.GetListOfFunctions().FindObject("stats")
+		st_itg_gt_staterr.SetTextColor(ROOT.gROOT.ProcessLine("kRed"))
+		st_itg_gt_staterr.SetX1NDC(0.80)
+		st_itg_gt_staterr.SetX2NDC(1.00)
+		st_itg_gt_staterr.SetY1NDC(0.70)
+		st_itg_gt_staterr.SetY2NDC(0.90)
+		c.Update()
 		#! Draw expctd_diff_line
 		for l in [expctd_diff_line,expctd_diff_tlrnc_line_min,expctd_diff_tlrnc_line_max]:
 			l.SetY1(hdiff_itg.GetMinimum())
 			l.SetY2(hdiff_itg.GetMaximum())
 			l.Draw("same")
 		#! legend
-		l=ROOT.TLegend(0.7,0.50,0.85,0.60)	
+		l=ROOT.TLegend(0.58,0.50,0.73,0.65)	
 		l.SetFillStyle(0)
 		l.SetBorderSize(0)
-		l.SetTextSize(0.05)
-		l.AddEntry(hdiff_itg,"all","l")
-		l.AddEntry(hdiff_itg_gt_staterr,"stat-sig","l")
-		l.AddEntry(expctd_diff_line,"\"expected diff\"","l")
+		l.SetTextSize(0.04)
+		n_itg=hdiff_itg.GetEntries()
+		n_itg_gt_staterr=hdiff_itg_gt_staterr.GetEntries()
+		prcnt_gt_st_staterr=(n_itg_gt_staterr/n_itg)*100
+		l.AddEntry(hdiff_itg,"all(%d bins)"%n_itg,"l")
+		l.AddEntry(hdiff_itg_gt_staterr,"stat-sig(%d bins)=%.2f%%"%(n_itg_gt_staterr,prcnt_gt_st_staterr),"l")
+		l.AddEntry(expctd_diff_line,"\"expected diff\"(%.2f%%)"%EXPCTD_DIFF,"l")
 		l.Draw()
 		#! save
 		c.SaveAs("%s/%s.png"%(outdir,c.GetName()))
