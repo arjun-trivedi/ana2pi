@@ -51,17 +51,13 @@ def get_err(line):
 	+ line format:
 		bin,bin_le,bin_ue = (mu +/- sg_mu),(sg +/- sg_sg),(rel_err +/- sg_rel_err)
 	'''
-	#print line
-	#print line.split("=")
-	#print line.split("=")[1].split(',')
-	#print line.split("=")[1].split(',')[2]
 	rel_err=line.split("=")[1].split(',')[2]
 	#! first get err
 	b=rel_err.find("(")+1
-	e=rel_err.find("+")
-	err= float(rel_err[b:e])
+	e=rel_err.find("+/-") #! Till [06-27-17] used to be: e=rel_err.find("+"). While this had no adverse effect, the fix is truer to the line format.
+	err= float(rel_err[b:e]) 
 	#! Now get err_err
-	b=rel_err.find("-")+1
+	b=rel_err.find("+/-")+3 #!  Till [06-27-17] used to be: b=rel_err.find("-")+1. This was causing problems when number following +/- was negative.
 	e=rel_err.find(")")
 	err_err= float(rel_err[b:e])
 	#print "err,err_err=",err,err_err,err-err_err

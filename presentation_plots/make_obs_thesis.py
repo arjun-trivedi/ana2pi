@@ -94,22 +94,22 @@ print "OUTDIR=",OUTDIR
 
 #! Setup files that will be used to obtain ST data
 F_ST=OrderedDict()
-F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_061417/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_092516
-F_ST['1D',"highQ2"]="%s/highQ2_SSBands_061417/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_092516
+F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_061217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_092516,  lowQ2_SSBands_061417
+F_ST['1D',"highQ2"]="%s/highQ2_SSBands_061217/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_092516, highQ2_SSBands_061417 
 
 F_ST['itg',"lowQ2"]=None
 F_ST['itg',"highQ2"]=None
 
-F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_061417/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_092516
-F_ST['R2',"highQ2"]="%s/highQ2_SSBands_061417/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_092516
+F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_061217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_092516,  lowQ2_SSBands_061417
+F_ST['R2',"highQ2"]="%s/highQ2_SSBands_061217/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_092516, highQ2_SSBands_061417
 
 #! Setup files that will be used to get results
 F_RSLT=OrderedDict()
 F_RSLT['1D',"lowQ2"] =F_ST['1D',"lowQ2"]
 F_RSLT['1D',"highQ2"]=F_ST['1D',"highQ2"]
 
-F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_061517/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_092716
-F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_061517/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_092716
+F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_061317/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
+F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_061317/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
 
 F_RSLT['R2',"lowQ2"] =F_ST['R2',"lowQ2"]
 F_RSLT['R2',"highQ2"]=F_ST['R2',"highQ2"]
@@ -192,30 +192,83 @@ def get_wbin(q2wbin):
 
 def set_h1_maximum_minimum(h1,pcnt=10/100,**kwargs):
 	'''
+	+ [06-28-17] Note that this method was updated to use the most generalized
+		  way of setting maximum and minimum by using the bin-content and bin-error
+		  of each bin, as implemented in a similar method today which takes in a list of h1s: set_h1l_maximum_minimum()
 	+ Set maximum and minimum for h1 so that both are displayed based:
 		+ on pcnt
 		OR
 		+ 'minimum' and 'maximum' as kwargs, which overrides value based on pcnt
 
-	+ Note that the direct methods GetMaximum/Minumum are not used because they are susceptible to 
+	+ Note that the direct methods GetMaximum/Minimum are not used because they are susceptible to 
 	  obtaining overridden values from previous plotting related code and therefore the following is used:
 	  	+ mxm/mnm=h1.GetBinContent(h1.GetMaximumBin()/GetMinimumBin())
 	  	(from https://root.cern.ch/doc/master/classTH1.html#acb53c99a65ab29a045cbdc2789e55250)
 	'''
 	#! Get current maximum and minimum
-	mxm=h1.GetBinContent(h1.GetMaximumBin())
-	mnm=h1.GetBinContent(h1.GetMinimumBin())
-	#! Set new maximum/minimum=maximum/minimum +/-(pct*maximum/minimum)
+	yvals=[]
+	nbins=h1.GetNbinsX()
+	for ibin in range(nbins):
+		binc=h1.GetBinContent(ibin+1)
+		bine=h1.GetBinError(ibin+1)
+		yvals.append(binc+bine)
+		yvals.append(binc-bine)
+	mnm=min(yvals)
+	if mnm>0: mnm=0
+	mxm=max(yvals)
+	#! 10% padding
+	if mnm!=0:
+		mnm=mnm-(pcnt*mnm)
 	mxm=mxm+(pcnt*mxm)
-	mnm=mnm-(pcnt*mnm)
 	h1.SetMaximum(mxm)
 	h1.SetMinimum(mnm)
+	#! [06-28-17] hitherto way
+	# mxm=h1.GetBinContent(h1.GetMaximumBin())
+	# mnm=h1.GetBinContent(h1.GetMinimumBin())
+	# #! Set new maximum/minimum=maximum/minimum +/-(pct*maximum/minimum)
+	# mxm=mxm+(pcnt*mxm)
+	# mnm=mnm-(pcnt*mnm)
+	# h1.SetMaximum(mxm)
+	# h1.SetMinimum(mnm)
 
 	#! Override minimum and maximum
 	if 'maximum' in kwargs.keys():
 		h1.SetMaximum(kwargs['maximum'])
 	if 'minimum' in kwargs.keys():
 		h1.SetMinimum(kwargs['minimum'])
+
+def set_h1l_maximum_minimum(h1l):
+	'''
+	+ From a list of h1s, obtain and set the minimum and maximum limits of the y-axis
+	  on which all h1s can be completely displayed.
+	+ If minimum>0, then simply set minimum=0
+	+ Note that this is done in the most general way by looping over each bin of every
+	  h1 in the list and using the bin-content and bin-error to determine the y-axis
+	  limits
+	'''
+	#! obtain minimum and maximum
+	yvals=[]
+	for h1 in h1l:
+		nbins=h1.GetNbinsX()
+		for ibin in range(nbins):
+			binc=h1.GetBinContent(ibin+1)
+			bine=h1.GetBinError(ibin+1)
+			yvals.append(binc+bine)
+			yvals.append(binc-bine)
+	maximum=max(yvals)
+	minimum=min(yvals)
+	if minimum>0: minimum=0
+	#! Now set minimum and maximum with 10% padding 
+	#! + Note special treatment if minimum is set to 0
+	pdng=10/100
+	if minimum!=0:
+		minimum=minimum-(pdng*minimum)
+	maximum=maximum+(pdng*maximum)
+	#! now set limits
+	for h1 in h1l:
+		h1.SetMinimum(minimum)
+		h1.SetMaximum(maximum)
+	return
 
 def plot_1D_athtcs():
 	#ROOT.gStyle.Reset()
@@ -385,13 +438,18 @@ def plot_and_write_Obs_1D(q2wbin,hobs,herr,outdir,froot):
 		#print "pad,vst,var=",pad,vst,var
 		gpad=pad_p.cd(pad)
 
-		#! First set minimum(=0) and maximum of y-axis
-		fctr=1.1
-		maxl=[hobs[seq,vst,var].GetMaximum() for seq in ['EC','EF','ST']]
-		maximum=max(maxl)
-		for htmp in [hobs[seq,vst,var] for seq in ['EC','EF','ST']]:
-			htmp.SetMinimum(0.)
-			htmp.SetMaximum(maximum*fctr)
+		#! First set minimum and maximum of y-axis
+		histl=[hobs[seq,vst,var] for seq in ['EC','EF','ST']]
+		#! append herr also so that it can also be used in determining and setting y-axes limits
+		histl.append(herr['EF',vst,var]) 
+		set_h1l_maximum_minimum(histl)
+		#! [06-28-17] hitherto way
+		# fctr=1.1
+		# maxl=[hobs[seq,vst,var].GetMaximum() for seq in ['EC','EF','ST']]
+		# maximum=max(maxl)
+		# for htmp in [hobs[seq,vst,var] for seq in ['EC','EF','ST']]:
+		# 	htmp.SetMinimum(0.)
+		# 	htmp.SetMaximum(maximum*fctr)
 		#! Now draw hobs
 		for i,seq in enumerate(['ST','EC','EF']):
 			draw_opt="" if i==0 else "same"

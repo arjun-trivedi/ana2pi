@@ -420,13 +420,16 @@ class DispObs:
 			print "pad,vst,var=",pad,vst,var
 			gpad=pad_p.cd(pad)
 			if self.VIEW=="norm" or self.VIEW=="ERyield":
-				#! First set minimum(=0) and maximum of y-axis
-				fctr=1.1
-				maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
-				maximum=max(maxl)
-				for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
-					htmp.SetMinimum(0.)
-					htmp.SetMaximum(maximum*fctr)
+				#! First set minimum and maximum of y-axis
+				histl=[h1[seq,vst,var] for seq in self.SEQS]
+				self.set_h1l_maximum_minimum(histl)
+				#! [06-28-17] hitherto way
+				# fctr=1.1
+				# maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
+				# maximum=max(maxl)
+				# for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
+				# 	htmp.SetMinimum(0.)
+				# 	htmp.SetMaximum(maximum*fctr)
 				#! Now draw
 				for i,seq in enumerate(self.SEQS):
 					draw_opt="" if i==0 else "same"
@@ -454,11 +457,14 @@ class DispObs:
 						draw_opt="sames"
 					h1n[seq]=h1[seq,vst,var].DrawNormalized(draw_opt,1000)
 				#! Set the minimum and maximum of y coordinate of normed histograms
-				maxl=[h1n[seq].GetMaximum() for seq in seq_drct]#[hEF_n.GetMaximum(),hSF_n.GetMaximum(),hER_n.GetMaximum(),hSR_n.GetMaximum(),hST_n.GetMaximum()]
-				maximum=max(maxl)
-				for htmp in [h1n[seq] for seq in seq_drct]:#[hEF_n,hSF_n,hER_n,hSR_n,hST_n]:
-					htmp.SetMinimum(0.)
-					htmp.SetMaximum(maximum+10)
+				histl=[h1n[seq] for seq in seq_drct]
+				self.set_h1l_maximum_minimum(histl)
+				#! [06-28-17] hitherto way
+				# maxl=[h1n[seq].GetMaximum() for seq in seq_drct]#[hEF_n.GetMaximum(),hSF_n.GetMaximum(),hER_n.GetMaximum(),hSR_n.GetMaximum(),hST_n.GetMaximum()]
+				# maximum=max(maxl)
+				# for htmp in [h1n[seq] for seq in seq_drct]:#[hEF_n,hSF_n,hER_n,hSR_n,hST_n]:
+				# 	htmp.SetMinimum(0.)
+				# 	htmp.SetMaximum(maximum+10)
 
 				#! Now process and then draw seq_mnpl_sim/exp
 				#! Scale EC, EH as per EF
@@ -513,15 +519,18 @@ class DispObs:
 				h1_SF_tmp.Scale(scale_factor)
 
 				#! Before drawing set minimum(=0) and maximum of y-axis
-				fctr=1.1
-				#! [10-26-16] code below had to be modified following "new-normalization" change of [10-26-16]
-				#maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
-				maxl=[h1['EC',vst,var].GetMaximum(),h1['EF',vst,var].GetMaximum(),h1_SF_tmp.GetMaximum()]
-				maximum=max(maxl)
-				#for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
-				for htmp in [h1['EC',vst,var],h1['EF',vst,var],h1_SF_tmp]:
-					htmp.SetMinimum(0.)
-					htmp.SetMaximum(maximum*fctr)
+				histl=[h1['EC',vst,var],h1['EF',vst,var],h1_SF_tmp]
+				self.set_h1l_maximum_minimum(histl)
+				#! [06-28-17] hitherto way
+				# fctr=1.1
+				# #! [10-26-16] code below had to be modified following "new-normalization" change of [10-26-16]
+				# #maxl=[h1[seq,vst,var].GetMaximum() for seq in self.SEQS]
+				# maxl=[h1['EC',vst,var].GetMaximum(),h1['EF',vst,var].GetMaximum(),h1_SF_tmp.GetMaximum()]
+				# maximum=max(maxl)
+				# #for htmp in [h1[seq,vst,var] for seq in self.SEQS]:
+				# for htmp in [h1['EC',vst,var],h1['EF',vst,var],h1_SF_tmp]:
+				# 	htmp.SetMinimum(0.)
+				# 	htmp.SetMaximum(maximum*fctr)
 
 				#! Now draw
 				h1['EC',vst,var].Draw()
@@ -808,12 +817,15 @@ class DispObs:
 				#! + if self.SSTYPE=="cmb_non_vst_SE" Draw h1err[obsnum,seq,vst,var]
 				#! + Draw h1_obs,h1_err also to directly verify mu,sg etc calculated from obsum
 				#! First set minimum and maximum of hists
-				fctr=1.1
-				maxl=[h1[obsnum,seq,vst,var].GetMaximum() for obsnum in self.OBSD.keys()]
-				maximum=max(maxl)
-				for obsnum in self.OBSD.keys():
-					h1[obsnum,seq,vst,var].SetMinimum(0.)
-					h1[obsnum,seq,vst,var].SetMaximum(fctr*maximum)
+				histl=[h1[obsnum,seq,vst,var] for obsnum in self.OBSD.keys()]
+				self.set_h1l_maximum_minimum(histl)
+				# #! [06-28-17] hitherto way
+				# fctr=1.1
+				# maxl=[h1[obsnum,seq,vst,var].GetMaximum() for obsnum in self.OBSD.keys()]
+				# maximum=max(maxl)
+				# for obsnum in self.OBSD.keys():
+				# 	h1[obsnum,seq,vst,var].SetMinimum(0.)
+				# 	h1[obsnum,seq,vst,var].SetMaximum(fctr*maximum)
 				#! Now draw
 				gpad=pad_p_c.cd(pad)
 				for i,obsnum in enumerate(self.OBSD.keys()):
@@ -852,8 +864,11 @@ class DispObs:
 				#! Draw h1_obs and h1_err
 				gpad=pad_p_c_obs_err.cd(pad)
 				#! Make sure hist limits are Ok
-				self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100,minimum=0)
-				self.set_h1_maximum_minimum(h1_err[seq,vst,var],10/100,minimum=0)
+				histl=[h1_obs[seq,vst,var],h1_err[seq,vst,var]]
+				self.set_h1l_maximum_minimum(histl)
+				#! [06-28-17] hitherto way
+				# self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100,minimum=0)
+				# self.set_h1_maximum_minimum(h1_err[seq,vst,var],10/100,minimum=0)
 				#! Draw
 				h1_obs[seq,vst,var].Draw()
 				h1_err[seq,vst,var].Draw("hist e same")
@@ -861,7 +876,9 @@ class DispObs:
 				#! Draw h1_rel_err
 				gpad=pad_p_c_err.cd(pad)
 				#! Make sure hist limits are Ok
-				self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100,minimum=0)
+				self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100)
+				#! [06-28-17] hitherto way
+				# self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100,minimum=0)
 				#h1_rel_err[seq,vst,var].SetMaximum(40)
 				#! Draw
 				h1_rel_err[seq,vst,var].Draw()
@@ -923,11 +940,13 @@ class DispObs:
 			pad,vst,var=item[0],item[1],item[2]
 			print "pad,vst,var=",pad,vst,var
 						
-			#! Draw h1_obs and h1_err
+			#! Draw h1_obs
 			gpad=pad_p_c.cd(pad)
 			for i,seq in enumerate(['EF','EC']): #! self.SEQS purposely modified so that 'EF' is drawn first 
 				#! Make sure hist limits are Ok
-				self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100,minimum=0)
+				self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100)
+				#! hitherto way
+				# self.set_h1_maximum_minimum(h1_obs[seq,vst,var],10/100,minimum=0)
 				#! Setup aesthetics as per EC-EH comparison
 				h1_obs[seq,vst,var].SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
 				h1_obs[seq,vst,var].SetLineColor(CLRS_PLT_SEQ_ALL[seq])
@@ -972,7 +991,9 @@ class DispObs:
 				h1_err[seq,vst,var].SetName("h1_err_%s_%d_%s"%(seq,vst,var))
 				h1_err[seq,vst,var].Write()
 				if seq=="EC": #! then set maximum (note already done so for EF in canvas displays)
-					self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100,minimum=0)
+					self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100)
+					#! [06-2-17] hitherto way
+					# self.set_h1_maximum_minimum(h1_rel_err[seq,vst,var],10/100,minimum=0)
 				h1_rel_err[seq,vst,var].SetName("h1_rel_err_%s_%d_%s"%(seq,vst,var))		
 				h1_rel_err[seq,vst,var].Write()
 
@@ -1099,6 +1120,7 @@ class DispObs:
 			self.plot_h2_itg_yld_all_Q2_same_canvas(h2)
 
 		print "*** disp_1D() Done ***\n"
+		print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
 
 
 	def disp_SE_results_1D(self):
@@ -5554,24 +5576,45 @@ class DispObs:
 
 	def set_h1_maximum_minimum(self,h1,pcnt=10/100,**kwargs):
 		'''
+		+ [06-28-17] Note that this method was updated to use the most generalized
+		  way of setting maximum and minimum by using the bin-content and bin-error
+		  of each bin, as implemented in a similar method today which takes in a list of h1s: set_h1l_maximum_minimum()
 		+ Set maximum and minimum for h1 so that both are displayed based:
 			+ on pcnt
 			OR
 			+ 'minimum' and 'maximum' as kwargs, which overrides value based on pcnt
 
-		+ Note that the direct methods GetMaximum/Minumum are not used because they are susceptible to 
+		+ Note that the direct methods GetMaximum/Minimum are not used because they are susceptible to 
 		  obtaining overridden values from previous plotting related code and therefore the following is used:
 		  	+ mxm/mnm=h1.GetBinContent(h1.GetMaximumBin()/GetMinimumBin())
 		  	(from https://root.cern.ch/doc/master/classTH1.html#acb53c99a65ab29a045cbdc2789e55250)
 		'''
 		#! Get current maximum and minimum
-		mxm=h1.GetBinContent(h1.GetMaximumBin())
-		mnm=h1.GetBinContent(h1.GetMinimumBin())
-		#! Set new maximum/minimum=maximum/minimum +/-(pct*maximum/minimum)
+		yvals=[]
+		nbins=h1.GetNbinsX()
+		for ibin in range(nbins):
+			binc=h1.GetBinContent(ibin+1)
+			bine=h1.GetBinError(ibin+1)
+			yvals.append(binc+bine)
+			yvals.append(binc-bine)
+		mnm=min(yvals)
+		if mnm>0: mnm=0
+		mxm=max(yvals)
+		#! 10% padding
+		if mnm!=0:
+			mnm=mnm-(pcnt*mnm)
 		mxm=mxm+(pcnt*mxm)
-		mnm=mnm-(pcnt*mnm)
 		h1.SetMaximum(mxm)
 		h1.SetMinimum(mnm)
+		#! [06-28-17] hitherto way
+		# #! Get current maximum and minimum
+		# mxm=h1.GetBinContent(h1.GetMaximumBin())
+		# mnm=h1.GetBinContent(h1.GetMinimumBin())
+		# #! Set new maximum/minimum=maximum/minimum +/-(pct*maximum/minimum)
+		# mxm=mxm+(pcnt*mxm)
+		# mnm=mnm-(pcnt*mnm)
+		# h1.SetMaximum(mxm)
+		# h1.SetMinimum(mnm)
 
 		#! Override minimum and maximum
 		if 'maximum' in kwargs.keys():
@@ -5609,4 +5652,36 @@ class DispObs:
 			#! compute average
 			binw=binw/nbins
 		return binw
+
+	def set_h1l_maximum_minimum(self,h1l):
+		'''
+		+ From a list of h1s, obtain and set the minimum and maximum limits of the y-axis
+		  on which all h1s can be completely displayed.
+		+ If minimum>0, then simply set minimum=0
+		+ Note that this is done in the most general way by looping over each bin of every
+		  h1 in the list and using the bin-content and bin-error to determine the y-axis
+		  limits
+		'''
+		#! obtain minimum and maximum
+		yvals=[]
+		for h1 in h1l:
+			nbins=h1.GetNbinsX()
+			for ibin in range(nbins):
+				binc=h1.GetBinContent(ibin+1)
+				bine=h1.GetBinError(ibin+1)
+				yvals.append(binc+bine)
+				yvals.append(binc-bine)
+		maximum=max(yvals)
+		minimum=min(yvals)
+		if minimum>0: minimum=0
+		#! Now set minimum and maximum with 10% padding (as ROOT does too)
+		#! + Note special treatment if minimum is set to 0
+		pdng=10/100
+		if minimum!=0:
+			minimum=minimum-(pdng*minimum)
+		maximum=maximum+(pdng*maximum)
+		for h1 in h1l:
+			h1.SetMinimum(minimum)
+			h1.SetMaximum(maximum)
+		return
 		
