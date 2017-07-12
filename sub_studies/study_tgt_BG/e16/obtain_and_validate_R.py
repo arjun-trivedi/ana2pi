@@ -14,7 +14,7 @@ import numpy as np
 import math
 
 '''
-+ Usage: study_tgt.py
++ Usage: obtain_and_validate_R.py
 '''
 
 #! *** User entered parameters ***
@@ -146,23 +146,37 @@ czvtx.SaveAs("%s/%s.pdf"%(outdir,cname))
 #!
 #! + Cut lines are also shown here that used to cut away the foil
 #! + one for each (sector) pad on the canvas
-ZVTX_CUT_VAL=-0.75
-ZVTX_CUT=[ROOT.TLine(ZVTX_CUT_VAL,0,ZVTX_CUT_VAL,0) for i in range(NSCTR)]
+ZVTX_CUT_VAL_MIN=-8.00
+ZVTX_CUT_VAL_MAX=-0.75
+ZVTX_CUT_MIN=[ROOT.TLine(ZVTX_CUT_VAL_MIN,0,ZVTX_CUT_VAL_MIN,0) for i in range(NSCTR)]
+ZVTX_CUT_MAX=[ROOT.TLine(ZVTX_CUT_VAL_MAX,0,ZVTX_CUT_VAL_MAX,0) for i in range(NSCTR)]
 for isctr in range(NSCTR):
-	ZVTX_CUT[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
-	ZVTX_CUT[isctr].SetLineWidth(3)
+	ZVTX_CUT_MIN[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
+	ZVTX_CUT_MAX[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
+	ZVTX_CUT_MIN[isctr].SetLineWidth(3)
+	ZVTX_CUT_MAX[isctr].SetLineWidth(3)
 
 #! + In the following code the SE due to etgt BG sub is also calucalated
 #! + This SE addresses the fact the etgt BG sub, because etgt run contains events
 #!   within the target cell, also removes good 2pi events
 #! + The effect of this cut is calculated as the ratio (express in %) of 
-#!   the number of events within the ZVTX_CUT for the scaled-etgt zvtx disribution to
-#!   the number of events within the ZVTX_CUT for the ptgt zvtx disribution:
-#!     SE= (scaled-etgt events within ZVTX_CUT/scaled-ptgt events within ZVTX_CUT)*100
+#!   the number of events "within the target" (walls excluded) for the scaled-etgt zvtx disribution to
+#!   the number of events "within the target" (walls excluded) for the ptgt zvtx disribution:
+#!     SE= (scaled-etgt events "within target"/scaled-ptgt events "within target")*100
+#! + "within the target" limits of integration defined below
 #! + Note that is SE is negative
 #! + It is obtained per sector and then averated
 #! Create structure to hold SE(ptgt,sctr)
 SE=OrderedDict()
+#! Draw lines to show limits of integration for "within the target"
+WITHIN_TARGET_MIN_VAL=-6
+WITHIN_TARGET_MAX_VAL=-3
+WITHIN_TARGET_MIN=[ROOT.TLine(WITHIN_TARGET_MIN_VAL,0,WITHIN_TARGET_MIN_VAL,0) for i in range(NSCTR)]
+WITHIN_TARGET_MAX=[ROOT.TLine(WITHIN_TARGET_MAX_VAL,0,WITHIN_TARGET_MAX_VAL,0) for i in range(NSCTR)]
+for isctr in range(NSCTR):
+	for line in [WITHIN_TARGET_MIN[isctr], WITHIN_TARGET_MAX[isctr]]:
+		line.SetLineColor(ROOT.gROOT.ProcessLine("kMagenta"))
+		line.SetLineWidth(3)
 
 for ptgt in [PTGT_LSE,PTGT_TGT]:
 	cname="czvtx_rto_%s_etgt"%DTYP_NAME[ptgt]
@@ -198,21 +212,27 @@ for ptgt in [PTGT_LSE,PTGT_TGT]:
 		hetgt[isctr].Sumw2()
 		hetgt[isctr].Scale(R[ptgt])
 		hetgt[isctr].Draw("HIST e sames")
-		#! Draw cut line
-		ZVTX_CUT[isctr].SetY1(h[ptgt][isctr].GetMinimum())
-		ZVTX_CUT[isctr].SetY2(h[ptgt][isctr].GetMaximum())
-		ZVTX_CUT[isctr].Draw("same")
+		#! Draw cut lines
+		for line in [ZVTX_CUT_MIN[isctr],ZVTX_CUT_MAX[isctr]]:
+			line.SetY1(h[ptgt][isctr].GetMinimum())
+			line.SetY2(h[ptgt][isctr].GetMaximum())
+			line.Draw("same")
 		# #! Draw legend 
 		if isctr==0:
 			l.AddEntry(h[ptgt][isctr],'%s-zvtx'%DTYP_NAME[ptgt])
 			l.AddEntry(h[ETGT][isctr],'etgt-zvtx')
 			l.Draw()
 		#! calculate SE
-		bin_min=0
-		bin_max=h[ptgt][isctr].FindBin(ZVTX_CUT_VAL)
+		bin_min=h[ptgt][isctr].FindBin(WITHIN_TARGET_MIN_VAL) #! 0
+		bin_max=h[ptgt][isctr].FindBin(WITHIN_TARGET_MAX_VAL) #!h[ptgt][isctr].FindBin(ZVTX_CUT_VAL)
 		intgrl_scld_etgt=hetgt[isctr].Integral(bin_min,bin_max)
 		intgrl_ptgt     =h[ptgt][isctr].Integral(bin_min,bin_max)
 		SE[ptgt][isctr]=(intgrl_scld_etgt/intgrl_ptgt)*100
+		#! Draw these limits of integration on the canvas
+		for line in [WITHIN_TARGET_MIN[isctr],WITHIN_TARGET_MAX[isctr]]:
+			line.SetY1(h[ptgt][isctr].GetMinimum())
+			line.SetY2(h[ptgt][isctr].GetMaximum())
+			line.Draw("same")
 	czvtx.Update()
 	czvtx.SaveAs("%s/%s.png"%(outdir,cname)) 
 	czvtx.SaveAs("%s/%s.pdf"%(outdir,cname)) 

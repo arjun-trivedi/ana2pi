@@ -25,7 +25,7 @@ DATE=datetime.datetime.now().strftime('%m%d%y')
 if TGT=='ptgt':
 	DLUMDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10_2_dlum-byRun-e16_051717')
 	D2PIDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-skim-SS_2_d2piR-byRun_052217')
-	OUTDIR=os.path.join(os.environ['STUDY_LUM_E16_DATADIR'],'results_%s'%DATE)
+	OUTDIR=os.path.join(os.environ['STUDY_LUM_E16_DATADIR'],'results_ptgt_%s'%DATE)
 if TGT=='etgt':
 	DLUMDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-etgt_2_dlum-byRun_052517')
 	D2PIDIR=os.path.join(os.environ['D2PIDIR_EXP_E16'],'h10-etgt_2_d2piR-byRun_052517')
@@ -144,12 +144,19 @@ axs[3][0].set_ylim(15,40)
 axs[3][0].set_yticks(np.arange(15, 40+1, 1.0))
 axs[3][0].grid()
 axs[3][0].set_ylabel("nrm_N2pi_zoomed")
-#! Draw cut values
-CUTS=[26,27]
+#! Draw cuts
+#! [07-10-17] 
+#! + Updated two low bound cuts of 26 and 27 (lse and tgt respectively)
+#!   to a single double sided cut of [26,34] as per fit to Gaussuan norm_2pi distribution (see below)
+#!   and obtaining these as rounded values from (mu-3*sg,mu+3*sg): 
+#!   [29.75-3*1.398,29.75+3*1.398] = [25.56,33.94] => (rounded) [26,34]
+CUTS=[[26,34]] #! CUTS=[26,27]
 CLRS=['g','r']
 xmin,xmax=axs[3][0].get_xlim()[0],axs[3][0].get_xlim()[1]
 for i,cut in enumerate(CUTS):
-	axs[3][0].hlines(cut,xmin,xmax,color=CLRS[i],label="nrm_N2pi cut = %d"%cut)
+	cutmin,cutmax=CUTS[i][0],CUTS[i][1]
+	axs[2][0].hlines(cutmin,xmin,xmax,color=CLRS[i],label="nrm_N2pi cut min = %.3f"%cutmin)
+	axs[2][0].hlines(cutmax,xmin,xmax,color=CLRS[i],label="nrm_N2pi cut max = %.3f"%cutmax)
 axs[3][0].legend()
 fig.savefig("%s/goodruns_cut_ana_plts.png"%(OUTDIR))
 
@@ -159,21 +166,26 @@ h.SetXTitle("nrm_N2pi")
 for x in list(lumd['nrm_N2pi']):
 	h.Fill(x)
 #h.Sumw2()
-h.Fit("gaus")
+h.Fit("gaus","","",27,33)
 ROOT.gStyle.SetOptFit(1111)
 c=ROOT.TCanvas()
 h.Draw("e")
 #! Prepare and draw cut lines
 CLRS_ROOT=[ROOT.gROOT.ProcessLine("kGreen"),ROOT.gROOT.ProcessLine("kRed")]
-TCUTL=[0,0]
+TCUTL=[0 for i in range(len(CUTS))]
+TCUTH=[0 for i in range(len(CUTS))]
 for i,cut in enumerate(CUTS):
-	TCUTL[i]=ROOT.TLine(CUTS[i],h.GetMinimum(),CUTS[i],h.GetMaximum())
-	TCUTL[i].SetLineColor(CLRS_ROOT[i])
-	TCUTL[i].SetLineStyle(2)
-	TCUTL[i].SetLineWidth(3)
+	cutmin,cutmax=CUTS[i][0],CUTS[i][1]
+	TCUTL[i]=ROOT.TLine(cutmin,h.GetMinimum(),cutmin,h.GetMaximum())
+	TCUTH[i]=ROOT.TLine(cutmax,h.GetMinimum(),cutmax,h.GetMaximum())
+	for line in [TCUTL[i],TCUTH[i]]:
+		line.SetLineColor(CLRS_ROOT[i])
+		line.SetLineStyle(2)
+		line.SetLineWidth(3)
 #! Draw
 for i,cut in enumerate(CUTS):
-	TCUTL[i].Draw("sames")
+	for line in [TCUTL[i],TCUTH[i]]:
+		line.Draw("sames")
 c.SaveAs("%s/goodruns_cut_ana_nrm_N2pi_zoomed_fitted.png"%OUTDIR)
 
 #! + Obtain luminosity based on CUTS on nrm_N2pi
@@ -182,7 +194,10 @@ c.SaveAs("%s/goodruns_cut_ana_nrm_N2pi_zoomed_fitted.png"%OUTDIR)
 #! Make a copy of runs that are cut away
 XRUNL=[None for i in range(len(CUTS))]
 for i in range(len(CUTS)):
-	XRUNL[i]=list(lumd['run'][lumd['nrm_N2pi']<CUTS[i]])
+	cutmin,cutmax=CUTS[0][0],CUTS[0][1]
+	print cutmin,cutmax
+	XRUNL[i]=list(lumd['run'][(lumd['nrm_N2pi']<cutmin) | (lumd['nrm_N2pi']>cutmax)])
+	#XRUNL[i]=list(lumd['run'][lumd['nrm_N2pi']<CUTS[i]])
 #print XRUNL[0]
 #print XRUNL[1]
 #sys.exit()
@@ -216,7 +231,8 @@ for i in range(len(CUTS)):
 #! Write
 fout=open(os.path.join('%s/lum_results.txt'%OUTDIR), 'w')
 for i in range(len(CUTS)):
-	fout.write("Information for nrm_N2pi cut=%d\n"%CUTS[i])
+	cutmin,cutmax=CUTS[0][0],CUTS[0][1]
+	fout.write("Information for nrm_N2pi cut=(%d,%d)\n"%(cutmin,cutmax))
 	fout.write("================================\n")
 	fout.write("\n")
 
@@ -289,10 +305,11 @@ fig,axs=plt.subplots(figsize=(15,10),nrows=2,ncols=2)
 plt.subplots_adjust(wspace=0.15)
 #! n2pi hist for each cut
 for i in range(len(CUTS)):
+	cutmin,cutmax=CUTS[0][0],CUTS[0][1]
 	#! Draw cut n2pi
 	r=axs[0][i].hist(XN2PIL[i],bins=250,range=(10,4000))
-	axs[0][i].set_title("Cut n2pi distribution for nrm_n2pi cut=%d"%CUTS[i])
+	axs[0][i].set_title("Cut n2pi distribution for nrm_n2pi cut=(%d,%d)"%(cutmin,cutmax))
 	#! Draw good n2pi
 	r=axs[1][i].hist(GN2PIL[i],bins=250,range=(10,4000))
-	axs[1][i].set_title("Good n2pi distribution for nrm_n2pi cut=%d"%CUTS[i])
+	axs[1][i].set_title("Good n2pi distribution for nrm_n2pi cut=(%d,%d)"%(cutmin,cutmax))
 fig.savefig("%s/lum_results.png"%(OUTDIR))

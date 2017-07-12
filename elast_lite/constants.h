@@ -157,13 +157,13 @@ namespace E16{
   	//! + zvtx cut determined after Empty Target BG subtraction (etgt-bg-sub)
   	//! + This cut is only supposed to cut away the foil
   	//! + Value should be as coded in in $SUBSTUDIES/study_tgt_BG/e16/obtain_and_validate_R.py
-  	//!   + Latest plots in $STUDY_TGT_BG_E16_DATADIR/results_R_060917
+  	//!   + Latest plots in $STUDY_TGT_BG_E16_DATADIR/results_R_<latest-date>
   	//!exp
-	const Float_t ZVTX_MIN_EXP_ETGT_BG_SUB[6]={-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0};
+	const Float_t ZVTX_MIN_EXP_ETGT_BG_SUB[6]={-8.00,-8.00,-8.00,-8.00,-8.00,-8.00};
 	const Float_t ZVTX_MAX_EXP_ETGT_BG_SUB[6]={-0.75,-0.75,-0.75,-0.75,-0.75,-0.75};
-	//! sim
-	const Float_t ZVTX_MIN_SIM_ETGT_BG_SUB[6]={-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0};
-  	const Float_t ZVTX_MAX_SIM_ETGT_BG_SUB[6]={-0.75,-0.75,-0.75,-0.75,-0.75,-0.75};
+	//! sim: different because zvtx for ER neq SR: bascically from ER by +0.5 offset by 0.5
+	const Float_t ZVTX_MIN_SIM_ETGT_BG_SUB[6]={-7.50,-7.50,-7.50,-7.50,-7.50,-7.50};
+  	const Float_t ZVTX_MAX_SIM_ETGT_BG_SUB[6]={-0.25,-0.25,-0.25,-0.25,-0.25,-0.25};
 
   	//! SF-exp
   	//! [01-08-16]

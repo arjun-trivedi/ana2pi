@@ -12,6 +12,8 @@ import numpy as np
 
 import math
 
+import datetime
+
 '''
 + {e1f,e16}*{ER,SR}*2pi*{wzvtxcorr,nzvtxcorr}
 
@@ -94,7 +96,8 @@ NSCTR=6
 
 #! *** Now make plots plots ***
 #! outdir
-outdir=os.path.join(DATADIR_OUTPUT,"results")
+DATE=datetime.datetime.now().strftime('%m%d%y')
+outdir=os.path.join(DATADIR_OUTPUT,"results_%s"%DATE)
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 #! draw_cmd
@@ -123,13 +126,31 @@ for r in D:
 
 #! Set up Cut TLines
 #! + one for each (sector) pad on the canvas
-ZVTX_CUTL_EI=[ROOT.TLine(-8.0,0,-8.0,0) for i in range(NSCTR)]
-ZVTX_CUTH_EI=[ROOT.TLine(-0.8,0,-0.8,0) for i in range(NSCTR)]
+#! exp
+#! zvtx cut determined after Empty Target BG subtraction (etgt-bg-sub)
+#! + This cut is only supposed to cut away the foil
+#! + Value should be as coded in in $SUBSTUDIES/study_tgt_BG/e16/obtain_and_validate_R.py
+#! + Latest plots in $STUDY_TGT_BG_E16_DATADIR/results_R_<latest-date>
+ZVTX_CUTL_EI_EXP=[ROOT.TLine(-8.00,0,-8.00,0) for i in range(NSCTR)]
+ZVTX_CUTH_EI_EXP=[ROOT.TLine(-0.75,0,-0.75,0) for i in range(NSCTR)] #! EI: (-0.8,0,-0.8,0)
+#! [07-09-17] sim: since zvtx distribution for exp neq sim, sim cuts have to adapted
+#! + sim cut is studied here for the first time
+#! + bascically from ER by +0.5 offset by 0.5
+#! + Note only exp cuts are studied in $SUBSTUDIES/study_tgt_BG/e16/obtain_and_validate_R.py
+ZVTX_CUTL_EI_SIM=[ROOT.TLine(-7.50,0,-7.50,0) for i in range(NSCTR)]
+ZVTX_CUTH_EI_SIM=[ROOT.TLine(-0.25,0,-0.25,0) for i in range(NSCTR)] #! 
 for isctr in range(NSCTR):
-	ZVTX_CUTL_EI[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
-	ZVTX_CUTH_EI[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
-	ZVTX_CUTL_EI[isctr].SetLineWidth(3)
-	ZVTX_CUTH_EI[isctr].SetLineWidth(3)
+	#! exp
+	ZVTX_CUTL_EI_EXP[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+	ZVTX_CUTH_EI_EXP[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+	#! sim
+	ZVTX_CUTL_EI_SIM[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+	ZVTX_CUTH_EI_SIM[isctr].SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
+	#! following same for exp and sim
+	for line in [ZVTX_CUTL_EI_EXP[isctr],ZVTX_CUTH_EI_EXP[isctr],ZVTX_CUTL_EI_SIM[isctr],ZVTX_CUTH_EI_SIM[isctr]]:
+		line.SetLineWidth(3)
+		line.SetLineWidth(3)
+		line.SetLineStyle(2)
 
 ROOT.gStyle.SetOptStat("n")
 ROOT.gStyle.SetOptFit(1)#111)
@@ -199,12 +220,19 @@ for isctr in range(NSCTR):
   #               	pt_SR_nzvtxcorr.SetY2NDC(y2)
   #               #czvtx.Update()
 		# #! Draw cut lines
-		ZVTX_CUTL_EI[isctr].SetY1(h[ER][isctr][WZVTXCORR].GetMinimum())
-		ZVTX_CUTL_EI[isctr].SetY2(h[ER][isctr][WZVTXCORR].GetMaximum())
-		ZVTX_CUTH_EI[isctr].SetY1(h[ER][isctr][WZVTXCORR].GetMinimum())
-		ZVTX_CUTH_EI[isctr].SetY2(h[ER][isctr][WZVTXCORR].GetMaximum())
-		ZVTX_CUTL_EI[isctr].Draw("same")
-		ZVTX_CUTH_EI[isctr].Draw("same")
+		cutlines=[ZVTX_CUTL_EI_EXP[isctr],ZVTX_CUTH_EI_EXP[isctr]]
+		if "SR-nzvtxcorr" in PLOTS: 
+			cutlines+=[ZVTX_CUTL_EI_SIM[isctr],ZVTX_CUTH_EI_SIM[isctr]]
+		for line in cutlines:#[ZVTX_CUTL_EI_EXP[isctr],ZVTX_CUTH_EI_EXP[isctr],ZVTX_CUTL_EI_SIM[isctr],ZVTX_CUTH_EI_SIM[isctr]]:
+			line.SetY1(h[ER][isctr][WZVTXCORR].GetMinimum())
+			line.SetY2(h[ER][isctr][WZVTXCORR].GetMaximum())
+			line.Draw("same")
+		# ZVTX_CUTL_EI[isctr].SetY1(h[ER][isctr][WZVTXCORR].GetMinimum())
+		# ZVTX_CUTL_EI[isctr].SetY2(h[ER][isctr][WZVTXCORR].GetMaximum())
+		# ZVTX_CUTH_EI[isctr].SetY1(h[ER][isctr][WZVTXCORR].GetMinimum())
+		# ZVTX_CUTH_EI[isctr].SetY2(h[ER][isctr][WZVTXCORR].GetMaximum())
+		# ZVTX_CUTL_EI[isctr].Draw("same")
+		# ZVTX_CUTH_EI[isctr].Draw("same")
 		#! Draw legend #! (not necessary because statbox contain relevant information)
 		#! + Note legend entries named differently when demoing ER-SR comparison and zvtx correction
 		if isctr+1==1:

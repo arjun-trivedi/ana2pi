@@ -30,7 +30,7 @@ thntool=THnTool()
 LUM_E1F=19.844 #fb^-1
 E1F_E0=5.499
 
-LUM_E16=28.19 #![06-12-17] From $STUDY_LUM_E16_DATADIR/results_052417: loose cut #!Before [06-12-17] 28
+LUM_E16=28.18 #![08-10-17] 28.18 from From $STUDY_LUM_E16_DATADIR/results_071017: loose cut #![06-12-17] 28.19 from From $STUDY_LUM_E16_DATADIR/results_052417: loose cut #!Before [06-12-17] 28
 E16_E0=5.754
 
 LUM_INVFB_TO_INVMICROB=1000000000
@@ -198,7 +198,8 @@ def getvgflux(w,q2,e0=E1F_E0):
 	return A*w*(w*w-MP*MP)/(4*PI*e0*e0*MP*MP*q2*(1-eps))
 
 class DispObs:
-	def __init__(self,obsdir,simnum='siml',view="norm",q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,expt='e16',dbg=False,**SSargs):
+	def __init__(self,obsdir,simnum='siml',view="norm",q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,
+		         expt='e16',dbg=False,do_etgt_BG_sub_corr=True,**SSargs):
 		print "*** In DispObs::_init_() ***"
 		
 		print "expt=",expt
@@ -222,11 +223,34 @@ class DispObs:
 
 		self.DBG=dbg
 
+		#! [07-09-17] Empty target background subtraction correction factor
+		#! + Only for e16
+		#!
+		#! + Since this SE is negative, the correction is supposed to increase the finally obtained cross-sections (itg,1D and R2)
+		#!   by the absolute value of this percentage:
+		#!   1. corr_factor=(1+|SE|)
+		#!   2. xsec_new=xsec_old*corr_factor
+		#! + Implemented in the code by modifying the 'normf' in norm_1D() as (also in disp_itg_yld_drct_from_h5(), which is no longer used):
+		#!   - normf=normf/corr_factor
+		#!   + In this way the corr_factor enters the cross-section formule as multiplicate factor to increase the cross-section:
+		#!     - xsec = N/(normf/corr_factor) = (N/normf)*corr_factor
+		#!
+		#! + [07-09-17] Value obtained from $STUDY_TGT_BG_E16_DATADIR/results_R_070917/R.txt:SE of etgt BG sub for cutruns_lse:sector-average = -1.83%
+		self.DO_ETGT_BG_SUB_CORR=do_etgt_BG_sub_corr
+		if self.DO_ETGT_BG_SUB_CORR==True:
+			if expt=='e16':
+				self.ETGT_BG_SUB_CORR_FCTR=(1+0.0183) #! used multiplicatively, increases value by 1.83%
+			else: #! no correction
+				self.ETGT_BG_SUB_CORR_FCTR=1
+
 		print "Q2MIN,Q2MAX=",self.Q2MIN,self.Q2MAX
 		print "WMIN,WMAX=",self.WMIN,self.WMAX
 		print "LUM=",self.LUM
 		print "E0=",self.E0
 		print "DBG=",self.DBG
+		print "DO_ETGT_BG_SUB_CORR=",self.DO_ETGT_BG_SUB_CORR
+		if self.DO_ETGT_BG_SUB_CORR:
+			print "ETGT_BG_SUB_CORR_FCTR=",self.ETGT_BG_SUB_CORR_FCTR
 
 		#! Now do init specific to SS or Regular
 		if self.DO_SS_STUDY: #! Do SS related init
@@ -2177,6 +2201,8 @@ class DispObs:
 					DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
 					var_norm_fctr=DCosTheta
 				normf=self.LUM*LUM_INVFB_TO_INVMICROB*vgflux*q2binw*WBINW*var_norm_fctr #!Q2BINW
+				if self.DO_ETGT_BG_SUB_CORR:
+					normf=normf/self.ETGT_BG_SUB_CORR_FCTR
 				h1n[k].SetBinContent(ibin+1,normf)
 				h1n[k].SetBinError(ibin+1,0)
 
@@ -3590,6 +3616,8 @@ class DispObs:
 						#normf=self.LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w,q2,e0=self.E0)*dw*dq2#!mub^-1
 						normf=self.LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+(dw/2),q2+(dq2/2),e0=self.E0)*dw*dq2#!mub^-1
 						#normf=self.LUM*LUM_INVFB_TO_INVMICROB*getvgflux(w+dw,q2+dq2,e0=self.E0)*dw*dq2#!mub^-1
+						if self.DO_ETGT_BG_SUB_CORR:
+							normf=normf/self.ETGT_BG_SUB_CORR_FCTR
 						print "yield=",y[seq,vst,q2bin][w]
 						print "dw,dq2=",dw,dq2
 						print "norm=",normf
