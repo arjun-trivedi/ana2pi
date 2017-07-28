@@ -1,0 +1,12 @@
+#--
+setenv STUDY_MM_DIFF_ER_SR "${ANA2PI}/sub_studies/study_MM_diff_ER_SR"
+alias study_MM_diff_ER_SR 'cd ${STUDY_MM_DIFF_ER_SR}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_MM_DIFF_ER_SR}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_MM_DIFF_ER_SR}"
+
+##- Set up STUDY_EVTSEL_BG_DATADIR
+setenv STUDY_MM_DIFF_ER_SR_DATADIR "/data/trivedia/e16/study_MM_diff_ER_SR/"

@@ -61,7 +61,7 @@ source ${ANA2PI}/sub_studies/study_det_ineff/setup.tcshrc
 source $ANA2PI/elast_lite/obs_2pi/setup.tcshrc
 #-- [05-05-16] env for e16:study_fid
 source ${ANA2PI}/sub_studies/study_efid/e16/setup.tcshrc
-#--[06-27-16] env for e16:study_SS_bands
+#-- [06-27-16] env for e16:study_SS_bands
 source ${ANA2PI}/sub_studies/study_SS_bands/setup.tcshrc
 #-- [10-12-16] env for e16:presentation_plots
 source ${ANA2PI}/presentation_plots/setup.tcshrc
@@ -71,3 +71,5 @@ source ${ANA2PI}/sub_studies/study_evtsel_BG/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_lum/e16/setup.tcshrc
 #-- [05-17-17] env for e16:study_tgt_BG
 source ${ANA2PI}/sub_studies/study_tgt_BG/e16/setup.tcshrc
+#-- [07-18-17]] env for e16:study_MM_diff_ER_SR
+source ${ANA2PI}/sub_studies/study_MM_diff_ER_SR/setup.tcshrc
