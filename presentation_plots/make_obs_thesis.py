@@ -94,22 +94,22 @@ print "OUTDIR=",OUTDIR
 
 #! Setup files that will be used to obtain ST data
 F_ST=OrderedDict()
-F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_071017/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
-F_ST['1D',"highQ2"]="%s/highQ2_SSBands_071017/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417 
+F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_080217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
+F_ST['1D',"highQ2"]="%s/highQ2_SSBands_080217/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417 
 
 F_ST['itg',"lowQ2"]=None
 F_ST['itg',"highQ2"]=None
 
-F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_071017/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
-F_ST['R2',"highQ2"]="%s/highQ2_SSBands_071017/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417
+F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_080217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
+F_ST['R2',"highQ2"]="%s/highQ2_SSBands_080217/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417
 
 #! Setup files that will be used to get results
 F_RSLT=OrderedDict()
 F_RSLT['1D',"lowQ2"] =F_ST['1D',"lowQ2"]
 F_RSLT['1D',"highQ2"]=F_ST['1D',"highQ2"]
 
-F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_071117/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_061317,lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
-F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_071117/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_061317,highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
+F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_080317/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_071117, lowQ2_cmb_vst_SE_061317,lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
+F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_080317/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_071117,highQ2_cmb_vst_SE_061317,highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
 
 F_RSLT['R2',"lowQ2"] =F_ST['R2',"lowQ2"]
 F_RSLT['R2',"highQ2"]=F_ST['R2',"highQ2"]
@@ -400,8 +400,57 @@ def plot_and_write_Obs_itg(q2wbin,hobs,herr,outdir,froot):
 			wbin="%.3f-%.3f"%(bin_le,bin_ue)
 
 			#SYST_ERR[q2bin,wbin]=rel_err
-			#! Add "rest of error estimates": see thesis: total error=sqrt(6.5**2+x**2)=11.1 =>x=8.99
-			rel_err_full=math.sqrt(rel_err**2+9**2)
+			#! Add "rest of systematic error estimates" to 'rel_err': see thesis's Systematic Error Table:
+			#! (Assume that error on these systematic error estimates=0 i.e. 'sg_rel_err' for these errors = 0)
+			#!
+			#! [pre 08-03-17] Hitherto, i.e. before getting close to final ananote results, I did not re-check this values
+			#! because I did not expect them to change and they did not in any significant way
+			#! I Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
+			#!   1. Hadron Id (SS-Bands)=2.5
+			#!   2. Event Selection (MM-cut)=2.9
+			#!   3. Variable set dependent extraction of Obs=5.3
+			#!   --> Total = sqrt(2.5**2+5.3**2+2.9**2)=6.5
+			#! II Rest of the Errors:
+			#!   1. Electron Id: 1
+			#!   2. Electron fiducial boundary selection: 1
+			#!   3. Hadron fiducial boundary selection: 1
+			#!   4. Detector inefficiency identification: 1
+			#!   5. Momentum and Energy Loss Corrections: 1
+			#!   6. Acceptance Calculation: 1
+			#!   7. Radiative Effects correction: 5
+			#!   8. Estimation of Experimental Yields in Kinematical Holes: 5
+			#!   9. Luminosity measurement: 5
+			#!   --> Total= sqrt(1**2 + 1**2 + 1**2 + 1**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2) = 9
+			#! Total(I+II)=sqrt(6.5**2 + 9**2)=11.1 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)
+			#!
+			#! [08-03-17] 're-obtain-obs-3'
+			#! Note categories of SE:
+			#! 1. ana : calculated using SE analysis (<q2wbin> average number listed; location listed next to err)
+			#! 2. guess-est: guess estimated
+			#! 3. ref : referenced from another source (ref listed in ananote)
+			#! + Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
+			#!   1. Hadron Id (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
+			#!   2. Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
+			#!   3. Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
+			#!   --> Total = sqrt(3.12**2 + 5.55**2)=6.36
+			#! + Rest of the Errors:
+			#!   1. Electron Id:                                            1 (guess-est, conservative upper bound)
+			#!   2. Electron fiducial boundary selection:                   1 (guess-est, conservative upper bound)
+			#!   3. Hadron fiducial boundary selection                      1 (guess-est, conservative upper bound)
+			#!   4. Detector inefficiency identification:                   1 (guess-est, conservative upper bound)
+			#!   5. Momentum and Energy Loss Corrections:                   2 (ana) (Estimated from $STUDY_MM_DIFF_ER_SR_DATADIR/results_080117. For full details, see Tomboy:MM_diff_ER_SR:DateLog:080117 or handwritten notes)
+			#!   6. Background:                                             1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
+			#!   7. Acceptance Calculation:                                 1 (guess-est, conservative upper bound)
+			#!   8. Radiative Effects correction:                           5 (ref)
+			#!   9. Estimation of Experimental Yields in Kinematical Holes: 5 (ana) (For details see $ANANOTE/figures/Holes)
+			#!  10. Luminosity measurement:                                 5 (ref)
+			#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
+			#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)  
+
+			#! [pre 08-03-17]
+			#rel_err_full=math.sqrt(rel_err**2+9**2)
+			#! [08-03-17] 're-obtain-obs-3'
+			rel_err_full=math.sqrt(rel_err**2+9.21**2)
 			SYST_ERR[q2bin,wbin]=rel_err_full
 								
 			ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))

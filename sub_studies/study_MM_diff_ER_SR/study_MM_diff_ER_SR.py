@@ -16,6 +16,20 @@ import math
 import atlib as atlib
 
 '''
+[07-13-17] 
++ Estimate SE due to the fact that the MM distributions in ER and SR are not the same. 
++ Plots are generated for EI MM cuts and EI compared with with AT MM cuts in separate folders called EI and EI_AT, respectively.
+SE = (1-(x/y))*100 where:
+  + x,y = fraction of events under MM-cut for ER,SR, respectively
+    + x,y are obtained using Fits to distributions
+    + The Fit limits are optimized in W bins
+  + This formula is derived using:
+    + xsec  (x,y; x=y=1)       ~ ER/(SR/ST)
+    + xsec' (x,y; x,y neq 1)   ~ xER/(ySR/ST)  
+    --> SE = relative diff = (xsec-xsec'/xsec)*100 =  (1-(x/y))*100
+  + If sign is negative it means that xsec'>xsec and therefore the fact that the cross-sections are overestimated
+  + If sign is positive it means that xsec'<xsec and therefore the fact that the cross-sections are underestimated
+
 + Usage: study_MM_diff_ER_SR.py debug=False
 '''
 
@@ -101,6 +115,7 @@ for i,x in enumerate(WBIN_LEL):
 if del_val: 
     print "In WBIN_LEL going to delete",WBIN_LEL[idel_val],"at index",idel_val
 WBIN_LEL=np.delete(WBIN_LEL,[idel_val])
+NWBINS=len(WBIN_LEL)
 #print WBIN_LEL
 #sys.exit()
 #print Q2BIN_LEL
@@ -136,11 +151,84 @@ MASS_PION_LINE=ROOT.TLine(MASS_PION,0,MASS_PION,0)
 MASS_PION_LINE.SetLineColor(ROOT.gROOT.ProcessLine("kGreen"))
 MASS_PION_LINE.SetLineWidth(3)
 
-#! MM Fit limits
-MM_FIT_MIN=0.08
-MM_FIT_MAX=0.19
-MM2_FIT_MIN=0.005
-MM2_FIT_MAX=0.035
+#! MM Fit limits =f (dtyp,wbin)
+print "*** Going to set up MM fit limits ***"
+MM_FIT_LIMS  =[[0 for j in range(NWBINS)] for i in range(NDTYP)]
+MM2_FIT_LIMS =[[0 for j in range(NWBINS)] for i in range(NDTYP)]
+for iw in range(NWBINS):
+	wbin_le=WBIN_LEL[iw]
+	wmin=wbin_le
+	wmax=wbin_le+WBINW
+	print "wmin,wmax=",wmin,wmax
+	#if np.isclose(wmin,1.400) and np.isclose(wmax,1.425):
+	if (np.isclose(wmin,1.400) and np.isclose(wmax,1.425)):	
+		print "1"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.15
+		mml_SR,mmh_SR=0.10,0.18
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.0225#mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.03#mml_SR**2,mmh_SR**2
+	elif ( (wmin>1.400 and wmax>1.425) and (wmin<1.500 and wmax<1.525) and (not np.isclose(wmin,1.500) and not np.isclose(wmax,1.525)) ):
+		print "2"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.15
+		mml_SR,mmh_SR=0.10,0.18
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.03#0.03 mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.04#0.04 mml_SR**2,mmh_SR**2
+	elif (np.isclose(wmin,1.500) and np.isclose(wmax,1.525)):
+		print "3"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.17
+		mml_SR,mmh_SR=0.10,0.20
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.03#0.04 mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.04#0.05 mml_SR**2,mmh_SR**2
+	elif ( (wmin>1.500 and wmax>1.525) and (wmin<1.775 and wmax<1.800) and (not np.isclose(wmin,1.775) and np.isclose(wmax,1.800)) ):
+		print "4"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.17
+		mml_SR,mmh_SR=0.10,0.20
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.03#0.04 mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.04#0.05 mml_SR**2,mmh_SR**2
+	elif (np.isclose(wmin,1.775) and np.isclose(wmax,1.800)):
+		print "5"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.17
+		mml_SR,mmh_SR=0.10,0.20
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.03#0.04 mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.04#0.05 mml_SR**2,mmh_SR**2
+	elif ( (wmin>1.775 and wmax>1.800) and (wmin<2.100 and wmax<2.125) and (not np.isclose(wmin,2.100) and np.isclose(wmax,2.125)) ):
+		print "6"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.17
+		mml_SR,mmh_SR=0.10,0.20
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.04#mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.05#mml_SR**2,mmh_SR**2
+	else:
+		print "7"
+		#!mm
+		mml_ER,mmh_ER=0.10,0.16
+		mml_SR,mmh_SR=0.10,0.20
+		#!mm2
+		mm2l_ER,mm2h_ER=0.0025,0.03#mml_ER**2,mmh_ER**2
+		mm2l_SR,mm2h_SR=0.0025,0.04#mml_SR**2,mmh_SR**2
+	#!MM
+	MM_FIT_LIMS[ER][iw]=[mml_ER,mmh_ER]#EI_MMH]# since 0-artifact in MM #[0.08,0.19]
+	MM_FIT_LIMS[SR][iw]=[mml_SR,mmh_SR] #EI_MMH]# since 0-artifact in MM #[0.08,0.22]
+	#!MM2
+	MM2_FIT_LIMS[ER][iw]=[mm2l_ER,mm2h_ER]#[0.000,0.035]#[0.005,0.030]
+	MM2_FIT_LIMS[SR][iw]=[mm2l_SR,mm2h_SR]#[0.000,0.035]#[0.005,0.035]
+	for idtyp in range(NDTYP):
+		print "MMl,MMh (%s)=%.3f,%.3f"%(DTYP_NAME[idtyp],MM_FIT_LIMS[idtyp][iw][0],MM_FIT_LIMS[idtyp][iw][1])
+	for idtyp in range(NDTYP):
+		print "MM2l,MM2h (%s)=%.3f,%.3f"%(DTYP_NAME[idtyp],MM2_FIT_LIMS[idtyp][iw][0],MM2_FIT_LIMS[idtyp][iw][1])
+print "***"
+#sys.exit()
 
 #! DRAW_CMD
 NPLTS=2
@@ -150,8 +238,8 @@ PLT_TITLE=['MM','MM^{2}']
 PLT_UNIT=['GeV','GeV^{2}']
 
 DRAW_CMD=[0 for i in range(NPLTS)]
-DRAW_CMD[MM] ="mmppip>>hmmcmd(200,-0.5,1)"
-DRAW_CMD[MM2]="mm2ppip>>hmmcmd(100,-0.2,0.2)"
+DRAW_CMD[MM] ="mmppip>>hmmcmd(300,-0.5,1)" #! 200
+DRAW_CMD[MM2]="mm2ppip>>hmmcmd(200,-0.2,0.2)" #! 100
 
 #! Create hmm[dtyp][q2][w][plt]
 hmm=[[[[0 for l in range(NPLTS)] for k in range(len(WBIN_LEL))] for j in range(len(Q2BIN_LEL))] for i in range(NDTYP)]
@@ -168,6 +256,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 	q2min=q2bin_le
 	q2max=Q2BIN_UEL[iq]
 	for iw,wbin_le in enumerate(WBIN_LEL):
+		#!DBGW
 		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #! (iw!=0 and iw!=15 and iw!=28)
 		#if DBG==True and iw+1 > 10: continue
 		#if DBG==True and (iw+1!=5 and iw+1!=6): continue
@@ -207,6 +296,8 @@ CLRS_DTYP=[ROOT.gROOT.ProcessLine("kBlue"),ROOT.gROOT.ProcessLine("kRed")]
 #!    + xsec  (x,y; x=y=1)       ~ ER/(SR/ST)
 #!    + xsec' (x,y; x,y neq 1)   ~ xER/(ySR/ST)  
 #!    --> SE = relative diff = (xsec-xsec'/xsec)*100 =  (1-(x/y))*100
+#!  + If sign is negative it means that xsec'>xsec and therefore the fact that the cross-sections are overestimated
+#!  + If sign is positive it means that xsec'<xsec and therefore the fact that the cross-sections are underestimated
 
 #! Create structure to hold estimating SE(%):SE[q2][w][plt][cut]=(bg,qbin,wbin)
 NCUTS=2
@@ -222,6 +313,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 	if not os.path.exists(outdir_q2w):
 		os.makedirs(outdir_q2w)
 	for iw,wbin_le in enumerate(WBIN_LEL):
+		#!DBGW
 		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
 		#if DBG==True and iw+1 > 10: continue
 		#if DBG==True and (iw+1!=5 and iw+1!=6): continue
@@ -274,9 +366,9 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 			#! Create and add entries: hists and cut-lines
 			#! legend
-			l=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
+			lgnd=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
 			for hist,label in zip([hER,hSR],["exp","sim"]):
-				l.AddEntry(hist,label,"lp")
+				lgnd.AddEntry(hist,label,"lp")
 
 			#! Draw cut lines and add them to legend
 			if iplt==MM:
@@ -296,8 +388,8 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM_T2_CUTL_AT.Draw("same")
 				MM_T2_CUTH_AT.Draw("same")
 				#! add to legend
-				l.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
-				l.AddEntry(MM_T2_CUTL_AT,"%.2f GeV < MM < %.2f GeV"%(AT_MML,AT_MMH),"l")
+				lgnd.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
+				lgnd.AddEntry(MM_T2_CUTL_AT,"%.2f GeV < MM < %.2f GeV"%(AT_MML,AT_MMH),"l")
 			elif iplt==MM2:
 				#! EI
 				MM2_T2_CUTL_EI.SetY1(hER.GetMinimum())
@@ -314,56 +406,93 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM2_T2_CUTL_AT.Draw("same")
 				MM2_T2_CUTH_AT.Draw("same")
 				#! add to legend
-				l.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
-				l.AddEntry(MM2_T2_CUTL_AT,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(AT_MM2L,AT_MM2H),"l")
+				lgnd.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
+				lgnd.AddEntry(MM2_T2_CUTL_AT,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(AT_MM2L,AT_MM2H),"l")
 			#! Draw legend
-			l.Draw()
+			lgnd.Draw("same")
 			
 			# #! [07-13-17] fill SE(%)
 			#! Firt prepare to Fit ER and SR and obtain data from fit
+			fit_lims=[0 for i in range(NDTYP)]
 			if iplt==MM:
 				#! fit limits
-				fit_min=MM_FIT_MIN
-				fit_max=MM_FIT_MAX
+				for idtyp in range(NDTYP):
+					fit_lims[idtyp]=[MM_FIT_LIMS[idtyp][iw][0],MM_FIT_LIMS[idtyp][iw][1]]
 				#! MM EI limits
 				xmin_EI=EI_MML
 				xmax_EI=EI_MMH
+				bin_xmin_EI=hER.FindBin(EI_MML)
+				bin_xmax_EI=hER.FindBin(EI_MMH)	
 				#! MM AT limits
 				xmin_AT=AT_MML
 				xmax_AT=AT_MMH
+				bin_xmin_AT=hER.FindBin(AT_MML)
+				bin_xmax_AT=hER.FindBin(AT_MMH)	
 				#! xmin,xmax of histogram
 				xmin=hER.GetXaxis().GetXmin()
 				xmax=hER.GetXaxis().GetXmax()
+				bin_xmin=hER.FindBin(xmin)
+				bin_xmax=hER.FindBin(xmax)
 			elif iplt==MM2:
 				#! fit limits
-				fit_min=MM2_FIT_MIN
-				fit_max=MM2_FIT_MAX
+				for idtyp in range(NDTYP):
+					fit_lims[idtyp]=[MM2_FIT_LIMS[idtyp][iw][0],MM2_FIT_LIMS[idtyp][iw][1]]
 				#! MM2 EI limits
 				xmin_EI=EI_MM2L
 				xmax_EI=EI_MM2H
+				bin_xmin_EI=hER.FindBin(EI_MM2L)
+				bin_xmax_EI=hER.FindBin(EI_MM2H)
 				#! MM2 AT limits
 				xmin_AT=AT_MM2L
 				xmax_AT=AT_MM2H
+				bin_xmin_AT=hER.FindBin(AT_MM2L)
+				bin_xmax_AT=hER.FindBin(AT_MM2H)
 				#! xmin,xmax of histogram
 				xmin=hER.GetXaxis().GetXmin()
 				xmax=hER.GetXaxis().GetXmax()
+				bin_xmin=hER.FindBin(xmin)
+				bin_xmax=hER.FindBin(xmax)
 			#! Fit
-			hER.Fit("gaus","+0","",fit_min,fit_max)
-			hSR.Fit("gaus","+0","",fit_min,fit_max)
-			#! Draw fit functions
+			hER.Fit("gaus","+0","",fit_lims[ER][0],fit_lims[ER][1])#fit_min,fit_max)
+			hSR.Fit("gaus","+0","",fit_lims[SR][0],fit_lims[SR][1])#fit_min,fit_max)
+			#! Draw fit functions and fit limits
 			fER=hER.GetFunction("gaus")
 			fSR=hSR.GetFunction("gaus")
 			if fER!=None:
 				fER.SetLineColor(CLRS_DTYP[ER])
 				fER.Draw("same")
+				#! draw fit lims
+				fitlimlER=ROOT.TLine(fit_lims[ER][0],hER.GetMinimum(),fit_lims[ER][0],hER.GetMaximum())
+				fitlimhER=ROOT.TLine(fit_lims[ER][1],hER.GetMinimum(),fit_lims[ER][1],hER.GetMaximum())
+				for ln in [fitlimlER,fitlimhER]:
+					ln.SetLineColor(CLRS_DTYP[ER])
+					ln.Draw("same")
+				#! Draw fit functions over full range
+				fERf=ROOT.TF1("gausf_ER","gaus",xmin,xmax)
+				fERf.SetParameters(fER.GetParameter(0),fER.GetParameter(1),fER.GetParameter(2))
+				fERf.SetLineColor(ROOT.gROOT.ProcessLine("kCyan"))
+				#fERf.SetLineStyle(2)
+				fERf.Draw("same")
 			else:
 				print "ERROR: fER=None for plt=%s, q2wbin="%(PLT_NAME[iplt], q2min,q2max,wmin,wmax)
 			if fSR!=None:
 				fSR.SetLineColor(CLRS_DTYP[SR])
 				fSR.Draw("same")
+				#! draw fit lims
+				fitlimlSR=ROOT.TLine(fit_lims[SR][0],hER.GetMinimum(),fit_lims[SR][0],hER.GetMaximum())
+				fitlimhSR=ROOT.TLine(fit_lims[SR][1],hER.GetMinimum(),fit_lims[SR][1],hER.GetMaximum())
+				for l in [fitlimlSR,fitlimhSR]:
+					l.SetLineColor(CLRS_DTYP[SR])
+					l.Draw("same")
+				#! Draw fit functions over full range
+				fSRf=ROOT.TF1("gausf_SR","gaus",xmin,xmax)
+				fSRf.SetParameters(fSR.GetParameter(0),fSR.GetParameter(1),fSR.GetParameter(2))
+				fSRf.SetLineColor(ROOT.gROOT.ProcessLine("kMagenta"))
+				#fSRf.SetLineStyle(2)
+				fSRf.Draw("same")
 			else:
 				print "ERROR: fSR=None for plt=%s, q2wbin="%(PLT_NAME[iplt], q2min,q2max,wmin,wmax)
-
+			
 			#! Now calculate SE
 			#! EI
 			# print "Integral-%s (EI) for ER,ER-full,SR,SR-full for %.2f-%.2f_%.3f-%.3f"%(PLT_NAME[iplt], q2min,q2max,wmin,wmax)
@@ -401,9 +530,9 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 			#! Create and add entries: hists and cut-lines
 			#! legend
-			l=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
+			lgnd=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
 			for hist,label in zip([hER,hSR],["exp","sim"]):
-				l.AddEntry(hist,label,"lp")
+				lgnd.AddEntry(hist,label,"lp")
 
 			#! Draw cut lines and add them to legend
 			if iplt==MM:
@@ -416,7 +545,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM_T2_CUTL_EI.Draw("same")
 				MM_T2_CUTH_EI.Draw("same")
 				#! add to legend
-				l.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
+				lgnd.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
 			elif iplt==MM2:
 				#! EI
 				MM2_T2_CUTL_EI.SetY1(hER.GetMinimum())
@@ -426,22 +555,61 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM2_T2_CUTL_EI.Draw("same")
 				MM2_T2_CUTH_EI.Draw("same")
 				#! add to legend
-				l.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
+				lgnd.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
 			#! Draw legend
-			l.Draw()
+			lgnd.Draw("same")
 			
-			#! Draw fit functions
+			#! Draw fit functions and fit lims
 			fER=hER.GetFunction("gaus")
 			fSR=hSR.GetFunction("gaus")
 			if fER!=None:
 				fER.SetLineColor(CLRS_DTYP[ER])
+				#fER.SetLineWidth(1)
 				fER.Draw("same")
+				#! draw fit lims
+				fitlimlER=ROOT.TLine(fit_lims[ER][0],hER.GetMinimum(),fit_lims[ER][0],hER.GetMaximum())
+				fitlimhER=ROOT.TLine(fit_lims[ER][1],hER.GetMinimum(),fit_lims[ER][1],hER.GetMaximum())
+				for l in [fitlimlER,fitlimhER]:
+					l.SetLineColor(CLRS_DTYP[ER])
+					l.Draw("same")
+				#! Draw fit functions over full range
+				fERf=ROOT.TF1("gausf_ER","gaus",xmin,xmax)
+				fERf.SetParameters(fER.GetParameter(0),fER.GetParameter(1),fER.GetParameter(2))
+				fERf.SetLineColor(ROOT.gROOT.ProcessLine("kCyan"))#(CLRS_DTYP[ER])
+				fERf.SetLineWidth(1)
+				#fERf.SetLineStyle(2)
+				fERf.Draw("same")
+			else:
+				print "ERROR: fER=None for plt=%s, q2wbin="%(PLT_NAME[iplt], q2min,q2max,wmin,wmax)
 			if fSR!=None:
 				fSR.SetLineColor(CLRS_DTYP[SR])
+				#fSR.SetLineWidth(1)
+				#! draw fit lims
+				fitlimlSR=ROOT.TLine(fit_lims[SR][0],hER.GetMinimum(),fit_lims[SR][0],hER.GetMaximum())
+				fitlimhSR=ROOT.TLine(fit_lims[SR][1],hER.GetMinimum(),fit_lims[SR][1],hER.GetMaximum())
+				for ln in [fitlimlSR,fitlimhSR]:
+					ln.SetLineColor(CLRS_DTYP[SR])
+					ln.Draw("same")
 				fSR.Draw("same")
+				#! Draw fit functions over full range
+				fSRf=ROOT.TF1("gausf_SR","gaus",xmin,xmax)
+				fSRf.SetParameters(fSR.GetParameter(0),fSR.GetParameter(1),fSR.GetParameter(2))
+				fSRf.SetLineColor(ROOT.gROOT.ProcessLine("kMagenta"))#!CLRS_DTYP[SR])
+				fSRf.SetLineWidth(1)
+				#fSRf.SetLineStyle(2)
+				fSRf.Draw("same")
+			else:
+				print "ERROR: fSR=None for plt=%s, q2wbin="%(PLT_NAME[iplt], q2min,q2max,wmin,wmax)
+			# if fER!=None:
+			# 	fER.SetLineColor(CLRS_DTYP[ER])
+			# 	fER.Draw("same")
+			# if fSR!=None:
+			# 	fSR.SetLineColor(CLRS_DTYP[SR])
+			# 	fSR.Draw("same")
 
 			#! save canvas
 			cmm[iplt][CEI].SaveAs("%s/%s.png"%(outdir_q2w_plt_EI,cname))
+			#cmm[iplt][CEI].SaveAs("%s/%s.eps"%(outdir_q2w_plt_EI,cname))
 
 
 #! ***
@@ -477,6 +645,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 		wbinn=[] #! wbin number
 		wbinl=[] #! wbin label
 		for iw,wbin_le in enumerate(WBIN_LEL):
+			#!DBGW
 			if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
 			#if DBG==True and iw+1 > 10: continue
 			#if DBG==True and (iw+1!=5 and iw+1!=6): continue
@@ -513,13 +682,13 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 		#! output as text
 		fout=open("%s/SE.txt"%outdir_q2w_plt_EIAT,'w')
-		fout.write("***EI***")
+		fout.write("***EI***\n")
 		for i in range(len(wbinn)):
-			fout.write("%s %.2f\n"%(wbinl[i],se_EI[i]))
+			fout.write("%d %s %.2f\n"%(i+1,wbinl[i],se_EI[i]))
 		fout.write("\n")
-		fout.write("***AT***")
+		fout.write("***AT***\n")
 		for i in range(len(wbinn)):
-			fout.write("%s %.2f\n"%(wbinl[i],se_AT[i]))
+			fout.write("%d %s %.2f\n"%(i+1,wbinl[i],se_AT[i]))
 		fout.close()
 
 
@@ -547,9 +716,9 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 		#! output as text
 		fout=open("%s/SE.txt"%outdir_q2w_plt_EI,'w')
-		fout.write("***EI***")
+		fout.write("***EI***\n")
 		for i in range(len(wbinn)):
-			fout.write("%s %.2f\n"%(wbinl[i],se_EI[i]))
+			fout.write("%d %s %.2f\n"%(i+1,wbinl[i],se_EI[i]))
 		fout.close()
 
 

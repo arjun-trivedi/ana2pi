@@ -199,7 +199,9 @@ def getvgflux(w,q2,e0=E1F_E0):
 
 class DispObs:
 	def __init__(self,obsdir,simnum='siml',view="norm",q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,
-		         expt='e16',dbg=False,do_etgt_BG_sub_corr=True,**SSargs):
+		         expt='e16',dbg=False,
+		         do_etgt_BG_sub_corr=True,apply_MM_diff_ER_SR_corr=True,apply_evtsel_BG_corr=True,
+		         **SSargs):
 		print "*** In DispObs::_init_() ***"
 		
 		print "expt=",expt
@@ -223,35 +225,12 @@ class DispObs:
 
 		self.DBG=dbg
 
-		#! [07-09-17] Empty target background subtraction correction factor
-		#! + Only for e16
-		#!
-		#! + Since this SE is negative, the correction is supposed to increase the finally obtained cross-sections (itg,1D and R2)
-		#!   by the absolute value of this percentage:
-		#!   1. corr_factor=(1+|SE|)
-		#!   2. xsec_new=xsec_old*corr_factor
-		#! + Implemented in the code by modifying the 'normf' in norm_1D() as (also in disp_itg_yld_drct_from_h5(), which is no longer used):
-		#!   - normf=normf/corr_factor
-		#!   + In this way the corr_factor enters the cross-section formule as multiplicate factor to increase the cross-section:
-		#!     - xsec = N/(normf/corr_factor) = (N/normf)*corr_factor
-		#!
-		#! + [07-09-17] Value obtained from $STUDY_TGT_BG_E16_DATADIR/results_R_070917/R.txt:SE of etgt BG sub for cutruns_lse:sector-average = -1.83%
-		self.DO_ETGT_BG_SUB_CORR=do_etgt_BG_sub_corr
-		if self.DO_ETGT_BG_SUB_CORR==True:
-			if expt=='e16':
-				self.ETGT_BG_SUB_CORR_FCTR=(1+0.0183) #! used multiplicatively, increases value by 1.83%
-			else: #! no correction
-				self.ETGT_BG_SUB_CORR_FCTR=1
-
 		print "Q2MIN,Q2MAX=",self.Q2MIN,self.Q2MAX
 		print "WMIN,WMAX=",self.WMIN,self.WMAX
 		print "LUM=",self.LUM
 		print "E0=",self.E0
 		print "DBG=",self.DBG
-		print "DO_ETGT_BG_SUB_CORR=",self.DO_ETGT_BG_SUB_CORR
-		if self.DO_ETGT_BG_SUB_CORR:
-			print "ETGT_BG_SUB_CORR_FCTR=",self.ETGT_BG_SUB_CORR_FCTR
-
+		
 		#! Now do init specific to SS or Regular
 		if self.DO_SS_STUDY: #! Do SS related init
 			#! set self.FIN=None
@@ -384,17 +363,73 @@ class DispObs:
 							self.RAD_EFF_CORR_FCTR["%s_%s"%(q2bin,wbin)]=[cf,cferr]
 					else:
 						print "DispObs::__init__():rad-eff-corr setup: %s not found"%hname
-			
+
+			#! [07-09-17] Empty target background subtraction correction factor
+			#! + Only for e16
+			#!
+			#! + Since this SE is negative, the correction is supposed to increase the finally obtained cross-sections (itg,1D and R2)
+			#!   by the absolute value of this percentage:
+			#!   1. corr_factor=(1+|SE|)
+			#!   2. xsec_new=xsec_old*corr_factor
+			#! + Implemented in the code by modifying the 'normf' in norm_1D() as (also in disp_itg_yld_drct_from_h5(), which is no longer used):
+			#!   - normf=normf/corr_factor
+			#!   + In this way the corr_factor enters the cross-section formule as multiplicate factor to increase the cross-section:
+			#!     - xsec = N/(normf/corr_factor) = (N/normf)*corr_factor
+			#!
+			#! + [07-09-17] Value obtained from $STUDY_TGT_BG_E16_DATADIR/results_R_070917/R.txt:SE of etgt BG sub for cutruns_lse:sector-average = -1.83%
+			self.DO_ETGT_BG_SUB_CORR=do_etgt_BG_sub_corr
+			if self.DO_ETGT_BG_SUB_CORR==True:
+				if expt=='e16':
+					self.ETGT_BG_SUB_CORR_FCTR=(1+0.0183) #! used multiplicatively, increases value by 1.83%
+				else: #! no correction
+					self.ETGT_BG_SUB_CORR_FCTR=1
+
+			#! [08-01-17] Setup related to applying MM-diff-ER-SR-corr
+			self.APPLY_MM_DIFF_ER_SR_CORR=apply_MM_diff_ER_SR_corr
+			#! override for testing/debug
+			#self.APPLY_MM_DIFF_ER_SR_CORR=False
+			if self.APPLY_MM_DIFF_ER_SR_CORR==True:
+				self.MM_DIFF_ER_SR_CORR_FCTR=self.get_MM_diff_ER_SR_corr_fctr()
+
+			#! [08-02-17] Setup related to applying evtsel-BG-corr
+			self.APPLY_EVTSEL_BG_CORR=apply_evtsel_BG_corr
+			#! override for testing/debug
+			#self.APPLY_EVTSEL_BG_CORR=False
+			if self.APPLY_EVTSEL_BG_CORR==True:
+				self.EVTSEL_BG_CORR_FCTR=self.get_evtsel_BG_corr_fctr()
+
 			print "expt=",expt
 			print "OBSDIR=%s\nFIN=%s\nOUTDIR=%s"%(self.OBSDIR,self.FIN,self.OUTDIR)
 			print "self.VIEW=",self.VIEW
 			print "SEQS to process=",self.SEQS
+			#! corrections
+			print " *** Correction Factors: ***"
+			#! rad-err-corr
 			print "APPLY_RAD_EFF_CORR=",self.APPLY_RAD_EFF_CORR
 			if self.APPLY_RAD_EFF_CORR==True:
 				print "*** rad-eff-corr factors[q2bin,wbin]=[cf,cferr] ***"
 				for k in self.RAD_EFF_CORR_FCTR:
 					print k,self.RAD_EFF_CORR_FCTR[k]
 				print "******"
+			#! etgt-bg-sub-corr
+			print "DO_ETGT_BG_SUB_CORR=",self.DO_ETGT_BG_SUB_CORR
+			if self.DO_ETGT_BG_SUB_CORR==True:
+				print "ETGT_BG_SUB_CORR_FCTR=",self.ETGT_BG_SUB_CORR_FCTR
+			#! MM-diff-ER-SR-corr
+			print "APPLY_MM_DIFF_ER_SR_CORR=",self.APPLY_MM_DIFF_ER_SR_CORR
+			if self.APPLY_MM_DIFF_ER_SR_CORR==True:
+				print "*** MM-diff-ER-SR-corr factors[q2bin,wbin]=[cf,cferr] ***"
+				for k in self.MM_DIFF_ER_SR_CORR_FCTR:
+					print k,self.MM_DIFF_ER_SR_CORR_FCTR[k]
+				print "******"
+			#! evtsel-BG-corr
+			print "APPLY_EVTSEL_BG_CORR=",self.APPLY_EVTSEL_BG_CORR
+			if self.APPLY_EVTSEL_BG_CORR==True:
+				print "*** evtsel-BG-corr factors[q2bin,wbin]=[cf,cferr] ***"
+				for k in self.EVTSEL_BG_CORR_FCTR:
+					print k,self.EVTSEL_BG_CORR_FCTR[k]
+				print "******"
+			print "*** Done Listing Correction Factors ***"
 			time.sleep(3)
 			#! End Regular init
 
@@ -1112,7 +1147,8 @@ class DispObs:
 					h1[seq,vst,var].Sumw2()
 			#! End of [seq,vst,var] loop
 
-			#! + If "norm", then (1.)normalize and then (2.) apply_rad_eff_corr to h1(SEQ,VSTS,VARS)
+			#! + If "norm", then (1.)normalize and then (2.) apply_rad_eff_corr to h1(SEQ,VSTS,VARS), 
+			#!   and then (3.) apply_MM_diff_ER_SR_corr to h1(SEQ,VSTS,VARS) and then (4.) apply_evtsel_BG_corr to h1(SEQ,VSTS,VARS)
 			#! + If  "norm_EC_EF_SF", then also do the same, even for SF, since neither 1 or 2
 			#!   on SF should be adverse to comparing its distribution with EC & EF. In fact,
 			#!   applying rad_eff_corr on SF will only make this comparison truer
@@ -1120,10 +1156,18 @@ class DispObs:
 				self.norm_1D(h1,q2wbin)
 				if self.APPLY_RAD_EFF_CORR==True:
 					self.apply_rad_eff_corr(h1,q2wbin)
+				if self.APPLY_MM_DIFF_ER_SR_CORR==True:
+					self.apply_MM_diff_ER_SR_corr(h1,q2wbin)
+				if self.APPLY_EVTSEL_BG_CORR==True:
+					self.apply_evtsel_BG_corr(h1,q2wbin)
 			elif self.VIEW=="norm_EC_EF_SF": 
 				self.norm_1D(h1,q2wbin)
 				if self.APPLY_RAD_EFF_CORR==True:
 					self.apply_rad_eff_corr(h1,q2wbin)
+				if self. APPLY_MM_DIFF_ER_SR_CORR==True:
+					self.apply_MM_diff_ER_SR_corr(h1,q2wbin)
+				if self.APPLY_EVTSEL_BG_CORR==True:
+					self.apply_evtsel_BG_corr(h1,q2wbin)
 			else: #! just DCosTheta normalize theta distributions
 				for k in h1:
 					if k[2]=='THETA':
@@ -2214,6 +2258,7 @@ class DispObs:
 
 	def apply_rad_eff_corr(self,h1,q2wbin):
 		print "*** In DispObs::apply_rad_eff_corr() ***"
+		print "q2wbin=",q2wbin
 		
 		#! Get rad-eff-corr for this q2wbin
 		cf,cferr=None,None
@@ -2221,9 +2266,10 @@ class DispObs:
 			cf   =self.RAD_EFF_CORR_FCTR[q2wbin][0]
 			cferr=self.RAD_EFF_CORR_FCTR[q2wbin][1]
 		else:
-			print "DispObs::apply_rad_eff_corr():WARNING: %s not found in self.RAD_EFF_CORR_FCTR. Using cf,cfferr=1,1"
+			print "DispObs::apply_rad_eff_corr():WARNING: %s bin not found in self.RAD_EFF_CORR_FCTR. Using cf,cfferr=1,0"%q2wbin
 			cf=1
-			cferr=1
+			cferr=0
+		print "cf,cferr=",cf,cferr
 
 		#! Now apply cf,cferr to h1s
 		#! + In order to propagate errors, use TH1::Multiply()
@@ -5712,4 +5758,165 @@ class DispObs:
 			h1.SetMinimum(minimum)
 			h1.SetMaximum(maximum)
 		return
+
+	def get_MM_diff_ER_SR_corr_fctr(self):
+		'''
+		Obtain correction factors in cf[q2wbin]=[cf,cferr]
+		+ NOTE that q2wbin syntax should be similar to that in yield.root produced by proc_h8: q.qq-q.qq_w.www-w.www
+		+ NOTE:
+		  + SE from MM2 is used
+		  + cferr, which is statistical, is not calculated and thus set to 0
+		  + Results for all q2 bins are obtained from integrated q2 bin i.e. [2.00,5.00)
+		'''
+		corr_fctr=OrderedDict()
+		fname="%s/results_080117/2.00-5.00/EI/MM2/SE.txt"%os.environ['STUDY_MM_DIFF_ER_SR_DATADIR']
+		#! File data is in format: wbinn [wbinmin,wbinmax) cf(%)
+		if os.path.isfile(fname):
+			#! For each of the analysis q2bins, read file which contains integrated q2 data,
+			#! and thus store for each q2bin integrated results
+			q2binl=["%.2f-%.2f"%(2.00,2.40),"%.2f-%.2f"%(2.40,3.00),"%.2f-%.2f"%(3.00,3.50),"%.2f-%.2f"%(3.50,4.20),"%.2f-%.2f"%(4.20,5.00)]
+			for q2bin in q2binl:
+				f=open(fname,'r')
+				for line in f:
+					arr=line.rstrip().split(' ')
+					if len(arr)==3: #! any other line is not data, but a comment etc
+						#print arr[0],arr[1],arr[2]
+						#! Remove [ and ) from [wbinmin,wbinmax)
+						arr[1]=arr[1].replace('[','')
+						arr[1]=arr[1].replace(')','')
+						wmin=arr[1].split(',')[0]
+						wmax=arr[1].split(',')[1]
+						#print wmin,wmax
+						wbin="%s-%s"%(wmin,wmax)
+						cf=float(arr[2])/100
+						cferr=0
+						#print "wbin,cf=",wbin,cf
+						q2wbin="%s_%s"%(q2bin,wbin)
+						corr_fctr[q2wbin]=[cf,cferr]
+		else:
+			print "DispObs::get_MM_diff_ER_SR_corr_fctr(): %s not found"%fname
+		return corr_fctr
+
+	def apply_MM_diff_ER_SR_corr(self,h1,q2wbin):
+		'''
+		+ Correct 1D cross-section with self.MM_DIFF_ER_SR_CORR_FCTR
+		+ Formula: 
+		   + xsec_corr=xsec + corr-fctr*xsec --> xsec_corr=xsec*(1+corr-fctr) --> h1D_corr=h1D*hm, where hm=(1+corr-fctr)
+		   + Note that the sign of corr-fctr is important and a part of self.MM_DIFF_ER_SR_CORR_FCTR
+		   + Negative and positive signs means that the correction will reduce or increase the cross-sections, respectively
+		     + For more details on the sign see documentation in '$SUBSTUDIES/study_MM_diff_ER_SR/study_MM_diff_ER_SR.py'
+		'''
+		print "*** In DispObs::apply_MM_diff_ER_SR_corr() ***"
+		print "q2wbin=",q2wbin
+
+		#! Get MM_diff_ER_SR_corr-fctr for this q2wbin
+		cf,cferr=None,None
+		if q2wbin in self.MM_DIFF_ER_SR_CORR_FCTR.keys():
+			cf   =self.MM_DIFF_ER_SR_CORR_FCTR[q2wbin][0]
+			cferr=self.MM_DIFF_ER_SR_CORR_FCTR[q2wbin][1]
+		else:
+			print "DispObs::apply_MM_diff_ER_SR_corr():WARNING: %s bin not found in self.RAD_EFF_CORR_FCTR. Using cf,cfferr=1,0"%q2wbin
+			cf=1
+			cferr=0
+		print "cf,cferr=",cf,cferr
+
+		#! Now apply cf,cferr to h1s
+		#! + In order to propagate errors, use TH1::Multiply()
+		for k in h1:
+			#! 1. First make hm(=Multiply by histogram) all of whose binc,bine=cf,cferr
+			#! + Do this using TH1::Clone()
+			hm=h1[k].Clone("hm")
+			hm.SetTitle("hm")
+			#! Reset bin contents i.e. set binc,bine=0
+			hm.Reset()
+			#! Now set all binc,bine=cf,cferr
+			for ibin in range(hm.GetNbinsX()):
+				hm.SetBinContent(ibin+1,1+cf)
+				hm.SetBinError(ibin+1,cferr)
+			#! Set Sumw2() for hm so that errors are propagated
+			hm.Sumw2()
+
+			#! 2. Now apply rad-eff-corr
+			h1[k].Multiply(hm)
+
+		print "*** DispObs::apply_MM_diff_ER_SR_corr Done\n ***"
 		
+	def get_evtsel_BG_corr_fctr(self):
+		'''
+		Obtain correction factors in cf[q2wbin]=[cf,cferr]
+		+ NOTE that q2wbin syntax should be similar to that in yield.root produced by proc_h8: q.qq-q.qq_w.www-w.www
+		+ NOTE:
+		  + BG from MM2 is used (there is no significant difference from MM)
+		  + cferr, which is statistical, is not calculated and thus set to 0
+		  + Results for all q2 bins are obtained from integrated q2 bin i.e. [2.00,5.00)
+		'''
+		corr_fctr=OrderedDict()
+		fname="%s/evtsel_BG_072717/2.00-5.00/MM2/bg_from_fit.txt"%os.environ['STUDY_EVTSEL_BG_DATADIR']
+		#! File data is in format: wbinn [wbinmin,wbinmax) cf(%)
+		if os.path.isfile(fname):
+			#! For each of the analysis q2bins, read file which contains integrated q2 data,
+			#! and thus store for each q2bin integrated results
+			q2binl=["%.2f-%.2f"%(2.00,2.40),"%.2f-%.2f"%(2.40,3.00),"%.2f-%.2f"%(3.00,3.50),"%.2f-%.2f"%(3.50,4.20),"%.2f-%.2f"%(4.20,5.00)]
+			for q2bin in q2binl:
+				f=open(fname,'r')
+				for line in f:
+					arr=line.rstrip().split(' ')
+					if len(arr)==3: #! any other line is not data, but a comment etc
+						#print arr[0],arr[1],arr[2]
+						#! Remove [ and ) from [wbinmin,wbinmax)
+						arr[1]=arr[1].replace('[','')
+						arr[1]=arr[1].replace(')','')
+						wmin=arr[1].split(',')[0]
+						wmax=arr[1].split(',')[1]
+						#print wmin,wmax
+						wbin="%s-%s"%(wmin,wmax)
+						cf=float(arr[2])/100
+						cferr=0
+						#print "wbin,cf=",wbin,cf
+						q2wbin="%s_%s"%(q2bin,wbin)
+						corr_fctr[q2wbin]=[cf,cferr]
+		else:
+			print "DispObs::get_evtsel_BG_corr_fctr(): %s not found"%fname
+		return corr_fctr
+
+	def apply_evtsel_BG_corr(self,h1,q2wbin):
+		'''
+		+ Correct 1D cross-section with self.APPLY_EVTSEL_BG_CORR
+		+ Formula: 
+		   + xsec_corr=xsec-bg*xsec --> xsec_corr=xsec*(1-bg) --> h1D_corr=h1D*hm, where hm=(1-bg)
+		   + Note that the sign of bg is always positive and therefore it always has to be subtracted
+		'''
+		print "*** In DispObs::apply_evtsel_BG_corr() ***"
+		print "q2wbin=",q2wbin
+
+		#! Get MM_diff_ER_SR_corr-fctr for this q2wbin
+		cf,cferr=None,None
+		if q2wbin in self.EVTSEL_BG_CORR_FCTR.keys():
+			cf   =self.EVTSEL_BG_CORR_FCTR[q2wbin][0]
+			cferr=self.EVTSEL_BG_CORR_FCTR[q2wbin][1]
+		else:
+			print "DispObs::apply_evtsel_BG_corr():WARNING: %s bin not found in self.EVTSEL_BG_CORR_FCTR. Using cf,cfferr=1,0"%q2wbin
+			cf=1
+			cferr=0
+		print "cf,cferr=",cf,cferr
+
+		#! Now apply cf,cferr to h1s
+		#! + In order to propagate errors, use TH1::Multiply()
+		for k in h1:
+			#! 1. First make hm(=Multiply by histogram) all of whose binc,bine=cf,cferr
+			#! + Do this using TH1::Clone()
+			hm=h1[k].Clone("hm")
+			hm.SetTitle("hm")
+			#! Reset bin contents i.e. set binc,bine=0
+			hm.Reset()
+			#! Now set all binc,bine=cf,cferr
+			for ibin in range(hm.GetNbinsX()):
+				hm.SetBinContent(ibin+1,1-cf)
+				hm.SetBinError(ibin+1,cferr)
+			#! Set Sumw2() for hm so that errors are propagated
+			hm.Sumw2()
+
+			#! 2. Now apply rad-eff-corr
+			h1[k].Multiply(hm)
+
+		print "*** DispObs::apply_evtsel_BG_corr Done\n ***"
