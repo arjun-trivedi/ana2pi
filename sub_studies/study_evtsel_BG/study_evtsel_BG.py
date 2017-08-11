@@ -271,7 +271,7 @@ def plot_fit_and_write_bg(BG):
 			wbinl=[] #! wbin label
 			for iw,wbin_le in enumerate(WBIN_LEL):
 				#! DBGW (3)
-				#if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
+				if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
 				#if DBG==True and iw+1 > 10: continue
 				#if DBG==True and (iw+1!=2 and iw+1!=3 and iw+1!=4 and iw+1!=5): continue
 				wmin=wbin_le
@@ -346,6 +346,8 @@ def plot_fit_and_write_bg(BG):
 			ax.legend(loc='upper right',prop={'size':8})
 			#! save figure
 			fig.savefig('%s/bg.png'%(outdir_q2w_plt))
+			fig.savefig('%s/bg.pdf'%(outdir_q2w_plt))
+			fig.savefig('%s/bg.eps'%(outdir_q2w_plt))
 
 			#! Save fit data in text file
 			#! Note that if bg_fit<0, it is set to 0
@@ -481,6 +483,8 @@ def test_fit_bg():
 			ax.legend(loc='upper right',prop={'size':8})
 			#! save figure
 			fig.savefig('%s/bg_test_fit.png'%(outdir_q2w_plt))
+			fig.savefig('%s/bg_test_fit.pdf'%(outdir_q2w_plt))
+			fig.savefig('%s/bg_test_fit.eps'%(outdir_q2w_plt))
 
 #! begin main
 if TEST_FIT_ONLY:
@@ -494,7 +498,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 	q2max=Q2BIN_UEL[iq]
 	for iw,wbin_le in enumerate(WBIN_LEL):
 		#! DBGW (3)
-		#if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #! (iw!=0 and iw!=15 and iw!=28)
+		if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #! (iw!=0 and iw!=15 and iw!=28)
 		#if DBG==True and iw+1 > 10: continue
 		#if DBG==True and (iw+1!=2 and iw+1!=3 and iw+1!=4 and iw+1!=5): continue
 		wmin=wbin_le
@@ -547,7 +551,7 @@ for itr in range(2):
 			os.makedirs(outdir_q2w)
 		for iw,wbin_le in enumerate(WBIN_LEL):
 			#! DBGW (3)
-			#if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
+			if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
 			#if DBG==True and iw+1 > 10: continue
 			#if DBG==True and (iw+1!=2 and iw+1!=3 and iw+1!=4 and iw+1!=5): continue
 			wmin=wbin_le

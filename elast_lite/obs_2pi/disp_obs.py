@@ -364,8 +364,14 @@ class DispObs:
 					else:
 						print "DispObs::__init__():rad-eff-corr setup: %s not found"%hname
 
-			#! [07-09-17] Empty target background subtraction correction factor
+			#! [07-09-17] Empty target background subtraction 5D systematic effect (SE) correction factor
 			#! + Only for e16
+			#!
+			#! + This SE addresses the fact the etgt BG sub, because etgt run contains events
+			#!   within the target cell, also removes good 2pi events. 
+			#! + Therefore, the fraction of good 2pi events that are removed in this process is estimated, which is the correction factor,
+			#!   and used to correct the finally obtain cross-sections
+			#! + For full details see documentation about calclulating this SE in '$SUBSTUDIES/study_tgt_BG/e16/obtain_and_validate_R.py' 
 			#!
 			#! + Since this SE is negative, the correction is supposed to increase the finally obtained cross-sections (itg,1D and R2)
 			#!   by the absolute value of this percentage:

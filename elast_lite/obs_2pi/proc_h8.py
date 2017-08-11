@@ -52,7 +52,7 @@ SEQ_CALC=['SA','SC','SH','SF','EC','EH','EF']
 #! Setup data to perform Empty Target Background subtraction (etgt BG sub)
 #! [06-09-17] Currently, R['ptgt_lse']=13.67 is being used to scale etgt events
 R=OrderedDict()
-#! + from $STUDY_TGT_BG_E16_DATADIR/results_R_060917/R.txt
+#! + from $STUDY_TGT_BG_E16_DATADIR/results_R_070917/R.txt
 R['ptgt_lse']=13.67
 R['ptgt_tgt']=13.40
 

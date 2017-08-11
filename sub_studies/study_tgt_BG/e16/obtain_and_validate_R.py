@@ -164,7 +164,7 @@ for isctr in range(NSCTR):
 #!   the number of events "within the target" (walls excluded) for the ptgt zvtx disribution:
 #!     SE= (scaled-etgt events "within target"/scaled-ptgt events "within target")*100
 #! + "within the target" limits of integration defined below
-#! + Note that is SE is negative
+#! + Note that is SE is negative in the sense that it decreases the cross-section (this sign is implicit while writing the values)
 #! + It is obtained per sector and then averated
 #! Create structure to hold SE(ptgt,sctr)
 SE=OrderedDict()

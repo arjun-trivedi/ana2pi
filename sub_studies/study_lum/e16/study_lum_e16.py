@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import division
-import os,datetime,sys
+import os,datetime,sys,subprocess
 import study_lum_e16_lib as lib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,6 +80,53 @@ if TGT=='etgt': #! Then do simplified anaylysis and exit
 	axs[2][0].legend()
 	fig.savefig("%s/goodruns_cut_ana_plts.png"%(OUTDIR))
 
+	#! Save separately to put in thesis, with needed modifications, plot to show good-runs cut value (nrm_N2pi vs run, on axs[2][0] in previous plot)
+	fig,ax=plt.subplots(figsize=(10,5),nrows=1,ncols=1)
+	plt.subplots_adjust(wspace=0.15)
+	#! nrm_N2pi vs run
+	#! + Before plotting transform run numbers on a linear scale and label
+	#!   the ticks on this linear scale with run numbers
+	#! + This is so that the x-scale is does not have uneven spacing as per run numbers
+	x=range(len(lumd['run']))
+	xticks=list(lumd['run'])
+	ax.scatter(x,lumd['nrm_N2pi'],s=50) #! (lumd['run'],lumd['nrm_N2pi'],s=50)
+	#! Set x-tick labels
+	ax.set_xticks(x)
+	ax.set_xticklabels(xticks,rotation='vertical')
+	#! Extra space below x-axis for rotated labels
+	fig.subplots_adjust(bottom=0.2)
+	#! Set x-/y- axis labels
+	ax.set_xlabel("Run Number",fontsize='x-large')
+	ax.set_ylabel("Faraday Cup Normalized Event Count",fontsize='x-large')
+	#! Fix x axis
+	# shift half a step to the left
+	xmin=(3*x[0]-x[1])/2.
+	# shift half a step to the right
+	xmax=(3*x[-1]-x[-2])/2.
+	ax.set_xlim(xmin,xmax)
+	#! Adjust ymin,ymax
+	ymin,ymax=ax.get_ylim()
+	frctn=0.20
+	ax.set_ylim(bottom=ymin-frctn*ymin,top=ymax+frctn*ymax)
+	#! Adjust x-/y-tick size
+	ax.tick_params(axis='both', which='major', labelsize=14)
+	#! Draw cut values
+	#! Note compared to ptgt, there is only cut value, but with a min and max limit
+	CUTS=[[0.35,0.45]]
+	CLRS=['r']
+	xmin,xmax=ax.get_xlim()[0],ax.get_xlim()[1]
+	for i in range(len(CUTS)):
+		cutmin,cutmax=CUTS[0][0],CUTS[0][1]
+		ax.hlines(cutmin,xmin,xmax,color=CLRS[i],label="Cut min, max = %.3f, %.3f"%(cutmin,cutmax))
+		ax.hlines(cutmax,xmin,xmax,color=CLRS[i])
+	ax.legend()
+	#! save fig
+	fig.savefig("%s/goodruns_cut_plt.png"%(OUTDIR))
+	#! .png->.pdf
+	cmd=['convert',"%s/goodruns_cut_plt.png"%(OUTDIR),"%s/goodruns_cut_plt.pdf"%(OUTDIR)]
+  	tool=subprocess.Popen(cmd,stderr=subprocess.STDOUT)
+	tool.wait()
+	
 	#! Make a copy of runs that are within cuts i.e. good runs(=G)
 	GRUNL=[None for i in range(len(CUTS))]
 	for i in range(len(CUTS)):
@@ -115,6 +162,24 @@ if TGT=='etgt': #! Then do simplified anaylysis and exit
 		q=sum(lumd['q'][lumd['run'].isin(GRUNL[i])]) #! in microC here
 		fout.write("Q=%.2f mC"%(q/1000))
 		#fout.write("******\n")
+		fout.write("\n")
+
+		#! Note some numbers with respect to justifying goodruns cut
+		#! + This is based on showing that for the badruns, the relative difference of nrm_N2pi
+		#!   from <nrm_N2pi> from goodruns is greater than X%
+		fout.write("*** The following is a justification for the goodruns cut ***\n")
+		fout.write("+ Printed below is the relative difference (%) of 'nrm_N2pi' each of the 8 etgt runs from the <nrm_N2pi> from the selected etgt runs (goodruns)\n")
+		fout.write("+ The difference for the 5 selected goodruns (30825, 31128, 31254, 31300, 31344) should is within 7% and for the other three, it is larger than 30%\n")
+		total_nrm_N2pi_goodruns=sum(lumd['nrm_N2pi'][lumd['run'].isin(GRUNL[i])])
+		av_nrm_N2pi_goodruns=total_nrm_N2pi_goodruns/len(GRUNL[i])
+		#av_q_goodruns=q/len(GRUNL[i])
+		#nrm_N2pi_badruns=(lumd['nrm_N2pi'][~lumd['run'].isin(GRUNL[i])])
+		for i,nrm_N2pi in enumerate(list(lumd['nrm_N2pi'])):#nrm_N2pi_badruns:
+			run=lumd['run'][(lumd['nrm_N2pi']==nrm_N2pi)]
+			#print "nrm_N2pi,run=",nrm_N2pi,run
+			diff=((nrm_N2pi-av_nrm_N2pi_goodruns)/av_nrm_N2pi_goodruns)*100
+			#print "diff=",diff
+			fout.write("%d. runnum:nrm_N2pi:diff(%%)=%d:%.2f:%.2f\n"%(i+1,run,nrm_N2pi,diff))
 		fout.write("\n")
 	sys.exit()
 #! begin etgt analysis
@@ -160,16 +225,82 @@ for i,cut in enumerate(CUTS):
 axs[3][0].legend()
 fig.savefig("%s/goodruns_cut_ana_plts.png"%(OUTDIR))
 
+#! Save separately to put in thesis, with needed modifications, plot to show good-runs cut value (nrm_N2pi vs run, on axs[2][0] in previous plot)
+fig,ax=plt.subplots(figsize=(10,5),nrows=1,ncols=1)
+plt.subplots_adjust(wspace=0.15)
+#! nrm_N2pi vs run
+#! + Before plotting transform run numbers on a linear scale and label
+#!   the ticks on this linear scale with run numbers
+#! + This is so that the x-scale is does not have uneven spacing as per run numbers
+x=range(len(lumd['run']))
+xticks=list(lumd['run'])
+#! Since there are 606 runs, to prevent crowded x-axis labels, remove some based on a certain interval 
+spcng=30
+for i in range(len(xticks)):
+	if ((i+1)%spcng)!=0:
+		xticks[i]=''
+ax.scatter(x,lumd['nrm_N2pi'],s=50) #! (lumd['run'],lumd['nrm_N2pi'],s=50)
+#! Set x-tick labels
+ax.set_xticks(x)
+ax.set_xticklabels(xticks,rotation='vertical')
+#! Extra space below x-axis for rotated labels
+fig.subplots_adjust(bottom=0.2)
+#! Set x-/y- axis labels
+ax.set_xlabel("Run Number",fontsize='x-large')
+ax.set_ylabel("Faraday Cup Normalized Event Count",fontsize='x-large')
+#! Fix x axis
+# shift half a step to the left
+xmin=(3*x[0]-x[1])/2.
+# shift half a step to the right
+xmax=(3*x[-1]-x[-2])/2.
+ax.set_xlim(xmin,xmax)
+#! Adjust ymin,ymax
+ymin,ymax=ax.get_ylim()
+frctn=0.20
+ax.set_ylim(bottom=ymin-frctn*ymin,top=ymax+frctn*ymax)
+#! Adjust x-/y-tick size
+ax.tick_params(axis='both', which='major', labelsize=14)
+#! Draw cut values
+#! Note compared to ptgt, there is only cut value, but with a min and max limit
+#! + Cut values obtained from fit to nrm_N2pi (see below for Fit):
+#!   + min=26=rounded 29.75-(3*1.398)
+#!   + max=34=rounded 29.75-(3*1.398)
+#! where 29.75,1.398 are mu,sg of fitted Gaussian histogram (see below for Fit)
+CUTS=[[26,34]]
+CLRS=['r']
+xmin,xmax=ax.get_xlim()[0],ax.get_xlim()[1]
+for i,cut in enumerate(CUTS):
+	cutmin,cutmax=CUTS[i][0],CUTS[i][1]
+	ax.hlines(cutmin,xmin,xmax,color=CLRS[i],label="Cut min, max = %.3f, %.3f"%(cutmin,cutmax))
+	ax.hlines(cutmax,xmin,xmax,color=CLRS[i])
+ax.legend()
+#! save fig
+fig.savefig("%s/goodruns_cut_plt.png"%(OUTDIR))
+#! .png->.pdf
+cmd=['convert',"%s/goodruns_cut_plt.png"%(OUTDIR),"%s/goodruns_cut_plt.pdf"%(OUTDIR)]
+tool=subprocess.Popen(cmd,stderr=subprocess.STDOUT)
+tool.wait()
+
 #! Draw ROOT-fitted version of zoomed version of nrm_N2pi vs run to depict cuts 
 h=ROOT.TH1F("h_nrm_N2pi_zoomed","h_nrm_N2pi_zoomed",30,15,40)
-h.SetXTitle("nrm_N2pi")
+h.SetXTitle("Faraday Cup Normalized Event Count per Run")
 for x in list(lumd['nrm_N2pi']):
 	h.Fill(x)
 #h.Sumw2()
 h.Fit("gaus","","",27,33)
-ROOT.gStyle.SetOptFit(1111)
+#! aesthetics
+h.SetTitle("")
+ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetOptFit(0001)
 c=ROOT.TCanvas()
 h.Draw("e")
+#! set size of text in and location of statbox
+st=c.GetPrimitive("stats")
+#st.SetTextSize(0.02)  
+st.SetX1NDC(0.72)
+st.SetX2NDC(0.9)
+st.SetY1NDC(0.7)
+st.SetY2NDC(0.9)
 #! Prepare and draw cut lines
 CLRS_ROOT=[ROOT.gROOT.ProcessLine("kGreen"),ROOT.gROOT.ProcessLine("kRed")]
 TCUTL=[0 for i in range(len(CUTS))]
@@ -187,6 +318,11 @@ for i,cut in enumerate(CUTS):
 	for line in [TCUTL[i],TCUTH[i]]:
 		line.Draw("sames")
 c.SaveAs("%s/goodruns_cut_ana_nrm_N2pi_zoomed_fitted.png"%OUTDIR)
+#! .png->.pdf
+cmd=['convert',"%s/goodruns_cut_ana_nrm_N2pi_zoomed_fitted.png"%(OUTDIR),"%s/goodruns_cut_ana_nrm_N2pi_zoomed_fitted.pdf"%(OUTDIR)]
+tool=subprocess.Popen(cmd,stderr=subprocess.STDOUT)
+tool.wait()
+
 
 #! + Obtain luminosity based on CUTS on nrm_N2pi
 #! + Save other relevant data based on this selection
@@ -242,7 +378,7 @@ for i in range(len(CUTS)):
 	truns=txruns+tgruns
 	pxruns=(txruns/606)*100
 	fout.write("*** Sanity-check based on number of total runs in $E16D_EI=%d ***\n"%606)
-	fout.write("#cutruns=%d, #goodruns=%d => #total runs=%d\n"%(txruns,tgruns,tgruns))
+	fout.write("#cutruns=%d, #goodruns=%d => #total runs=%d\n"%(txruns,tgruns,truns))
 	fout.write("Percentage cut runs=%.2f %%\n"%pxruns)
 	if (truns!=606):fout.write("ERROR! Something is wrong. #totalruns != 606")
 	#fout.write("******\n")
