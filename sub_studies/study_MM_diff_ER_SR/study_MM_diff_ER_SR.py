@@ -520,6 +520,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 			#! save canvas
 			cmm[iplt][CEIAT].SaveAs("%s/%s.png"%(outdir_q2w_plt_EIAT,cname))
+			cmm[iplt][CEIAT].SaveAs("%s/%s.pdf"%(outdir_q2w_plt_EIAT,cname))
 
 			#! Now plot CEI
 			cmm[iplt][CEI]=ROOT.TCanvas(cname,cname)
@@ -609,6 +610,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 			#! save canvas
 			cmm[iplt][CEI].SaveAs("%s/%s.png"%(outdir_q2w_plt_EI,cname))
+			cmm[iplt][CEI].SaveAs("%s/%s.pdf"%(outdir_q2w_plt_EI,cname))
 			#cmm[iplt][CEI].SaveAs("%s/%s.eps"%(outdir_q2w_plt_EI,cname))
 
 
@@ -672,13 +674,17 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 		ax.set_xlim(xmin,xmax)
 		ax.set_xticks(wbinn)
 		ax.set_xticklabels(wbinl,rotation='vertical')
-		ax.set_title(r"Systematic Error due to different Missing Mass distributions " "\n" r"in Experiment and Simulation for " r" $Q^{2}$" "=[%.2f,%.2f) " r"$GeV^{2}$"%(q2min,q2max))
+		if iplt==MM:
+			ax.set_title("Effect on the Measured Cross-sections due to the different" "\n" "Missing Mass Distributions in Experiment and Simulation") #for " r" $Q^{2}$" "=[%.2f,%.2f) " r"$GeV^{2}$"%(q2min,q2max))
+		elif iplt==MM2:
+			ax.set_title("Effect on the Measured Cross-sections due to the different" "\n" "Missing Mass Squared Distributions in Experiment and Simulation")# for " r" $Q^{2}$" "=[%.2f,%.2f) " r"$GeV^{2}$"%(q2min,q2max))
 		ax.set_xlabel("W (GeV)")
-		ax.set_ylabel("Systematic Error (%)")
+		ax.set_ylabel(r"$\frac{\delta \sigma}{\sigma} (\%)$",fontsize=25)
 		#! draw legend
 		ax.legend(loc='upper right',prop={'size':8})
 		#! save figure
 		fig.savefig('%s/SE.png'%(outdir_q2w_plt_EIAT))
+		fig.savefig('%s/SE.pdf'%(outdir_q2w_plt_EIAT))
 
 		#! output as text
 		fout=open("%s/SE.txt"%outdir_q2w_plt_EIAT,'w')
@@ -706,13 +712,18 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 		ax.set_xlim(xmin,xmax)
 		ax.set_xticks(wbinn)
 		ax.set_xticklabels(wbinl,rotation='vertical')
-		ax.set_title(r"Systematic Error due to different Missing Mass distributions " "\n" r"in Experiment and Simulation for " r" $Q^{2}$" "=[%.2f,%.2f) " r"$GeV^{2}$"%(q2min,q2max))
+		if iplt==MM:
+			ax.set_title("Effect on the Measured Cross-sections due to the different" "\n" "Missing Mass Distributions in Experiment and Simulation")# for " r" $Q^{2}$" "=[%.2f,%.2f) " r"$GeV^{2}$"%(q2min,q2max))
+		elif iplt==MM2:
+			ax.set_title("Effect on the Measured Cross-sections due to the different" "\n" "Missing Mass Squared Distributions in Experiment and Simulation")# for " r" $Q^{2}$" "=[%.2f,%.2f) " r"$GeV^{2}$"%(q2min,q2max))
 		ax.set_xlabel("W (GeV)")
-		ax.set_ylabel("Systematic Error (%)")
+		ax.set_ylabel(r"$\frac{\delta \sigma}{\sigma} (\%)$",fontsize=25)
 		#! draw legend
-		ax.legend(loc='upper right',prop={'size':8})
+		#! legend not needed for only EI
+		#ax.legend(loc='upper right',prop={'size':8})
 		#! save figure
 		fig.savefig('%s/SE.png'%(outdir_q2w_plt_EI))
+		fig.savefig('%s/SE.pdf'%(outdir_q2w_plt_EI))
 
 		#! output as text
 		fout=open("%s/SE.txt"%outdir_q2w_plt_EI,'w')

@@ -128,17 +128,6 @@ for l in [MM2_T2_CUTL_EI,MM2_T2_CUTH_EI,MM_T2_CUTL_EI,MM_T2_CUTH_EI]:
 	l.SetLineColor(ROOT.gROOT.ProcessLine("kMagenta"))
 	l.SetLineStyle(2)
 	l.SetLineWidth(3)
-# #! AT
-# AT_MM2L,AT_MM2H=-0.00,0.04
-# AT_MML, AT_MMH=-math.sqrt(math.fabs(AT_MM2L)),math.sqrt(AT_MM2H)
-# MM2_T2_CUTL_AT=ROOT.TLine(AT_MM2L,0,AT_MM2L,0);
-# MM2_T2_CUTH_AT=ROOT.TLine(AT_MM2H,0,AT_MM2H,0);
-# MM_T2_CUTL_AT=ROOT.TLine(AT_MML,0,AT_MML,0);
-# MM_T2_CUTH_AT=ROOT.TLine(AT_MMH,0,AT_MMH,0);
-# for l in [MM2_T2_CUTL_AT,MM2_T2_CUTH_AT,MM_T2_CUTL_AT,MM_T2_CUTH_AT]:
-# 	l.SetLineColor(ROOT.gROOT.ProcessLine("kOrange+8"))
-# 	l.SetLineStyle(2)
-# 	l.SetLineWidth(3)
 
 #! TLine depicting pion mass debug
 MASS_PION=0.13957018;
@@ -256,7 +245,7 @@ def plot_fit_and_write_bg(BG):
 		if DBG==True and iq>0: continue #! debug
 		q2min=q2bin_le
 		q2max=Q2BIN_UEL[iq]
-		outdir_q2w="%s/%.2f-%.2f"%(OUTDIR,q2min,q2max)
+		outdir_q2w="%s/with_BG_ana/%.2f-%.2f"%(OUTDIR,q2min,q2max)
 		if not os.path.exists(outdir_q2w):
 			os.makedirs(outdir_q2w)
 		#! set q2bin label
@@ -367,6 +356,98 @@ def plot_fit_and_write_bg(BG):
 				wbin=wbinl[i]
 				fout.write("%d %s %.2f\n"%(x,wbin,bg[i]))
 			fout.close()
+
+def plot_without_BG_analysis():
+	'''
+	plot MM and MM2 without BG analysis
+	'''
+
+	for iq,q2bin_le in enumerate(Q2BIN_LEL):
+		if DBG==True and iq>0: continue #! debug
+		q2min=q2bin_le
+		q2max=Q2BIN_UEL[iq]
+		outdir_q2w="%s/no_BG_ana/%.2f-%.2f"%(OUTDIR,q2min,q2max)
+		if not os.path.exists(outdir_q2w):
+			os.makedirs(outdir_q2w)
+		for iw,wbin_le in enumerate(WBIN_LEL):
+			#! DBGW (3)
+			if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue #! debug #!(iw!=0 and iw!=15 and iw!=28)
+			#if DBG==True and iw+1 > 10: continue
+			#if DBG==True and (iw+1!=2 and iw+1!=3 and iw+1!=4 and iw+1!=5): continue
+			wmin=wbin_le
+			wmax=wbin_le+WBINW
+		
+			print "Going to plot hmm and hmm2 for %.2f-%.2f_%.3f-%.3f"%(q2min,q2max,wmin,wmax)
+
+			#! Create cmm[plt]
+			cmm=[0 for i in range(NPLTS)]
+			#! Now plot
+			for iplt in range(NPLTS):
+				outdir_q2w_plt="%s/%s"%(outdir_q2w,PLT_NAME[iplt])
+				if not os.path.exists(outdir_q2w_plt):
+					os.makedirs(outdir_q2w_plt)
+				cname="c%s_%.3f-%.3f"%(PLT_NAME[iplt],wmin,wmax)
+				cmm[iplt]=ROOT.TCanvas(cname,cname)
+				#l=ROOT.TLegend(0.1,0.3,0.3,0.4)#,"","NDC");
+				#! hists aesthetics	
+				for idtyp in range(NDTYP):
+					hmm[idtyp][iq][iw][iplt].SetLineColor(CLRS_DTYP[idtyp])
+					hmm[idtyp][iq][iw][iplt].SetMarkerColor(CLRS_DTYP[idtyp])
+				#! Draw hists
+				#! First directly get copy of hists so as to not use tedious indices
+				hER=hmm[ER][iq][iw][iplt]
+				hSR=hmm[SR][iq][iw][iplt]
+				hSR3PI=hmm[SR3PI][iq][iw][iplt]
+				hER.Sumw2()
+				hSR.Sumw2()
+				hSR3PI.Sumw2()
+				#! First draw hER
+				hER.SetXTitle("%s [%s]"%(PLT_TITLE[iplt], PLT_UNIT[iplt]))
+				cmm[iplt].SetLeftMargin(0.20)
+				hER.GetYaxis().SetTitleOffset(1.5)
+				hER.SetYTitle("N_{entries}")
+				hER.Draw()
+				ZERO_YAXIS[iplt].Draw("same")
+				#! scale SR and then draw
+				max_ER=hER.GetMaximum()
+				if max_ER==0:max_ER=1
+				max_SR=hSR.GetMaximum()
+				if max_SR==0:max_SR=1
+				scl_fctr_SR=max_ER/max_SR
+				if scl_fctr_SR==0:scl_fctr_SR=1
+				hSR.Scale(scl_fctr_SR)
+				hSR.Draw("same")
+
+				#! Create and add entries: hists and cut-lines
+				#! legend
+				l=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
+				for hist,label in zip([hER,hSR],["exp","sim"]):
+					l.AddEntry(hist,label,"lp")
+				#! Draw cut lines and add them to legend
+				if iplt==MM:
+					#! Draw cut lines
+					MM_T2_CUTL_EI.SetY1(hER.GetMinimum())
+					MM_T2_CUTL_EI.SetY2(hER.GetMaximum())
+					MM_T2_CUTH_EI.SetY1(hER.GetMinimum())
+					MM_T2_CUTH_EI.SetY2(hER.GetMaximum())
+					MM_T2_CUTL_EI.Draw("same")
+					MM_T2_CUTH_EI.Draw("same")
+					#! add to legend
+					l.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
+				elif iplt==MM2:
+					#! EI
+					MM2_T2_CUTL_EI.SetY1(hER.GetMinimum())
+					MM2_T2_CUTL_EI.SetY2(hER.GetMaximum())
+					MM2_T2_CUTH_EI.SetY1(hER.GetMinimum())
+					MM2_T2_CUTH_EI.SetY2(hER.GetMaximum())
+					MM2_T2_CUTL_EI.Draw("same")
+					MM2_T2_CUTH_EI.Draw("same")
+					#! add to legend
+					l.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
+				#! Draw legend
+				l.Draw()
+				cmm[iplt].SaveAs("%s/%s.png"%(outdir_q2w_plt,cname))
+				cmm[iplt].SaveAs("%s/%s.pdf"%(outdir_q2w_plt,cname))
 
 def test_fit_bg():
 	'''
@@ -530,6 +611,12 @@ ROOT.gStyle.SetOptFit(1)#111)
 #! Aesthetic related objects
 CLRS_DTYP=[ROOT.gROOT.ProcessLine("kBlue"),ROOT.gROOT.ProcessLine("kRed"),ROOT.gROOT.ProcessLine("kGreen")]
 
+#! First plot MM/MM2 without BG analysis
+#! + i.e. simply ER and SR plots together as was done before BG analysis
+plot_without_BG_analysis()
+
+#! Now plot with BG analysis
+
 #! [07-13-17] Create and fill bg structure in this loop
 #! + Create structure to hold estimating BG(%):BG[q2][w][plt]=(bg,qbin,wbin)
 #! + Initialize to 'nan' because then where BG is not calculated will not be plotted
@@ -546,7 +633,7 @@ for itr in range(2):
 		if DBG==True and iq>0: continue #! debug
 		q2min=q2bin_le
 		q2max=Q2BIN_UEL[iq]
-		outdir_q2w="%s/%.2f-%.2f"%(OUTDIR,q2min,q2max)
+		outdir_q2w="%s/with_BG_ana/%.2f-%.2f"%(OUTDIR,q2min,q2max)
 		if not os.path.exists(outdir_q2w):
 			os.makedirs(outdir_q2w)
 		for iw,wbin_le in enumerate(WBIN_LEL):
@@ -600,11 +687,7 @@ for itr in range(2):
 				cmm[iplt].SetLeftMargin(0.20)
 				hER.GetYaxis().SetTitleOffset(1.5)
 				hER.SetYTitle("N_{entries}")
-				#! Adjust lims of y-axis to go below 0 to show fluctuations in hdiff 
-				#! and draw line at y=0
-				hER.SetMinimum(-800)
-				hER.Draw()
-				ZERO_YAXIS[iplt].Draw("same")
+				#! Drawn after hdiff because that is used to set min of y-axis, hER.Draw()
 				#! scale SR and then draw
 				max_ER=hER.GetMaximum()
 				if max_ER==0:max_ER=1
@@ -613,7 +696,7 @@ for itr in range(2):
 				scl_fctr_SR=max_ER/max_SR
 				if scl_fctr_SR==0:scl_fctr_SR=1
 				hSR.Scale(scl_fctr_SR)
-				hSR.Draw("same")
+				#! Drawn after hdiff because that is used to set min of y-axis, hSR.Draw("same")
 
 				#! Now normalize SR3PI to hER-hSR (=hdiff) and draw
 				#! 1. get hdiff=hER-hSR
@@ -622,38 +705,24 @@ for itr in range(2):
 				hdiff.Add(hSR,-1)
 				hdiff.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hdiff.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+				
+				#! Adjust lims of y-axis to go below 0 to show fluctuations in hdiff 
+				#! and draw line at y=0
+				min_hdiff=hdiff.GetMinimum()
+				min_hdiff=min_hdiff-(10/100)*math.fabs(min_hdiff)
+				hER.SetMinimum(min_hdiff)
+				#! Now draw hER,hSR and hdiff
+				hER.Draw()
+				hSR.Draw("same")
 				hdiff.Draw("same")
+				ZERO_YAXIS[iplt].Draw("same")
+
+
 				#! 2. Now do the normalization or obtain it from bg-fit (done in a previous iteration)
 				if wbin_norm3pi_not_possible==True:
 					#! + Neither normalize nor obtain nf from bg-fit which is done the previous iteration
 					continue
-						
-					#! + Normalize based on bg_fit				
-					# #! norm_hSR3PI_based_on_bg_fit
-					# fbgfit=open("%s/bg_from_fit.txt"%outdir_q2w_plt,'r')
-					# wbin="[%.3f,%.3f)"%(wmin,wmax)
-					# #! find wbin in file and obtain bg
-					# wbin_found=False
-					# for line in fbgfit:
-					# 	if wbin in line:
-					# 		larr=line.rstrip().split(" ")
- 				# 			bg=float(larr[2])
- 				# 			wbin_found=True
- 				# 			break
- 				# 	if wbin_found:
- 				# 		print "wbin=%s,plt=%s: bg from fit=%f"%(wbin,PLT_NAME[iplt],bg)
-	 			# 		if   iplt==MM:  cut_min,cut_max=EI_MML, EI_MMH
-					# 	elif iplt==MM2: cut_min,cut_max=EI_MM2L,EI_MM2H				
- 				# 		hSR3PIn=norm_hSR3PI_based_on_bg_fit(hER,hSR3PI,bg,cut_min,cut_max)
- 				# 	else:
- 				# 		print "ERROR: wbin=%s: bg from fit not found!"%(wbin)
-
- 					#! + Normalize using optmized normalization range
- 					# #! range norm using NL1
- 					# print "range norm using NL1"
- 					# hSR3PIn,nf=atlib.norm_hist_range(hdiff,hSR3PI,NL1[iplt])
- 					# NF[iq][iw][iplt]=nf
- 				else:
+				else:
 					#! range norm (note that the obtained hist has Sumw2() set in the method)
 					print "range norm using NL"
 					hSR3PIn,nf=atlib.norm_hist_range(hdiff,hSR3PI,NL[iplt])
