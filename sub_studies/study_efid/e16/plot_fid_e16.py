@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from __future__ import division
 
-import os,sys
+import os,sys,datetime
 import ROOT
 import matplotlib.pyplot as plt
 from rootpy.interactive import wait
@@ -133,7 +133,8 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 	T[EXP]=FIN[EXP].Get("d2piR/tR")
 	T[SIM]=FIN[SIM].Get("d2piR/tR")
 	#! Output objects
-	OUTDIR=("%s/hists"%os.environ['STUDY_FID_E16_DATADIR'])
+	DATE=datetime.datetime.now().strftime('%m%d%y')
+	OUTDIR=("%s/hists_%s"%(os.environ['STUDY_FID_E16_DATADIR'],DATE))
 	if not os.path.exists(OUTDIR):
 		os.makedirs(OUTDIR)
 	FOUT[EXP]=ROOT.TFile("%s/fexp.root"%(OUTDIR),"RECREATE");
@@ -165,13 +166,13 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 						T[idtyp].Draw(DRW_CMD[ihst][iprt][isctr],cut,"colz",nentries)
 
 						#! Store histogram
-						ROOT.gStyle.SetOptStat("ne")
+						ROOT.gStyle.SetOptStat(0)#("ne")
 						htmp=ROOT.gDirectory.Get(DRW_CMD_HST_NAME[ihst][iprt])	
 						#print idtyp,ihst,iprt,isctr,ipbin,LIN
 						#print htmp.GetName()
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN]=htmp.Clone()
 						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetName("%s_s%d_pbin%d"%(DRW_CMD_HST_NAME[ihst][iprt],isctr+1,ipbin+1))
-						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetTitle("%s"%(cut.GetTitle()))
+						H[idtyp][ihst][iprt][isctr][ipbin][LIN].SetTitle("")#("%s"%(cut.GetTitle()))
 						H[idtyp][ihst][iprt][isctr][ipbin][NRM]=ROOT.norm2D(H[idtyp][ihst][iprt][isctr][ipbin][LIN])
 
 
@@ -222,11 +223,13 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							f_h.SetLineWidth(1)
 							f_l.SetLineWidth(1)
 						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+							#! [08-17-17] The following code block has changes to accomodate the fact that
+							#!            only EP's exp cuts are to be displayed because they are now being used in the analysis
 							#! E1F:EP (tight and loose)
 							f_h_exp=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"exp",isctr+1,1);
 							f_l_exp=ROOT.fPhiFid_hdrn_l_mod(PRT_ID[iprt],"exp",isctr+1,1);
-							f_h_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
-							f_l_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+							f_h_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlack")) #("kBlue"))
+							f_l_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlack")) #("kBlue"))
 							f_h_exp.SetLineWidth(3)
 							f_l_exp.SetLineWidth(3)
 							f_h_sim=ROOT.fPhiFid_hdrn_h_mod(PRT_ID[iprt],"sim",isctr+1,1);
@@ -239,7 +242,7 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							#! t0
 							lt0_exp=ROOT.ROOT.lt0(PRT_ID[iprt],"exp");
 							lt0_sim=ROOT.ROOT.lt0(PRT_ID[iprt],"sim");
-							lt0_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlue"))
+							lt0_exp.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))#("kBlue"))
 							lt0_sim.SetLineColor(ROOT.gROOT.ProcessLine("kRed"))
 							lt0_exp.SetLineWidth(3)
 							lt0_sim.SetLineWidth(3)
@@ -247,8 +250,8 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							#! E16:EI
 							f_old_h=ROOT.fPhiFid_e16_hdrn_h_mod(isctr+1)
 							f_old_l=ROOT.fPhiFid_e16_hdrn_l_mod(isctr+1)
-							f_old_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
-							f_old_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+							f_old_h.SetLineColor(ROOT.gROOT.ProcessLine("kBlue")) #("kBlack"))
+							f_old_l.SetLineColor(ROOT.gROOT.ProcessLine("kBlue")) #("kBlack"))
 							f_old_h.SetLineWidth(3)
 							f_old_l.SetLineWidth(3)
 
@@ -264,10 +267,12 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							f_h.Draw("same")
 							f_l.Draw("same")
 						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
+							#! [08-17-17] The following code block has changes to accomodate the fact that
+							#!            only EP's exp cuts are to be displayed because they are now being used in the analysis
 							f_h_exp.Draw("same")
 							f_l_exp.Draw("same")
-							f_h_sim.Draw("same")
-							f_l_sim.Draw("same")
+							# f_h_sim.Draw("same")
+							# f_l_sim.Draw("same")
 							#! Set Y1 and Y2 for lt0 and draw
 							ymin=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmin()
 							ymax=H[idtyp][ihst][iprt][isctr][ipbin][LIN].GetYaxis().GetXmax()
@@ -276,41 +281,42 @@ def plot_fid(nentries=1000000000, draw_EI_cuts_only=False):
 							lt0_sim.SetY1(ymin)
 							lt0_sim.SetY2(ymax)
 							lt0_exp.Draw("same")
-							lt0_sim.Draw("same")
+							# lt0_sim.Draw("same")
 							#! old cuts
-							f_old_h.Draw("same")
-							f_old_l.Draw("same")
+							# f_old_h.Draw("same")
+							# f_old_l.Draw("same")
 
 						pad_nrm=C[idtyp][ihst][iprt][ipbin][NRM].cd(isctr+1)
 						H[idtyp][ihst][iprt][isctr][ipbin][NRM].Draw("colz")
 						#! Axes title
-                                                H[idtyp][ihst][iprt][isctr][ipbin][NRM].SetXTitle("#theta [deg]")
-                                                pad_nrm.SetLeftMargin(0.20)
-                                                H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().SetTitleOffset(2.0)
-                                                H[idtyp][ihst][iprt][isctr][ipbin][NRM].SetYTitle("#phi [deg]")
-                                                #! Draw fit funcs
+						H[idtyp][ihst][iprt][isctr][ipbin][NRM].SetXTitle("#theta [deg]")
+						pad_nrm.SetLeftMargin(0.20)
+						H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().SetTitleOffset(2.0)
+						H[idtyp][ihst][iprt][isctr][ipbin][NRM].SetYTitle("#phi [deg]")
+						#! Draw fit funcs
 						if PRT_NAME[iprt]=="e":
 							f_h.Draw("same")
 							f_l.Draw("same")
 						elif PRT_NAME[iprt]=='p' or PRT_NAME[iprt]=='pip':
-							if not draw_EI_cuts_only:
-								f_h_exp.Draw("same")
-								f_l_exp.Draw("same")
-								f_h_sim.Draw("same")
-								f_l_sim.Draw("same")
-								#! Set Y1 and Y2 for lt0 and draw
-								ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
-								ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
-								lt0_exp.SetY1(ymin)
-								lt0_exp.SetY2(ymax)
-								lt0_sim.SetY1(ymin)
-								lt0_sim.SetY2(ymax)
-								lt0_exp.Draw("same")
-								lt0_sim.Draw("same")
+							#! [08-17-17] The following code block has changes to accomodate the fact that
+							#!            only EP's exp cuts are to be displayed because they are now being used in the analysis
+							f_h_exp.Draw("same")
+							f_l_exp.Draw("same")
+							# f_h_sim.Draw("same")
+							# f_l_sim.Draw("same")
+							#! Set Y1 and Y2 for lt0 and draw
+							ymin=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmin()
+							ymax=H[idtyp][ihst][iprt][isctr][ipbin][NRM].GetYaxis().GetXmax()
+							lt0_exp.SetY1(ymin)
+							lt0_exp.SetY2(ymax)
+							lt0_sim.SetY1(ymin)
+							lt0_sim.SetY2(ymax)
+							lt0_exp.Draw("same")
+							#lt0_sim.Draw("same")
 
 							#! old cuts
-							f_old_h.Draw("same")
-							f_old_l.Draw("same")
+							# f_old_h.Draw("same")
+							# f_old_l.Draw("same")
 					#! .root file output
 					#FOUT[idtyp].WriteTObject(C[idtyp][ihst][iprt][ipbin][LIN])
 					#FOUT[idtyp].WriteTObject(C[idtyp][ihst][iprt][ipbin][NRM])
