@@ -16,8 +16,8 @@ from presentation_plots_lib import *
 '''
 
 FNAME=[0 for i in range(NSIMRNG)]
-FNAME[L]="%s/SS/lowQ2_cmb_vst_SE_092716/Obs_itg.root"%(os.environ['OBSDIR_E16'])
-FNAME[H]="%s/SS/highQ2_cmb_vst_SE_092716/Obs_itg.root"%(os.environ['OBSDIR_E16'])
+FNAME[L]="%s/SS/lowQ2_cmb_vst_SE_080317/Obs_itg.root"%(os.environ['OBSDIR_E16'])  #!092716
+FNAME[H]="%s/SS/highQ2_cmb_vst_SE_080317/Obs_itg.root"%(os.environ['OBSDIR_E16']) #!092716
 
 #! Set up Q2-W bins that are in the respective files
 Q2BINS=[0 for i in range(NSIMRNG)]
@@ -34,7 +34,7 @@ h=[[0 for j in range(NSEQS)] for i in range(NQ2BINS)]
 hdiff=[0 for i in range(NQ2BINS)]
 #print h
 #! OUTDIR
-OUTDIR="%s/figures/Holes/"%os.environ['THESIS']
+OUTDIR="%s/figures/Holes/"%os.environ['ANANOTE']
 
 #! Now get object from file and make output objects
 #! Create a file structure for each .root file to be opened (else there are technical problems)

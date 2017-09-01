@@ -1,0 +1,12 @@
+#--
+setenv STUDY_COMPARE_AT_EI_RESULTS "${ANA2PI}/sub_studies/study_compare_AT_EI_results"
+alias study_compare_AT_EI_results 'cd ${STUDY_COMPARE_AT_EI_RESULTS}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_COMPARE_AT_EI_RESULTS}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_COMPARE_AT_EI_RESULTS}"
+
+##- Set up STUDY_COMPARE_AT_EI_DATADIR
+setenv STUDY_COMPARE_AT_EI_RESULTS_DATADIR "/data/trivedia/e16/study_compare_AT_EI_results/"

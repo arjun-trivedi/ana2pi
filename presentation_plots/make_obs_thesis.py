@@ -424,26 +424,31 @@ def plot_and_write_Obs_itg(q2wbin,hobs,herr,outdir,froot):
 			#! Total(I+II)=sqrt(6.5**2 + 9**2)=11.1 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)
 			#!
 			#! [08-03-17] 're-obtain-obs-3'
-			#! Note categories of SE:
+			#! + Note the 3 different ways SE are obtained:
 			#! 1. ana : calculated using SE analysis (<q2wbin> average number listed; location listed next to err)
 			#! 2. guess-est: guess estimated
 			#! 3. ref : referenced from another source (ref listed in ananote)
-			#! + Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
-			#!   1. Hadron Id (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
-			#!   2. Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
-			#!   3. Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
+			#! 
+			#! + List of analysis SE, broken down into I (from h10_2_Observables process) and II (rest)
+			#! + Note that the :
+			#!    + Hindu-Arabic numerals in parenthesis correspond to the entry of these errors in the  Systematic Error Table in the Analysis Note.
+			#!    + The Roman numerals itemize the list for this code
+			#! I. Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
+			#!   i.   (3) Hadron Identification (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
+			#!   ii.  (NA) Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
+			#!   iii. (10) Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
 			#!   --> Total = sqrt(3.12**2 + 5.55**2)=6.36
-			#! + Rest of the Errors:
-			#!   1. Electron Id:                                            1 (guess-est, conservative upper bound)
-			#!   2. Electron fiducial boundary selection:                   1 (guess-est, conservative upper bound)
-			#!   3. Hadron fiducial boundary selection                      1 (guess-est, conservative upper bound)
-			#!   4. Detector inefficiency identification:                   1 (guess-est, conservative upper bound)
-			#!   5. Momentum and Energy Loss Corrections:                   2 (ana) (Estimated from $STUDY_MM_DIFF_ER_SR_DATADIR/results_080117. For full details, see Tomboy:MM_diff_ER_SR:DateLog:080117 or handwritten notes)
-			#!   6. Background:                                             1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
-			#!   7. Acceptance Calculation:                                 1 (guess-est, conservative upper bound)
-			#!   8. Radiative Effects correction:                           5 (ref)
-			#!   9. Estimation of Experimental Yields in Kinematical Holes: 5 (ana) (For details see $ANANOTE/figures/Holes)
-			#!  10. Luminosity measurement:                                 5 (ref)
+			#! II. Rest of the Errors:
+			#!   iv.   (1) Electron Identification:                                                                  1 (guess-est, conservative upper bound)
+			#!   v.    (2) Electron Fiducial Boundary Selection:                                                     1 (guess-est, conservative upper bound)
+			#!   vi.   (4) Hadron Fiducial Boundary Selection:                                                       1 (guess-est, conservative upper bound)
+			#!   vii.  (5) Detector Inefficiency Identification:                                                     1 (guess-est, conservative upper bound)
+			#!   viii. (12) Different Experimental and Simulation Missing Mass Squared Correction:                   2 (ana) (Estimated from $STUDY_MM_DIFF_ER_SR_DATADIR/results_080117. For full details, see Tomboy:MM_diff_ER_SR:DateLog:080117 or handwritten notes)
+			#!   ix.   (11) Background Subtraction:                                                                  1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
+			#!   x.    (6) Acceptance Calculation:                                                                   1 (guess-est, conservative upper bound)
+			#!   xi.   (7) Radiative Effects correction:                                                             5 (ref)
+			#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   5 (ana) (For details see $ANANOTE/figures/Holes)
+			#!  xiii   (9) Luminosity measurement:                                                                   5 (ref)
 			#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
 			#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)  
 
