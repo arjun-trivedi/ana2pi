@@ -16,26 +16,53 @@ import math
 import atlib as atlib
 
 '''
-+ Usage: study_evtsel_BG.py debug=False
+	+ Note on bg_display_modes: full and simple (default)
+	The background obtained from sim-3pi-PS can be displayed (and justified )in two ways:
+	(Note that this relates *only to the visual display* of the background i.e. its estimate
+	is obtained using just one way (normalizing hSR3PI to hdiff), but is displayed in two ways, one of which (simple) is easier
+	to interpret)
+	1. full: This display is true to the exact process used to obtain the bg estimate in that hSR3PIn is drawn
+	         directly in comparison with hdiff, which is the histogram that is used to normalized it. However, hdiff has a wiggle-
+	         structure around 0 because hER is not equal to hSR, which is complicated to explain and it detracts
+	         from the main point of this study.
+	2. simple: To avoid potential detraction from the main result of the study, a simple display can be made
+	           where hSR3PIn+hSR is plotted and directly compared with hER:
+	             hSR3PIn+hSR=hER
+	           Note that this is consistent with 'full' because:
+	             hSR3PIn=hER-hSR
 '''
 
-USAGE='study_evtsel_BG.py debug=False test_fit_only=False'
+USAGE='study_evtsel_BG.py debug=False test_fit_only=False bg_display_mode=simple <simple/full> norm_opt_SR_to_ER=integral <integral/maximum>'
 
 #! Get input data from user
 DBG=False
 if len(sys.argv)>1: #i.e. debug entered by user
 	if    sys.argv[1]=="True":  DBG=True
 	elif  sys.argv[1]=="False": DBG=False
-	else: sys.exit('DBG=%s is not valid. usage: %s'%(DBG,USAGE))
+	else: sys.exit('DBG=%s is not valid. usage: %s'%(sys.argv[1],USAGE))
 
 TEST_FIT_ONLY=False
 if len(sys.argv)>2: #i.e. test_fit_only entered by user
 	if    sys.argv[2]=="True":  TEST_FIT_ONLY=True
 	elif  sys.argv[2]=="False": TEST_FIT_ONLY=False
-	else: sys.exit('TEST_FIT_ONLY=%s is not valid. usage: %s'%(TEST_FIT_ONLY,USAGE))
+	else: sys.exit('TEST_FIT_ONLY=%s is not valid. usage: %s'%(sys.argv[2],USAGE))
+
+BG_DISPLAY_MODE='simple'
+if len(sys.argv)>3: #i.e. bg_display_mode entered by user
+	if    sys.argv[3]=="simple":  BG_DISPLAY_MODE=sys.argv[3]
+	elif  sys.argv[3]=="full":    BG_DISPLAY_MODE=sys.argv[3]
+	else: sys.exit('BG_DISPLAY_MODE=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
+
+NORM_OPT_SR_TO_ER='integral'
+if len(sys.argv)>4: #i.e. norm_opt_SR_to_ER entered by user
+	if    sys.argv[4]=="integral":   NORM_OPT_SR_TO_ER=sys.argv[4]
+	elif  sys.argv[4]=="maximum":    NORM_OPT_SR_TO_ER=sys.argv[4]
+	else: sys.exit('NORM_OPT_SR_TO_ER=%s is not valid. usage: %s'%(sys.argv[4],USAGE))
 
 print "DBG=",DBG
 print "TEST_FIT_ONLY=",TEST_FIT_ONLY
+print "BG_DISPLAY_MODE=",BG_DISPLAY_MODE
+print "NORM_OPT_SR_TO_ER=",NORM_OPT_SR_TO_ER
 #sys.exit()
 
 #! *** Prepare input data structure: FIN/T[dtyp] ***
@@ -51,8 +78,8 @@ T  =[0 for i in range(NDTYP)]
 
 #! *** Prepare OUTDIR***
 DATE=datetime.datetime.now().strftime('%m%d%y')
-OUTDIR=os.path.join(os.environ['STUDY_EVTSEL_BG_DATADIR'],"evtsel_BG_%s"%DATE)
-if DBG==True: OUTDIR=os.path.join(os.environ['STUDY_EVTSEL_BG_DATADIR'],"evtsel_BG_dbg_%s"%DATE)
+OUTDIR=os.path.join(os.environ['STUDY_EVTSEL_BG_DATADIR'],"evtsel_BG_bg-%s_norm-%s_%s"%(BG_DISPLAY_MODE,NORM_OPT_SR_TO_ER,DATE))
+if DBG==True: OUTDIR=os.path.join(os.environ['STUDY_EVTSEL_BG_DATADIR'],"evtsel_BG_dbg_bg-%s_norm-%s_%s"%(BG_DISPLAY_MODE,NORM_OPT_SR_TO_ER,DATE))
 print "OUTDIR=",OUTDIR
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
@@ -567,10 +594,56 @@ def test_fit_bg():
 			fig.savefig('%s/bg_test_fit.pdf'%(outdir_q2w_plt))
 			fig.savefig('%s/bg_test_fit.eps'%(outdir_q2w_plt))
 
+def get_GP():
+	'''
+	+ Get parameters of gaussian fits to MM and MM2 distributions for ER and SR
+	+ These parameters are used when integral-normalizing SR to ER
+	+ Uses GP.txt output by $SUBSTUDIES/study_MM_diff_ER_SR/study_MM_diff_ER_SR.py
+		+ GP.txt format: wbinnum,wbinlabel,mu_ER,sg_ER,mu_SR,sg_SR
+	'''
+	#! Create structure to fill and return: GP[w][plt][dtyp]=(mu,sg)
+	#! + Note there is no q2 index as pars are obtained for integrated q2
+	#! + First setup indexing vars
+	NDTYP=2
+	ER,SR=range(NDTYP)
+	DTYP_NAME=["ER","SR"]
+
+	NPLTS=2
+	MM,MM2=range(NPLTS)
+	PLT_NAME=['MM','MM2']
+
+	NWBINS=29
+
+	GP=[[[0 for k in range(NDTYP)] for j in range(NPLTS)] for i in range(len(WBIN_LEL))]
+
+	#! Setup input data file
+	fin=[0 for i in range(NPLTS)]
+	datadir=os.path.join(os.environ['STUDY_MM_DIFF_ER_SR_DATADIR'],'results_092817/2.00-5.00/EI')
+	fin[MM] =open(os.path.join(datadir, 'MM/GP.txt'),'r')
+	fin[MM2]=open(os.path.join(datadir, 'MM2/GP.txt'),'r')
+
+	#! Begin to fill structure
+	for iplt in range(NPLTS):
+		data=fin[iplt].readlines()
+		for line in data:
+			words=line.rstrip().split(' ')
+			#print words
+			iw,mu_ER,sg_ER,mu_SR,sg_SR=int(words[0])-1,float(words[2]),float(words[3]),float(words[4]),float(words[5])
+			#print iw,mu_ER,sg_ER,mu_SR,sg_SR
+			GP[iw][iplt][ER]=[mu_ER,sg_ER]
+			GP[iw][iplt][SR]=[mu_SR,sg_SR]
+	return GP
+# GP=get_GP()
+# print GP
+# sys.exit()
+
 #! begin main
 if TEST_FIT_ONLY:
 	test_fit_bg()
 	sys.exit()
+
+if NORM_OPT_SR_TO_ER=='integral':
+	GP=get_GP()
 
 #! Fill hmm
 for iq,q2bin_le in enumerate(Q2BIN_LEL):
@@ -682,22 +755,41 @@ for itr in range(2):
 				hER.Sumw2()
 				hSR.Sumw2()
 				hSR3PI.Sumw2()
-				#! First draw hER
+				#! setup hER
 				hER.SetXTitle("%s [%s]"%(PLT_TITLE[iplt], PLT_UNIT[iplt]))
 				cmm[iplt].SetLeftMargin(0.20)
 				hER.GetYaxis().SetTitleOffset(1.5)
 				hER.SetYTitle("N_{entries}")
-				#! Drawn after hdiff because that is used to set min of y-axis, hER.Draw()
-				#! scale SR and then draw
-				max_ER=hER.GetMaximum()
-				if max_ER==0:max_ER=1
-				max_SR=hSR.GetMaximum()
-				if max_SR==0:max_SR=1
-				scl_fctr_SR=max_ER/max_SR
-				if scl_fctr_SR==0:scl_fctr_SR=1
-				hSR.Scale(scl_fctr_SR)
-				#! Drawn after hdiff because that is used to set min of y-axis, hSR.Draw("same")
 
+				#! setup SR 
+				if NORM_OPT_SR_TO_ER=='maximum':
+					#! max-norm
+					max_ER=hER.GetMaximum()
+					if max_ER==0:max_ER=1
+					max_SR=hSR.GetMaximum()
+					if max_SR==0:max_SR=1
+					scl_fctr_SR=max_ER/max_SR
+					if scl_fctr_SR==0:scl_fctr_SR=1
+					hSR.Scale(scl_fctr_SR)
+				elif NORM_OPT_SR_TO_ER=='integral':
+					#! itgrl-norm
+					#! + setup integral limits
+					mu_ER,sg_ER=GP[iw][iplt][ER][0],GP[iw][iplt][ER][1]
+					mu_SR,sg_SR=GP[iw][iplt][SR][0],GP[iw][iplt][SR][1]
+
+					min_ER,max_ER=mu_ER-3*sg_ER,mu_ER+3*sg_ER
+					min_SR,max_SR=mu_SR-3*sg_SR,mu_SR+3*sg_SR
+
+					bin_min_ER,bin_max_ER=hER.FindBin(min_ER),hER.FindBin(max_ER)
+					bin_min_SR,bin_max_SR=hSR.FindBin(min_SR),hER.FindBin(max_SR)
+					#! + itgrl for hER
+					itgrl_ER=hER.Integral(bin_min_ER,bin_max_ER)
+					#! + itgrl for hSR
+					itgrl_SR=hSR.Integral(bin_min_SR,bin_max_SR)
+					#! + scale hSR as per itgrl ratio
+					scl_fctr_SR=itgrl_ER/itgrl_SR
+					hSR.Scale(scl_fctr_SR)
+	
 				#! Now normalize SR3PI to hER-hSR (=hdiff) and draw
 				#! 1. get hdiff=hER-hSR
 				hdiff=hER.Clone("hdiff")
@@ -705,19 +797,6 @@ for itr in range(2):
 				hdiff.Add(hSR,-1)
 				hdiff.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
 				hdiff.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
-				
-				#! Adjust lims of y-axis to go below 0 to show fluctuations in hdiff 
-				#! and draw line at y=0
-				min_hdiff=hdiff.GetMinimum()
-				min_hdiff=min_hdiff-(10/100)*math.fabs(min_hdiff)
-				hER.SetMinimum(min_hdiff)
-				#! Now draw hER,hSR and hdiff
-				hER.Draw()
-				hSR.Draw("same")
-				hdiff.Draw("same")
-				ZERO_YAXIS[iplt].Draw("same")
-
-
 				#! 2. Now do the normalization or obtain it from bg-fit (done in a previous iteration)
 				if wbin_norm3pi_not_possible==True:
 					#! + Neither normalize nor obtain nf from bg-fit which is done the previous iteration
@@ -727,14 +806,44 @@ for itr in range(2):
 					print "range norm using NL"
 					hSR3PIn,nf=atlib.norm_hist_range(hdiff,hSR3PI,NL[iplt])
 					#NF[iq][iw][iplt]=nf
-				#! Draw
-				hSR3PIn.Draw("same")
+				
+				if BG_DISPLAY_MODE=='full':
+					#! Adjust lims of y-axis to go below 0 to show fluctuations in hdiff 
+					#! and draw line at y=0
+					min_hdiff=hdiff.GetMinimum()
+					min_hdiff=min_hdiff-(10/100)*math.fabs(min_hdiff)
+					hER.SetMinimum(min_hdiff)
+
+					#! Now draw hER,hSR, hdiff and hSR3PIn
+					hER.Draw()
+					hSR.Draw("same")
+					hdiff.Draw("same")
+					ZERO_YAXIS[iplt].Draw("same")
+					hSR3PIn.Draw("same")
+				elif BG_DISPLAY_MODE=='simple':
+					#! Draw hER,hSR, hsum(=hSR3PIn+hSR)
+					#! 1. Get hsum
+					hsum=hSR3PIn.Clone("hsum")
+					hsum.Sumw2()
+					hsum.Add(hSR)
+					hsum.SetLineColor(ROOT.gROOT.ProcessLine("kBlack"))
+					hsum.SetMarkerColor(ROOT.gROOT.ProcessLine("kBlack"))
+					#! 2. Draw hER,hSR, and hsum
+					hER.Draw()
+					hSR.Draw("same")
+					hSR3PIn.Draw("same")
+					hsum.Draw("same")
 
 				#! Create and add entries: hists and cut-lines
 				#! legend
 				l=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
-				for hist,label in zip([hER,hSR,hdiff,hSR3PIn],["exp","sim","exp-sim","sim-3pi-PS"]):
-					l.AddEntry(hist,label,"lp")
+				if BG_DISPLAY_MODE=='full':
+					for hist,label in zip([hER,hSR,hdiff,hSR3PIn],["exp","sim","exp - sim","sim-3pi-PS"]):
+						l.AddEntry(hist,label,"lp")
+				if BG_DISPLAY_MODE=='simple':
+					for hist,label in zip([hER,hSR,hSR3PIn,hsum],["exp","sim","sim-3pi-PS","sim + sim-3pi-PS"]):
+						l.AddEntry(hist,label,"lp")
+
 				#! Draw cut lines and add them to legend
 				if iplt==MM:
 					#! Draw cut lines
@@ -747,17 +856,30 @@ for itr in range(2):
 					#! add to legend
 					l.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
 					#! Draw NL line
-					#if True in  [np.isclose(wmin,wbin[0]) and np.isclose(wmax,wbin[1]) for wbin in WBINS_NORM3PI_NOT_POSSIBLE]:
-					if wbin_norm3pi_not_possible==True:
-						lmin,lmax=NL1_LINE_MIN[MM],NL1_LINE_MAX[MM]
-					else:
-						lmin,lmax=NL_LINE_MIN[MM],NL_LINE_MAX[MM]
-					for line in [lmin,lmax]:
-						line.SetY1(hER.GetMinimum())
-						line.SetY2(hER.GetMaximum())
-						line.Draw("same")
-					#! add to legend
-					l.AddEntry(lmin,"%.2f GeV < norm-range < %.2f GeV"%(lmin.GetX1(),lmax.GetX1()),"l")
+					if BG_DISPLAY_MODE=='full':
+						if wbin_norm3pi_not_possible==True:
+							lmin,lmax=NL1_LINE_MIN[MM],NL1_LINE_MAX[MM]
+						else:
+							lmin,lmax=NL_LINE_MIN[MM],NL_LINE_MAX[MM]
+						for line in [lmin,lmax]:
+							line.SetY1(hER.GetMinimum())
+							line.SetY2(hER.GetMaximum())
+							line.Draw("same")
+						#! add to legend
+						l.AddEntry(lmin,"%.2f GeV < norm-range < %.2f GeV"%(lmin.GetX1(),lmax.GetX1()),"l")
+					elif BG_DISPLAY_MODE=='simple':
+						if wbin_norm3pi_not_possible==True:
+							lmax=NL1_LINE_MAX[MM]
+						else:
+							lmax=NL_LINE_MAX[MM]
+						for line in [lmax]:
+							line.SetY1(hER.GetMinimum())
+							line.SetY2(hER.GetMaximum())
+							line.Draw("same")
+						#! add to legend
+						#! + Note that this normalization range is not technically true and it should be same as for 'full'
+						#! + However it is arguably consistent with the idea of making a 'simple' display
+						l.AddEntry(lmax,"norm-range < %.2f GeV"%(lmax.GetX1()),"l")
 				elif iplt==MM2:
 					#! EI
 					MM2_T2_CUTL_EI.SetY1(hER.GetMinimum())
@@ -769,17 +891,30 @@ for itr in range(2):
 					#! add to legend
 					l.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
 					#! Draw NL line
-					#if True in  [np.isclose(wmin,wbin[0]) and np.isclose(wmax,wbin[1]) for wbin in WBINS_NORM3PI_NOT_POSSIBLE]:
-					if wbin_norm3pi_not_possible==True:
-						lmin,lmax=NL1_LINE_MIN[MM2],NL1_LINE_MAX[MM2]
-					else:
-						lmin,lmax=NL_LINE_MIN[MM2],NL_LINE_MAX[MM2]
-					for line in [lmin,lmax]:
-						line.SetY1(hER.GetMinimum())
-						line.SetY2(hER.GetMaximum())
-						line.Draw("same")
-					#! add to legend
-					l.AddEntry(lmin,"%.2f GeV < norm-range < %.2f GeV"%(lmin.GetX1(),lmax.GetX1()),"l")
+					if BG_DISPLAY_MODE=='full':
+						if wbin_norm3pi_not_possible==True:
+							lmin,lmax=NL1_LINE_MIN[MM2],NL1_LINE_MAX[MM2]
+						else:
+							lmin,lmax=NL_LINE_MIN[MM2],NL_LINE_MAX[MM2]
+						for line in [lmin,lmax]:
+							line.SetY1(hER.GetMinimum())
+							line.SetY2(hER.GetMaximum())
+							line.Draw("same")
+						#! add to legend
+						l.AddEntry(lmin,"%.2f GeV < norm-range < %.2f GeV"%(lmin.GetX1(),lmax.GetX1()),"l")
+					elif BG_DISPLAY_MODE=='simple':
+						if wbin_norm3pi_not_possible==True:
+							lmax=NL1_LINE_MAX[MM2]
+						else:
+							lmax=NL_LINE_MAX[MM2]
+						for line in [lmax]:
+							line.SetY1(hER.GetMinimum())
+							line.SetY2(hER.GetMaximum())
+							line.Draw("same")
+						#! add to legend
+						#! + Note that this normalization range is not technically true and it should be same as for 'full'
+						#! + However it is arguably consistent with the idea of making a 'simple' display
+						l.AddEntry(lmax,"norm-range < %.2f GeV"%(lmax.GetX1()),"l")
 				#! Draw legend
 				l.Draw()
 				cmm[iplt].SaveAs("%s/%s.png"%(outdir_q2w_plt,cname))

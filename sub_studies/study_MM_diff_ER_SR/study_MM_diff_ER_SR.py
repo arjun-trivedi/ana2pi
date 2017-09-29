@@ -30,6 +30,10 @@ SE = (1-(x/y))*100 where:
   + If sign is negative it means that xsec'>xsec and therefore the fact that the cross-sections are overestimated
   + If sign is positive it means that xsec'<xsec and therefore the fact that the cross-sections are underestimated
 
+[09-27-17] 
++ This script is also now used to output mu,sg(MM/MM2, ER/SR) that can be used by other scripts, for example
+  by $SUBSTUDIES/study_evtsel_BG/study_evtsel_BG.py for integral-normalizing SR to ER
+
 + Usage: study_MM_diff_ER_SR.py debug=False
 '''
 
@@ -304,6 +308,11 @@ NCUTS=2
 EI,AT=range(NCUTS)
 SE=[[[[0 for l in range(NCUTS)] for k in range(NPLTS)] for j in range(len(WBIN_LEL))] for i in range(len(Q2BIN_LEL))]
 
+#! Create structure to hold estimates of Gaussian pars: GP[q2][w][plt][dtyp]=(mu,sg)
+#! + Note that these pars are not used by this script, but are written to a text file
+#!   so that other substudy scripts can use them, if needed.
+GP=[[[[0 for l in range(NDTYP)] for k in range(NPLTS)] for j in range(len(WBIN_LEL))] for i in range(len(Q2BIN_LEL))]
+
 
 for iq,q2bin_le in enumerate(Q2BIN_LEL):
 	if DBG==True and iq>0: continue #! debug
@@ -518,6 +527,16 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 			SE[iq][iw][iplt][EI]=se_EI
 			SE[iq][iw][iplt][AT]=se_AT
 
+			#! Fill GP structure
+			GP[iq][iw][iplt][ER]=[fER.GetParameter(1),fER.GetParameter(2)]
+			GP[iq][iw][iplt][SR]=[fSR.GetParameter(1),fSR.GetParameter(2)]
+			#! debug
+			# print "*** GP debug ***"
+			# print "GP",iq,iw,iplt,ER,"=",fER.GetParameter(1),fER.GetParameter(2)
+			# print "GP",iq,iw,iplt,SR,"=",fSR.GetParameter(1),fSR.GetParameter(2)
+			# print "GP",iq,iw,iplt,ER,"=",GP[iq][iw][iplt][ER][0],GP[iq][iw][iplt][ER][1]
+			# print "GP",iq,iw,iplt,SR,"=",GP[iq][iw][iplt][SR][0],GP[iq][iw][iplt][SR][1]
+			# print "******"
 			#! save canvas
 			cmm[iplt][CEIAT].SaveAs("%s/%s.png"%(outdir_q2w_plt_EIAT,cname))
 			cmm[iplt][CEIAT].SaveAs("%s/%s.pdf"%(outdir_q2w_plt_EIAT,cname))
@@ -697,6 +716,10 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 			fout.write("%d %s %.2f\n"%(i+1,wbinl[i],se_AT[i]))
 		fout.close()
 
+		#! GP output as text for EI and AT together
+		#! + No need for this as GP for AT is same as EI
+		#! + Therefore GP text output only created for EI
+
 
 		#! SE for EI only
 		fig=plt.figure()
@@ -728,14 +751,27 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 		#! output as text
 		fout=open("%s/SE.txt"%outdir_q2w_plt_EI,'w')
 		fout.write("***EI***\n")
-		for i in range(len(wbinn)):
-			fout.write("%d %s %.2f\n"%(i+1,wbinl[i],se_EI[i]))
+		for iw in range(len(wbinn)):
+			fout.write("%d %s %.2f\n"%(iw+1,wbinl[iw],se_EI[iw]))
 		fout.close()
 
-
+		#! GP output for EI
+		fout=open("%s/GP.txt"%outdir_q2w_plt_EI,'w')
+		for iw,wbin_le in enumerate(WBIN_LEL):
+			if DBG==True and (iw!=0 and iw!=15 and iw!=28): continue
+			wmin=wbin_le
+			wmax=wbin_le+WBINW
+			wbin='[%.3f,%.3f)'%(wmin,wmax)
+			#! debug
+			# print iq,iw,iplt,ER
+			# print iq,iw,iplt,SR
+			# print GP[iq][iw][iplt][ER][0],GP[iq][iw][iplt][ER][1]
+			# print GP[iq][iw][iplt][SR][0],GP[iq][iw][iplt][SR][1]
+			mu_ER,sg_ER=GP[iq][iw][iplt][ER][0],GP[iq][iw][iplt][ER][1]
+			mu_SR,sg_SR=GP[iq][iw][iplt][SR][0],GP[iq][iw][iplt][SR][1]
+			fout.write("%d %s %.3f %.3f %.3f %.3f\n"%(iw+1,wbin,mu_ER,sg_ER,mu_SR,sg_SR))
+		fout.close()
 		
-
-
 # #! If wanting to keep TCanvas open till program exits				
 # if not ROOT.gROOT.IsBatch():
 # 	plt.show()
