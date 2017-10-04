@@ -12,8 +12,9 @@ from presentation_plots_lib import *
 
 '''
 [09-29-17]
-doc to do
 
++ This script makes plots to demonstrate "statistically driven systematic uncertainties"
+  as noted in the analysis noted by example of Variable Dependent Integrated Cross-Sections
 '''
 
 FIN=ROOT.TFile("%s/SS/lowQ2_cmb_non_vst_SE_080317/Obs_itg.root"%(os.environ['OBSDIR_E16']),"READ")
