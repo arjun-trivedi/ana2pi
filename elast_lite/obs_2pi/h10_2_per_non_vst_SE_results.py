@@ -216,6 +216,15 @@ CUTSNCORS=OrderedDict()
 
 #! 1. First set up the Basic procorder and adtnl_opts that are common to all 16 CUTSNCORS
 BASIC_PROCORDER='eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:'
+#! default BASIC_ADTNL_OPTS commented out for various tests below
+#BASIC_ADTNL_OPTS=':1:3:17:2:18:20:' #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
+
+#! testdiffATEI: {eff_scpd_atmod,ECfid_atmod}: 4 combinations: {eff_scpd_atmod(:17:),ECfid_atmod(:18:)=ON/OFF, ON/OFF}
+#! Remove :17:,:18: toggle SYSTEMATIC_EFFECT=="testdiffATEI"
+BASIC_ADTNL_OPTS=':1:3:2:20:' #! ECin-on:zvtx-on:ECfid-ON:CC_cut_lse:
+
+#! testdiffATEI2: pfid: 2 combinations: {pfid_ep_on,pfid_ep_off}
+#! Use default BASIC_ADTNL_OPTS since in testdiffATEI it is proven that eff_scpd_atmod,ECfid_atmod=on,on is good
 BASIC_ADTNL_OPTS=':1:3:17:2:18:20:' #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
 
 #! 2. Now as per SYSTEMATIC_EFFECT
@@ -225,8 +234,14 @@ if SYSTEMATIC_EFFECT=="SSBands":
 elif SYSTEMATIC_EFFECT=="MM":
 	ADTNL_OPTS_CODE_LIST=['',                                 ':11:']
 	ADTNL_OPTS_TAG_LIST =[':MM-AT:gpart-pid-OFF:stat-pid-OFF:',':MM-EI:gpart-pid-OFF:stat-pid-OFF:']
+elif SYSTEMATIC_EFFECT=="testdiffATEI": #! {eff_scpd_atmod,ECfid_atmod}
+	ADTNL_OPTS_CODE_LIST=[':11:',                                      ':11:17:',                                  ':11:18:',                                  ':11:17:18:']
+	ADTNL_OPTS_TAG_LIST =[':MM-EI:eff_scpd_atmod_OFF:ECfid_atmod_OFF:',':MM-EI:eff_scpd_atmod_ON:ECfid_atmod_OFF:',':MM-EI:eff_scpd_atmod_OFF:ECfid_atmod_ON:',':MM-EI:eff_scpd_atmod_ON:ECfid_atmod_ON:'] 
+elif SYSTEMATIC_EFFECT=="testdiffATEI2": #! pfid
+	ADTNL_OPTS_CODE_LIST=[':11:8:',        ':11:']
+	ADTNL_OPTS_TAG_LIST =[':MM-EI:ei_pfid',':MM-EI:ep_pfid:'] 	
 else:
-	sys.exit("Please enter SYSTEMATIC_EFFECT as either SSBands or MM")
+	sys.exit("Please enter SYSTEMATIC_EFFECT as either SSBands or MM or testdiffATEI or testdiffATEI2")
 
 
 #! 3. Now finally, using 1. and 2., put together the CUTSNCORS
