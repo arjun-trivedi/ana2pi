@@ -8,6 +8,8 @@ import ROOT
 
 from rootpy.io import root_open, DoesNotExist
 
+import math
+
 '''
 Read documentation for function plot() to see what this code does.
 '''
@@ -146,6 +148,23 @@ def get_q2wbinlist(q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bin
 
 		return q2wbinl
 
+def norm_1D_theta(hTheta):
+	#! 1. Create normalization factor histogram
+	hDCosTheta=hTheta.Clone("hDCosTheta")
+	hDCosTheta.SetTitle("hDCosTheta")
+	hDCosTheta.Reset()
+	nbins=hTheta.GetNbinsX()
+	for ibin in range(nbins):
+		theta_a=hTheta.GetBinLowEdge(ibin+1)
+		theta_b=hTheta.GetBinLowEdge(ibin+2)# + hTheta.GetBinWidth(ibin+1)
+		DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
+		hDCosTheta.SetBinContent(ibin+1,DCosTheta)
+		hDCosTheta.SetBinError(ibin+1,0.)
+	#! Now divide hTheta by hDCosTheta
+	#! Do Sumw2() so that errors are correctly propagated
+	hTheta.Sumw2();
+	hTheta.Divide(hDCosTheta)
+	return hDCosTheta
 
 def plot(q2wbin):	
 	'''
@@ -171,7 +190,7 @@ def plot(q2wbin):
 	else:
 		sys.exit("study_yields_acceptance.py:plot():Could not establish if to use FIN[LQ2] or FIN[HQ2] for q2wbin=%s"(q2wbin))
 	print "fin=",fin.GetName()
-	
+
 	h5=OrderedDict()
 	for seq in SEQ:
 		h5[seq]=fin.Get('%s/%s/VST1/h5'%(q2wbin,seq))
@@ -218,6 +237,7 @@ def plot(q2wbin):
 		#! Draw and save
 		c=ROOT.TCanvas()
 		if SHOW_REL_ERR_DIST:
+			c.SetCanvasSize(700,700)
 			c.Divide(1,2)
 			c.cd(1)
 			h1tot.Draw("e")
@@ -232,10 +252,24 @@ def plot(q2wbin):
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		h1d=h5[seq].Projection(H5_DIM['THETA'],"E")
+		h1d.SetMinimum(0)
 		h1d.SetTitle("1D_proj_%s_%s_%s"%(seq,q2wbin,var))
-		c=ROOT.TCanvas()
+		c=ROOT.TCanvas("c","c",700,700)
+		c.Divide(1,2)
+		c.cd(1)
 		h1d.Draw("e")
+		#! Save DCosTheta normalized version too
+		c.cd(2)
+		h1d_theta_norm=h1d.Clone("h1d_theta_norm")
+		h1d_theta_norm.SetTitle("1D_proj_theta_norm_%s_%s_%s"%(seq,q2wbin,var))
+		hDCosTheta=norm_1D_theta(h1d_theta_norm)
+		h1d_theta_norm.Draw("e")
 		c.SaveAs("%s/h1d.png"%outdir)
+		#! Save hDCosTheta too
+		c1=ROOT.TCanvas("c1","c1")
+		hDCosTheta.Draw()
+		c1.SaveAs("%s/hDCosTheta.png"%outdir)
+
 		#sys.exit()
 
 		#! iii. 5D-PS-vst-var distributions
@@ -281,6 +315,7 @@ def plot(q2wbin):
 			#! Draw and save
 			c=ROOT.TCanvas()
 			if SHOW_REL_ERR_DIST:
+				c.SetCanvasSize(700,700)
 				c.Divide(1,2)
 				c.cd(1)
 				h1.Draw("e")
