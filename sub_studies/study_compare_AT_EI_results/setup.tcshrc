@@ -2,6 +2,9 @@
 setenv STUDY_COMPARE_AT_EI_RESULTS "${ANA2PI}/sub_studies/study_compare_AT_EI_results"
 alias study_compare_AT_EI_results 'cd ${STUDY_COMPARE_AT_EI_RESULTS}'
 
+setenv STUDY_YIELDS_ACCEPTANCE "${ANA2PI}/sub_studies/study_compare_AT_EI_results"
+alias study_yields_acceptance 'cd ${STUDY_YIELDS_ACCEPTANCE}'
+
 ##- modify PATH
 #setenv PATH "${PATH}:${STUDY_COMPARE_AT_EI_RESULTS}"
 
@@ -10,3 +13,4 @@ alias study_compare_AT_EI_results 'cd ${STUDY_COMPARE_AT_EI_RESULTS}'
 
 ##- Set up STUDY_COMPARE_AT_EI_DATADIR
 setenv STUDY_COMPARE_AT_EI_RESULTS_DATADIR "/data/trivedia/e16/study_compare_AT_EI_results/"
+setenv STUDY_YIELDS_ACCEPTANCE_DATADIR "/data/trivedia/e16/study_yields_acceptance"
