@@ -89,7 +89,7 @@ DATE=date=datetime.datetime.now().strftime('%m%d%y')
 
 #! Create OUTDIR
 OUTDIR="%s/thesis_obs_norm_ST_%s_%s/"%(OBSDIR_E162,NORM_ST,DATE)
-if DBG==True: OUTDIR="%s/thesis_obs_norm_ST_%s_dbg_%s/"%(OBSDIR_E162,NORM_ST,DATE)
+if DBG==True: OUTDIR="%s/dbg/thesis_obs_norm_ST_%s_%s/"%(OBSDIR_E162,NORM_ST,DATE)
 print "OUTDIR=",OUTDIR
 
 #! Setup files that will be used to obtain ST data
@@ -452,10 +452,30 @@ def plot_and_write_Obs_itg(q2wbin,hobs,herr,outdir,froot):
 			#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
 			#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)  
 
+			#! Add to I. (rel_err), errors from II. (Rest of the Errors)
 			#! [pre 08-03-17]
 			#rel_err_full=math.sqrt(rel_err**2+9**2)
+
 			#! [08-03-17] 're-obtain-obs-3'
-			rel_err_full=math.sqrt(rel_err**2+9.21**2)
+			# rel_err_full=math.sqrt(rel_err**2+9.21**2)
+			# SYST_ERR[q2bin,wbin]=rel_err_full
+
+			#! [08-24-17] 're-obtain-obs-4'
+			#! + Removed addition of Hole-Filling SE (II.xii, 5%) to SYST_ERR, which is Obs_itg_Q2-W averaged (obtained from Obs_itg and is averaged over Q2-W)
+			#!
+			#! + Note that this addition is still used when noting the total SE in the analysis note because there
+			#!   the SE is Obs_itg_Q2-W averaged.
+			#!
+			#! + However, for Obs_1D and Obs_R2, Hole-Filling SE will be obtained individually in each 1-D bin for Obs_1D and Obs_R2,
+			#!   and the Obs_itg_Q2-W averaged SYST_ERR, minus Hole-Filling, will be modified by these errors in every Obs_1D/Obs_R2 bin
+			#!
+			#! + This needs to be done because the 1-D bins, for example theta_pip at 180 deg., needs to show the large SE
+			#!   due to hole filling, and this fact is missed if Obs_itg_Q2-W averaged Hole-Filling SE is used
+
+			#! Note that the following calculation omits one of the '5**2' from the above Total of II. (Rest of the Errors),
+			#! which corresponds to II. xii.  (8) Estimation of Experimental Yields in Kinematical Holes
+			total_rest_of_err=math.sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2) #! =7.75%
+			rel_err_full=math.sqrt(rel_err**2+total_rest_of_err**2)
 			SYST_ERR[q2bin,wbin]=rel_err_full
 								
 			ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
@@ -931,6 +951,130 @@ def norm_ST_shape(hobs):
 					else:    						 scale_factor=ampltd_EF/ampltd_ST
 					hobs[R2,'ST',vst,var].Scale(scale_factor)
 
+def get_herr_HF_relative(hEC,hEF,vst,var,obs):
+	'''
+	In each bin, calculate relative(%) SE due to Hole-Filling (relative to hEC):
+		+ se=abs((binc_EF-bincEC))/binc_EC)*(1/2)*100
+		+ se_err=0 (for now at least)
+	+ Note there are 8 unique cases that the above formula needs to be aware of: EC(0,<0,>0)* EF(0,<0,>0):
+		+ EC=0 & :
+			+ 1. EF=0: se=0
+			+ 2. EF>0: se=50%          (EXPECTED case but formula cannot be applied because denominator=0)
+			+ 3. EF<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+		+ EF=0 & :
+			+    EC=0: se=0            (same as 1.)
+			+ 4. EC<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+			+ 5. EC>0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+		+ EC>0 &:
+			+ 6. EF>0: se=formula      (EXPECTED case, applicable for EF>EC and EF<EC, the latter should not occur, but even if so, obtain se from formula)
+			+ 7. EF<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+		+ EF>0:
+			+    EC>0: se=formula      (same as 6.)
+			+    EC<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+	'''
+	#! First make herr_HF as a clone of hEC and resetting its bin contents
+	herr=hEC.Clone("herr_HF_Obs%s_%d_%s"%(obs,vst,var))
+	herr.Reset()
+	#! Now obtain SE due to Hole-Filling in each bin
+	nbins=hEC.GetNbinsX()
+	for ibin in range(nbins):
+		binc_EF=hEF.GetBinContent(ibin+1)
+		binc_EC=hEC.GetBinContent(ibin+1)
+		#! Obtain se, se_err as per 8 unique cases of formula (see documentation)
+		#! + Only for cases 2. and 6. se has non-zero value, else it is 0
+		if binc_EC==0 and binc_EF>0: #! case 2.
+			se=50
+			se_err=0
+		elif binc_EC>0 and binc_EF>0: #! case 6. for EF>EC and EF<EC (latter should not occur, but even if so)
+			se=math.fabs((binc_EF-binc_EC)/binc_EC)*(1/2)*100
+			se_err=0
+		else: #! for all other cases
+			se=0
+			se_err=0
+		#! Set se, se_err in herr's bin
+		herr.SetBinContent(ibin+1,se)
+		herr.SetBinError(ibin+1,se_err)
+	return herr
+
+def get_herr_HF_absolute(hEC,hEF,vst,var,obs):
+	'''
+	In each bin, calculate absolute SE due to Hole-Filling:
+		+ se=abs(binc_EF-bincEC)/2
+		+ se_err=0 (for now at least)
+	+ Note there are 8 unique cases that the above formula needs to be aware of: EC(0,<0,>0)* EF(0,<0,>0):
+		+ EC=0 & :
+			+ 1. EF=0: se=formula(=0)
+			+ 2. EF>0: se=formula      (EXPECTED)
+			+ 3. EF<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+		+ EF=0 & :
+			+    EC=0: se=formula      (same as 1.)
+			+ 4. EC<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+			+ 5. EC>0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+		+ EC>0 &:
+			+ 6. EF>0: se=formula      (EXPECTED case, applicable for EF>EC and EF<EC, the latter should not occur, but even if so, obtain se from formula)
+			+ 7. EF<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+		+ EF>0:
+			+    EC>0: se=formula      (same as 6.)
+			+    EC<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
+	'''
+	#! First make herr_HF as a clone of hEC and resetting its bin contents
+	herr=hEC.Clone("herr_HF_Obs%s_%d_%s"%(obs,vst,var))
+	herr.Reset()
+	#! Now obtain SE due to Hole-Filling in each bin
+	nbins=hEC.GetNbinsX()
+	for ibin in range(nbins):
+		binc_EF=hEF.GetBinContent(ibin+1)
+		binc_EC=hEC.GetBinContent(ibin+1)
+		#! Obtain se, se_err as per 8 unique cases of formula (see documentation)
+		#! + Only for cases 1, 2 and 6 se has non-zero value, else it is 0
+		if binc_EC==0 and binc_EF==0: #! case 1.
+			se=math.fabs(binc_EF-binc_EC)/2
+			se_err=0
+		elif binc_EC==0 and binc_EF>0: #! case 2.
+			se=math.fabs(binc_EF-binc_EC)/2
+			se_err=0
+		elif binc_EC>0 and binc_EF>0: #! case 6. for EF>EC and EF<EC (latter should not occur, but even if so)
+			se=math.fabs(binc_EF-binc_EC)/2
+			se_err=0
+		else: #! for all other cases
+			se=0
+			se_err=0
+		#! Set se, se_err in herr's bin
+		herr.SetBinContent(ibin+1,se)
+		herr.SetBinError(ibin+1,se_err)
+	return herr
+
+def get_herr_HF(hobs):
+	'''
+	+ Obtain Hole-Filling SE in each bin of Obs_1D and Obs_R2
+	+ Hole-Filling SE for EF is set equal to EC
+	+ Currently getting absolute errors
+	'''
+	#! First determine if hobs is '1D' or 'R2'
+	nkeys=len(hobs.keys()[0])
+	if   nkeys==3: obs='1D'
+	elif nkeys==4: obs='R2'
+	else: sys.exit('make_obs_thesis.py:get_herr_HF():Could not determine obs from nkeys=%d'%nkeys)
+
+	#! Now obtain herr_HF
+	herr_HF=OrderedDict()
+	for pm in PAD_MAP[obs]:
+		vst,var=pm[1],pm[2]
+		if obs=='1D': 
+			#! obtain error for 'EF'
+			herr_HF['EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+			#! set error for 'EC'='EF'
+			herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
+		elif obs=='R2':
+			for R2 in R2L:
+				if (R2=='D' or R2=='E') and var != 'ALPHA': continue
+				#! Now obtain SE due to Hole Filling in each bin
+				#! obtain error for 'EF'
+				herr_HF[R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+				#! set error for 'EC'='EF'
+				herr_HF[R2,'EC',vst,var]=herr_HF[R2,'EF',vst,var]
+	return herr_HF
+
 def proc_Obs_1D_and_R2():
 	for obs in ['1D','R2']:
 		print "*** Processing Obs_%s from SSBands/cutsncors1 ***"%obs
@@ -957,9 +1101,14 @@ def proc_Obs_1D_and_R2():
 				print "q2wbinl=",q2wbinl
 		
 			#! 2. For every qw2bin
-			#! i.   Get from f_RSLT, for every seq in {EC,SF,ST}, hobs[seq,vst,var] as per respective PAD_MAP[obs]=(pad,vst,var)
-			#! ii.  Create herr[seq,vst,var] = SYST_ERR[q2bin,wbin]*hobs[seq,vst,var] (SYST_ERR contains relative error)
-			#! iii. Plot and write to file(.txt and .root), for all seq, hobs[seq],herr[seq]
+			#! i.    Get from f_RSLT, for every seq in {EC,SF,ST}, hobs[seq,vst,var] as per respective PAD_MAP[obs]=(pad,vst,var)
+			#! ii.   Calculate herr_HF[seq,vst,var] where herr_HF contains absolute SE due to hole filling
+			#!			+ Obtained as abs(EF-EC)
+			#!			+ herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
+			#! iii.  Create herr[seq,vst,var] = ( (SYST_ERR[q2bin,wbin]/100)*hobs[seq,vst,var] ) +(linear) herr_HF[seq,vst,var]
+			#!			+ SYST_ERR contains relative error
+			#!			+ herr_HF[seq,vst,var] contains absolute error due to hole filling i.e. abs(EF-EC)
+			#! iv.   Plot and write to file(.txt and .root), for all seq, hobs[seq],herr[seq]
 		
 			#! Create .root file
 			froot=ROOT.TFile("%s/Obs_%s.root"%(outdir,obs),"RECREATE")
@@ -996,8 +1145,17 @@ def proc_Obs_1D_and_R2():
 					print "hobs:"
 					print hobs		
 
-				#! ii.  Create herr[seq,vst,var]:
-				#! + if seq='EF' or seq=='EC': err=SYST_ERR[q2bin,wbin]/100)*hobs['EF',vst,var]
+				#! ii.  Calculate herr_HF[seq,vst,var] (for EC and EH only), where herr_HF contains SE due to hole filling (in %)
+				herr_HF=get_herr_HF(hobs)
+				if DBG==True:
+					print "herr_HF:"
+					print herr_HF
+
+				#! iii.  Create herr[seq,vst,var]: 
+				#!		( (SYST_ERR[q2bin,wbin]/100)*hobs[seq,vst,var] ) +(linear) herr_HF[vst,var] 
+				#!			+ SYST_ERR contains relative error)
+				#!			+ herr_HF[vst,var] contains absolute error due to hole filling i.e. abs(EF-EC)
+				#! + if seq='EF' or seq=='EC': err=( (SYST_ERR[q2bin,wbin]/100)*hobs[seq,vst,var] ) +(linear) herr_HF[vst,var]
 				#! + if seq='ST':              err=0
 				herr=OrderedDict()
 				for k in hobs:
@@ -1014,9 +1172,14 @@ def proc_Obs_1D_and_R2():
 					for ibin in range(nbins):
 						#! obtain err as per seq
 						if seq=='EF' or seq=='EC':
+							#! Obtain absolute error from hole filling in this bin
+							err_HF=herr_HF[k].GetBinContent(ibin+1)
+							#! Obtain hobs in this bin
 							binc=hobs[k].GetBinContent(ibin+1)
+							#! Now obtain final err
 							#print "SYST_ERR[q2bin,wbin],binc",SYST_ERR[q2bin,wbin],binc
-							err=(SYST_ERR[q2bin,wbin]/100)*binc
+							#!err=(SYST_ERR[q2bin,wbin]/100)*binc
+							err=( (SYST_ERR[q2bin,wbin]/100)*binc ) + err_HF 
 							err_err=0
 						elif seq=='ST':
 							err=0
@@ -1036,7 +1199,7 @@ def proc_Obs_1D_and_R2():
 					print "herr:"
 					print herr
 
-				#! iii. Normalize ST using NORM_FACTOR[q2]
+				#! iv. Normalize ST using NORM_FACTOR[q2]
 				if   NORM_ST=="shape_and_amplitude": norm_ST_shape_and_amplitude(hobs,q2)
 				elif NORM_ST=="shape":				 norm_ST_shape(hobs)
 				#! iv. Plot and write to file(.txt and .root), for all seq, hobs[seq],herr[seq]

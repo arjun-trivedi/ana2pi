@@ -225,6 +225,9 @@ if SYSTEMATIC_EFFECT=="SSBands":
 elif SYSTEMATIC_EFFECT=="MM":
 	ADTNL_OPTS_CODE_LIST=['',                                 ':11:']
 	ADTNL_OPTS_TAG_LIST =[':MM-AT:gpart-pid-OFF:stat-pid-OFF:',':MM-EI:gpart-pid-OFF:stat-pid-OFF:']
+elif SYSTEMATIC_EFFECT=="SSBands-off-off": #! [10-26-17] Added for testing observables as a function of simstats: used by $SUBSTUDIES/study_compare_AT_EI_results/make_obs_as_function_of_simstats.sh
+	ADTNL_OPTS_CODE_LIST=[':11:']
+	ADTNL_OPTS_TAG_LIST =[':MM-EI:gpart-pid-OFF:stat-pid-OFF:']
 else:
 	sys.exit("Please enter SYSTEMATIC_EFFECT as either SSBands or MM")
 
