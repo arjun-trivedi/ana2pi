@@ -73,12 +73,15 @@ class ProcH8:
 	
 	"""
 	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,
-		         acc_rel_err_cut=-1,
+		         acc_cut=-1,acc_rel_err_cut=-1, 
 		         usehel=False,do_etgt_BG_sub=True,dbg=False):
 		self.SIMNUM=simnum
 
 		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
 		print "Q2MIN,Q2MAX,WMIN,WMAX=",self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX
+
+		self.ACC_CUT=acc_cut
+		print "ACC_CUT=",self.ACC_CUT
 
 		self.ACC_REL_ERR_CUT=acc_rel_err_cut
 		print "ACC_REL_ERR_CUT=",self.ACC_REL_ERR_CUT
@@ -109,10 +112,9 @@ class ProcH8:
 		#! + Note only FOUTNAME is created here; FOUT creation is handled, with attention to 
 		#!   using multiprocessing, by 'proc()'. See doc. of 'proc()' for more details
 		if self.USEHEL: self.FOUTNAME="yield_hel.root"
-		else:           self.FOUTNAME="yield.root"
+		else:      		self.FOUTNAME="yield.root"
 		print "DATADIR=%s\nFIN[ER]=%s\nFIN[ST]=%s\nFIN[SR]=%s\nOUTDIR=%s\nFOUTNAME=%s"%(self.DATADIR, self.FIN['ER'].GetName(),self.FIN['ST'].GetName(),self.FIN['SR'].GetName(), self.OUTDIR, self.FOUTNAME)
 		
-
 	def execute(self):
 		'''
 		+ The 'execute()' method uses Python's multiprocessing module to accomplish the task of processing
@@ -223,9 +225,17 @@ class ProcH8:
 				h5['SA',vst]=h5['SR',vst].Clone()
 				h5['SA',vst].Divide(h5['ST',vst])
 				thntool.SetUnderOverFLowBinsToZero(h5['SA',vst])
-				#! for SA,SR SetBinContentsAboveRelBinErrThresholdToZero()
+				# #! for SA,SR SetBinContentsAboveRelBinErrThresholdToZero()
+				#! [11-02-17] I am not sure why I was also setting bin contents of SR also to 0. There may have been a reason
+				#!            that I am not able to recollect right now, and so I am simply commenting this code out.
+				# if (self.ACC_REL_ERR_CUT>0):
+				# 	thntool.SetBinContentsAboveRelBinErrThresholdToZero(h5['SA',vst],h5['SR',vst],self.ACC_REL_ERR_CUT)
+				#! for SA SetBinContentsAboveRelBinErrThresholdToZero()
 				if (self.ACC_REL_ERR_CUT>0):
-					thntool.SetBinContentsAboveRelBinErrThresholdToZero(h5['SA',vst],h5['SR',vst],self.ACC_REL_ERR_CUT)
+					thntool.SetBinContentsAboveRelBinErrThresholdToZero(h5['SA',vst],self.ACC_REL_ERR_CUT)
+				#! for SA SetBinContentsBelowThresholdToZero()
+				if (self.ACC_CUT>0):
+					thntool.SetBinContentsBelowThresholdToZero(h5['SA',vst],self.ACC_CUT)
 				#! SC
 				h5['SC',vst]=h5['SR',vst].Clone()
 				h5['SC',vst].Divide(h5['SA',vst])

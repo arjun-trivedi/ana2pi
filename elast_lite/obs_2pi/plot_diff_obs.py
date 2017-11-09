@@ -1155,8 +1155,8 @@ def proc_Obs_itg():
 			hobs[OBS1][k].SetMarkerStyle(MRKS_SEQ[seq])
 			hobs[OBS1][k].SetMarkerColor(CLRS_OBS[OBS1])
 			hobs[OBS1][k].SetLineColor(CLRS_OBS[OBS1])
-			draw_opt_first_plot=""
-			if pad_first_plot_drawn==False:draw_opt_first_plot="same"
+			draw_opt_first_plot="same"
+			if pad_first_plot_drawn==False:draw_opt_first_plot=""
 			hobs[OBS1][k].Draw(draw_opt_first_plot)
 			pad_first_plot_drawn=True
 
