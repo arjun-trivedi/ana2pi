@@ -11,11 +11,11 @@ if len(sys.argv)>1: #! dbg entered by user
 print "dbg=",dbg
 #sys.exit()
 
-ana_ER_commonbins=["True","False"]
+yields_ER_commonbins=["True","False"]
 show_rel_err_dist=["True","False"]
 SSBands=['off-off','on-on']
 
-for item in list(itertools.product(ana_ER_commonbins,show_rel_err_dist,SSBands)):
+for item in list(itertools.product(yields_ER_commonbins,show_rel_err_dist,SSBands)):
 	print item[0],item[1],item[2]
 	exc='%s/study_yields_acceptance.py'%(os.environ['STUDY_YIELDS_ACCEPTANCE'])
 	cmd=[exc,dbg,item[0],item[1],item[2]]

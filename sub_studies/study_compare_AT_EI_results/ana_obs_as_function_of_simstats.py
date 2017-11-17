@@ -15,11 +15,13 @@ import matplotlib.pyplot as plt
 
 import itertools
 
-'''
+import ana_simstats
 
 '''
 
-USAGE='study_obs_as_function_of_simstats dbg[=False] show_rel_err_dist[=False]'
+'''
+
+USAGE='study_obs_as_function_of_simstats dbg[=False] simstats_show_rel_err_dist[=False]'
 
 #! user inputs
 DBG=False
@@ -28,14 +30,14 @@ if len(sys.argv)>1: #! dbg entered by user
 	elif  sys.argv[1]=="False": DBG=False
 	else: sys.exit('DBG=%s is not valid. usage: %s'%(sys.argv[1],USAGE))
 
-SHOW_REL_ERR_DIST=False
+SIMSTATS_SHOW_REL_ERR_DIST=False
 if len(sys.argv)>2: #!  show_rel_err_dist entered by user
-	if    sys.argv[2]=="True":  SHOW_REL_ERR_DIST=True
-	elif  sys.argv[2]=="False": SHOW_REL_ERR_DIST=False
-	else: sys.exit('SHOW_REL_ERR_DIST=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
+	if    sys.argv[2]=="True":  SIMSTATS_SHOW_REL_ERR_DIST=True
+	elif  sys.argv[2]=="False": SIMSTATS_SHOW_REL_ERR_DIST=False
+	else: sys.exit('SIMSTATS_SHOW_REL_ERR_DIST=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
 
 print "DBG=",DBG
-print "SHOW_REL_ERR_DIST=",SHOW_REL_ERR_DIST
+print "SIMSTATS_SHOW_REL_ERR_DIST=",SIMSTATS_SHOW_REL_ERR_DIST
 #sys.exit()
 
 #! imports from proc_h8.py
@@ -56,11 +58,6 @@ thntool=THnTool()
 #! OUTDIR
 DATE=datetime.datetime.now().strftime('%m%d%y')
 OUTDIRNAME='results'
-#! append identifiers
-if SHOW_REL_ERR_DIST==True:
-	OUTDIRNAME+='_w_relerr_dist'
-else:
-	OUTDIRNAME+='_wo_relerr_dist'
 OUTDIRNAME+='_%s'%DATE
 #! Finally create OUTDIR
 if DBG==True:
@@ -197,20 +194,6 @@ def get_q2wbinlist(f,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_b
 				#brk=True
 				break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 
-
-
-		# #! Remove q2wbins that are not within [q2min,q2max],[wmin,wmax] 
-		# q2wbins_remove=[]
-		# fdor q2wbin in q2wbinl:
-		# 	q2bin_le=q2wbin.split("_")[0].split("-")[0]
-		# 	q2bin_ue=q2wbin.split("_")[0].split("-")[1]
-		# 	wbin_le =q2wbin.split("_")[1].split("-")[0]
-		# 	wbin_ue =q2wbin.split("_")[1].split("-")[1]
-		# 	if float(q2bin_ue)<=q2min or float(q2bin_le)>=q2max or float(wbin_ue)<=wmin or float(wbin_le)>=wmax:
-		# 		q2wbins_remove.append(q2wbin)
-		# for q2wbin in q2wbins_remove:
-		# 	q2wbinl.remove(q2wbin)
-
 		return q2wbinl
 
 def get_q2bin(q2wbin):
@@ -233,367 +216,6 @@ def norm_1D_theta(hTheta):
 	hTheta.Sumw2();
 	hTheta.Divide(hDCosTheta)
 	return hDCosTheta
-
-def plot_simstats(h5l,q2wbin,q2r):	
-	'''
-	Following plots are made:
-	1. 5D-PS (For All-5D and ER-Common-5D)
-		1.i. Total statistics for {ER,SR,ST} vs sim#              
-		1.ii 5D-PS distribution for {ER,ST,SR,SA} for each sim#   
-	
-	2. 5D-PS-vst-var (For All-5D and ER-Common-5D) (current vst,var=1,THETA i.e. theta_pim)
-		2.i.  Total statistics for {ER,SR,ST} vs vst-var, for each sim# 
-		2.ii. 5D-PS-vst-var distributions for each 1D-bin for each sim# 
-		2.iii 5D-PS-vst-var-dist-avg for {ST,SR,SA} vs vst-var, for each sim# 
-	'''
-	print "processing q2wbin=",q2wbin
-
-	var=VAR_NAMES_PLAIN[1,'THETA']
-
-	#SEQ=['ER','ST','SR','SA']
-
-	#! outdir_q2w
-	outdir_q2w="%s/simstats/%s"%(OUTDIR,q2wbin)
-	if not os.path.exists(outdir_q2w):
-		os.makedirs(outdir_q2w)
-
-	#! Get total number of sims
-	nsims=len(h5l)
-
-	#! General aesthetics
-	plot_simstats_athtcs()
-
-	#! Now start processing
-
-	#! Total statistics distributions: 1.i and 2.i
-	#! 1.i. Total statistics for {ER,SR,ST} vs sim#:
-	#!    stats[isim][seq,pstyp]
-	#! + get data
-	stats=[OrderedDict() for isim in range(nsims)]
-	for isim in range(nsims):
-		for seq in ['ER','SR','ST']:
-			if seq=='ER': #! Note 'ER5D' not applicable for ER
-				stats[isim][seq,'AL5D']=thntool.GetIntegral(h5l[isim][seq])
-			else:
-				stats[isim][seq,'AL5D']=thntool.GetIntegral(h5l[isim][seq])
-				stats[isim][seq,'ER5D']=thntool.GetIntegralCommonBins(h5l[isim][seq],h5l[isim]['ER'])
-	#! plot data {'ER','SR','ST'}*{pstyp} vs sim on one plot
-	fig_size_x=20
-	fig_size_y=15
-	fig,axs = plt.subplots(figsize=(fig_size_x,fig_size_y),nrows=3, ncols=2,sharex=True)
-	fig.suptitle('Total statistics',fontsize='xx-large')
-	#! Set up x axis = sim#
-	x=range(nsims)
-	xticks=[SIMFRCTN[q2r][isim] for isim in range(nsims)]
-	for seq in ['ST','SR','ER']:
-		print "Processing",seq
-		#! Set up axs for 'AL5D' ('ER5D'=ir+1,ic)
-		if   seq=='ST': ir,ic=0,0
-		elif seq=='SR':	ir,ic=0,1
-		elif seq=='ER': ir,ic=2,0
-		for pstyp in PSTYPS:
-			print "Processing %s"%pstyp
-			if seq=='ER' and pstyp=='ER5D': continue
-			if   pstyp=='AL5D': ax=axs[ir][ic]
-			elif pstyp=='ER5D': ax=axs[ir+1][ic]
-			y=[stats[isim][seq,pstyp] for isim in range(nsims)]
-			print x
-			print y
-			ax.set_title("%s-%s"%(seq,pstyp))
-			ax.scatter(x,y,s=50)
-			#! aesthetics
-			#! yaxis
-			ax.set_ylabel("N")
-			ymin,ymax=0,( max(y)+(10/100)*max(y) )
-			ax.set_ylim(ymin,ymax)
-			#! xaxis
-			ax.set_xlabel("Simulation Fraction")
-			ax.set_xticks(x)
-			ax.set_xticklabels(xticks)
-			#! Fix x axis
-			# shift half a step to the left
-			xmin=(3*x[0]-x[1])/2.
-			# shift half a step to the right
-			xmax=(3*x[-1]-x[-2])/2.
-			ax.set_xlim(xmin,xmax)
-	#! Save
-	outdir="%s/5D-PS-tot-stat/"%(outdir_q2w)
-	if not os.path.exists(outdir):
-		os.makedirs(outdir)
-	fig.savefig("/%s/totstats.png"%(outdir))
-			
-
-	#! 5D-PS distributions: 1.ii and 2.ii
-	#! 1.ii 5D-PS distribution for {ER,ST,SR,SA} for each sim# 
-	for seq in ['ST','SR','SA','ER']:
-		print "5D-PS distributions: processing seq=",seq
-
-		#! BinContentDist and BinRelErrDist: h1tot[isim]['AL5D','ER5D'] and h1errtot[isim]['AL5D','ER5D'] 
-		h1tot   =[OrderedDict() for i in range(nsims)]
-		h1errtot=[OrderedDict() for i in range(nsims)]
-		#! setup binning information bng(seq)=(nbins,xmin,xmax)
-		bng=OrderedDict()
-		bng['ER']=[5,    0.5, 5.5]
-		bng['SA']=[1000, 0,   0.5]
-		bng['SR']=[100,  0.5,   100.5] #500
-		bng['ST']=[0,    0,   0] #! default binning
-		#! Now get histograms
-		#! BinContentDist
-		for isim in range(nsims):
-			nbins,xmin,xmax=bng[seq][0],bng[seq][1],bng[seq][2]
-			if seq=='ER': #! Note 'ER5D' not applicable for ER
-				h1tot[isim]['AL5D']=thntool.GetBinContentDist(h5l[isim][seq],nbins,xmin,xmax)
-				h1errtot[isim]['AL5D']=thntool.GetBinRelErrorDist(h5l[isim][seq],100,0,1.5)
-			else:
-				h1tot[isim]['AL5D']=thntool.GetBinContentDist(h5l[isim][seq],nbins,xmin,xmax)
-				h1tot[isim]['ER5D']=thntool.GetBinContentDistCommonBins(h5l[isim][seq],h5l[isim]['ER'],nbins,xmin,xmax)
-				h1errtot[isim]['AL5D']=thntool.GetBinRelErrorDist(h5l[isim][seq],100,0,1.5)
-				h1errtot[isim]['ER5D']=thntool.GetBinRelErrorDistCommonBins(h5l[isim][seq],h5l[isim]['ER'],100,0,1.5)
-		#! Some hist aesthetics
-		for isim in range(nsims):
-			for k in h1tot[isim].keys():
-				#h1tot[isim][k].SetTitle("h5_BinContentDist_sim%d_%s_%s"%(isim+1,seq,q2wbin))
-				h1tot[isim][k].SetTitle("h5_BinContentDist_%s_%s_%s"%(k,seq,q2wbin))
-				clr=CLRS[isim]
-				mrk=MRKS_PLT_SEQ[seq]
-				# h1tot[isim][k].SetMarkerStyle(mrk)
-				# h1tot[isim][k].SetMarkerColor(clr)
-				h1tot[isim][k].SetLineColor(clr)
-				# h1tot[isim][k].SetFillColor(clr)
-				# h1tot[isim][k].SetFillStyle(3001)
-			for k in h1errtot[isim].keys():
-				#h1errtot[isim][k].SetTitle("h5_BinRelErrDist_sim%d_%s_%s"%(isim+1,seq,q2wbin))
-				h1errtot[isim][k].SetTitle("h5_BinRelErrDist_%s_%s_%s"%(k,seq,q2wbin))
-				clr=CLRS[isim]
-				mrk=MRKS_PLT_SEQ[seq]
-				# h1errtot[isim][k].SetMarkerStyle(mrk)
-				# h1errtot[isim][k].SetMarkerColor(clr)
-				h1errtot[isim][k].SetLineColor(clr)
-				# h1errtot[isim][k].SetFillColor(clr)
-				# h1errtot[isim][k].SetFillStyle(3001)
-				
-		#! Draw and save
-		#! create canvas, one each for 'AL5D' and 'ER5D'
-		for pstype in ['AL5D','ER5D']:
-			if seq=='ER' and pstype=='ER5D': continue
-			#! create outdir
-			outdir="%s/%s/%s/%s"%(outdir_q2w,'5D-PS-dist',pstype,seq)
-			if not os.path.exists(outdir):
-				os.makedirs(outdir)
-			c=ROOT.TCanvas()
-			if SHOW_REL_ERR_DIST:
-				c.SetCanvasSize(700,700)
-				c.Divide(1,2)
-				c.cd(1)
-				#! before drawing set min and max
-				h1l=[h1tot[isim][pstype] for isim in range(nsims)]
-				set_h1l_maximum_minimum(h1l)
-				#! finally draw
-				for isim in range(nsims):
-					draw_opt="hist"#"e"
-					if isim>0:draw_opt="hist sames" #"e sames"
-					h1tot[isim][pstype].Draw(draw_opt)
-				c.cd(2)
-				#! before drawing set min and max
-				h1l=[h1errtot[isim][pstype] for isim in range(nsims)]
-				set_h1l_maximum_minimum(h1l)
-				#! finally draw
-				for isim in range(nsims):
-					draw_opt="hist"#"e"
-					if isim>0:draw_opt="hist sames" #"e sames"
-					h1errtot[isim][pstype].Draw(draw_opt)
-			else:
-				#! before drawing set min and max
-				h1l=[h1tot[isim][pstype] for isim in range(nsims)]
-				set_h1l_maximum_minimum(h1l)
-				#! finally draw
-				for isim in range(nsims):
-					draw_opt="hist"#"e"
-					if isim>0:draw_opt="hist sames" #"e sames"
-					h1tot[isim][pstype].Draw(draw_opt)
-			c.SaveAs("%s/h1.png"%(outdir))
-
-	#! 2.ii. 5D-PS-vst-var-dist for each 1D-bin for each sim# 
-	#! + Also, in this loop store data for 2.iii 5D-PS-vst-var-dist-avg for {ST,SR,SA} vs vst-var, for each sim#:
-	#!    + avg[isim][seq,pstyp,ibin]
-	avg=[OrderedDict() for isim in range(nsims)]
-	for seq in ['ST','SR','SA']:
-		print "5D-PS-vst-var distributions: processing seq=",seq
-		#! Get VST1-THETA binning information from isim=0 (can use any sim#)
-		nbins=h5l[0][seq].GetAxis(H5_DIM['THETA']).GetNbins()
-		#print nbins
-		binw=h5l[0][seq].GetAxis(H5_DIM['THETA']).GetBinWidth(1)
-		for ibin in range(nbins):
-			#! BinContentDist and BinRelErrDist: h1tot[isim]['AL5D','ER5D'] and h1errtot[isim]['AL5D','ER5D'] 
-			h1   =[OrderedDict() for i in range(nsims)]
-			h1err=[OrderedDict() for i in range(nsims)]
-			#! setup binning information bng(seq)=(nbins,xmin,xmax)
-			#! Use same bng as for 1.ii 5D-PS distribution for {ER,ST,SR,SA} for each sim# 
-			# bng=OrderedDict()
-			# bng['ER']=[5,    0.5, 5.5]
-			# bng['SA']=[1000, 0,   0.5]
-			# bng['SR']=[100,  0,   100] #500
-			# bng['ST']=[0,    0,   0] #! default binning
-			for isim in range(nsims):
-				#! Set range and make projections as per bin
-				binle=h5l[isim][seq].GetAxis(H5_DIM['THETA']).GetBinLowEdge(ibin+1)
-				binue=binle+binw
-				print "processing seq,sim#,bin#: %s,%d%d,[%.3f,%.3f)"%(seq,isim+1,ibin+1,binle,binue)
-				#! Set range for seq and 'ER'
-				h5l[isim]['ER'].GetAxis(H5_DIM['THETA']).SetRange(ibin+1,ibin+1)
-				h5l[isim][seq].GetAxis(H5_DIM['THETA']).SetRange(ibin+1,ibin+1)
-				#! h5->h4 for selected range
-				h4ER=h5l[isim]['ER'].Projection(4,H4_PROJDIM,"E")
-				h4  =h5l[isim][seq].Projection(4,H4_PROJDIM,"E")
-				#! get h1 and h1err
-				nbins,xmin,xmax=bng[seq][0],bng[seq][1],bng[seq][2]
-				h1[isim]['AL5D']=thntool.GetBinContentDist(h4,nbins,xmin,xmax)
-				h1[isim]['ER5D']=thntool.GetBinContentDistCommonBins(h4,h4ER,nbins,xmin,xmax)
-				h1err[isim]['AL5D']=thntool.GetBinRelErrorDist(h4,100,0,1.5)
-				h1err[isim]['ER5D']=thntool.GetBinRelErrorDistCommonBins(h4,h4ER,100,0,1.5)
-				#! get data for avg[isim][seq,pstyp,ibin]
-				avg[isim][seq,'AL5D',ibin]=np.zeros(2,'f')
-				avg[isim][seq,'ER5D',ibin]=np.zeros(2,'f')
-				if seq=='ER': #! Note 'ER5D' not applicable for ER
-					thntool.GetBinContentDistStats(h4,avg[isim][seq,'AL5D',ibin])
-				else:
-					thntool.GetBinContentDistStats(h4,avg[isim][seq,'AL5D',ibin])
-					thntool.GetBinContentDistStatsCommonBins(h4,h4ER,avg[isim][seq,'ER5D',ibin])
-				#! Reset Range
-				h5l[isim]['ER'].GetAxis(H5_DIM['THETA']).SetRange()
-				h5l[isim][seq].GetAxis(H5_DIM['THETA']).SetRange()
-							
-			#! Some hist aesthetics
-			for isim in range(nsims):
-				for k in h1[isim].keys():
-					#h1[isim][k].SetTitle("h5_BinContentDist_sim%d_%s_bin%d_%s"%(isim+1,seq,ibin+1,q2wbin))
-					h1[isim][k].SetTitle("h5_BinContentDist_%s_%s_bin%d_%s"%(k,seq,ibin+1,q2wbin))
-					clr=CLRS[isim]
-					mrk=MRKS_PLT_SEQ[seq]
-					# h1[isim][k].SetMarkerStyle(mrk)
-					# h1[isim][k].SetMarkerColor(clr)
-					h1[isim][k].SetLineColor(clr)
-					# h1[isim][k].SetFillColor(clr)
-					# h1[isim][k].SetFillStyle(3001)
-				for k in h1err[isim].keys():
-					h1err[isim][k].SetTitle("h5_BinRelErrDist_%s_%s_bin%d_%s"%(k,seq,ibin+1,q2wbin))
-					clr=CLRS[isim]
-					mrk=MRKS_PLT_SEQ[seq]
-					# h1err[isim][k].SetMarkerStyle(mrk)
-					# h1err[isim][k].SetMarkerColor(clr)
-					h1err[isim][k].SetLineColor(clr)
-					# h1err[isim][k].SetFillColor(clr)
-					# h1err[isim][k].SetFillStyle(3001)
-
-			#! Draw and save
-			#! create canvas, one each for 'AL5D' and 'ER5D'
-			for pstype in ['AL5D','ER5D']:
-				#! create outdir
-				outdir="%s/%s/%s/%s"%(outdir_q2w,'5D-PS-vst-var-dist',pstype,seq)
-				if not os.path.exists(outdir):
-					os.makedirs(outdir)
-				c=ROOT.TCanvas()
-				if SHOW_REL_ERR_DIST:
-					c.SetCanvasSize(700,700)
-					c.Divide(1,2)
-					c.cd(1)
-					#! before drawing set min and max
-					h1l=[h1[isim][pstype] for isim in range(nsims)]
-					set_h1l_maximum_minimum(h1l)
-					#! finally draw
-					for isim in range(nsims):
-						draw_opt="hist"#"e"
-						if isim>0:draw_opt="hist sames" #"e sames"
-						h1[isim][pstype].Draw(draw_opt)
-					c.cd(2)
-					#! before drawing set min and max
-					h1l=[h1err[isim][pstype] for isim in range(nsims)]
-					set_h1l_maximum_minimum(h1l)
-					#! finally draw
-					for isim in range(nsims):
-						draw_opt="hist"#"e"
-						if isim>0:draw_opt="hist sames" #"e sames"
-						h1err[isim][pstype].Draw(draw_opt)
-				else:
-					#! before drawing set min and max
-					h1l=[h1[isim][pstype] for isim in range(nsims)]
-					set_h1l_maximum_minimum(h1l)
-					#! finally draw
-					for isim in range(nsims):
-						draw_opt="hist"#"e"
-						if isim>0:draw_opt="hist sames" #"e sames"
-						h1[isim][pstype].Draw(draw_opt)
-				#c.SaveAs("%s/h1_%s.png"%(outdir,pstype))
-				c.SaveAs("%s/h1_%02d_%04.1f-%04.1f.png"%(outdir,ibin+1,binle,binue))			
-
-	#! Plot 2.iii data obtain earlier in avg[isim][seq,pstyp,ibin]
-	fig_size_x=20
-	fig_size_y=15
-	fig,axs = plt.subplots(figsize=(fig_size_x,fig_size_y),nrows=4, ncols=2,sharex=True)
-	fig.suptitle('Average',fontsize='xx-large')
-	#! Set up x axis = theta bins
-	x=range(NTHETABINS)
-	xticks=[THETABINLE[ibin] for ibin in range(NTHETABINS)]
-	for seq in ['ST','SR','SA']: #! ignore 'ST','SR','ER' for now
-		print "Processing",seq
-		#! Set up axs for 'AL5D' ('ER5D'=ir+1,ic)
-		if   seq=='ST': ir,ic=0,0
-		elif seq=='SR':	ir,ic=0,1
-		elif seq=='SA': ir,ic=2,0
-		for pstyp in PSTYPS:
-			print "Processing %s"%pstyp
-			if seq=='ER' and pstyp=='ER5D': continue
-			if   pstyp=='AL5D': ax=axs[ir][ic]
-			elif pstyp=='ER5D': ax=axs[ir+1][ic]
-			#! get avg,avg_err as a function of sim
-			y=[0 for isim in range(nsims)]
-			yerr=[0 for isim in range(nsims)]
-			yerr0=[0 for isim in range(nsims)]
-			for isim in range(nsims):
-				y[isim]=   [avg[isim][seq,pstyp,ibin][0] for ibin in range(NTHETABINS)]
-				yerr[isim]=[avg[isim][seq,pstyp,ibin][1] for ibin in range(NTHETABINS)]
-				yerr0[isim]=[0 for ibin in range(NTHETABINS)]
-			if DBG==True:
-				print x
-				for isim in range(nsims):
-					print "y[%d]:"%isim
-					print y[isim]
-					print "yerr[%d]:"%isim
-					print yerr[isim]
-			ax.set_title("%s-%s"%(seq,pstyp))
-			for isim in range(nsims):
-				# #! with error bars
-				# ax.errorbar(x,y[isim],yerr=yerr[isim],fmt='o',label='sim-frc-%.1f'%SIMFRCTN[q2r][isim],markersize=8,c=CLRS_MPLT[isim])
-				#! 0error bars
-				ax.errorbar(x,y[isim],yerr=yerr0[isim],fmt='o',label='sim-frc-%.1f'%SIMFRCTN[q2r][isim],markersize=8,c=CLRS_MPLT[isim])
-			#! aesthetics
-			#! yaxis
-			ax.set_ylabel("<%s>"%seq)
-			lists=[y[isim] for isim in range(nsims)]
-			ytot=[item for sublist in lists for item in sublist]
-			ymin,ymax=0,( max(ytot)+(10/100)*max(ytot) )
-			ax.set_ylim(ymin,ymax)
-			#! xaxis
-			ax.set_xlabel(r"$\theta_{\pi^{-}}$",size='xx-large')
-			ax.set_xticks(x)
-			ax.set_xticklabels(xticks)
-			#! Fix x axis
-			# shift half a step to the left
-			xmin=(3*x[0]-x[1])/2.
-			# shift half a step to the right
-			xmax=(3*x[-1]-x[-2])/2.
-			ax.set_xlim(xmin,xmax)
-	#! Save
-	outdir="%s/5D-PS-vst-var-dist-avg/"%(outdir_q2w)
-	if not os.path.exists(outdir):
-		os.makedirs(outdir)
-	fig.savefig("/%s/avg.png"%(outdir))
-
-def plot_simstats_athtcs():
-	#! General aesthetics
-	#! + Reset any previous
-	ROOT.gStyle.Reset()
-	ROOT.gStyle.SetOptStat("nmMrReiuo")
 
 def plot_1D_athtcs():
 	#ROOT.gStyle.Reset()
@@ -820,53 +442,53 @@ print "Q2WBINL[LQ2]=",Q2WBINL[LQ2]
 print "Q2WBINL[HQ2]=",Q2WBINL[HQ2]
 #sys.exit()
 
-# #! 1. Loop over Q2WBINL and for each q2wbin make Obs_1D=f(sim)
-# for q2r in range(NQ2RANGES):
-# 	if isinstance(Q2WBINL[q2r],list)==False: continue #! in debug mode Q2WBINL[q2r] may not be obtained
-# 	for q2wbin in Q2WBINL[q2r]:
-# 		#! Create structure to hold hobs[isim][seq,vst,var]
-# 		hobs=[OrderedDict() for isim in range(NSIM[q2r])]
-# 		for isim in ISIM[q2r]:
-# 			#if q2r==LQ2 and isim==0: continue #! data corrurpt. remaking. skip for now
-# 			#! Get hobs
-# 			for item in PAD_MAP_1D:
-# 				pad,vst,var=item[0],item[1],item[2]
-# 				for seq in ['EC','EF']:
-# 					hobs[isim][seq,vst,var]=FO1D[q2r][isim].Get("%s/h1_%s_%d_%s"%(q2wbin,seq,vst,var))
-# 		if DBG==True:
-# 			print "***hobs pretty print for q2wbin",q2wbin,"***"
-# 			for isim,h1 in enumerate(hobs):
-# 				print "** sim#=",isim+1,"**"
-# 				for k in h1:
-# 					print k,h1[k].GetName()
-# 		#! plot
-# 		plot_1D(hobs,q2wbin)
+#! 1. Loop over Q2WBINL and for each q2wbin make Obs_1D=f(sim)
+for q2r in range(NQ2RANGES):
+	if isinstance(Q2WBINL[q2r],list)==False: continue #! in debug mode Q2WBINL[q2r] may not be obtained
+	for q2wbin in Q2WBINL[q2r]:
+		#! Create structure to hold hobs[isim][seq,vst,var]
+		hobs=[OrderedDict() for isim in range(NSIM[q2r])]
+		for isim in ISIM[q2r]:
+			#if q2r==LQ2 and isim==0: continue #! data corrurpt. remaking. skip for now
+			#! Get hobs
+			for item in PAD_MAP_1D:
+				pad,vst,var=item[0],item[1],item[2]
+				for seq in ['EC','EF']:
+					hobs[isim][seq,vst,var]=FO1D[q2r][isim].Get("%s/h1_%s_%d_%s"%(q2wbin,seq,vst,var))
+		if DBG==True:
+			print "***hobs pretty print for q2wbin",q2wbin,"***"
+			for isim,h1 in enumerate(hobs):
+				print "** sim#=",isim+1,"**"
+				for k in h1:
+					print k,h1[k].GetName()
+		#! plot
+		plot_1D(hobs,q2wbin)
 
-# #! 2. Plot Obs_itg=f(sim) 
-# #! + use vst=1, var=THETA
-# #! First get Q2WBINL (different format compared to Obs_1D) from ISIM=0 (any ISIM should get the same list)
-# Q2WBINL_ITG=[0 for i in range(NQ2RANGES)]
-# #! Note that no debug mode needed since there only a few bins
-# Q2WBINL_ITG[LQ2]=get_q2wbinlist(FOIT[LQ2][0])
-# Q2WBINL_ITG[HQ2]=get_q2wbinlist(FOIT[HQ2][0])	
-# print "Q2WBINL_ITG[LQ2]=",Q2WBINL_ITG[LQ2]
-# print "Q2WBINL_ITG[HQ2]=",Q2WBINL_ITG[HQ2]
-# for q2r in range(NQ2RANGES):
-# 	for q2wbin in Q2WBINL_ITG[q2r]:
-# 		#! Create structure to hold hobs[isim][seq,vst,var]
-# 		hobs=[OrderedDict() for isim in range(NSIM[q2r])]
-# 		for isim in ISIM[q2r]:
-# 			#! Get hobs
-# 			for seq in ['EC','EF']:
-# 				hobs[isim][seq]=FOIT[q2r][isim].Get("%s/hW_%s_1_THETA"%(q2wbin,seq))
-# 		if DBG==True:
-# 			print "***hobs pretty print for q2wbin",q2wbin,"***"
-# 			for isim,h1 in enumerate(hobs):
-# 				print "** sim#=",isim+1,"**"
-# 				for k in h1:
-# 					print k,h1[k].GetName()
-# 		#! plot
-# 		plot_itg(hobs,q2wbin)
+#! 2. Plot Obs_itg=f(sim) 
+#! + use vst=1, var=THETA
+#! First get Q2WBINL (different format compared to Obs_1D) from ISIM=0 (any ISIM should get the same list)
+Q2WBINL_ITG=[0 for i in range(NQ2RANGES)]
+#! Note that no debug mode needed since there only a few bins
+Q2WBINL_ITG[LQ2]=get_q2wbinlist(FOIT[LQ2][0])
+Q2WBINL_ITG[HQ2]=get_q2wbinlist(FOIT[HQ2][0])	
+print "Q2WBINL_ITG[LQ2]=",Q2WBINL_ITG[LQ2]
+print "Q2WBINL_ITG[HQ2]=",Q2WBINL_ITG[HQ2]
+for q2r in range(NQ2RANGES):
+	for q2wbin in Q2WBINL_ITG[q2r]:
+		#! Create structure to hold hobs[isim][seq,vst,var]
+		hobs=[OrderedDict() for isim in range(NSIM[q2r])]
+		for isim in ISIM[q2r]:
+			#! Get hobs
+			for seq in ['EC','EF']:
+				hobs[isim][seq]=FOIT[q2r][isim].Get("%s/hW_%s_1_THETA"%(q2wbin,seq))
+		if DBG==True:
+			print "***hobs pretty print for q2wbin",q2wbin,"***"
+			for isim,h1 in enumerate(hobs):
+				print "** sim#=",isim+1,"**"
+				for k in h1:
+					print k,h1[k].GetName()
+		#! plot
+		plot_itg(hobs,q2wbin)
 
 #! 3. Loop over Q2WBINL and for each q2wbin make simstats=f(sim)
 for q2r in range(NQ2RANGES):
@@ -885,4 +507,6 @@ for q2r in range(NQ2RANGES):
 				for k in h5:
 					print k,h5[k].GetName()
 		#! plot
-		plot_simstats(h5l,q2wbin,q2r)
+		#! The following 2 steps take a while, especially plot_simstats_5D()
+		ana_simstats.plot_simstats_5D(h5l,q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
+		ana_simstats.plot_simstats_5D_vst_var(h5l,q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)

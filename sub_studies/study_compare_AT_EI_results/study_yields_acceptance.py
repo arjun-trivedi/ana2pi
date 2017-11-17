@@ -10,11 +10,15 @@ from rootpy.io import root_open, DoesNotExist
 
 import math
 
+import numpy as np
+
+import ana_simstats
+
 '''
 Read documentation for function plot() to see what this code does.
 '''
 
-USAGE='study_yields_acceptance dbg[=False] ana_ER_commonbins[=True] show_rel_err_dist[=True] SSBands=[off-off]'
+USAGE='study_yields_acceptance dbg[=False] yields_ER_commonbins[=True] simstats_show_rel_err_dist[=True] SSBands=[off-off]'
 
 #! user inputs
 DBG=False
@@ -23,17 +27,17 @@ if len(sys.argv)>1: #! dbg entered by user
 	elif  sys.argv[1]=="False": DBG=False
 	else: sys.exit('DBG=%s is not valid. usage: %s'%(sys.argv[1],USAGE))
 
-ANA_ER_COMMONBINS=True
+YIELDS_ER_COMMONBINS=True
 if len(sys.argv)>2: #!  ana_ER_commonbins entered by user
-	if    sys.argv[2]=="True":  ANA_ER_COMMONBINS=True
-	elif  sys.argv[2]=="False": ANA_ER_COMMONBINS=False
-	else: sys.exit('ANA_ER_COMMONBINS=%s is not valid. usage: %s'%(sys.argv[2],USAGE))
+	if    sys.argv[2]=="True":  YIELDS_ER_COMMONBINS=True
+	elif  sys.argv[2]=="False": YIELDS_ER_COMMONBINS=False
+	else: sys.exit('YIELDS_ER_COMMONBINS=%s is not valid. usage: %s'%(sys.argv[2],USAGE))
 
-SHOW_REL_ERR_DIST=True
+SIMSTATS_SHOW_REL_ERR_DIST=True
 if len(sys.argv)>3: #!  show_rel_err_dist entered by user
-	if    sys.argv[3]=="True":  SHOW_REL_ERR_DIST=True
-	elif  sys.argv[3]=="False": SHOW_REL_ERR_DIST=False
-	else: sys.exit('SHOW_REL_ERR_DIST=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
+	if    sys.argv[3]=="True":  SIMSTATS_SHOW_REL_ERR_DIST=True
+	elif  sys.argv[3]=="False": SIMSTATS_SHOW_REL_ERR_DIST=False
+	else: sys.exit('SIMSTATS_SHOW_REL_ERR_DIST=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
 
 SSBANDS='off-off'
 if len(sys.argv)>4: #!  SSBands entered by user
@@ -43,8 +47,8 @@ if len(sys.argv)>4: #!  SSBands entered by user
 		sys.exit('SSBANDS=%s is not valid. usage: %s'%(sys.argv[4],USAGE))
 
 print "DBG=",DBG
-print "ANA_ER_COMMONBINS=",ANA_ER_COMMONBINS
-print "SHOW_REL_ERR_DIST=",SHOW_REL_ERR_DIST
+print "YIELDS_ER_COMMONBINS=",YIELDS_ER_COMMONBINS
+print "SIMSTATS_SHOW_REL_ERR_DIST=",SIMSTATS_SHOW_REL_ERR_DIST
 print "SSBANDS=",SSBANDS
 #sys.exit()
 
@@ -67,11 +71,11 @@ ROOT.gStyle.SetStatStyle(0) #! transparent stats box
 DATE=datetime.datetime.now().strftime('%m%d%y')
 OUTDIRNAME='results'
 #! append identifiers
-if ANA_ER_COMMONBINS==True:
-	OUTDIRNAME+='_ER-5D-CommonBins'
+if YIELDS_ER_COMMONBINS==True:
+	OUTDIRNAME+='_Yields_ER-CommonBins'
 else:
-	OUTDIRNAME+='_All-5D-Bins'
-if SHOW_REL_ERR_DIST==True:
+	OUTDIRNAME+='_Yields_All-5D-Bins'
+if SIMSTATS_SHOW_REL_ERR_DIST==True:
 	OUTDIRNAME+='_with_rel_err_dist'
 else:
 	OUTDIRNAME+='_without_rel_err_dist'
@@ -166,42 +170,27 @@ def norm_1D_theta(hTheta):
 	hTheta.Divide(hDCosTheta)
 	return hDCosTheta
 
-def plot(q2wbin):	
+def plot_yields(h5,q2wbin):	
 	'''
-	+ For {ER,ST,SR,SA} plot:
+	+ For {ER,ST,SR} plot:
 	    i.  5D-PS distributions of entries and their corresponding rel_err
 	    ii. 1D projection (currently only for VST1,THETA i.e. theta_pim)
-	+ Additionally for {ST,SR,SA}
-	    iii.  5D-PS-vst-var distributions of entries and their corresponding rel_err
-	    	  + 5D-PS-vst-var= 5D PS distributions but only for a particular subspace of 
-	    	    the total 5D-PS, which corresponds to a particular VST-VAR's bin.
-	          + Currently this is done only for VST1,THETA i.e. theta_pim
+	+ Additionally, for {ST,SR} plot
+		i. 5D-PS-vst-var distributions
+			+ Currently vst-var=1-THETA
 	'''
-	print "processing q2wbin=",q2wbin
-
-	var=VAR_NAMES_PLAIN[1,'THETA']
-
-	SEQ=['ER','ST','SR','SA']
-
-	#! Get all the h5(seq)
-	#! + First establish if to use FIN[LQ2] or FIN[HQ2] for this q2wbin
-	if   FIN[LQ2].FindObjectAny(q2wbin)!=None: fin=FIN[LQ2]
-	elif FIN[HQ2].FindObjectAny(q2wbin)!=None: fin=FIN[HQ2]
-	else:
-		sys.exit("study_yields_acceptance.py:plot():Could not establish if to use FIN[LQ2] or FIN[HQ2] for q2wbin=%s"(q2wbin))
-	print "fin=",fin.GetName()
-
-	h5=OrderedDict()
-	for seq in SEQ:
-		h5[seq]=fin.Get('%s/%s/VST1/h5'%(q2wbin,seq))
-	
 	#! outdir_q2w
-	outdir_q2w="%s/%s"%(OUTDIR,q2wbin)
+	outdir_q2w="%s/yields/%s"%(OUTDIR,q2wbin)
 	if not os.path.exists(outdir_q2w):
 		os.makedirs(outdir_q2w)
 
+	var=VAR_NAMES_PLAIN[1,'THETA']
+
+	#! seq for this function
+	seqs=['ER','ST','SR']
+
 	#! Now start processing
-	for seq in SEQ:
+	for seq in seqs:
 		print "processing seq=",seq
 
 		#! i. 5D-PS distributions
@@ -209,26 +198,27 @@ def plot(q2wbin):
 		outdir="%s/%s/%s"%(outdir_q2w,seq,'5D-PS')
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
-		if seq=='ER': #! Note ANA_ER_COMMONBINS not applicable for ER
+		if seq=='ER': #! Note YIELDS_ER_COMMONBINS not applicable for ER
 			h1tot=thntool.GetBinContentDist(h5[seq],5,0.5,5.5)
-		if seq=='SA':
-			if ANA_ER_COMMONBINS: h1tot=thntool.GetBinContentDistCommonBins(h5[seq],h5['ER'],1000,0,0.5)
-			else:       		  h1tot=thntool.GetBinContentDist(h5[seq],1000,0,0.5)
-			
 		elif seq=='SR':
-			if ANA_ER_COMMONBINS: h1tot=thntool.GetBinContentDistCommonBins(h5[seq],h5['ER'],100,0,500)
-			else:                 h1tot=thntool.GetBinContentDist(h5[seq],100,0,500)
-			
+			if YIELDS_ER_COMMONBINS: 
+				stats=np.zeros(2,'f')#! dummy variable
+				h1tot=thntool.GetBinContentDistCommonBins2(h5[seq],h5['ER'],stats,100,0,500)
+			else:
+				h1tot=thntool.GetBinContentDist(h5[seq],100,0,500)
 		elif seq=='ST':
-			if ANA_ER_COMMONBINS: h1tot=thntool.GetBinContentDistCommonBins(h5[seq],h5['ER'])
-			else:                 h1tot=thntool.GetBinContentDist(h5[seq])
+			if YIELDS_ER_COMMONBINS: 
+				stats=np.zeros(2,'f')#! dummy variable
+				h1tot=thntool.GetBinContentDistCommonBins2(h5[seq],h5['ER'],stats)
+			else:
+				h1tot=thntool.GetBinContentDist(h5[seq])
 			
 		#! BinRelErrDist
-		if seq=='ER': #! Note ANA_ER_COMMONBINS not applicable for ER
+		if seq=='ER': #! Note YIELDS_ER_COMMONBINS not applicable for ER
 			h1errtot=thntool.GetBinRelErrorDist(h5[seq],100,0,1.5)
 		else:
-			if ANA_ER_COMMONBINS: h1errtot=thntool.GetBinRelErrorDistCommonBins(h5[seq],h5['ER'],100,0,1.5)
-			else:                 h1errtot=thntool.GetBinRelErrorDist(h5[seq],100,0,1.5)
+			if YIELDS_ER_COMMONBINS: h1errtot=thntool.GetBinRelErrorDistCommonBins(h5[seq],h5['ER'],100,0,1.5)
+			else:                    h1errtot=thntool.GetBinRelErrorDist(h5[seq],100,0,1.5)
 		
 		#! Some hist aesthetics
 		h1tot.SetTitle("h5_BinContentDist_%s_%s"%(seq,q2wbin))
@@ -236,7 +226,7 @@ def plot(q2wbin):
 		
 		#! Draw and save
 		c=ROOT.TCanvas()
-		if SHOW_REL_ERR_DIST:
+		if SIMSTATS_SHOW_REL_ERR_DIST:
 			c.SetCanvasSize(700,700)
 			c.Divide(1,2)
 			c.cd(1)
@@ -273,8 +263,8 @@ def plot(q2wbin):
 		#sys.exit()
 
 		#! iii. 5D-PS-vst-var distributions
-		#! + only for {'ST','SR','SA'}
-		if seq=='ER': continue
+		#! + only for {'ST','SR'}
+		if seq=='ER' or seq=='SA': continue
 		outdir_var="%s/%s/%s"%(outdir_q2w,seq,'5D-PS-%s'%var)
 		if not os.path.exists(outdir_var):
 			os.makedirs(outdir_var)
@@ -294,19 +284,22 @@ def plot(q2wbin):
 			h4ER=h5['ER'].Projection(4,H4_PROJDIM,"E")
 			h4=h5[seq].Projection(4,H4_PROJDIM,"E")
 			#! get h1
-			if seq=='SA':
-				if ANA_ER_COMMONBINS: h1=thntool.GetBinContentDistCommonBins(h4,h4ER,1000,0,0.5)
-				else:                 h1=thntool.GetBinContentDist(h4,1000,0,0.5)
-			elif seq=='SR':
-				if ANA_ER_COMMONBINS: h1=thntool.GetBinContentDistCommonBins(h4,h4ER,100,0,200)
-				else:                 h1=thntool.GetBinContentDist(h4,100,0,200)
+			if seq=='SR':
+				if YIELDS_ER_COMMONBINS: 
+					stats=np.zeros(2,'f')#! dummy variable
+					h1=thntool.GetBinContentDistCommonBins2(h4,h4ER,stats,100,0,200)
+				else:                 
+					h1=thntool.GetBinContentDist(h4,100,0,200)
 			else:
-				if ANA_ER_COMMONBINS: h1=thntool.GetBinContentDistCommonBins(h4,h4ER)
-				else:                 h1=thntool.GetBinContentDist(h4)
+				if YIELDS_ER_COMMONBINS: 
+					stats=np.zeros(2,'f')#! dummy variable
+					h1=thntool.GetBinContentDistCommonBins2(h4,h4ER,stats)
+				else:
+					h1=thntool.GetBinContentDist(h4)
 			
 			#! get h1err
-			if ANA_ER_COMMONBINS: h1err=thntool.GetBinRelErrorDistCommonBins(h4,h4ER,100,0,1)
-			else:                 h1err=thntool.GetBinRelErrorDist(h4)
+			if YIELDS_ER_COMMONBINS: h1err=thntool.GetBinRelErrorDistCommonBins(h4,h4ER,100,0,1)
+			else:                    h1err=thntool.GetBinRelErrorDist(h4)
 			
 			#! Some hist aesthetics
 			h1.SetTitle("h5_BinContentDist_%s_%s_%s_bin%d"%(seq,q2wbin,var,ibin+1))
@@ -314,7 +307,7 @@ def plot(q2wbin):
 			
 			#! Draw and save
 			c=ROOT.TCanvas()
-			if SHOW_REL_ERR_DIST:
+			if SIMSTATS_SHOW_REL_ERR_DIST:
 				c.SetCanvasSize(700,700)
 				c.Divide(1,2)
 				c.cd(1)
@@ -333,4 +326,22 @@ def plot(q2wbin):
 q2wbinl=get_q2wbinlist()
 print "q2wbinl=",q2wbinl
 for q2wbin in q2wbinl:
-	plot(q2wbin)
+	print "processing q2wbin=",q2wbin
+
+	#! Get all the relevant h5(seq)
+	#! + First establish if to use FIN[LQ2] or FIN[HQ2] for this q2wbin
+	if   FIN[LQ2].FindObjectAny(q2wbin)!=None: fin=FIN[LQ2]
+	elif FIN[HQ2].FindObjectAny(q2wbin)!=None: fin=FIN[HQ2]
+	else:
+		sys.exit("study_yields_acceptance.py:plot():Could not establish if to use FIN[LQ2] or FIN[HQ2] for q2wbin=%s"(q2wbin))
+	print "fin=",fin.GetName()
+
+	h5=OrderedDict()
+	for seq in ['ER','ST','SR','SA']:
+		h5[seq]=fin.Get('%s/%s/VST1/h5'%(q2wbin,seq))
+
+	#! plot yields
+	plot_yields(h5,q2wbin)
+	# #! plot acceptance
+	ana_simstats.plot_simstats_5D(h5,q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
+	ana_simstats.plot_simstats_5D_vst_var(h5,q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
