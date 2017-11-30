@@ -6,7 +6,9 @@
 #! eff_scpd_atmod_ECfid_atmod
 #h10_2_per_non_vst_SE_results.py e16 2.00 3.00 lowQ2_test_eff_scpd_atmod_ECfid_atmod sim4:sim5:sim6:sim7:sim8:sim13 eff_scpd_atmod_ECfid_atmod &
 #! pfid
-h10_2_per_non_vst_SE_results.py e16 2.00 3.00 lowQ2_test_pfid sim4:sim5:sim6:sim7:sim8:sim13 pfid &
+#h10_2_per_non_vst_SE_results.py e16 2.00 3.00 lowQ2_test_pfid sim4:sim5:sim6:sim7:sim8:sim13 pfid &
+#! pfid but using all 606 EI runs i.e. without good runs lse cut
+h10_2_per_non_vst_SE_results.py e16 2.00 3.00 lowQ2_test_pfid_all_EI_runs sim4:sim5:sim6:sim7:sim8:sim13 pfid &
 #wait
 #! [08-12-17] MM removed as a part of re-obtain-obs-3
 #h10_2_per_non_vst_SE_results.py e16 2.00 3.00 lowQ2_MM      sim4:sim5:sim6:sim7:sim8:sim13 MM &
@@ -21,7 +23,9 @@ wait
 #! eff_scpd_atmod_ECfid_atmod
 #h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_test_eff_scpd_atmod_ECfid_atmod sim9:sim10:sim11:sim12 eff_scpd_atmod_ECfid_atmod &
 #! pfid
-h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_test_pfid sim9:sim10:sim11:sim12 pfid &
+#h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_test_pfid sim9:sim10:sim11:sim12 pfid &
+#! pfid but using all 606 EI runs i.e. without good runs lse cut
+h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_test_pfid_all_EI_runs sim9:sim10:sim11:sim12 pfid &
 #wait
 #! [08-12-17] MM removed as a part of re-obtain-obs-3
 #h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_MM      sim9:sim10:sim11:sim12 MM &
