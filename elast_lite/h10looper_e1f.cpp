@@ -551,17 +551,26 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 					_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*E1F::SF_SIGMA_EXP[isctr][ipar]);
 					_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*E1F::SF_SIGMA_EXP[isctr][ipar]);
 				}else if (_expt=="e16"){ //! note different way of reading pars (for details see constants.h)
-					float low=E16::SF_LOW[isctr][ipar];
-					float high=E16::SF_HIGH[isctr][ipar];
+					float low =E16::SF_LOW_EXP[isctr][ipar];
+					float high=E16::SF_HIGH_EXP[isctr][ipar];
 					float mean=(high+low)/2; //! obtain using H(L)=M+3*SG(-3*SG)
 					_sf_mean[isctr]->FixParameter(ipar,mean);
 					_sf_min[isctr]->FixParameter(ipar,low);
 					_sf_max[isctr]->FixParameter(ipar,high);
 				}
 			}else if (dtyp=="sim"){//! E16:SR=E1F:SR (for details see constants.h)
-				_sf_mean[isctr]->FixParameter(ipar,E1F::SF_MEAN_SIM[isctr][ipar]);
-				_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*E1F::SF_SIGMA_SIM[isctr][ipar]);
-				_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*E1F::SF_SIGMA_SIM[isctr][ipar]);
+				if(_expt=="e1f"){
+					_sf_mean[isctr]->FixParameter(ipar,E1F::SF_MEAN_SIM[isctr][ipar]);
+					_sf_min[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)-3*E1F::SF_SIGMA_SIM[isctr][ipar]);
+					_sf_max[isctr]->FixParameter(ipar,_sf_mean[isctr]->GetParameter(ipar)+3*E1F::SF_SIGMA_SIM[isctr][ipar]);
+				}else if (_expt=="e16"){
+					float low =E16::SF_LOW_SIM[isctr][ipar];
+					float high=E16::SF_HIGH_SIM[isctr][ipar];
+					float mean=(high+low)/2; //! obtain using H(L)=M+3*SG(-3*SG)
+					_sf_mean[isctr]->FixParameter(ipar,mean);
+					_sf_min[isctr]->FixParameter(ipar,low);
+					_sf_max[isctr]->FixParameter(ipar,high);
+				}
 			}
 		}
 	}

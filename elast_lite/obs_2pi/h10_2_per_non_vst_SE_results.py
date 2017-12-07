@@ -583,50 +583,50 @@ for k in CUTSNCORS.keys():
         #! [04-07-16]
         #! + After fixing hole filling problem, use view="EC_EF_ST"
         #! + 'mthd1:mthd2:True' -> 'mthd2:False'
-		if not SKIP_DOBS_R2:
-			OBS_R2_VIEWL=['EC_EF_ST']#!['EC_EF','EC_ST']
-			for view in OBS_R2_VIEWL:
-				if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_R2_%s"%view)) or PROC_NEW_JOBTAG:
-					for EXTRACT_D_E_FOR_NON_ALPHA in ["True","False"]:
-						#cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
-						cmd=["dobs_R2","mthd2:False","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
-						logfile=open("%s/dobs_R2_%s_%s_extrct-D-E-non-alpha-%s.log"%(logdir,sim_total,view,EXTRACT_D_E_FOR_NON_ALPHA),'w')
-						print">>>%s >& %s\n"%(cmd,logfile.name)
-						mainlog.write(">>>%s >& %s\n"%(cmd,logfile.name))
-						tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-						tool.wait()
-				else:
-					print os.path.join(obsdir,sim_total,"Obs_R2_%s"%view),"exists. Not making new one"
-					mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_R2_%s"%view))
-		else:
-			print "SKIP_DOBS_R2=True. Therefore not doing dobs_R2"
-			mainlog.write("SKIP_DOBS_R2=True. Therefore not doing dobs_R2")
+		# if not SKIP_DOBS_R2:
+		# 	OBS_R2_VIEWL=['EC_EF_ST']#!['EC_EF','EC_ST']
+		# 	for view in OBS_R2_VIEWL:
+		# 		if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_R2_%s"%view)) or PROC_NEW_JOBTAG:
+		# 			for EXTRACT_D_E_FOR_NON_ALPHA in ["True","False"]:
+		# 				#cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+		# 				cmd=["dobs_R2","mthd2:False","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+		# 				logfile=open("%s/dobs_R2_%s_%s_extrct-D-E-non-alpha-%s.log"%(logdir,sim_total,view,EXTRACT_D_E_FOR_NON_ALPHA),'w')
+		# 				print">>>%s >& %s\n"%(cmd,logfile.name)
+		# 				mainlog.write(">>>%s >& %s\n"%(cmd,logfile.name))
+		# 				tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		# 				tool.wait()
+		# 		else:
+		# 			print os.path.join(obsdir,sim_total,"Obs_R2_%s"%view),"exists. Not making new one"
+		# 			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_R2_%s"%view))
+		# else:
+		# 	print "SKIP_DOBS_R2=True. Therefore not doing dobs_R2"
+		# 	mainlog.write("SKIP_DOBS_R2=True. Therefore not doing dobs_R2")
 
 
 		#-- simstats
 		#echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
-		if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats.root")) or PROC_NEW_JOBTAG:
-			cmd=['ds_lite',obsdir,sim_total]
-			logfile=open('%s/ds_lite_%s.log'%(logdir,sim_total),'w')
-			print">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total)
-			mainlog.write(">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total))
-        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-			tool.wait()
-		else:
-			print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
-                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats.root"))
+		# if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats.root")) or PROC_NEW_JOBTAG:
+		# 	cmd=['ds_lite',obsdir,sim_total]
+		# 	logfile=open('%s/ds_lite_%s.log'%(logdir,sim_total),'w')
+		# 	print">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total)
+		# 	mainlog.write(">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total))
+  #       		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		# 	tool.wait()
+		# else:
+		# 	print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
+  #                       mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats.root"))
 
 		#echo "ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log"
-		if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root")) or PROC_NEW_JOBTAG:
-			cmd=['ds_q2wbin_lite',obsdir,sim_total]
-			logfile=open('%s/ds_q2wbin_lite_%s.log'%(logdir,sim_total),'w')
-			print">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total)
-			mainlog.write(">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total))
-        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-			tool.wait()
-		else:
-			print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
-                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root"))
+		# if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root")) or PROC_NEW_JOBTAG:
+		# 	cmd=['ds_q2wbin_lite',obsdir,sim_total]
+		# 	logfile=open('%s/ds_q2wbin_lite_%s.log'%(logdir,sim_total),'w')
+		# 	print">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total)
+		# 	mainlog.write(">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total))
+  #       		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		# 	tool.wait()
+		# else:
+		# 	print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
+  #                       mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root"))
 
 	mainlog.close()
 #! *** End : Now start processing CUTSNCORS *** 
