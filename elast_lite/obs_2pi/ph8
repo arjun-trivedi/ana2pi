@@ -3,7 +3,7 @@ from proc_h8 import ProcH8
 import sys,time
 
 """
-ph8 [obsdir] [simnum=siml] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [acc_rel_err_cut=-1] [usehel=False] [dbg=False]
+ph8 [obsdir] [simnum=siml] [q2min=1.50] [q2max=5.00] [wmin=1.400] [wmax=2.125] [acc_rel_err_cut=-1] [usehel=False] [do_etgt_BG_sub=True] [dbg=False]
 """
 if len(sys.argv)<3:
 	sys.exit("Not all parameters entered. obsdir and dtyps are required")
@@ -54,10 +54,17 @@ if len(sys.argv)>8:#i.e. usehel entered by user
 else:
         usehel=False
 
-if len(sys.argv)>9:#i.e. dbg entered by user
-        if   sys.argv[9]=='True':  dbg=True
-        elif sys.argv[9]=='False': dbg=False
-        else: sys.exit("dbg=\'%s\' not valid. Exiting"%sys.argv[9])
+if len(sys.argv)>9:#i.e. do_etgt_BG_sub entered by user
+        if   sys.argv[9]=='True':  do_etgt_BG_sub=True
+        elif sys.argv[9]=='False': do_etgt_BG_sub=False
+        else: sys.exit("do_etgt_BG_sub=\'%s\' not valid. Exiting"%sys.argv[9])
+else:
+        dbg=False
+
+if len(sys.argv)>10:#i.e. dbg entered by user
+        if   sys.argv[10]=='True':  dbg=True
+        elif sys.argv[10]=='False': dbg=False
+        else: sys.exit("dbg=\'%s\' not valid. Exiting"%sys.argv[10])
 else:
         dbg=False
 

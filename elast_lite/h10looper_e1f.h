@@ -116,6 +116,10 @@ public :
    bool _use_CC_cut_pmtC_av; //! 22
    bool _use_CC_cut_pmtC_L;  //! 23 
    bool _use_CC_cut_pmtC_R;  //! 24
+   //! [06-12-17] zvtx cut determined after Empty Target BG subtraction (etgt-bg-sub)
+   //! + Note that this will take effect only when _use_cut_zvtx=kTRUE
+   //! + Valid only for E16
+   bool _use_cut_zvtx_etgt_bg_sub; //! 25
 
    //! char-coded options
    bool _make_h10_skim_e;//! eid+efid; for Reco events

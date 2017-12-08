@@ -8,11 +8,15 @@
 #wait
 
 #! wait for lowQ2 to finish before moving to highQ2
-wait
+#wait
 
 #! 2. highQ2
 #! SSBands,MM
-h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_SSBands sim9:sim10:sim11:sim12 SSBands &
+h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_SSBands_rest sim9:sim10:sim11:sim12 SSBands &
 #wait
 #h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_MM      sim9:sim10:sim11:sim12 MM &
 #wait
+
+#! wait for highQ2 to finish before exiting
+#! + This will give correct estimate for time when run with the 'time' command
+wait
