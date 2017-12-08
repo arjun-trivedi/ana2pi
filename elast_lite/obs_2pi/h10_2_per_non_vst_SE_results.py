@@ -18,7 +18,7 @@ import disp_SS as tool_disp_SS#! for plot_SS
 # 5:  hitSC (ON) 
 # 6:  dc_stat (ON)
 # 7:  ep_efid ( ON, only for E1F)
-# 8:  ep_pfid (ON, only for E1F)
+# 8:  ep_pfid (ON) ([06-12-17] On also for E16. Hitherto was only on for E1F)
 # 9:  Q2_var_binw_bng (ON)
 # 10: t2 (OFF)
 # 11: MM2_cut_EI (OFF)
@@ -35,6 +35,7 @@ import disp_SS as tool_disp_SS#! for plot_SS
 # 22: CC_cut_pmtC_av (OFF) (either of option #20 or #21 have to be ON for this to take effect)
 # 23: CC_cut_pmtC_L (OFF)  (either of option #20 or #21 have to be ON for this to take effect)
 # 24: CC_cut_pmtC_R (OFF)  (either of option #20 or #21 have to be ON for this to take effect) 
+# 25: cut_zvtx_etgt_bg_sub (ON, only for E16) (option #3 has to be on for this to take effect) (added on [06-12-17])
 # ----
 
 '''
@@ -84,18 +85,18 @@ SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9','sim10','si
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
 H10LSTS={
 ('e1f','ER'):'TBD',
-('e16','ER'):'%s/e16/exp/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10-skim-SS_030116.lst,h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
+('e16','ER'):'%s/e16/exp/h10_2_h10-skim-SS_060717_lse_071017.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst, h10-skim-SS_030116.lst,h10-skim-e_010816.lst, h10-skim-e_122115.lst w/o ER:SF fix
 ('e1f','SR','sim-TBD'):'TBD',
-('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
-('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
-('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_122915.lst
-('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_010816.lst 
-('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
-('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
-('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_081716.lst'%(H10PATH), #! h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_081716.lst'%(H10PATH)  #! h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim4'):  '%s/e16/sim/sim4/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
+('e16','SR','sim5'):  '%s/e16/sim/sim5/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_122115.lst
+('e16','SR','sim6'):  '%s/e16/sim/sim6/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_122915.lst
+('e16','SR','sim7'):  '%s/e16/sim/sim7/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_010816.lst 
+('e16','SR','sim8'):  '%s/e16/sim/sim8/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
+('e16','SR','sim9'):  '%s/e16/sim/sim9/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_030116.lst,h10-skim-e_012416.lst
+('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_060717.lst'%(H10PATH)  #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
 }
 #print H10LSTS
 DATE_ST={
@@ -218,9 +219,12 @@ BASIC_PROCORDER='eid:efid:pid:pfid:pcorr:eff:scpd:evtsel_2pi:'
 BASIC_ADTNL_OPTS=':1:3:17:2:18:20:' #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
 
 #! 2. Now as per SYSTEMATIC_EFFECT
+# if SYSTEMATIC_EFFECT=="SSBands":
+# 	ADTNL_OPTS_CODE_LIST=[':11:',                        ':11:13:15:']
+# 	ADTNL_OPTS_TAG_LIST =[':MM-EI:gpart-pid-OFF:stat-pid-OFF:',':MM-EI:gpart-pid-ON:stat-pid-ON:']
 if SYSTEMATIC_EFFECT=="SSBands":
-	ADTNL_OPTS_CODE_LIST=[':11:',                        ':11:13:15:']
-	ADTNL_OPTS_TAG_LIST =[':MM-EI:gpart-pid-OFF:stat-pid-OFF:',':MM-EI:gpart-pid-ON:stat-pid-ON:']
+	ADTNL_OPTS_CODE_LIST=[':11:']
+	ADTNL_OPTS_TAG_LIST =[':MM-EI:gpart-pid-OFF:stat-pid-OFF:']
 elif SYSTEMATIC_EFFECT=="MM":
 	ADTNL_OPTS_CODE_LIST=['',                                 ':11:']
 	ADTNL_OPTS_TAG_LIST =[':MM-AT:gpart-pid-OFF:stat-pid-OFF:',':MM-EI:gpart-pid-OFF:stat-pid-OFF:']
@@ -583,50 +587,50 @@ for k in CUTSNCORS.keys():
         #! [04-07-16]
         #! + After fixing hole filling problem, use view="EC_EF_ST"
         #! + 'mthd1:mthd2:True' -> 'mthd2:False'
-		if not SKIP_DOBS_R2:
-			OBS_R2_VIEWL=['EC_EF_ST']#!['EC_EF','EC_ST']
-			for view in OBS_R2_VIEWL:
-				if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_R2_%s"%view)) or PROC_NEW_JOBTAG:
-					for EXTRACT_D_E_FOR_NON_ALPHA in ["True","False"]:
-						#cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
-						cmd=["dobs_R2","mthd2:False","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
-						logfile=open("%s/dobs_R2_%s_%s_extrct-D-E-non-alpha-%s.log"%(logdir,sim_total,view,EXTRACT_D_E_FOR_NON_ALPHA),'w')
-						print">>>%s >& %s\n"%(cmd,logfile.name)
-						mainlog.write(">>>%s >& %s\n"%(cmd,logfile.name))
-						tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-						tool.wait()
-				else:
-					print os.path.join(obsdir,sim_total,"Obs_R2_%s"%view),"exists. Not making new one"
-					mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_R2_%s"%view))
-		else:
-			print "SKIP_DOBS_R2=True. Therefore not doing dobs_R2"
-			mainlog.write("SKIP_DOBS_R2=True. Therefore not doing dobs_R2")
+		# if not SKIP_DOBS_R2:
+		# 	OBS_R2_VIEWL=['EC_EF_ST']#!['EC_EF','EC_ST']
+		# 	for view in OBS_R2_VIEWL:
+		# 		if not os.path.exists(os.path.join(obsdir,sim_total,"Obs_R2_%s"%view)) or PROC_NEW_JOBTAG:
+		# 			for EXTRACT_D_E_FOR_NON_ALPHA in ["True","False"]:
+		# 				#cmd=["dobs_R2","mthd1:mthd2:True","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+		# 				cmd=["dobs_R2","mthd2:False","%s"%EXTRACT_D_E_FOR_NON_ALPHA,obsdir,sim_total,view,Q2MIN,Q2MAX,WMIN,WMAX,EXPT]
+		# 				logfile=open("%s/dobs_R2_%s_%s_extrct-D-E-non-alpha-%s.log"%(logdir,sim_total,view,EXTRACT_D_E_FOR_NON_ALPHA),'w')
+		# 				print">>>%s >& %s\n"%(cmd,logfile.name)
+		# 				mainlog.write(">>>%s >& %s\n"%(cmd,logfile.name))
+		# 				tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		# 				tool.wait()
+		# 		else:
+		# 			print os.path.join(obsdir,sim_total,"Obs_R2_%s"%view),"exists. Not making new one"
+		# 			mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"Obs_R2_%s"%view))
+		# else:
+		# 	print "SKIP_DOBS_R2=True. Therefore not doing dobs_R2"
+		# 	mainlog.write("SKIP_DOBS_R2=True. Therefore not doing dobs_R2")
 
 
 		#-- simstats
 		#echo ">ds_lite $obsdir sim1 >& $logdir_obs/ds_lite.log"
-		if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats.root")) or PROC_NEW_JOBTAG:
-			cmd=['ds_lite',obsdir,sim_total]
-			logfile=open('%s/ds_lite_%s.log'%(logdir,sim_total),'w')
-			print">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total)
-			mainlog.write(">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total))
-        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-			tool.wait()
-		else:
-			print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
-                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats.root"))
+		# if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats.root")) or PROC_NEW_JOBTAG:
+		# 	cmd=['ds_lite',obsdir,sim_total]
+		# 	logfile=open('%s/ds_lite_%s.log'%(logdir,sim_total),'w')
+		# 	print">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total)
+		# 	mainlog.write(">>>%s >& %s/ds_lite_%s.log\n"%(cmd,logdir,sim_total))
+  #       		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		# 	tool.wait()
+		# else:
+		# 	print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
+  #                       mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats.root"))
 
 		#echo "ds_q2wbin_lite $obsdir sim1 >& $logdir_obs/ds_q2wbin_lite.log"
-		if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root")) or PROC_NEW_JOBTAG:
-			cmd=['ds_q2wbin_lite',obsdir,sim_total]
-			logfile=open('%s/ds_q2wbin_lite_%s.log'%(logdir,sim_total),'w')
-			print">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total)
-			mainlog.write(">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total))
-        		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
-			tool.wait()
-		else:
-			print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
-                        mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root"))
+		# if not os.path.isfile(os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root")) or PROC_NEW_JOBTAG:
+		# 	cmd=['ds_q2wbin_lite',obsdir,sim_total]
+		# 	logfile=open('%s/ds_q2wbin_lite_%s.log'%(logdir,sim_total),'w')
+		# 	print">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total)
+		# 	mainlog.write(">>>%s >& %s/ds_q2wbin_lite_%s.log\n"%(cmd,logdir,sim_total))
+  #       		tool=subprocess.Popen(cmd,stdout=logfile,stderr=subprocess.STDOUT)
+		# 	tool.wait()
+		# else:
+		# 	print os.path.join(obsdir,sim_total,"simstats/simstats.root"),"exists. Not making new one"
+  #                       mainlog.write("%s exists. Not making new one\n"%os.path.join(obsdir,sim_total,"simstats/simstats_q2wbin.root"))
 
 	mainlog.close()
 #! *** End : Now start processing CUTSNCORS *** 

@@ -1,6 +1,7 @@
 #include "eid.h"
 #include <TString.h>
 #include <TCanvas.h>
+#include <TLorentzVector.h> //! Makes Info() work
 
 Eid* Eid::ms_instance = 0;
 
@@ -36,11 +37,18 @@ Bool_t Eid::PassECFid(float uvw[3]){
 Eid::Eid(char* eidParFileName)
 {
 	//! Read Eid cut parameters from file
-	//_fname = "/home/trivedia/CLAS/workspace/ana2pi/eid/eid.exp.out"; //atrivedi
-	//_fname = "/home/trivedia/CLAS/workspace/at-ana/eid.out"; //atrivedi
 	_fname = eidParFileName; //atrivedi 031213
-        eidParFileFound = kTRUE;
-	fprintf(stdout, "Reading eid pars from %s\n", _fname.c_str());
+	eidParFileFound = kTRUE;
+	Info("Eid::Eid()", "Reading eid pars from %s\n", _fname.c_str());
+
+	//! Determine _expt from _fname
+	//! + _fname for e16 contains "e16" explicitly in file name 
+	_expt="e1f"; 
+	if (_fname.find("e16")!=string::npos){
+		_expt="e16";
+	}
+	Info("Eid::Eid()", "expt= %s\n", _expt.c_str());
+
 	_f.open(_fname.c_str());
 	_ecThreshold = 0.5;
 	for (Int_t iSector = 0; iSector < 6; iSector++) {
@@ -69,7 +77,8 @@ Eid::Eid(char* eidParFileName)
 		}
 	} else {
                 eidParFileFound = kFALSE;
-		fprintf(stdout, "%s not found -- using default electron id parameters!\n", _fname.c_str());
+		//fprintf(stdout, "%s not found -- using default electron id parameters!\n", _fname.c_str());
+		Info("Eid::Eid()", "%s not found -- using default electron id parameters!\n", _fname.c_str());
 	}
 	for (Int_t iSector = 0; iSector < 6; iSector++) {
 		TString fname = TString::Format("fpol3Mean_s%i",iSector+1);
@@ -89,22 +98,29 @@ Eid::Eid(char* eidParFileName)
 	_f.close();
 
 	//! Eid cut parameters directly entered
-	//! [07-16-15] UVW cut parms. obtained from constants.h::E1F
-	_Umin=20; //MG:20,EI:40,YT:40,EP:20,RP:60
-	_Umax=400;
-	_Vmin=0;
-	_Vmax=375;//MG:375,EI:360,YT:370,EP:375,RP:360
-	_Wmin=0,
-	_Wmax=410;//MG:410,EI:390,YT:405,EP:410,RP:395
+	//! 1. [07-16-15] UVW cut parms (same for e16 and e1f)
+	//! + obtained from elast_lite/constants.h::E1F
+	if (_expt=="e1f" or _expt=="e16"){
+		_Umin=20; 
+		_Umax=400;
+		_Vmin=0;
+		_Vmax=375;
+		_Wmin=0;
+		_Wmax=410;
+	}
 
 	//! *** Following added on [07-06-16] ***
 	//! + For E16 only!
-	//! + Taken from elast_lite/constants.h::namespace E16
-	//! + Note that the values for these cuts are the same for exp and sim
-	for (int isector=0;isector<6;isector++){
-		_ECin_min[isector]=0.06;
-		_zvtx_min[isector]=-8.0;
-		_zvtx_max[isector]=-0.8;
+	if (_expt=="e16"){
+		//! + Taken from elast_lite/constants.h::namespace E16
+		//! + Note that the values for these cuts are the same for exp and sim
+		for (int isector=0;isector<6;isector++){
+			//! 2. ECin cut
+			_ECin_min[isector]=0.06;
+			//! 3. zvtx cut
+			_zvtx_min[isector]=-8.0;
+			_zvtx_max[isector]=-0.8;
+		}
 	}
 	//! ******
 }
@@ -138,7 +154,8 @@ void Eid::Print()
 {
 	for (Int_t iSector = 0; iSector < 6; iSector++) {
 		for (Int_t iPar = 0; iPar < 4; iPar++) {
-			printf("%d_SFsigma_a%i = %f\n", iSector+1, iPar, _sigma[iSector][iPar]);
+			//printf("%d_SFsigma_a%i = %f\n", iSector+1, iPar, _sigma[iSector][iPar]);
+			Info("Eid::Print()", "%d_SFsigma_a%i = %f\n", iSector+1, iPar, _sigma[iSector][iPar]);
 		}
 	}
 }

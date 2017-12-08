@@ -11,7 +11,7 @@ setenv PATH "${PATH}:${ANA2PI}:${ANA2PI}/scripts:${ANA2PI}/scripts/python"
 setenv PYTHONPATH "${PYTHONPATH}:${ANA2PI}/scripts/python"
 
 ##- setup some useful aliases
-alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT&'
+alias eana2pi 'subl -n ${ANA2PI} $HOME/ongoing $WORKSPACE/at-ROOT >& /dev/null&'
 alias notes 'pnb {$ANA2PI}/notes&'
 alias ana2pi_tech-notes 'cd ${ANA2PI}/notes/tech'
 
@@ -22,6 +22,9 @@ source ${ANA2PI}/elast_lite/setup.tcshrc
 source ${ANA2PI}/obs/setup.tcshrc
 
 ##--Setup env for ana2pi-sub_studies
+setenv SUBSTUDIES "${WORKSPACE}/ana2pi/sub_studies"
+alias substudies 'cd ${SUBSTUDIES}'
+
 #-- setup_sim_CentOS6
 source ${ANA2PI}/sub_studies/setup_sim_CentOS6/setup.tcshrc
 source ${ANA2PI}/sub_studies/setup_sim_CentOS6/study_ST-Q2W-range/setup.tcshrc
@@ -62,6 +65,9 @@ source ${ANA2PI}/sub_studies/study_efid/e16/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_SS_bands/setup.tcshrc
 #-- [10-12-16] env for e16:presentation_plots
 source ${ANA2PI}/presentation_plots/setup.tcshrc
-
-setenv SUBSTUDIES "${WORKSPACE}/ana2pi/sub_studies"
-alias substudies 'cd ${SUBSTUDIES}'
+#-- [10-12-16] env for e16:study_evtsel_BG
+source ${ANA2PI}/sub_studies/study_evtsel_BG/setup.tcshrc
+#-- [05-16-17] env for e16:study_lum
+source ${ANA2PI}/sub_studies/study_lum/e16/setup.tcshrc
+#-- [05-17-17] env for e16:study_tgt_BG
+source ${ANA2PI}/sub_studies/study_tgt_BG/e16/setup.tcshrc
