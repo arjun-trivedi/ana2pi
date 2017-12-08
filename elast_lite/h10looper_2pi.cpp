@@ -687,7 +687,23 @@ bool h10looper_2pi::proton_infid(){
 			ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
 		}
 	}else if (_expt=="e16"){
-		ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
+		if (_use_ep_pfid){
+			//! + The last argument is momentum, but cut is independent of it
+        	//! + Evan obtain cut pars for exp and sim, however, told me that exp pars have to be applied for both.
+        	TF1 f_l=fPhiFid_hdrn_l_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
+        	TF1 f_h=fPhiFid_hdrn_h_mod(PROTON,"exp",sctr_p,1);//! The last argument is mom, but cut is independent of it
+        	TLine l=lt0(PROTON, _dtyp);
+
+        	float theta_min=l.GetX1();
+        	float phi_min=f_l.Eval(_theta_p);
+        	float phi_max=f_h.Eval(_theta_p);
+
+        	if ( (_theta_p > theta_min) && (_phi_p > phi_min) && (_phi_p < phi_max) ){
+        		ret=kTRUE;
+        	}
+    	}else{
+			ret=Fiducial_e16_hdrn(_theta_p,_phi_p,sctr_p);
+		}
 	}
 
 	if (ret==kTRUE){

@@ -510,7 +510,6 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 
 	//! z-vertex cut
 	//! + pars obtained from constants.h
-	//! + NOTE, same for E1F and E16
 	_z_vtx_min=new Float_t[6];
 	_z_vtx_max=new Float_t[6];
 	for (int isctr=0;isctr<6;isctr++){
@@ -519,16 +518,26 @@ void h10looper_e1f::setup_eid_cutpars(TString dtyp)
 				_z_vtx_min[isctr]=E1F::ZVTX_MIN_EXP[isctr];
 				_z_vtx_max[isctr]=E1F::ZVTX_MAX_EXP[isctr];
 			}else if ("e16"){
-				_z_vtx_min[isctr]=E16::ZVTX_MIN_EXP[isctr];
-				_z_vtx_max[isctr]=E16::ZVTX_MAX_EXP[isctr];
+				if (_use_cut_zvtx_etgt_bg_sub){
+					_z_vtx_min[isctr]=E16::ZVTX_MIN_EXP_ETGT_BG_SUB[isctr];
+					_z_vtx_max[isctr]=E16::ZVTX_MAX_EXP_ETGT_BG_SUB[isctr];
+				}else{//! use EI cuts
+					_z_vtx_min[isctr]=E16::ZVTX_MIN_EXP[isctr];
+					_z_vtx_max[isctr]=E16::ZVTX_MAX_EXP[isctr];
+				}
 			}
 		}else if (dtyp=="sim"){
 			if (_expt=="e1f"){
 				_z_vtx_min[isctr]=E1F::ZVTX_MIN_SIM[isctr];
 				_z_vtx_max[isctr]=E1F::ZVTX_MAX_SIM[isctr];
 			}else if ("e16"){
-				_z_vtx_min[isctr]=E16::ZVTX_MIN_SIM[isctr];
-				_z_vtx_max[isctr]=E16::ZVTX_MAX_SIM[isctr];
+				if (_use_cut_zvtx_etgt_bg_sub){
+					_z_vtx_min[isctr]=E16::ZVTX_MIN_EXP_ETGT_BG_SUB[isctr];
+					_z_vtx_max[isctr]=E16::ZVTX_MAX_EXP_ETGT_BG_SUB[isctr];
+				}else{//! use EI cuts
+					_z_vtx_min[isctr]=E16::ZVTX_MIN_SIM[isctr];
+					_z_vtx_max[isctr]=E16::ZVTX_MAX_SIM[isctr];
+				}
 			}
 		} 
 	}
@@ -1871,6 +1880,10 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	_use_CC_cut_pmtC_av=kFALSE;
 	_use_CC_cut_pmtC_L=kFALSE;
 	_use_CC_cut_pmtC_R=kFALSE;
+	//! [06-12-17] zvtx cut determined after Empty Target BG subtraction (etgt-bg-sub)
+	//! + Note that this will take effect only when _use_cut_zvtx=kTRUE
+	//! + Valid only for E16
+	_use_cut_zvtx_etgt_bg_sub=kTRUE;
 
 
 	_make_h10_skim_e=kFALSE;
@@ -1905,6 +1918,7 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if (adtnl_opts.Contains(":22:")) _use_CC_cut_pmtC_av=kTRUE;
 	if (adtnl_opts.Contains(":23:")) _use_CC_cut_pmtC_L=kTRUE;
 	if (adtnl_opts.Contains(":24:")) _use_CC_cut_pmtC_R=kTRUE;
+	if (adtnl_opts.Contains(":25:")) _use_cut_zvtx_etgt_bg_sub=kFALSE;
 	//! char-coded options
 	if (adtnl_opts.Contains(":h10-skim-e:"))    _make_h10_skim_e=kTRUE;
 	if (adtnl_opts.Contains(":h10-skim-SS:"))   _make_h10_skim_SS=kTRUE;
@@ -1951,6 +1965,8 @@ void h10looper_e1f::setup_adtnl_opts(TString adtnl_opts){
 	if(_use_CC_cut_pmtC_av) Info("","use_CC_cut_pmtC_av");
 	if(_use_CC_cut_pmtC_L) Info("","use_CC_cut_pmtC_L");
 	if(_use_CC_cut_pmtC_R) Info("","use_CC_cut_pmtC_R");
+	if (_use_cut_zvtx_etgt_bg_sub) Info("","use_cut_zvtx_etgt_bg_sub");
+
 
 	if(_make_h10_skim_e)   Info("","make_h10_skim_e");
 	if(_make_h10_skim_SS)  Info("","make_h10_skim_SS");

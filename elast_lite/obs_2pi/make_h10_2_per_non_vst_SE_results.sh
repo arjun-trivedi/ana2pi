@@ -16,3 +16,7 @@ h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_SSBands sim9:sim10:sim11:si
 #wait
 #h10_2_per_non_vst_SE_results.py e16 3.00 5.00 highQ2_MM      sim9:sim10:sim11:sim12 MM &
 #wait
+
+#! wait for highQ2 to finish before exiting
+#! + This will give correct estimate for time when run with the 'time' command
+wait

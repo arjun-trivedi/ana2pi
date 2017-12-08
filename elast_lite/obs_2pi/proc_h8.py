@@ -49,6 +49,13 @@ SEQ_ALL=['ST','SR','SA','SC','SH','SF','ER','EC','EH','EF']
 SEQ_DRCT=['ST','SR','ER']
 SEQ_CALC=['SA','SC','SH','SF','EC','EH','EF']
 
+#! Setup data to perform Empty Target Background subtraction (etgt BG sub)
+#! [06-09-17] Currently, R['ptgt_lse']=13.67 is being used to scale etgt events
+R=OrderedDict()
+#! + from $STUDY_TGT_BG_E16_DATADIR/results_R_060917/R.txt
+R['ptgt_lse']=13.67
+R['ptgt_tgt']=13.40
+
 class ProcH8:
 	"""
 	+ Accomplishes d2pi.root(ER,ST,SR) -> yield.root  
@@ -67,7 +74,7 @@ class ProcH8:
 	"""
 	def __init__(self,obsdir,simnum='siml',q2min=1.25,q2max=5.25,wmin=1.400,wmax=2.125,
 		         acc_rel_err_cut=-1,
-		         usehel=False,dbg=False):
+		         usehel=False,do_etgt_BG_sub=False,dbg=False):
 		self.SIMNUM=simnum
 
 		self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX=q2min,q2max,wmin,wmax
@@ -79,6 +86,9 @@ class ProcH8:
 		self.USEHEL=usehel
 		print "USEHEL=",self.USEHEL
 
+		self.DO_ETGT_BG_SUB=do_etgt_BG_sub
+		print "DO_ETGT_BG_SUB=",self.DO_ETGT_BG_SUB
+
 		self.DBG=dbg
 		print "DBG=",self.DBG
 
@@ -89,6 +99,8 @@ class ProcH8:
 		self.FIN['ER']=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_exp','d2piR.root'))
 		self.FIN['ST']=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_sim',self.SIMNUM,'d2piT.root'))
 		self.FIN['SR']=ROOT.TFile(os.path.join(self.DATADIR,'d2pi_sim',self.SIMNUM,'d2piR.root'))
+		if self.DO_ETGT_BG_SUB: #! then get file with etgt d2piR data
+			self.FIN['ET']=ROOT.TFile(os.path.join(os.environ['D2PIDIR_EXP_E16'],'data_tgt_051817','d2piR_etgt_cutruns.root'))
 		#! Prepare OUTDIR
 		self.OUTDIR=os.path.join(self.DATADIR,self.SIMNUM)
 		if not os.path.exists(self.OUTDIR): 
@@ -158,6 +170,8 @@ class ProcH8:
 				h8['ST',vst].GetAxis(H8_DIM['HEL']).SetRange(1,nbins)
 				h8['SR',vst].GetAxis(H8_DIM['HEL']).SetRange(1,nbins)
 				h8['ER',vst].GetAxis(H8_DIM['HEL']).SetRange(1,nbins)
+				if self.DO_ETGT_BG_SUB:
+					h8['ET',vst].GetAxis(H8_DIM['HEL']).SetRange(1,nbins)
 			elif self.USEHEL==True:
 				if que!=None:
 					que.put(-1)
@@ -194,7 +208,7 @@ class ProcH8:
 			#! Create h5(SEQ,VST)
 			h5=OrderedDict()
 			#! 3.i. h8(SEQ_DRCT,VST)=>h5(SEQ_DRCT,VST)
-			for seq in SEQ_DRCT:
+			for seq in (SEQ_DRCT+['ET'] if self.DO_ETGT_BG_SUB else SEQ_DRCT):
 				for vst in VSTS:
 					#! Make Q2,W projections
 					h8[seq,vst].GetAxis(H8_DIM['Q2']).SetRange(q2wb_crd[0],q2wb_crd[0])
@@ -224,6 +238,9 @@ class ProcH8:
 				h5['SF',vst]=h5['SC',vst].Clone()
 				h5['SF',vst].Add(h5['SH',vst],1)
 				thntool.SetUnderOverFLowBinsToZero(h5['SF',vst])
+				#! if self.DO_ETGT_BG_SUB==True: ER - (ET*R['ptgt_lse'])
+				if self.DO_ETGT_BG_SUB:
+					h5['ER',vst].Add(h5['ET',vst],-R['ptgt_lse'])
 				#! EC
 				h5['EC',vst]=h5['ER',vst].Clone()
 				h5['EC',vst].Divide(h5['SA',vst])
@@ -310,6 +327,8 @@ class ProcH8:
 			h8['ER',vst]=self.FIN['ER'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
 			h8['ST',vst]=self.FIN['ST'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
 			h8['SR',vst]=self.FIN['SR'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
+			if self.DO_ETGT_BG_SUB:
+				h8['ET',vst]=self.FIN['ET'].Get('d2pi/h8_%d_%d'%(iw+1,vst))
 		return h8
 
 	
