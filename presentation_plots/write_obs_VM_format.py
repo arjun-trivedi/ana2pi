@@ -33,7 +33,7 @@ O1D,OIT,OR2=range(NOBS)
 OBSFILE=["Obs_1D/Obs_1D.root","Obs_itg/Obs_itg.root","Obs_R2/Obs_R2.root"]
 
 #! INDIR
-INDIR='%s/thesis_obs_norm_ST_shape_111317'%os.environ['OBSDIR_E162'] #! 080317
+INDIR='%s/thesis_obs_norm_ST_shape_121817'%os.environ['OBSDIR_E162'] #! 111317,080317
 
 #! OUTDIR
 DATE=datetime.datetime.now().strftime('%m%d%y')

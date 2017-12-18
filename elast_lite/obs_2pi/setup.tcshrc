@@ -26,6 +26,12 @@ setenv D2PIDIR_EXP_E162 "${D2PIDIR_E162}/exp"
 setenv D2PIDIR_SIM_E162 "${D2PIDIR_E162}/sim"
 setenv OBSDIR_E162 "$D2PIDIR_E162"
 
+#-- 3rd location of e16 data on /data1
+setenv D2PIDIR_E163 "/data1/trivedia/e16/2pi/d2pi"
+setenv D2PIDIR_EXP_E163 "${D2PIDIR_E163}/exp"
+setenv D2PIDIR_SIM_E163 "${D2PIDIR_E163}/sim"
+setenv OBSDIR_E163 "$D2PIDIR_E163"
+
 #-- Backup locations of above
 #- External HDD
 setenv D2PIDIR_E16_BK "/media/trivedia/Seagate Expansion Drive/Backup/e16/2pi/d2pi"
