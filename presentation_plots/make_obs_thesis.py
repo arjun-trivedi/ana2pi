@@ -15,6 +15,7 @@ import math
 
 import time,datetime
 
+from rootpy.plotting import Hist2D, Hist
 '''
 [10-24-16]
 + Makes plots that will be finally used in the thesis. Idea is to do further processing of observables that will be
@@ -34,10 +35,22 @@ import time,datetime
 + Two different normalization for ST histograms can be used though the former is preferred: "shape" and "shape_and_amplitude"
 
 + Note that the main code follows a 3 step process, each within its own loop (inefficient, but practical for now)
-	step 1. First process Obs_itg from 'cmb_vst_SE' and get SYST_ERR
-	step 2. If NORM_ST=="shape_and_amplitude", get NORM_FACTOR(q2-sim) using Obs_1D from 'SSBands/cutsncors1'
-	step 3. Process Obs_1D and Obs_R2 from 'SSBands/cutsncors1'
-		+ In this step normalization for ST is done as per NORM_ST
+	Step 1: Obtain SYST_ERR_ANA_ITG[q2bin,wbin] from Obs_itg of 'cmb_vst_SE'
+			(These are the errors obtained during h10_2_Observables)
+	Step 2: Obtain SYST_ERR_REST
+			(These are the errors obtained in separate substudies)
+	Step 3: Obtain SYST_ERR_HF_ABS_1D/R2
+			(These are the Hole Filling errors obtained from Obs_1D/R2)
+	Step 4: Propagate SYST_ERR_HF_ABS_1D to SYST_ERR_HF_ABS_ITG
+			(Hole-Filling errors obtained from Obs_1D/R2 are propagated, by integration just like the xsec, to Obs_itg)
+	Step 5: Plot and Write Observables
+		+ If NORM_ST=="shape_and_amplitude", get NORM_FACTOR(q2-sim) using Obs_1D from 'SSBands/cutsncors1'
+	Step 6: Plot all systematic errors
+
++ The total systematic errors for Itg,1D, and R2 are obtained as follows:
+	Itg: SYST_ERR_TOT_ITG = SYST_ERR_ANA_ITG +(quad)SYST_ERR_REST +(linear)SYST_ERR_HF_REL_ITG
+	1D:  SYST_ERR_TOT_1D  = SYST_ERR_ANA_ITG +(quad)SYST_ERR_REST +(linear)SYST_ERR_HF_REL_1D
+	R2:  SYST_ERR_TOT_1D  = SYST_ERR_ANA_ITG +(quad)SYST_ERR_REST +(linear)SYST_ERR_HF_REL_R2
 
 + >make_obs_thesis.py [dbg=False] [norm_ST=shape] [study_norm_factor_only=False]
 '''
@@ -90,26 +103,29 @@ DATE=date=datetime.datetime.now().strftime('%m%d%y')
 #! Create OUTDIR
 OUTDIR="%s/thesis_obs_norm_ST_%s_%s/"%(OBSDIR_E162,NORM_ST,DATE)
 if DBG==True: OUTDIR="%s/dbg/thesis_obs_norm_ST_%s_%s/"%(OBSDIR_E162,NORM_ST,DATE)
+#! For debugging use following
+# OUTDIR="%s/tmp/thesis_obs_norm_ST"%'/data1/trivedia'
+# if DBG==True: OUTDIR="%s/tmp/thesis_obs_norm_ST/dbg"%'/data1/trivedia'
 print "OUTDIR=",OUTDIR
 
 #! Setup files that will be used to obtain ST data
 F_ST=OrderedDict()
-F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_121517/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
-F_ST['1D',"highQ2"]="%s/highQ2_SSBands_121517/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417 
+F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_122717/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_121517,lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
+F_ST['1D',"highQ2"]="%s/highQ2_SSBands_122717/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_121517,highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417 
 
 F_ST['itg',"lowQ2"]=None
 F_ST['itg',"highQ2"]=None
 
-F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_121517/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
-F_ST['R2',"highQ2"]="%s/highQ2_SSBands_121517/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417
+F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_122717/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_121517,lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
+F_ST['R2',"highQ2"]="%s/highQ2_SSBands_122717/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_121517,highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417
 
 #! Setup files that will be used to get results
 F_RSLT=OrderedDict()
 F_RSLT['1D',"lowQ2"] =F_ST['1D',"lowQ2"]
 F_RSLT['1D',"highQ2"]=F_ST['1D',"highQ2"]
 
-F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_121717/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_080317,lowQ2_cmb_vst_SE_071117, lowQ2_cmb_vst_SE_061317,lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
-F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_121717/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_080317,highQ2_cmb_vst_SE_071117,highQ2_cmb_vst_SE_061317,highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
+F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_122817/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_121717,lowQ2_cmb_vst_SE_080317,lowQ2_cmb_vst_SE_071117, lowQ2_cmb_vst_SE_061317,lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
+F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_122817/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_121717,highQ2_cmb_vst_SE_080317,highQ2_cmb_vst_SE_071117,highQ2_cmb_vst_SE_061317,highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
 
 F_RSLT['R2',"lowQ2"] =F_ST['R2',"lowQ2"]
 F_RSLT['R2',"highQ2"]=F_ST['R2',"highQ2"]
@@ -398,85 +414,6 @@ def plot_and_write_Obs_itg(q2wbin,hobs,herr,outdir,froot):
 			bin_le=float(bin_label.split(",")[0].strip("["))
 			bin_ue=float(bin_label.split(",")[1].strip(")"))
 			wbin="%.3f-%.3f"%(bin_le,bin_ue)
-
-			#SYST_ERR[q2bin,wbin]=rel_err
-			#! Add "rest of systematic error estimates" to 'rel_err': see thesis's Systematic Error Table:
-			#! (Assume that error on these systematic error estimates=0 i.e. 'sg_rel_err' for these errors = 0)
-			#!
-			#! [pre 08-03-17] Hitherto, i.e. before getting close to final ananote results, I did not re-check this values
-			#! because I did not expect them to change and they did not in any significant way
-			#! I Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
-			#!   1. Hadron Id (SS-Bands)=2.5
-			#!   2. Event Selection (MM-cut)=2.9
-			#!   3. Variable set dependent extraction of Obs=5.3
-			#!   --> Total = sqrt(2.5**2+5.3**2+2.9**2)=6.5
-			#! II Rest of the Errors:
-			#!   1. Electron Id: 1
-			#!   2. Electron fiducial boundary selection: 1
-			#!   3. Hadron fiducial boundary selection: 1
-			#!   4. Detector inefficiency identification: 1
-			#!   5. Momentum and Energy Loss Corrections: 1
-			#!   6. Acceptance Calculation: 1
-			#!   7. Radiative Effects correction: 5
-			#!   8. Estimation of Experimental Yields in Kinematical Holes: 5
-			#!   9. Luminosity measurement: 5
-			#!   --> Total= sqrt(1**2 + 1**2 + 1**2 + 1**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2) = 9
-			#! Total(I+II)=sqrt(6.5**2 + 9**2)=11.1 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)
-			#!
-			#! [08-03-17] 're-obtain-obs-3'
-			#! + Note the 3 different ways SE are obtained:
-			#! 1. ana : calculated using SE analysis (<q2wbin> average number listed; location listed next to err)
-			#! 2. guess-est: guess estimated
-			#! 3. ref : referenced from another source (ref listed in ananote)
-			#! 
-			#! + List of analysis SE, broken down into I (from h10_2_Observables process) and II (rest)
-			#! + Note that the :
-			#!    + Hindu-Arabic numerals in parenthesis correspond to the entry of these errors in the  Systematic Error Table in the Analysis Note.
-			#!    + The Roman numerals itemize the list for this code
-			#! I. Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
-			#!   i.   (3) Hadron Identification (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
-			#!   ii.  (NA) Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
-			#!   iii. (10) Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
-			#!   --> Total = sqrt(3.12**2 + 5.55**2)=6.36
-			#! II. Rest of the Errors:
-			#!   iv.   (1) Electron Identification:                                                                  1 (guess-est, conservative upper bound)
-			#!   v.    (2) Electron Fiducial Boundary Selection:                                                     1 (guess-est, conservative upper bound)
-			#!   vi.   (4) Hadron Fiducial Boundary Selection:                                                       1 (guess-est, conservative upper bound)
-			#!   vii.  (5) Detector Inefficiency Identification:                                                     1 (guess-est, conservative upper bound)
-			#!   viii. (12) Different Experimental and Simulation Missing Mass Squared Correction:                   2 (ana) (Estimated from $STUDY_MM_DIFF_ER_SR_DATADIR/results_080117. For full details, see Tomboy:MM_diff_ER_SR:DateLog:080117 or handwritten notes)
-			#!   ix.   (11) Background Subtraction:                                                                  1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
-			#!   x.    (6) Acceptance Calculation:                                                                   1 (guess-est, conservative upper bound)
-			#!   xi.   (7) Radiative Effects correction:                                                             5 (ref)
-			#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   5 (ana) (For details see $ANANOTE/figures/Holes)
-			#!  xiii   (9) Luminosity measurement:                                                                   5 (ref)
-			#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
-			#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)  
-
-			#! Add to I. (rel_err), errors from II. (Rest of the Errors)
-			#! [pre 08-03-17]
-			#rel_err_full=math.sqrt(rel_err**2+9**2)
-
-			#! [08-03-17] 're-obtain-obs-3'
-			# rel_err_full=math.sqrt(rel_err**2+9.21**2)
-			# SYST_ERR[q2bin,wbin]=rel_err_full
-
-			#! [08-24-17] 're-obtain-obs-4'
-			#! + Removed addition of Hole-Filling SE (II.xii, 5%) to SYST_ERR, which is Obs_itg_Q2-W averaged (obtained from Obs_itg and is averaged over Q2-W)
-			#!
-			#! + Note that this addition is still used when noting the total SE in the analysis note because there
-			#!   the SE is Obs_itg_Q2-W averaged.
-			#!
-			#! + However, for Obs_1D and Obs_R2, Hole-Filling SE will be obtained individually in each 1-D bin for Obs_1D and Obs_R2,
-			#!   and the Obs_itg_Q2-W averaged SYST_ERR, minus Hole-Filling, will be modified by these errors in every Obs_1D/Obs_R2 bin
-			#!
-			#! + This needs to be done because the 1-D bins, for example theta_pip at 180 deg., needs to show the large SE
-			#!   due to hole filling, and this fact is missed if Obs_itg_Q2-W averaged Hole-Filling SE is used
-
-			#! Note that the following calculation omits one of the '5**2' from the above Total of II. (Rest of the Errors),
-			#! which corresponds to II. xii.  (8) Estimation of Experimental Yields in Kinematical Holes
-			total_rest_of_err=math.sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2) #! =7.75%
-			rel_err_full=math.sqrt(rel_err**2+total_rest_of_err**2)
-			SYST_ERR[q2bin,wbin]=rel_err_full
 								
 			ftxt.write("%d,%f,%f = (%f +/- %f),(%f +/- %f),(%f +/- %f)\n"%(bin,bin_le,bin_ue,mu,sg_mu,sg,sg_sg,rel_err,sg_rel_err))
 		ftxt.close()
@@ -753,7 +690,304 @@ def plot_and_write_Obs_R2(q2wbin,hobs,herr,outdir,froot):
 # 		if itgrl_EF==0 or itgrl_ST==0: nf=1
 # 		else:    					   nf=itgrl_EF/itgrl_ST
 # 		norm_factor[q2bin,wbin,vst,var]=nf
+
+def get_SYST_ERR_ANA_ITG():
+	print "*** get_SYST_ERR_ANA_ITG(): Obtaining SYST_ERR_ANA_ITG from Obs_itg of 'cmb_vst_SE' ***"
 	
+	SYST_ERR_ANA_ITG=OrderedDict()
+
+	for q2 in ["lowQ2","highQ2"]:
+		#! Setup q2min, q2max as per q2
+		q2min,q2max=Q2MIN[q2],Q2MAX[q2]
+		print "Processing q2,q2min,q2max=",q2,q2min,q2max
+
+		#! 1. Open appropriate .root files
+		f_RSLT=root_open(F_RSLT['itg',q2])
+		q2wbinl=get_q2wbinlist(f_RSLT,q2min,q2max,WMIN,WMAX)
+	
+		#! 2. For every q2wbin,
+		#! i.   Get from f_RSLT, hobs and herr for EF,THETA
+		#!    + Note that SYST_ERR_ANA_ITG is equal for EC and EF
+		#! ii.  Set SYST_ERR_ANA_ITG[q2bin,wbin] using hobs[EF],herr[EF]
+		for q2wbin in q2wbinl:
+			#! Get q2bin information
+			q2bin=get_q2bin(q2wbin)
+
+			#! i. Get from f_RSLT, hobs and herr for EF,THETA
+			hobs=f_RSLT.Get("%s/hW_obs_EF_THETA"%q2wbin)
+			herr=f_RSLT.Get("%s/hW_err_EF_THETA"%q2wbin)
+			nbins=herr.GetNbinsX()
+			for ibin in range(nbins):
+				bin=ibin+1
+				#! obtain mu, sg
+				mu   =hobs.GetBinContent(ibin+1)
+				sg_mu=hobs.GetBinError(ibin+1)
+				sg   =herr.GetBinContent(ibin+1)
+				sg_sg=herr.GetBinError(ibin+1)
+				#! calculate rel_err,sg_rel_err
+				if mu==0 or sg==0: 
+					rel_err=0
+					sg_rel_err=0
+				else:
+					rel_err=(sg/mu)*100
+					sg_rel_err=(rel_err)*math.sqrt((sg_sg/sg)**2+(sg_mu/mu)**2)
+				#! Get wbin information that will be needed to label data
+				bin_label=herr.GetXaxis().GetBinLabel(ibin+1)
+				bin_le=float(bin_label.split(",")[0].strip("["))
+				bin_ue=float(bin_label.split(",")[1].strip(")"))
+				wbin="%.3f-%.3f"%(bin_le,bin_ue)
+				#! ii. Finally set SYST_ERR_ANA_ITG[q2bin,wbin]
+				SYST_ERR_ANA_ITG[q2bin,wbin]=rel_err		
+	return SYST_ERR_ANA_ITG
+	print "*** get_SYST_ERR_ANA_ITG(): Done: btaining SYST_ERR_ANA_ITG from Obs_itg of 'cmb_vst_SE' ***"	
+
+def get_SYST_ERR_REST():
+	'''
+	+ Please read the latest comments for this function
+	+ For historical reasons, this function lists, in the comments, *all* the systematic errors:
+	  (This is because the documentation here is used to keep track for all syst errors for ananote)
+		+ SYST_ERR_ANA_ITG
+		+ SYST_ERR_REST
+		+ SYST_ERR_HF_REL_ITG
+	+ However it returns only the Rest Of The Errors (SYST_ERR_REST)
+	'''
+
+	#! Add "rest of systematic error estimates" to 'rel_err': see thesis's Systematic Error Table:
+	#! (Assume that error on these systematic error estimates=0 i.e. 'sg_rel_err' for these errors = 0)
+	#!
+	#! [pre 08-03-17] Hitherto, i.e. before getting close to final ananote results, I did not re-check this values
+	#! because I did not expect them to change and they did not in any significant way
+	#! I Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
+	#!   1. Hadron Id (SS-Bands)=2.5
+	#!   2. Event Selection (MM-cut)=2.9
+	#!   3. Variable set dependent extraction of Obs=5.3
+	#!   --> Total = sqrt(2.5**2+5.3**2+2.9**2)=6.5
+	#! II Rest of the Errors:
+	#!   1. Electron Id: 1
+	#!   2. Electron fiducial boundary selection: 1
+	#!   3. Hadron fiducial boundary selection: 1
+	#!   4. Detector inefficiency identification: 1
+	#!   5. Momentum and Energy Loss Corrections: 1
+	#!   6. Acceptance Calculation: 1
+	#!   7. Radiative Effects correction: 5
+	#!   8. Estimation of Experimental Yields in Kinematical Holes: 5
+	#!   9. Luminosity measurement: 5
+	#!   --> Total= sqrt(1**2 + 1**2 + 1**2 + 1**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2) = 9
+	#! Total(I+II)=sqrt(6.5**2 + 9**2)=11.1 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)
+	#!
+	#! [08-03-17] 're-obtain-obs-3'
+	#! + Note the 3 different ways SE are obtained:
+	#! 1. ana : calculated using SE analysis (<q2wbin> average number listed; location listed next to err)
+	#! 2. guess-est: guess estimated
+	#! 3. ref : referenced from another source (ref listed in ananote)
+	#! 
+	#! + List of analysis SE, broken down into I (from h10_2_Observables process) and II (rest)
+	#! + Note that the :
+	#!    + Hindu-Arabic numerals in parenthesis correspond to the entry of these errors in the  Systematic Error Table in the Analysis Note.
+	#!    + The Roman numerals itemize the list for this code
+	#! I. Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
+	#!   i.   (3) Hadron Identification (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
+	#!   ii.  (NA) Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
+	#!   iii. (10) Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
+	#!   --> Total = sqrt(3.12**2 + 5.55**2)=6.36
+	#! II. Rest of the Errors:
+	#!   iv.   (1) Electron Identification:                                                                  1 (guess-est, conservative upper bound)
+	#!   v.    (2) Electron Fiducial Boundary Selection:                                                     1 (guess-est, conservative upper bound)
+	#!   vi.   (4) Hadron Fiducial Boundary Selection:                                                       1 (guess-est, conservative upper bound)
+	#!   vii.  (5) Detector Inefficiency Identification:                                                     1 (guess-est, conservative upper bound)
+	#!   viii. (12) Different Experimental and Simulation Missing Mass Squared Correction:                   2 (ana) (Estimated from $STUDY_MM_DIFF_ER_SR_DATADIR/results_080117. For full details, see Tomboy:MM_diff_ER_SR:DateLog:080117 or handwritten notes)
+	#!   ix.   (11) Background Subtraction:                                                                  1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
+	#!   x.    (6) Acceptance Calculation:                                                                   1 (guess-est, conservative upper bound)
+	#!   xi.   (7) Radiative Effects correction:                                                             5 (ref)
+	#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   5 (ana) (For details see $ANANOTE/figures/Holes)
+	#!  xiii   (9) Luminosity measurement:                                                                   5 (ref)
+	#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
+	#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version)  
+
+	#! Add to I. (rel_err), errors from II. (Rest of the Errors)
+	#! [pre 08-03-17]
+	#rel_err_full=math.sqrt(rel_err**2+9**2)
+
+	#! [08-03-17] 're-obtain-obs-3'
+	# rel_err_full=math.sqrt(rel_err**2+9.21**2)
+	# SYST_ERR[q2bin,wbin]=rel_err_full
+
+	#! [12-21-17] 're-obtain-obs-5'
+	#! + Note the 3 different ways SE are obtained:
+	#! 1. ana : calculated using SE analysis (<q2wbin> average number listed; location listed next to err)
+	#! 2. guess-est: guess estimated
+	#! 3. ref : referenced from another source (ref listed in ananote)
+	#! 
+	#! + List of analysis SE, broken down into I (from h10_2_Observables process) and II (rest)
+	#! + Note that the :
+	#!    + Hindu-Arabic numerals in parenthesis correspond to the entry of these errors in the  Systematic Error Table in the Analysis Note.
+	#!    + The Roman numerals itemize the list for this code
+	#! I. Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
+	#!   i.   (3) Hadron Identification (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
+	#!   ii.  (NA) Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
+	#!   iii. (10) Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
+	#!   --> Total = sqrt(3.12**2 + 5.55**2)=6.36
+	#! II. Rest of the Errors (returned in this function):
+	#!   iv.   (1) Electron Identification:                                                                  1 (guess-est, conservative upper bound)
+	#!   v.    (2) Electron Fiducial Boundary Selection:                                                     1 (guess-est, conservative upper bound)
+	#!   vi.   (4) Hadron Fiducial Boundary Selection:                                                       1 (guess-est, conservative upper bound)
+	#!   vii.  (5) Detector Inefficiency Identification:                                                     1 (guess-est, conservative upper bound)
+	#!   viii. (12) Different Experimental and Simulation Missing Mass Squared Correction:                   2 (ana) (Estimated from $STUDY_MM_DIFF_ER_SR_DATADIR/results_080117. For full details, see Tomboy:MM_diff_ER_SR:DateLog:080117 or handwritten notes)
+	#!   ix.   (11) Background Subtraction:                                                                  1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
+	#!   x.    (6) Acceptance Calculation:                                                                   1 (guess-est, conservative upper bound)
+	#!   xi.   (7) Radiative Effects correction:                                                             5 (ref)
+	#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   X (ana) (For details see function XXX)
+	#!  xiii   (9) Luminosity measurement:                                                                   5 (ref)
+	#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
+	#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version) 
+	#! + Removed addition of Hole-Filling SE [II.xii (8), 5%] to SYST_ERR_REST, which 
+	#!   was hitherto obtained from Obs_itg-Q2-W averaged (obtained from Obs_itg and is averaged over Q2-W)
+	#!
+	#! + Hole-Filling SE (HF-SE) is now obtained from Obs_1D in each Q2,W,vst-var bin in SYST_ERR_HF_ABS_1D(q2bin,wbin,vst,var,bin)
+	#! + SYST_ERR_HF_ABS_1D is propagated to SYST_ERR_HF_ABS_ITG(q2bin,wbin)
+	#! 
+	#! + These HF-SE, SYST_ERR_HF_ABS_1D and SYST_ERR_HF_ABS_ITG, are then later added to SYST_ERR_ANA_ITG and SYST_ERR_REST
+	#!   to get SYST_ERR_TOT_1D and SYST_ERR_HF_ABS_ITG, respectively,
+	#!
+	#! + HOWEVER, HF-SE [II.xii (8), 5%], as obtained from SYST_ERR_HF_REL_ITG(q2-w averaged), is still noted here
+	#!   for the sake of noting the full set of systemtatic errors that go into Table 14.1 of the ananote.
+	#!   (This is purely for historical reasons and can be better organized) 
+	#!   + NOTE that it is NOT used in calculating SYST_ERR_REST
+	
+	#! Note that the following calculation omits one of the '5**2' from the above Total of II. (Rest of the Errors),
+	#! which corresponds to II. xii.  (8) Estimation of Experimental Yields in Kinematical Holes
+	SYST_ERR_REST=math.sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2) #! =7.75%	
+
+	return SYST_ERR_REST
+
+def get_SYST_ERR_HF_ABS_1D_R2():
+	print "*** get_SYST_ERR_HF_ABS_1D_R2(): Obtaining SYST_ERR_HF_ABS_1D_R2 from Obs_1D/R2 of SSBands/cutsncors1 ***"
+	
+	#! Create dictionaries to store HF SE for all q2bin,wbin and R2,seq,vst,var
+	#! + Note that EC SE is set equal to EF
+	SYST_ERR_HF_ABS_1D=OrderedDict()#! q2bin,wbin,seq,vst,var
+	SYST_ERR_HF_ABS_R2=OrderedDict()#! q2bin,wbin,R2,seq,vst,var
+	SYST_ERR_HF_REL_1D=OrderedDict()#! q2bin,wbin,seq,vst,var
+	SYST_ERR_HF_REL_R2=OrderedDict()#! q2bin,wbin,R2,seq,vst,var
+	SYST_ERR_TOT_1D=OrderedDict()   #! q2bin,wbin,seq,vst,var
+	SYST_ERR_TOT_R2=OrderedDict()   #! q2bin,wbin,R2,seq,vst,var
+
+	for obs in ['1D','R2']:
+		for q2 in ["lowQ2","highQ2"]:
+			#! Setup q2min, q2max as per q2
+			q2min,q2max=Q2MIN[q2],Q2MAX[q2]
+			print "Processing q2,q2min,q2max=",q2,q2min,q2max
+
+			#! 1. Open appropriate .root files
+			f_RSLT=root_open(F_RSLT[obs,q2])
+
+			if DBG==True: q2wbinl=get_q2wbinlist(f_RSLT,q2min,q2max,WMIN,WMAX,dbg=True,dbg_bins=3)
+			else:         q2wbinl=get_q2wbinlist(f_RSLT,q2min,q2max,WMIN,WMAX)
+			if DBG==True:
+				print "q2wbinl=",q2wbinl
+		
+			#! 2. For every qw2bin
+			#! i.    Get from f_RSLT, for every seq in {EC,EF}, hobs[seq,vst,var] as per respective PAD_MAP[obs]=(pad,vst,var)
+			#! ii.   Calculate SYST_ERR_HF_ABS_1D[q2bin,wbin,seq,vst,var] and SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,seq,vst,var] 
+			#!       where SYST_ERR_HF_ABS_1D/R2 contains absolute SE due to hole filling
+			#!			+ Obtained as abs(EF-EC)
+			#!			+ SYST_ERR_HF_ABS_1D/R2['EC',vst,var]=SYST_ERR_HF_ABS_1D/R2['EF',vst,var]
+					
+			for q2wbin in q2wbinl:
+				#! Get q2bin, wbin information
+				q2bin=get_q2bin(q2wbin)
+				wbin=get_wbin(q2wbin)
+
+				#! i. Get from f_RSLT, hobs[seq,vst,var]
+				hobs=OrderedDict()
+				for seq in ['EC','EF']:
+					for pm in PAD_MAP[obs]:
+						vst,var=pm[1],pm[2]
+						if obs=='1D': 
+							hobs[seq,vst,var]=f_RSLT.Get("%s/h1_%s_%d_%s"%(q2wbin,seq,vst,var))
+						elif obs=='R2':
+							for R2 in R2L:
+								if (R2=='D' or R2=='E') and var != 'ALPHA': continue
+								hobs[R2,seq,vst,var]=f_RSLT.Get("%s/hR2_%s_%s_%d_%s"%(q2wbin,R2,seq,vst,var))
+								#! Set aesthetics
+								hobs[R2,seq,vst,var].SetMarkerStyle(MRKS_SEQ[seq])
+								hobs[R2,seq,vst,var].SetMarkerColor(CLRS_SEQ[seq])
+								hobs[R2,seq,vst,var].SetLineColor(CLRS_SEQ[seq])	
+				if DBG==True:
+					print "get_SYST_ERR_HF_ABS_1D_R2():hobs:"
+					print hobs		
+
+				#! ii.  Calculate SYST_ERR_HF_ABS_1D[q2bin,wbin,seq,vst,var] and SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,seq,vst,var]
+				get_herr_HF(hobs,q2bin,wbin,SYST_ERR_HF_ABS_1D,SYST_ERR_HF_ABS_R2,SYST_ERR_HF_REL_1D,SYST_ERR_HF_REL_R2,SYST_ERR_TOT_1D,SYST_ERR_TOT_R2)
+				#herr_HF=get_herr_HF(hobs)
+	if DBG==True:
+		print "get_SYST_ERR_HF_ABS_1D_R2():SYST_ERR_HF_ABS_1D:"
+		print SYST_ERR_HF_ABS_1D
+		print "get_SYST_ERR_HF_ABS_1D_R2():SYST_ERR_HF_ABS_R2:"
+		print SYST_ERR_HF_ABS_R2
+
+	return SYST_ERR_HF_ABS_1D,SYST_ERR_HF_ABS_R2,SYST_ERR_HF_REL_1D,SYST_ERR_HF_REL_R2,SYST_ERR_TOT_1D,SYST_ERR_TOT_R2
+	print "*** get_SYST_ERR_HF_ABS_1D_R2(): Done Obtaining SYST_ERR_HF_ABS_1D_R2 from Obs_1D/R2 of SSBands/cutsncors1 ***"
+
+def get_integral_h1D_theta(h1):
+	'''
+	+ Obtain integral of Dsigma/DCosTheta
+	+ Based on code in disp_obs.py:fill_h2_itg_yld()
+	'''
+	itg,itg_err=0,0
+	nbins=h1.GetNbinsX()
+	for ibin in range(nbins):
+		binc=h1.GetBinContent(ibin+1)
+		bincerr=h1.GetBinError(ibin+1)
+		theta_a=h1.GetBinLowEdge(ibin+1)
+		theta_b=h1.GetBinLowEdge(ibin+2)
+		DCosTheta=math.fabs(math.cos(math.radians(theta_b))-math.cos(math.radians(theta_a)))
+		itg+=binc*DCosTheta
+		itg_err+=bincerr*DCosTheta
+	return itg#,itg_err
+
+def propagate_SYST_ERR_HF_ABS_1D_to_ITG():
+	'''
+	+ The SYST_ERR_HF_ABS_1D (absolute values) is integrated to obtain SYST_ERR_HF_ABS_ITG, which therefore contains absolute error
+	+ Just as the case of obtaining Obs_itg from Obs_1D:
+		+ var=THETA
+		+ average over all 3 variable sets are used
+	'''
+	print "*** propagate_SYST_ERR_HF_ABS_1D_to_ITG(): Begin *** \n"
+	SYST_ERR_HF_ABS_ITG=OrderedDict()
+	#! Use q2bin,wbin in SYST_ERR_ANA_ITG to loop over SYST_ERR_HF_ABS_1D
+	for k in SYST_ERR_ANA_ITG:
+		q2bin,wbin=k[0],k[1]
+
+		#! + This is only important to check in DBG mode where not all q2bin,wbin are used for filling SYST_ERR_HF_ABS_1D
+		#! Make sure q2bin,wbin exists in SYST_ERR_HF_ABS_1D
+		q2bin_wbin_in_SYST_ERR_HF_ABS_1D=False
+		for k2 in SYST_ERR_HF_ABS_1D:
+			q2bin2,wbin2=k2[0],k2[1]
+			#print "test:",q2bin,wbin,q2bin2,wbin2
+			if q2bin==q2bin2 and wbin==wbin2:
+				q2bin_wbin_in_SYST_ERR_HF_ABS_1D=True
+				break
+		if q2bin_wbin_in_SYST_ERR_HF_ABS_1D==False:
+			if DBG==True:#! Then it is expected, so simply set SYST_ERR_HF_ABS_ITG=0 and continue
+				SYST_ERR_HF_ABS_ITG[q2bin,wbin]=0
+				continue
+			else:#! Exit and inform user
+				sys.exit("propagate_SYST_ERR_HF_ABS_1D_to_ITG():q2bin=%s,wbin=%s does not exist in SYST_ERR_HF_ABS_1D. Exiting.")
+
+		#! Obtain HF integral for this q2bin,wbin for each vst (var=THETA, EF [EC=EF])
+		#! + Note that SYST_ERR_HF_ABS_1D have no error bars, so no errors need to be propagated
+		HF_itgrl_vst1=get_integral_h1D_theta(SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',1,'THETA'])#.Integral()
+		HF_itgrl_vst2=get_integral_h1D_theta(SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',2,'THETA'])#.Integral()
+		HF_itgrl_vst3=get_integral_h1D_theta(SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',3,'THETA'])#.Integral()
+		#! Now obtain vst-averaged value
+		HF_itgrl_vst_av=(HF_itgrl_vst1+HF_itgrl_vst1+HF_itgrl_vst1)/3
+		#! Set this vst-averaged value in SYST_ERR_HF_ABS_ITG
+		SYST_ERR_HF_ABS_ITG[q2bin,wbin]=HF_itgrl_vst_av
+
+	return SYST_ERR_HF_ABS_ITG
+	print "*** propagate_SYST_ERR_HF_ABS_1D_to_ITG(): Done *** \n"
+
 def proc_Obs_itg():
 	print "*** Processing Obs_itg from 'cmb_vst_SE' and storing SYST_ERR ***"
 	for q2 in ["lowQ2","highQ2"]:
@@ -775,31 +1009,57 @@ def proc_Obs_itg():
 		q2wbinl=get_q2wbinlist(f_RSLT,q2min,q2max,WMIN,WMAX)
 	
 		#! 2. For every q2bin,
-		#! i.   Get from f_RSLT, hobs[seq],herr[seq] where seq={EC,EF}
-		#! ii.  Adjust sg_sg in herr[seq]
+		#! i.   Get from f_RSLT, hobs[seq] where seq={EC,EF}
+		#! ii.  Create herr[seq] = (SYST_ERR_TOT_ITG[q2bin,wbin]/100)*hobs[seq], where
+		#!    + SYST_ERR_TOT_ITG[q2bin,wbin] = SYST_ERR_ANA_ITG +q SYST_ERR_REST +l SYST_ERR_HF_REL_ITG
+		#!	  + SYST_ERR_HF_REL_ITG=SYST_ERR_HF_ABS_ITG/hobs
 		#! iii. Plot and write to file(.txt and .root), for both seq, hobs[seq],herr[seq]
-		#! iv.  Update SYST_ERR
-
+		
 		#! Create .root file
 		froot=ROOT.TFile("%s/Obs_itg.root"%outdir,"RECREATE")
 		#! Create .txt file
 		#! Create inside loop for every q2wbin
 		for q2wbin in q2wbinl:
-			# #! Get q2bin information
-			# q2bin=get_q2bin(q2wbin)
+			#! Get q2bin information
+			q2bin=get_q2bin(q2wbin)
 
-			#! i. Get from f_RSLT, hobs[seq],herr[seq] where seq={EC,EF}
-			hobs,herr=OrderedDict(),OrderedDict()
+			#! i. Get from f_RSLT, hobs[seq] where seq={EC,EF}
+			#! + Get herr_old[seq] also because the new herr that is created
+			#!   should have the same name as the one in the .root file
+			hobs=OrderedDict()
+			herr_old=OrderedDict()
 			for seq in ['EC','EF']:
 				hobs[seq]=f_RSLT.Get("%s/hW_obs_%s_THETA"%(q2wbin,seq))
-				herr[seq]=f_RSLT.Get("%s/hW_err_%s_THETA"%(q2wbin,seq))
+				herr_old[seq]=f_RSLT.Get("%s/hW_err_%s_THETA"%(q2wbin,seq))
 
-			#! ii.  Update herr[seq] after adjust sg_sg in herr[seq]
-			#! + Current adjustment is to set sg_sg=0
+			#! ii.  Create herr[seq] = (SYST_ERR_TOT_ITG[q2bin,wbin]/100)*hobs[seq]
+			herr=OrderedDict()
 			for seq in ['EC','EF']:
-				nbins=herr['EF'].GetNbinsX()
+				herr[seq]=hobs[seq].Clone("%s"%herr_old[seq].GetName())
+				herr[seq].Reset()
+				nbins=herr[seq].GetNbinsX()
 				for ibin in range(nbins):
-					herr[seq].SetBinError(ibin+1,0)
+					#! Get wbin information that will be needed to label data
+					bin_label=herr[seq].GetXaxis().GetBinLabel(ibin+1)
+					bin_le=float(bin_label.split(",")[0].strip("["))
+					bin_ue=float(bin_label.split(",")[1].strip(")"))
+					wbin="%.3f-%.3f"%(bin_le,bin_ue)
+
+					#! Start putting together SYST_ERR_TOT_ITG
+					#! + First calculate SYST_ERR_HF_REL_ITG
+					#! + Note that this is calculated always relative to hobs['EF']
+					SYST_ERR_HF_REL_ITG[q2bin,wbin]=( SYST_ERR_HF_ABS_ITG[q2bin,wbin]/hobs['EF'].GetBinContent(ibin+1) )*100
+					#! Now add all errors together to obtain SYST_ERR_TOT_ITG
+					SYST_ERR_TOT_ITG[q2bin,wbin]=math.sqrt(SYST_ERR_ANA_ITG[q2bin,wbin]**2+SYST_ERR_REST**2) + SYST_ERR_HF_REL_ITG[q2bin,wbin]
+
+					#! Now update herr
+					#! + First get value of cross-section in this bin
+					xsec=hobs[seq].GetBinContent(ibin+1)
+					#! + Now update herr
+					err=(SYST_ERR_TOT_ITG[q2bin,wbin]/100) * xsec
+					err_err=0
+					herr[seq].SetBinContent(ibin+1,err)
+					herr[seq].SetBinError(ibin+1,err_err)
 				
 			#! iii. Plot and write to file, for both seq, hobs[seq],herr[seq]
 			#! + Note that within this function 'iv.  Update SYST_ERR' is also done
@@ -973,7 +1233,7 @@ def get_herr_HF_relative(hEC,hEF,vst,var,obs):
 			+    EC<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
 	'''
 	#! First make herr_HF as a clone of hEC and resetting its bin contents
-	herr=hEC.Clone("herr_HF_Obs%s_%d_%s"%(obs,vst,var))
+	herr=hEC.Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
 	herr.Reset()
 	#! Now obtain SE due to Hole-Filling in each bin
 	nbins=hEC.GetNbinsX()
@@ -1018,7 +1278,7 @@ def get_herr_HF_absolute(hEC,hEF,vst,var,obs):
 			+    EC<0: se=0            (SHOULD NOT OCCUR, but if so set se=0 for now, and investigate why)
 	'''
 	#! First make herr_HF as a clone of hEC and resetting its bin contents
-	herr=hEC.Clone("herr_HF_Obs%s_%d_%s"%(obs,vst,var))
+	herr=hEC.Clone("herr_abs_HF_Obs%s_%d_%s"%(obs,vst,var))
 	herr.Reset()
 	#! Now obtain SE due to Hole-Filling in each bin
 	nbins=hEC.GetNbinsX()
@@ -1044,10 +1304,85 @@ def get_herr_HF_absolute(hEC,hEF,vst,var,obs):
 		herr.SetBinError(ibin+1,se_err)
 	return herr
 
-def get_herr_HF(hobs):
+# def get_herr_HF(hobs,q2bin,wbin,SYST_ERR_HF_ABS_1D,SYST_ERR_HF_ABS_R2):
+# 	'''
+# 	+ Obtain Hole-Filling SE in each bin of Obs_1D and Obs_R2
+# 	+ Hole-Filling SE for EC is set equal to EF
+# 	+ Currently getting absolute errors
+# 	'''
+# 	#! First determine if hobs is '1D' or 'R2'
+# 	nkeys=len(hobs.keys()[0])
+# 	if   nkeys==3: obs='1D'
+# 	elif nkeys==4: obs='R2'
+# 	else: sys.exit('make_obs_thesis.py:get_herr_HF():Could not determine obs from nkeys=%d'%nkeys)
+
+# 	#! Now obtain herr_HF
+# 	#herr_HF=OrderedDict()
+# 	for pm in PAD_MAP[obs]:
+# 		vst,var=pm[1],pm[2]
+# 		if obs=='1D': 
+# 			#! obtain error for 'EF'
+# 			#herr_HF['EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+# 			SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+# 			#! set error for 'EC'='EF'
+# 			#herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
+# 			SYST_ERR_HF_ABS_1D[q2bin,wbin,'EC',vst,var]=SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var]
+# 		elif obs=='R2':
+# 			for R2 in R2L:
+# 				if (R2=='D' or R2=='E') and var != 'ALPHA': continue
+# 				#! Now obtain SE due to Hole Filling in each bin
+# 				#! obtain error for 'EF'
+# 				#herr_HF[R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+# 				SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+# 				#! set error for 'EC'='EF'
+# 				#herr_HF[R2,'EC',vst,var]=herr_HF[R2,'EF',vst,var]
+# 				SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EC',vst,var]=SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var]
+# 	#return herr_HF
+
+# def get_herr_HF(hobs,q2bin,wbin,SYST_ERR_HF_ABS_1D,SYST_ERR_HF_ABS_R2,SYST_ERR_HF_REL_1D,SYST_ERR_HF_REL_R2):
+# 	'''
+# 	+ Obtain Hole-Filling SE in each bin of Obs_1D and Obs_R2
+# 	+ Hole-Filling SE for EC is set equal to EF
+# 	+ Currently getting absolute errors
+# 	'''
+# 	#! First determine if hobs is '1D' or 'R2'
+# 	nkeys=len(hobs.keys()[0])
+# 	if   nkeys==3: obs='1D'
+# 	elif nkeys==4: obs='R2'
+# 	else: sys.exit('make_obs_thesis.py:get_herr_HF():Could not determine obs from nkeys=%d'%nkeys)
+
+# 	#! Now obtain herr_HF
+# 	#herr_HF=OrderedDict()
+# 	for pm in PAD_MAP[obs]:
+# 		vst,var=pm[1],pm[2]
+# 		if obs=='1D': 
+# 			#! obtain error for 'EF'
+# 			#herr_HF['EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+# 			SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+# 			#! set error for 'EC'='EF'
+# 			#herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
+# 			SYST_ERR_HF_ABS_1D[q2bin,wbin,'EC',vst,var]=SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var]
+# 			#! relative
+# 			SYST_ERR_HF_REL_1D[q2bin,wbin,'EF',vst,var]=SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var].Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
+# 			SYST_ERR_HF_REL_1D[q2bin,wbin,'EC',vst,var]=SYST_ERR_HF_ABS_1D[q2bin,wbin,'EC',vst,var].Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
+# 		elif obs=='R2':
+# 			for R2 in R2L:
+# 				if (R2=='D' or R2=='E') and var != 'ALPHA': continue
+# 				#! Now obtain SE due to Hole Filling in each bin
+# 				#! obtain error for 'EF'
+# 				#herr_HF[R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+# 				SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+# 				#! set error for 'EC'='EF'
+# 				#herr_HF[R2,'EC',vst,var]=herr_HF[R2,'EF',vst,var]
+# 				SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EC',vst,var]=SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var]
+# 				#! relative
+# 				SYST_ERR_HF_REL_R2[q2bin,wbin,R2,'EF',vst,var]=SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var].Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
+# 				SYST_ERR_HF_REL_R2[q2bin,wbin,R2,'EC',vst,var]=SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EC',vst,var].Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
+
+def get_herr_HF(hobs,q2bin,wbin,SYST_ERR_HF_ABS_1D,SYST_ERR_HF_ABS_R2,SYST_ERR_HF_REL_1D,SYST_ERR_HF_REL_R2,SYST_ERR_TOT_1D,SYST_ERR_TOT_R2):
 	'''
 	+ Obtain Hole-Filling SE in each bin of Obs_1D and Obs_R2
-	+ Hole-Filling SE for EF is set equal to EC
+	+ Hole-Filling SE for EC is set equal to EF
 	+ Currently getting absolute errors
 	'''
 	#! First determine if hobs is '1D' or 'R2'
@@ -1057,28 +1392,65 @@ def get_herr_HF(hobs):
 	else: sys.exit('make_obs_thesis.py:get_herr_HF():Could not determine obs from nkeys=%d'%nkeys)
 
 	#! Now obtain herr_HF
-	herr_HF=OrderedDict()
+	#herr_HF=OrderedDict()
 	for pm in PAD_MAP[obs]:
 		vst,var=pm[1],pm[2]
 		if obs=='1D': 
 			#! obtain error for 'EF'
-			herr_HF['EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+			#herr_HF['EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
+			SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var]=get_herr_HF_absolute(hobs['EC',vst,var],hobs['EF',vst,var],vst,var,obs)
 			#! set error for 'EC'='EF'
-			herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
+			#herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
+			SYST_ERR_HF_ABS_1D[q2bin,wbin,'EC',vst,var]=SYST_ERR_HF_ABS_1D[q2bin,wbin,'EF',vst,var]
+			#! relative
+			for seq in ['EC','EF']:
+				SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var]=SYST_ERR_HF_ABS_1D[q2bin,wbin,seq,vst,var].Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
+				SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var].Sumw2()
+			#! total
+			for seq in ['EC','EF']:
+				SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var]=SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var].Clone("SYST_ERR_TOT_1D_%s_%d_%s"%(seq,vst,var))
+				SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var].Reset()
 		elif obs=='R2':
 			for R2 in R2L:
 				if (R2=='D' or R2=='E') and var != 'ALPHA': continue
 				#! Now obtain SE due to Hole Filling in each bin
 				#! obtain error for 'EF'
-				herr_HF[R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+				#herr_HF[R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
+				SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var]=get_herr_HF_absolute(hobs[R2,'EC',vst,var],hobs[R2,'EF',vst,var],vst,var,obs)
 				#! set error for 'EC'='EF'
-				herr_HF[R2,'EC',vst,var]=herr_HF[R2,'EF',vst,var]
-	return herr_HF
+				#herr_HF[R2,'EC',vst,var]=herr_HF[R2,'EF',vst,var]
+				SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EC',vst,var]=SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,'EF',vst,var]
+				#! relative
+				for seq in ['EC','EF']:
+					SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var]=SYST_ERR_HF_ABS_R2[q2bin,wbin,R2,seq,vst,var].Clone("herr_rel_HF_Obs%s_%d_%s"%(obs,vst,var))
+					SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var].Sumw2()
+				#! total
+				for seq in ['EC','EF']:
+					SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var]=SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var].Clone("SYST_ERR_TOT_1D_%s_%d_%s"%(seq,vst,var))
+					SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var].Reset()
+
+def make_copy_hist1D(h,name,title):
+	'''
+	+ To substitute TH1:Clone()
+	'''
+	#! First get bining information from h
+	nbins,xmin,xmax=h.GetNbinsX(),h.GetMinimum(),h.GetMaximum()
+	#! Create new histogram as a copy of h  
+	hc=ROOT.TH1F(name,title,nbins,xmin,xmax)
+	for ibin in range(nbins):
+		binc=h.GetBinContent(ibin+1)
+		bine=h.GetBinError(ibin+1)
+		hc.SetBinContent(ibin+1,binc)
+		hc.SetBinError(ibin+1,bine)
+
+	return hc
+
 
 def proc_Obs_1D_and_R2():
 	for obs in ['1D','R2']:
 		print "*** Processing Obs_%s from SSBands/cutsncors1 ***"%obs
 		for q2 in ["lowQ2","highQ2"]:
+			#if q2=="highQ2": continue
 			#! Create outdir=<q2>_thesis_<date>/Obs_<obs>
 			# outdir="%s/%s_thesis_%s/Obs_%s"%(OBSDIR_E162,q2,DATE,obs)
 			# if DBG==True: outdir="%s/%s_thesis_%s_dbg/Obs_%s"%(OBSDIR_E162,q2,DATE,obs)
@@ -1100,15 +1472,14 @@ def proc_Obs_1D_and_R2():
 			if DBG==True:
 				print "q2wbinl=",q2wbinl
 		
-			#! 2. For every qw2bin
-			#! i.    Get from f_RSLT, for every seq in {EC,SF,ST}, hobs[seq,vst,var] as per respective PAD_MAP[obs]=(pad,vst,var)
-			#! ii.   Calculate herr_HF[seq,vst,var] where herr_HF contains absolute SE due to hole filling
-			#!			+ Obtained as abs(EF-EC)
-			#!			+ herr_HF['EC',vst,var]=herr_HF['EF',vst,var]
-			#! iii.  Create herr[seq,vst,var] = ( (SYST_ERR[q2bin,wbin]/100)*hobs[seq,vst,var] ) +(linear) herr_HF[seq,vst,var]
-			#!			+ SYST_ERR contains relative error
-			#!			+ herr_HF[seq,vst,var] contains absolute error due to hole filling i.e. abs(EF-EC)
-			#! iv.   Plot and write to file(.txt and .root), for all seq, hobs[seq],herr[seq]
+			#! 2. For every qw2bin 
+			#! (The following appears as if written for Obs_1D, but with the addition of a few more indices,
+			#!	is also for Obs_R2)
+			#! i.   Get from f_RSLT, for every seq in {EC,SF,ST}, hobs[seq,vst,var] as per respective PAD_MAP[obs]=(pad,vst,var)
+			#! ii.  Create herr[seq,vst,var] = (SYST_ERR_TOT_1D[q2bin,wbin]/100)*hobs[seq,vst,var], where
+			#!    + SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var] = SYST_ERR_ANA_ITG[q2bin,wbin] +q SYST_ERR_REST +l SYST_ERR_HF_REL_1D(seq,vst,var)
+			#!	  + SYST_ERR_HF_REL_1D(seq,vst,var)=SYST_ERR_HF_ABS_ID(seq,vst,var)/hobs(seq,vst,var)
+			#! iii. Plot and write to file(.txt and .root), for both seq, hobs[seq],herr[seq]
 		
 			#! Create .root file
 			froot=ROOT.TFile("%s/Obs_%s.root"%(outdir,obs),"RECREATE")
@@ -1129,7 +1500,7 @@ def proc_Obs_1D_and_R2():
 						if obs=='1D': #! for 1D, SF was used instead of ST (SF=ST because of acceptance corr. and hole-filling)
 							if seq=='ST': hobs[seq,vst,var]=f_RSLT.Get("%s/h1_%s_%d_%s"%(q2wbin,'SF',vst,var))
 							else:		  hobs[seq,vst,var]=f_RSLT.Get("%s/h1_%s_%d_%s"%(q2wbin,seq,vst,var))
-						#! Set aesthetics
+							#! Set aesthetics
 							hobs[seq,vst,var].SetMarkerStyle(MRKS_SEQ[seq])
 							hobs[seq,vst,var].SetMarkerColor(CLRS_SEQ[seq])
 							hobs[seq,vst,var].SetLineColor(CLRS_SEQ[seq])
@@ -1145,48 +1516,76 @@ def proc_Obs_1D_and_R2():
 					print "hobs:"
 					print hobs		
 
-				#! ii.  Calculate herr_HF[seq,vst,var] (for EC and EH only), where herr_HF contains SE due to hole filling (in %)
-				herr_HF=get_herr_HF(hobs)
-				if DBG==True:
-					print "herr_HF:"
-					print herr_HF
-
-				#! iii.  Create herr[seq,vst,var]: 
-				#!		( (SYST_ERR[q2bin,wbin]/100)*hobs[seq,vst,var] ) +(linear) herr_HF[vst,var] 
-				#!			+ SYST_ERR contains relative error)
-				#!			+ herr_HF[vst,var] contains absolute error due to hole filling i.e. abs(EF-EC)
-				#! + if seq='EF' or seq=='EC': err=( (SYST_ERR[q2bin,wbin]/100)*hobs[seq,vst,var] ) +(linear) herr_HF[vst,var]
+				#! ii.  Create herr[seq,vst,var] = (SYST_ERR_TOT_1D[q2bin,wbin]/100)*hobs[seq,vst,var], where
+				#!    + SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var] = SYST_ERR_ANA_ITG[q2bin,wbin] +q SYST_ERR_REST +l SYST_ERR_HF_REL_1D(seq,vst,var)
+				#!	  + SYST_ERR_HF_REL_1D(seq,vst,var)=SYST_ERR_HF_ABS_ID(seq,vst,var)/hobs(seq,vst,var)
 				#! + if seq='ST':              err=0
 				herr=OrderedDict()
 				for k in hobs:
-					#! Obtain seq 
 					if obs=='1D':
 						seq,vst,var=k[0],k[1],k[2]
+						if seq=='EF' or seq=='EC':
+							#! Start putting together SYST_ERR_TOT_1D
+							#! + First calculate SYST_ERR_HF_REL_1D
+							#! + Note that this is calculated always relative to hobs['EF']
+							SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var].Divide(hobs['EF',vst,var])
+							SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var].Scale(100)
+							#! Now add all errors together to obtain SYST_ERR_TOT_1D
+							# SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var]=SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var].Clone("SYST_ERR_TOT_1D_%s_%d_%s"%(seq,vst,var))
+							# SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var].Reset()
+							nbins=SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var].GetNbinsX()
+							for ibin in range(nbins):
+								se_ana_itg=SYST_ERR_ANA_ITG[q2bin,wbin]
+								se_rest=SYST_ERR_REST
+								se_hf=SYST_ERR_HF_REL_1D[q2bin,wbin,seq,vst,var].GetBinContent(ibin+1)
+								se_tot=math.sqrt(se_ana_itg**2+se_rest**2) + se_hf
+								SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var].SetBinContent(ibin+1,se_tot)
+								SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var].SetBinError(ibin+1,0)
+							#! Now create herr
+							herr[k]=hobs[k].Clone("herr_%s"%hobs[k].GetName())
+							herr[k].Multiply(SYST_ERR_TOT_1D[q2bin,wbin,seq,vst,var])
+							herr[k].Scale(1/100)
+							#! set binerr=0
+							nbins=herr[k].GetNbinsX()
+							for ibin in range(nbins):
+								herr[k].SetBinError(ibin+1,0)
+						elif seq=='ST':
+							#! Now create herr
+							herr[k]=hobs[k].Clone("herr_%s"%hobs[k].GetName())
+							herr[k].Reset() #! Should binc and binerr to 0
 					elif obs=='R2':
 						R2,seq,vst,var=k[0],k[1],k[2],k[3]
 						if (R2=='D' or R2=='E') and var!= 'ALPHA':continue
-									
-					herr[k]=hobs[k].Clone("herr_%s"%hobs[k].GetName())
-					#! Set bin contents
-					nbins=herr[k].GetNbinsX()
-					for ibin in range(nbins):
-						#! obtain err as per seq
 						if seq=='EF' or seq=='EC':
-							#! Obtain absolute error from hole filling in this bin
-							err_HF=herr_HF[k].GetBinContent(ibin+1)
-							#! Obtain hobs in this bin
-							binc=hobs[k].GetBinContent(ibin+1)
-							#! Now obtain final err
-							#print "SYST_ERR[q2bin,wbin],binc",SYST_ERR[q2bin,wbin],binc
-							#!err=(SYST_ERR[q2bin,wbin]/100)*binc
-							err=( (SYST_ERR[q2bin,wbin]/100)*binc ) + err_HF 
-							err_err=0
+							#! Start putting together SYST_ERR_TOT_R2
+							#! + First calculate SYST_ERR_HF_REL_R2
+							#! + Note that this is calculated always relative to hobs['EF']
+							SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var].Divide(hobs[R2,'EF',vst,var])
+							SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var].Scale(100)
+							#! Now add all errors together to obtain SYST_ERR_TOT_1D
+							# SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var]=SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var].Clone("SYST_ERR_TOT_R2_%s_%s_%d_%s"%(R2,seq,vst,var))
+							# SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var].Reset()
+							nbins=SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var].GetNbinsX()
+							for ibin in range(nbins):
+								se_ana_itg=SYST_ERR_ANA_ITG[q2bin,wbin]
+								se_rest=SYST_ERR_REST
+								se_hf=SYST_ERR_HF_REL_R2[q2bin,wbin,R2,seq,vst,var].GetBinContent(ibin+1)
+								se_tot=math.sqrt(se_ana_itg**2+se_rest**2) + se_hf
+								SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var].SetBinContent(ibin+1,se_tot)
+								SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var].SetBinError(ibin+1,0)
+							#! Now create herr
+							herr[k]=hobs[k].Clone("herr_%s"%hobs[k].GetName())
+							herr[k].Multiply(SYST_ERR_TOT_R2[q2bin,wbin,R2,seq,vst,var])
+							herr[k].Scale(1/100)
+							#! set binerr=0
+							nbins=herr[k].GetNbinsX()
+							for ibin in range(nbins):
+								herr[k].SetBinError(ibin+1,0)
 						elif seq=='ST':
-							err=0
-							err_err=0
-						#! Now set in histogram
-						herr[k].SetBinContent(ibin+1,err)
-						herr[k].SetBinError(ibin+1,err_err)
+							#! Now create herr
+							herr[k]=hobs[k].Clone("herr_%s"%hobs[k].GetName())
+							herr[k].Reset() #! Should binc and binerr to 0
+									
 					#! Adjust y-axis title for herr
 					herr[k].SetYTitle("Error [%%] in %s"%(hobs[k].GetYaxis().GetTitle()))
 					#! Set general aesthetics
@@ -1224,38 +1623,215 @@ if NORM_ST=="shape_and_amplitude" and STUDY_NORM_FACTOR_ONLY: #! then only do th
 	print" Done: Step 2. \n"
 	sys.exit()
 
-print" Begin: Step 1. \n"
-#! 1. First process Obs_itg from 'cmb_vst_SE'
-#! + Before plotting and writing results update sg_sg to 0 in 'herr'
-#!   (In a discussion with RG on [10-25-16], it was decided to "simply" set the error on systematic err=0, 
-#!    for now atleast)
-#! + Create and store SYST_ERR[q2bin,wbin] that will be used later for Obs_1D and Obs_R2
+print" *** Begin: Step 1: Obtain SYST_ERR_ANA_ITG[q2bin,wbin] from Obs_itg of 'cmb_vst_SE' ***"
+SYST_ERR_ANA_ITG=get_SYST_ERR_ANA_ITG()
+print" *** Done: Step 1: Obtain SYST_ERR_ANA_ITG[q2bin,wbin] from Obs_itg of 'cmb_vst_SE' ***\n"
 
-#! Create dictionary to store SYST_ERR[q2bin,wbin]
-SYST_ERR=OrderedDict()
+print" *** Begin: Step 2: Obtain SYST_ERR_REST ***"
+SYST_ERR_REST=get_SYST_ERR_REST()
+print" *** Done: Step 2: Obtain SYST_ERR_REST ***\n"
+
+print" *** Begin: Step 3: Obtain SYST_ERR_HF_ABS_1D/R2 ***"
+#! + Note that in this method, the following are also obtained
+#!   + SYST_ERR_HF_REL_1D/R2: As a clone of SYST_ERR_HF_ABS_1D/R2
+#!   + SYST_ERR_TOT_1D/R2:    As a clone of SYST_ERR_HF_ABS_1D/R2 and then reset
+#! + This had to be done for technical reasons and their true values are set later in 'proc_Obs_1D_and_R2()'
+SYST_ERR_HF_ABS_1D,SYST_ERR_HF_ABS_R2,SYST_ERR_HF_REL_1D,SYST_ERR_HF_REL_R2,SYST_ERR_TOT_1D,SYST_ERR_TOT_R2=get_SYST_ERR_HF_ABS_1D_R2()
+print" *** Done: Step 3: Obtain SYST_ERR_HF_ABS_1D/R2 ***\n"
+# print "SYST_ERR_HF_ABS_1D:"
+# print SYST_ERR_HF_ABS_1D
+# print "SYST_ERR_HF_ABS_R2:"
+# print SYST_ERR_HF_ABS_R2
+# print "SYST_ERR_HF_REL_1D:"
+# print SYST_ERR_HF_REL_1D
+# print "SYST_ERR_HF_REL_R2:"
+# print SYST_ERR_HF_REL_R2
+# print "SYST_ERR_TOT_1D:"
+# print SYST_ERR_TOT_1D
+# print "SYST_ERR_TOT_R2:"
+# print SYST_ERR_TOT_R2
+#sys.exit()
+
+print" *** Begin: Step 4: Propagate SYST_ERR_HF_ABS_1D to SYST_ERR_HF_ABS_ITG ***"
+SYST_ERR_HF_ABS_ITG=propagate_SYST_ERR_HF_ABS_1D_to_ITG()
+print" *** Done: Step 4: Propagate SYST_ERR_HF_ABS_1D to SYST_ERR_HF_ABS_ITG ***\n"
+#print "SYST_ERR_HF_ABS_1D:"
+#print SYST_ERR_HF_ABS_1D
+#print "SYST_ERR_HF_ABS_ITG:"
+#print SYST_ERR_HF_ABS_ITG
+#sys.exit()
+
+print" *** Begin: Step 5: Plot and Write Observables ***"
+#! 1. Obs_itg
+#! + Create SYST_ERR_HF_REL_ITG to get relative versions of SYST_ERR_HF_ABS_ITG
+#! + Create SYST_ERR_TOT_ITG
+SYST_ERR_HF_REL_ITG=OrderedDict()
+SYST_ERR_TOT_ITG=OrderedDict()
 proc_Obs_itg()
-print" Done: Step 1. \n"
+print" *** Done: Step 5: Plot and Write Observables ***\n"
 
+#! 2. Obs_1D/R2
 if NORM_ST=="shape_and_amplitude":
-	print" Begin: Step 2. \n"
+	print" Begin: Obtain NORM_FACTOR \n"
 	#! step 2. Get norm_factor using Obs_1D from SSBands/cutsncors1
 	#! Create NORM_FACTOR(q2) to be obtained for each simulation
 	NORM_FACTOR=OrderedDict()
 	get_norm_factor_ST()
 	print "NORM_FACTOR=",NORM_FACTOR
-	print" Done: Step 2. \n"
+	print" Done: Obtain NORM_FACTOR \n"
 
-print" Begin: Step 3. \n"
-#! step 3. Now process Obs_1D and Obs_R2 from SSBands/cutsncors1
-#! + Apply SYST_ERR(q2bin,wbin) obtained from Obs_itg
-#! + Along with EC,EH, use ST in plotting -- use NORM_FACTOR(q2) from step 2. --  and writing results
-proc_Obs_1D_and_R2()
-print" Done: Step 3. \n"
+proc_Obs_1D_and_R2() 
+print" *** Done: Step 5: Plot and Write Observables ***\n"
+# print "SYST_ERR_HF_REL_1D:"
+# print SYST_ERR_HF_REL_1D
+# print "SYST_ERR_HF_REL_R2:"
+# print SYST_ERR_HF_REL_R2
+# print "SYST_ERR_TOT_1D:"
+# print SYST_ERR_TOT_1D
+# print "SYST_ERR_TOT_R2:"
+# print SYST_ERR_TOT_R2
+# sys.exit()
 
-	
-	
+print" *** Begin: Step 6: Plot all systematic errors  ***"
 
+#! .png/.pdf output
+OUTDIR_SE="%s/syst-errs"%OUTDIR
+if not os.path.exists(OUTDIR_SE):
+	os.makedirs(OUTDIR_SE)
 
+#! .root output
+fseroot=ROOT.TFile("%s/syst-errs.root"%OUTDIR_SE,"RECREATE")
 
-		
+#! Itg
+#! SYST_ERR_ANA_ITG
+# outdir_itg="%s/itg"%OUTDIR_SE
+# if not os.path.exists(outdir_itg):
+# 	os.makedirs(outdir_itg)
+ROOT.gStyle.SetOptStat("nemruo")
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_ANA_ITG","SYST_ERR_ANA_ITG")
+d=[]
+for k in SYST_ERR_ANA_ITG:
+	d.append(SYST_ERR_ANA_ITG[k])
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_ANA_ITG.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_ANA_ITG.pdf"%OUTDIR_SE)
+h.Write()
 
+#! SYST_ERR_REST
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_REST","SYST_ERR_REST")
+d=[]
+d.append(SYST_ERR_REST)
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_REST.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_REST.pdf"%OUTDIR_SE)
+h.Write()
+
+#! SYST_ERR_HF_REL_ITG
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_HF_REL_ITG","SYST_ERR_HF_REL_ITG")
+d=[]
+for k in SYST_ERR_HF_REL_ITG:
+	d.append(SYST_ERR_HF_REL_ITG[k])
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_HF_REL_ITG.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_HF_REL_ITG.pdf"%OUTDIR_SE)
+h.Write()
+
+#! SYST_ERR_TOT_ITG
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_TOT_ITG","SYST_ERR_TOT_ITG")
+d=[]
+for k in SYST_ERR_TOT_ITG:
+	d.append(SYST_ERR_TOT_ITG[k])
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_TOT_ITG.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_TOT_ITG.pdf"%OUTDIR_SE)
+h.Write()
+
+#! 1D
+# outdir_1D="%s/1D"%OUTDIR_SE
+# if not os.path.exists(outdir_1D):
+# 	os.makedirs(outdir_1D)
+#!SYST_ERR_HF_REL_1D
+ROOT.gStyle.SetOptStat("nemruo")
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_HF_REL_1D","SYST_ERR_HF_REL_1D")
+d=[]
+for k in SYST_ERR_HF_REL_1D:
+	nbins=SYST_ERR_HF_REL_1D[k].GetNbinsX()
+	for ibin in range(nbins):
+		binc=SYST_ERR_HF_REL_1D[k].GetBinContent(ibin+1)
+		d.append(binc)
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_HF_REL_1D.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_HF_REL_1D.pdf"%OUTDIR_SE)
+h.Write()
+#! SYST_ERR_TOT_1D
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_TOT_1D","SYST_ERR_TOT_1D")
+d=[]
+for k in SYST_ERR_TOT_1D:
+	nbins=SYST_ERR_TOT_1D[k].GetNbinsX()
+	for ibin in range(nbins):
+		binc=SYST_ERR_TOT_1D[k].GetBinContent(ibin+1)
+		d.append(binc)
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_TOT_1D.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_TOT_1D.pdf"%OUTDIR_SE)
+h.Write()
+
+#! R2
+# outdir_R2="%s/R2"%OUTDIR_SE
+# if not os.path.exists(outdir_R2):
+# 	os.makedirs(outdir_R2)
+#!SYST_ERR_HF_REL_R2
+ROOT.gStyle.SetOptStat("nemruo")
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_HF_REL_R2","SYST_ERR_HF_REL_R2")
+d=[]
+for k in SYST_ERR_HF_REL_R2:
+	nbins=SYST_ERR_HF_REL_R2[k].GetNbinsX()
+	for ibin in range(nbins):
+		binc=SYST_ERR_HF_REL_R2[k].GetBinContent(ibin+1)
+		d.append(binc)
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_HF_REL_R2.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_HF_REL_R2.pdf"%OUTDIR_SE)
+h.Write()
+#! SYST_ERR_TOT_R2
+h=Hist(200,0,200)
+h.SetNameTitle("SYST_ERR_TOT_R2","SYST_ERR_TOT_R2")
+d=[]
+for k in SYST_ERR_TOT_R2:
+	nbins=SYST_ERR_TOT_R2[k].GetNbinsX()
+	for ibin in range(nbins):
+		binc=SYST_ERR_TOT_R2[k].GetBinContent(ibin+1)
+		d.append(binc)
+h.fill_array(d)
+c=ROOT.TCanvas()
+h.Draw()
+c.SaveAs("%s/SYST_ERR_TOT_R2.png"%OUTDIR_SE)
+c.SaveAs("%s/SYST_ERR_TOT_R2.pdf"%OUTDIR_SE)
+h.Write()
+print" *** Done: Step 6: Plot all systematic errors  ***\n"
+
+fseroot.Close()
+
+print "*** make_obs_thesis.py: Done ***"
+print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"

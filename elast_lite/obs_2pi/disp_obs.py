@@ -334,7 +334,7 @@ class DispObs:
 				#! + NOTE that q2wbin syntax should be similar to that in yield.root produced by proc_h8: q.qq-q.qq_w.www-w.www
 				self.RAD_EFF_CORR_FCTR=OrderedDict()
 				#! Open file 
-				f=ROOT.TFile("%s/rad-eff-corr-sim/sim1/drad.root"%os.environ['D2PIDIR_SIM_E16'])
+				f=ROOT.TFile("%s/rad-eff-corr-sim/sim2_sim3/drad.root"%os.environ['D2PIDIR_SIM_E16']) #sim1
 				#! Now read in data 
 				#! + The file contains hcf_qbin_X where X=1,2,3,4,5 i.e. 5 Q2 bins for now
 				for q2binnum in [1,2,3,4,5,6,7,8]:
@@ -5857,7 +5857,7 @@ class DispObs:
 		  + Results for all q2 bins are obtained from integrated q2 bin i.e. [2.00,5.00)
 		'''
 		corr_fctr=OrderedDict()
-		fname="%s/evtsel_BG_072717/2.00-5.00/MM2/bg_from_fit.txt"%os.environ['STUDY_EVTSEL_BG_DATADIR']
+		fname="%s/evtsel_BG_bg-simple_norm-integral_092817/with_BG_ana/2.00-5.00/MM2/bg_from_fit.txt"%os.environ['STUDY_EVTSEL_BG_DATADIR'] #!evtsel_BG_072717 
 		#! File data is in format: wbinn [wbinmin,wbinmax) cf(%)
 		if os.path.isfile(fname):
 			#! For each of the analysis q2bins, read file which contains integrated q2 data,

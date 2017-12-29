@@ -69,14 +69,24 @@
 # highQ2_cmb_vst_SE_080317
 # )
 
-DATE='121717'
+# DATE='121717'
+# dirl=(
+# lowQ2_SSBands_121517_sim4_sim5_sim6_sim7_sim8_sim13_121717
+# highQ2_SSBands_121517_sim9_sim10_sim11_sim12_121717
+# lowQ2_cmb_non_vst_SE_121717
+# highQ2_cmb_non_vst_SE_121717
+# lowQ2_cmb_vst_SE_121717
+# highQ2_cmb_vst_SE_121717
+# )
+
+DATE='122817'
 dirl=(
-lowQ2_SSBands_121517_sim4_sim5_sim6_sim7_sim8_sim13_121717
-highQ2_SSBands_121517_sim9_sim10_sim11_sim12_121717
-lowQ2_cmb_non_vst_SE_121717
-highQ2_cmb_non_vst_SE_121717
-lowQ2_cmb_vst_SE_121717
-highQ2_cmb_vst_SE_121717
+lowQ2_SSBands_122717_sim4_sim5_sim6_sim7_sim8_sim13_122817
+highQ2_SSBands_122717_sim9_sim10_sim11_sim12_122817
+lowQ2_cmb_non_vst_SE_122817
+highQ2_cmb_non_vst_SE_122817
+lowQ2_cmb_vst_SE_122817
+highQ2_cmb_vst_SE_122817
 )
 
 q2l=(

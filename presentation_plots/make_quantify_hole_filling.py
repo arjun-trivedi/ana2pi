@@ -12,7 +12,6 @@ from presentation_plots_lib import *
 
 '''
 [10-18-16]
-
 '''
 
 FNAME=[0 for i in range(NSIMRNG)]
@@ -35,6 +34,8 @@ hdiff=[0 for i in range(NQ2BINS)]
 #print h
 #! OUTDIR
 OUTDIR="%s/figures/Holes/"%os.environ['ANANOTE']
+# #! For debugging
+# OUTDIR="/data1/trivedia/tmp"
 
 #! Now get object from file and make output objects
 #! Create a file structure for each .root file to be opened (else there are technical problems)
@@ -54,7 +55,8 @@ for isim in range(NSIMRNG):
 		hdiff[iq2]=h[iq2][EF].Clone("hdiff")
 		hdiff[iq2].Sumw2()
 		hdiff[iq2].Add(h[iq2][EC],-1)
-		hdiff[iq2].Divide(h[iq2][EC])
+		hdiff[iq2].Scale(1.0/2.0)
+		hdiff[iq2].Divide(h[iq2][EF])
 		hdiff[iq2].Scale(100)
 		#print h[iq2][EC].GetName(), h[iq2][EF].GetName()
 		iq2+=1
@@ -76,8 +78,8 @@ c=ROOT.TCanvas("c","c",CWDTH,CHGHT)
 c.Divide(1,2)
 ROOT.gStyle.SetOptStat(0)
 #! legend
-l1=ROOT.TLegend(0.50,0.75,1.00,0.9)
-l1.SetNColumns(3)
+l1=ROOT.TLegend(0.50,0.75,0.9,0.9)
+l1.SetNColumns(2)
 l1.SetFillStyle(0)
 l1.SetBorderSize(1)
 l1.SetTextSize(0.03)#0.02
@@ -94,8 +96,8 @@ for iq2 in range(NQ2BINS):
 	#! To give rotate indices space
 	pad.SetBottomMargin(0.20)
 	#! Titles
-	h[iq2][EC].SetTitle("Integrated cross-sections before (#nabla) and after (#bullet) hole-filling")
-	h[iq2][EF].SetTitle("Integrated cross-sections before (#nabla) and after (#bullet) hole-filling")
+	h[iq2][EC].SetTitle("Integrated Cross-Sections before (#nabla) and after (#bullet) Hole Filling")
+	h[iq2][EF].SetTitle("Integrated Cross-Sections before (#nabla) and after (#bullet) Hole Filling")
 
 	h[iq2][EC].SetMarkerStyle(MRKS[EC])
 	h[iq2][EF].SetMarkerStyle(MRKS[EF])
@@ -112,7 +114,7 @@ for iq2 in range(NQ2BINS):
 	
 	pad=c.cd(2)
 	#! Titles
-	hdiff[iq2].SetTitle("Relative contribution (%) to cross-sections from hole-filling")
+	hdiff[iq2].SetTitle("Relative Contribution (%) to Cross-Sections from Hole Filling")
 	pad.SetBottomMargin(0.20)
 	#! Y-axis title: Remove \microbarns
 	hdiff[iq2].SetYTitle("")
@@ -124,10 +126,31 @@ c.cd(1)
 l1.Draw()
 c.cd(2)
 l1.Draw()
-
-
 c.SaveAs("%s/%s.png"%(OUTDIR,"qnt_hole_filling_effect"))
 c.SaveAs("%s/%s.pdf"%(OUTDIR,"qnt_hole_filling_effect"))
+
+#! Plot values of hdiff[iq2] in a single histogram to get average
+hdiff_hist=ROOT.TH1F("hdiff_hist","hdiff_hist",20,0,20)
+hdiff_hist.SetTitle("#splitline{Distribution of Relative Contribution (%) to}{       Cross-Sections from Hole Filling}")
+#! Not sure why, but the following line is needed to get stats to show after ROOT.gStyle.SetOptStat(0)
+#! + I tried ROOT.gStyle.Reset(), but that did not seem to work
+hdiff_hist.SetStats(1) 
+ROOT.gStyle.SetStatY(0.9)
+ROOT.gStyle.SetStatX(0.9)
+ROOT.gStyle.SetStatW(0.2)
+ROOT.gStyle.SetStatH(0.3) 
+ROOT.gStyle.SetOptStat("mr") #! ("nemruo")
+hdiff_hist.SetXTitle("Relative Contribution (%)")
+for iq2 in range(NQ2BINS):
+	nbins=hdiff[iq2].GetNbinsX()
+	for ibin in range(nbins):
+		binc=hdiff[iq2].GetBinContent(ibin+1)
+		hdiff_hist.Fill(binc)
+c1=ROOT.TCanvas("c1","c1",CWDTH,CHGHT)
+hdiff_hist.Draw("hist")
+c1.Update()
+c1.SaveAs("%s/%s.png"%(OUTDIR,"test"))
+c1.SaveAs("%s/%s.pdf"%(OUTDIR,"test"))
 
 print "make_quantify_hole_filling.py done"
 

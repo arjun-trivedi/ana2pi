@@ -18,6 +18,8 @@ import math
 
 import re
 
+from rootpy.plotting import Hist2D, Hist
+
 USAGE='write_obs_VM_format dbg[=False]'
 
 #! user inputs
@@ -33,7 +35,10 @@ O1D,OIT,OR2=range(NOBS)
 OBSFILE=["Obs_1D/Obs_1D.root","Obs_itg/Obs_itg.root","Obs_R2/Obs_R2.root"]
 
 #! INDIR
-INDIR='%s/thesis_obs_norm_ST_shape_121817'%os.environ['OBSDIR_E162'] #! 111317,080317
+INDIR='%s/thesis_obs_norm_ST_shape_122817'%os.environ['OBSDIR_E162'] #! 121817,111317,080317
+#! Use the following when output of make_obs_thesis.py is in some debugging area
+#INDIR='%s/tmp/thesis_obs_norm_ST/dbg'%os.environ['OBSDIR_E163']
+#INDIR='%s/tmp/thesis_obs_norm_ST'%os.environ['OBSDIR_E163']
 
 #! OUTDIR
 DATE=datetime.datetime.now().strftime('%m%d%y')
@@ -176,6 +181,14 @@ def write_1D():
 						staterr=hobs[seq,vst,var].GetBinError(ibin+1)
 						systerr=herr[seq,vst,var].GetBinContent(ibin+1)
 						ftxt.write("%f %f %f %f\n"%(binc,xsec,staterr,systerr))
+						#! Update ERRS
+						if xsec!=0: #! To avoid div by 0, which there are very few cases of
+							rel_syst_err=(systerr/xsec)*100
+							rel_stat_err=(staterr/xsec)*100
+							rel_tot_err=math.sqrt(rel_syst_err**2+rel_stat_err**2)
+							ERRS["syst",O1D].append(rel_syst_err)
+							ERRS["stat",O1D].append(rel_stat_err)
+							ERRS["total",O1D].append(rel_tot_err)
 					ftxt.close()
 
 def check_1D():
@@ -227,6 +240,14 @@ def write_itg():
 				staterr=hobs.GetBinError(ibin+1)
 				systerr=herr.GetBinContent(ibin+1)
 				ftxt.write("%f %f %f %f\n"%(binc,xsec,staterr,systerr))
+				#! Update ERRS
+				if xsec!=0: #! To avoid div by 0, which there are very few cases of
+					rel_syst_err=(systerr/xsec)*100
+					rel_stat_err=(staterr/xsec)*100
+					rel_tot_err=math.sqrt(rel_syst_err**2+rel_stat_err**2)
+					ERRS["syst",OIT].append(rel_syst_err)
+					ERRS["stat",OIT].append(rel_stat_err)
+					ERRS["total",OIT].append(rel_tot_err)
 			ftxt.close()	
 
 def check_itg():
@@ -312,6 +333,14 @@ def write_R2():
 							staterr=hobs[R2,seq,vst,var].GetBinError(ibin+1)
 							systerr=herr[R2,seq,vst,var].GetBinContent(ibin+1)
 							ftxt.write("%f %f %f %f\n"%(binc,xsec,staterr,systerr))
+							#! Update ERRS
+							if xsec!=0: #! To avoid div by 0, which there are very few cases of
+								rel_syst_err=(systerr/xsec)*100
+								rel_stat_err=(staterr/xsec)*100
+								rel_tot_err=math.sqrt(rel_syst_err**2+rel_stat_err**2)
+								ERRS["syst",OR2].append(rel_syst_err)
+								ERRS["stat",OR2].append(rel_stat_err)
+								ERRS["total",OR2].append(rel_tot_err)
 						ftxt.close()	
 def check_R2():
 	NFILES_TOTAL=5*29*42 #!nQ2*nW*nR2=6090
@@ -333,9 +362,50 @@ def check_R2():
 		print "All R2 data written. #written-files=Expected #written-files (%d=%d)"%(nfiles_total,NFILES_TOTAL)
 
 #! main
+
+#! Create some structures to hold {syst-err,stat-err,tot-err}*{1D,itg,R2}
+#! + These are simple structures in that they hold a list of errors over all data points: q2,w,vst,var,bin etc
+#! + Since currently on EF data is written out, these structures hold data only for EF
+#! + These structures will be filled in their respective write functions
+#! + The values stored are relative errors (%)
+ERRNAMES=["syst","stat","total"]
+ERRS=OrderedDict()
+for err in ERRNAMES:
+	for obs in [O1D,OIT,OR2]:
+		ERRS[err,obs]=[]
+		
+
+#! Now start writing data and filling error structures
 write_1D()
 check_1D()
 write_itg()
 check_itg()
 write_R2()
 check_R2()
+
+#! Plot errors
+#! .png/.pdf output
+OUTDIR_SE="%s/syst-errs"%OUTDIRROOT
+if not os.path.exists(OUTDIR_SE):
+	os.makedirs(OUTDIR_SE)
+#! .root output
+fseroot=ROOT.TFile("%s/syst-errs.root"%OUTDIR_SE,"RECREATE")
+#! ROOT plot aesthetics
+ROOT.gStyle.SetOptStat("nemruo")
+for err in ERRNAMES:
+	for item in zip([O1D,OIT,OR2],["1D","itg","R2"]):
+		obs=item[0]
+		obsname=item[1]
+		#! SYST_ERR
+		h=Hist(200,0,200)
+		name="%s-%s"%(err,obsname)
+		h.SetNameTitle(name,name)
+		h.fill_array(ERRS[err,obs])
+		c=ROOT.TCanvas()
+		h.Draw()
+		c.SaveAs("%s/%s.png"%(OUTDIR_SE,name))
+		c.SaveAs("%s/%s.pdf"%(OUTDIR_SE,name))
+		h.Write()
+fseroot.Close()
+
+print "If the progam is not terminating, then Python is probably doing \"garbage collection\"(?); Wait a while!"
