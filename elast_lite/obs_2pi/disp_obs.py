@@ -1108,7 +1108,7 @@ class DispObs:
 		#! + Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
 		if self.DBG==True:
-			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
+			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=4,dbg_binl=['2.00-2.40_1.500-1.525','2.40-3.00_1.725-1.750','3.00-3.50_1.500-1.525','4.20-5.00_1.725-1.750'])
 		else:
 			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		print "DispObs::disp_1D() Q2-W bins got from yield.root=",q2wbinl
@@ -3911,7 +3911,9 @@ class DispObs:
 				c.Write()
 
 
-	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=10,from_obs_itg_yld=False,from_obs_R2=False):
+	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=4,
+		               dbg_binl=['2.00-2.40_1.500-1.525','2.40-3.00_1.725-1.750','3.00-3.50_1.500-1.525','4.20-5.00_1.725-1.750'],
+		               from_obs_itg_yld=False,from_obs_R2=False):
 		"""
 		The ROOT file is arranged in a Tree Structure. The
 		Observable histograms (obs-hists) are located as files in the following directory-path(dirpath):
@@ -3946,15 +3948,17 @@ class DispObs:
 		if dbg==True:
 			print "DispObs::get_q2wbinlist() dbg=True"
 
-		i=0 #! for dbg_bins
 		for path,dirs,files in f.walk():
 			if path=="":continue #! Avoid root path
 			path_arr=path.split("/")
 			if len(path_arr)==1:
-				q2wbinl.append(path)
-				i+=1
-			if dbg==True:
-				if i>=dbg_bins: break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
+				if dbg==True:
+					if path in dbg_binl:
+						q2wbinl.append(path)
+				else:
+					q2wbinl.append(path)
+			if dbg==True and len(q2wbinl)==dbg_bins:
+				break #! Uncomment/comment -> Get limited q2w-bins/Get all q2w-bins
 
 
 		#! Remove q2wbins that are not within [q2min,q2max],[wmin,wmax] 
@@ -4420,7 +4424,7 @@ class DispObs:
 
 		#! 1. Get Q2-W binning from file
 		#! + Q2-W binning in the file is as per Q2-W binning of h8s
-		if self.DBG==True: 	q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3)
+		if self.DBG==True: 	q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=4,dbg_binl=['2.00-2.40_1.500-1.525','2.40-3.00_1.725-1.750','3.00-3.50_1.500-1.525','4.20-5.00_1.725-1.750'])
 		else:    			q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX)
 		print "DispObs::disp_R2() Q2-W bins got from yield.root=",q2wbinl
 
@@ -4520,7 +4524,7 @@ class DispObs:
 
 		#! 1. Make displays for Obs_R2
 		#! 1.i. Get Q2-W binning from file
-		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=3,from_obs_R2=True)
+		if self.DBG==True: q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,dbg=True,dbg_bins=4,from_obs_R2=True)
 		else:              q2wbinl=self.get_q2wbinlist(self.Q2MIN,self.Q2MAX,self.WMIN,self.WMAX,from_obs_R2=True)
 		print "DispObs::disp_SE_results_R2():Obs_1D Q2-W bins got from obs_R2.root=",q2wbinl
 
@@ -4696,7 +4700,7 @@ class DispObs:
 						xmax=h5.GetAxis(H5_DIM[var]).GetBinUpEdge(ibin+1)
 						#! post VM-fdbk
 						#new_ttl="%s:proj. bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],xmin,xmax)
-						new_ttl="%s:#phi_{%s} proj. bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],xmin,xmax)
+						new_ttl="%s-#phi_{%s} proj-bin=[%.3f,%.3f]"%(VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')],xmin,xmax)
 						h.SetTitle(new_ttl)
 						h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullCircle"))
 						h.SetMarkerColor(CLRS_PLT_SEQ_ALL[seq])
@@ -5476,100 +5480,118 @@ class DispObs:
 				if not os.path.exists(outdir):
 					os.makedirs(outdir)
 
-				c=ROOT.TCanvas("c","c",5000,7000)
-				pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
-				#pad_t.SetFillColor(11)
-				pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
-				pad_p.SetFillColor(11)
-				pad_t.Draw()
-  				pad_p.Draw()
-  				pad_t.cd()
-  				pt=ROOT.TPaveText(.05,.1,.95,.8)
-  				pt.AddText("#phi-projections(%s:Q2,W=%s,%s)"%(VAR_NAMES[(vst,var)],q2bin,wbin))
-  				pt.Draw()
- 				pad_p.cd()
+				#! Get nbins for this var
  				nbins=NBINS[var]
- 				pad_p.Divide(NXPADS[var],NYPADS[var])
- 				#! The following are used to draw the Fit, TPaveText with fit pars and the TLegend
- 				f= [[0 for j in range(len(self.SEQS))]for i in range(nbins)]
- 				pt=[[0 for j in range(len(self.SEQS))]for i in range(nbins)]
- 				l= [[0 for j in range(len(self.SEQS))]for i in range(nbins)]
- 				
- 				for ibin in range(nbins):
-					pad=pad_p.cd(ibin+1)
-					pad.Divide(1,len(self.SEQS))
+
+ 				#! Plot phiproj and fits for each {seq}*{bin}
+ 				for iseq,seq in enumerate(self.SEQS):
+ 					#! The following are used to draw the Fit, TPaveText with fit pars and the TLegend
+ 					f=[0 for i in range(nbins)]
+ 					p=[0 for i in range(nbins)]
+ 					l=[0 for i in range(nbins)]
+ 					#! Create a canvas and related objects for seq
+					cname="c%s"%seq
+					c=ROOT.TCanvas(cname,cname,5000,7000)
+					pad_t=ROOT.TPad("pad_t","Title pad",0.05,0.97,0.95,1.00)
+					#pad_t.SetFillColor(11)
+					pad_p=ROOT.TPad("pad_p","Plots pad",0.01,0.01,0.99,0.95);
+					pad_p.SetFillColor(11)
+					pad_t.Draw()
+  					pad_p.Draw()
+  					pad_t.cd()
+  					pt=ROOT.TPaveText(0.05,0.10,0.95,1.00)
+  					pt.AddText("#phi-projections for Q2, W, var-phi=%s, %s, %s-%s"%(q2bin,wbin,VAR_NAMES[(vst,var)],VAR_NAMES[(vst,'PHI')]))
+  					pt.Draw()
+ 					pad_p.cd()
+ 					nbins=NBINS[var]
+ 					pad_p.Divide(NXPADS[var],NYPADS[var])
 					
-					for iseq,seq in enumerate(self.SEQS):
+					for ibin in range(nbins):
+						pad=pad_p.cd(ibin+1)
+						pad_fitp=ROOT.TPad("pad_fitp","Fit Pars pad",0.01,0.01,0.30,1.00)
+						pad_plot=ROOT.TPad("pad_plot","Plots pad",0.30,0.01,0.99,1.00)
+						pad_fitp.SetFillColor(11)
+						pad_plot.SetFillColor(11)
+						pad_fitp.Draw()
+						pad_plot.Draw()
 						if hphiprojd.has_key((seq,vst,var,ibin+1)):
 							k=seq,vst,var,ibin+1
 							h=hphiprojd[k]
 							h.SetXTitle( "%s%s"%(VAR_NAMES[(vst,'PHI')],VAR_UNIT_NAMES['PHI']) )
+							h.SetMarkerStyle(ROOT.gROOT.ProcessLine("kFullDotLarge"))
 							h.GetXaxis().SetLabelSize(.05)
 							h.GetXaxis().SetTitleSize(.10)
 							h.GetXaxis().SetTitleOffset(.7)
 					
-							if self.VIEW=="EC_SF_ST":										
-								if   seq=='EC': pad.cd(1)
-								elif seq=='SF': pad.cd(2)
-								elif seq=='ST': pad.cd(3) 
-							elif self.VIEW=="EC_EF":
-								if   seq=='EC': pad.cd(1)
-								elif seq=='EF': pad.cd(2)
-							elif self.VIEW=="EC_ST":
-								if   seq=='EC': pad.cd(1)
-								elif seq=='ST': pad.cd(2)
-							elif self.VIEW=="EC_EF_ST":
-								if   seq=='EC': pad.cd(1)
-								elif seq=='EF': pad.cd(2)
-								elif seq=='ST': pad.cd(3)
-							
 							#! Draw hist
+							pad_plot.cd()
+							h.GetXaxis().SetLabelSize(0.05)
+							h.GetYaxis().SetLabelSize(0.05)
 							h.SetMinimum(0)
 							h.Draw()
 							#! Draw Fit
-							if   var!='ALPHA': f[ibin][iseq]=get_fphi("_%d_%s"%(ibin+1,seq))
-							elif var=='ALPHA': f[ibin][iseq]=get_fphi_alpha("_%d_%s"%(ibin+1,seq))
-							f[ibin][iseq].SetParameter(0,fpard[k]['A'])
-							f[ibin][iseq].SetParError (0,fpard[k]['Aerr'])
-  							f[ibin][iseq].SetParameter(1,fpard[k]['B'])
-  							f[ibin][iseq].SetParError (1,fpard[k]['Berr'])
-  							f[ibin][iseq].SetParameter(2,fpard[k]['C'])
-  							f[ibin][iseq].SetParError (2,fpard[k]['Cerr'])
+							if   var!='ALPHA': f[ibin]=get_fphi("_%d_%s"%(ibin+1,seq))
+							elif var=='ALPHA': f[ibin]=get_fphi_alpha("_%d_%s"%(ibin+1,seq))
+							f[ibin].SetParameter(0,fpard[k]['A'])
+							f[ibin].SetParError (0,fpard[k]['Aerr'])
+  							f[ibin].SetParameter(1,fpard[k]['B'])
+  							f[ibin].SetParError (1,fpard[k]['Berr'])
+  							f[ibin].SetParameter(2,fpard[k]['C'])
+  							f[ibin].SetParError (2,fpard[k]['Cerr'])
   							if var=='ALPHA':
-  								f[ibin][iseq].SetParameter(3,fpard[k]['D'])
-  								f[ibin][iseq].SetParError (3,fpard[k]['Derr'])
-  								f[ibin][iseq].SetParameter(4,fpard[k]['E'])
-  								f[ibin][iseq].SetParError (4,fpard[k]['Eerr'])
- 							f[ibin][iseq].SetParName(0, "A")
-  							f[ibin][iseq].SetParName(1, "B")
-  							f[ibin][iseq].SetParName(2, "C")
+  								f[ibin].SetParameter(3,fpard[k]['D'])
+  								f[ibin].SetParError (3,fpard[k]['Derr'])
+  								f[ibin].SetParameter(4,fpard[k]['E'])
+  								f[ibin].SetParError (4,fpard[k]['Eerr'])
+ 							f[ibin].SetParName(0, "A")
+  							f[ibin].SetParName(1, "B")
+  							f[ibin].SetParName(2, "C")
   							if var=='ALPHA':
-  								f[ibin][iseq].SetParName(3, "D")
-  								f[ibin][iseq].SetParName(4, "E")
-  							f[ibin][iseq].SetLineColor(h.GetMarkerColor())
-							f[ibin][iseq].Draw("same")
-							#! Draw Fit stats
-							#pt[ibin].append(ROOT.TPaveText(.20,.6,.30,1.0,"NDC"))
-							pt[ibin][iseq]=ROOT.TPaveText(.20,.6,.30,1.0,"NDC")
-							pt[ibin][iseq].AddText( "A=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(0),f[ibin][iseq].GetParError(0)) )
-							pt[ibin][iseq].AddText( "B=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(1),f[ibin][iseq].GetParError(1)) )
-							pt[ibin][iseq].AddText( "C=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(2),f[ibin][iseq].GetParError(2)) )
-							if var=='ALPHA':
-								pt[ibin][iseq].AddText( "D=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(3),f[ibin][iseq].GetParError(3)) )
-								pt[ibin][iseq].AddText( "E=%.2f+/-%.2f"%(f[ibin][iseq].GetParameter(4),f[ibin][iseq].GetParError(4)) )
-							pt[ibin][iseq].AddText( "#chi^{2}/NDOF=%.2f"%fpard[k]['chisq_per_DOF'] )
-							pt[ibin][iseq].AddText( "prob=%.2f"%fpard[k]['prob'] )
-							pt[ibin][iseq].SetTextColor(h.GetMarkerColor())
-							pt[ibin][iseq].SetFillColor(11)
-							pt[ibin][iseq].Draw()
-							
+  								f[ibin].SetParName(3, "D")
+  								f[ibin].SetParName(4, "E")
+  							f[ibin].SetLineColor(h.GetMarkerColor())
+							f[ibin].Draw("same")
 							#! Draw legend
-							l[ibin][iseq]=ROOT.TLegend(0.1,0.8,0.2,0.9)
-							l[ibin][iseq].AddEntry(h,seq,"p")
-							l[ibin][iseq].Draw()
-				c.SaveAs("%s/c_q%s_w%s.png"%(outdir,q2bin,wbin))
-				c.SaveAs("%s/c_q%s_w%s.eps"%(outdir,q2bin,wbin))
-				c.Close()
+							l[ibin]=ROOT.TLegend(0.8,0.8,0.9,0.9)
+							l[ibin].AddEntry(h,seq,"p")
+							l[ibin].SetFillColor(11)
+							l[ibin].SetFillStyle(3022)
+							l[ibin].Draw()
+
+							#! Draw Fit stats
+							#! Each pars in one line
+							pad_fitp.cd()
+							#p[ibin]=ROOT.TPaveText(.20,.6,.30,1.0,"NDC")
+							#p[ibin]=ROOT.TPaveText(0.0,0.3,0.2,0.8,"NDC")
+							p[ibin]=ROOT.TPaveText(0.05,0.10,0.95,1.00,"NDC")
+							#p[ibin].SetTextSize(0.05)
+							p[ibin].AddText( "A=%.2f+/-%.2f"%(f[ibin].GetParameter(0),f[ibin].GetParError(0)) )
+							p[ibin].AddText( "B=%.2f+/-%.2f"%(f[ibin].GetParameter(1),f[ibin].GetParError(1)) )
+							p[ibin].AddText( "C=%.2f+/-%.2f"%(f[ibin].GetParameter(2),f[ibin].GetParError(2)) )
+							if var=='ALPHA':
+								p[ibin].AddText( "D=%.2f+/-%.2f"%(f[ibin].GetParameter(3),f[ibin].GetParError(3)) )
+								p[ibin].AddText( "E=%.2f+/-%.2f"%(f[ibin].GetParameter(4),f[ibin].GetParError(4)) )
+							# p[ibin].AddText( "#chi^{2}/NDOF=%.2f"%fpard[k]['chisq_per_DOF'] )
+							# p[ibin].AddText( "prob=%.2f"%fpard[k]['prob'] )
+							#! Rest of TPaveText aesthetics
+							#p[ibin].SetTextColor(h.GetMarkerColor())
+							p[ibin].SetFillColor(11)
+							p[ibin].SetFillStyle(3022) #! transparent
+							p[ibin].Draw()
+							
+					c.SaveAs("%s/c_%s_q%s_w%s.png"%(outdir,seq,q2bin,wbin))
+					c.SaveAs("%s/c_%s_q%s_w%s.eps"%(outdir,seq,q2bin,wbin))
+					c.SaveAs("%s/c_%s_q%s_w%s.pdf"%(outdir,seq,q2bin,wbin))
+					# #! Convert .png->.eps->.pdf since in .eps and .pdf produced directly by ROOT can have weird aesthetic issues
+					# #! 1. .png->.eps
+					# cmd=['convert',"%s/c_%s_q%s_w%s.png"%(outdir,seq,q2bin,wbin),"%s/c_%s_q%s_w%s.eps"%(outdir,seq,q2bin,wbin)]
+					# tool=subprocess.Popen(cmd,stderr=subprocess.STDOUT)
+					# tool.wait()
+					# #! 2. .png->.pdf
+					# cmd=['convert',"%s/c_%s_q%s_w%s.png"%(outdir,seq,q2bin,wbin),"%s/c_%s_q%s_w%s.pdf"%(outdir,seq,q2bin,wbin)]
+					# tool=subprocess.Popen(cmd,stderr=subprocess.STDOUT)
+					# tool.wait()
+					c.Close()
 			print "Done DispObs::plot_phiproj()"	
 
 	def plot_R2_athtcs(self):

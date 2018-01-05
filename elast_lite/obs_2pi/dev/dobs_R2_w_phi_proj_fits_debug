@@ -1,0 +1,5 @@
+EXTRACT_D_E_FOR_NON_ALPHA=False
+echo $EXTRACT_D_E_FOR_NON_ALPHA
+dbg=True
+echo $dbg
+dobs_R2 mthd2:True $EXTRACT_D_E_FOR_NON_ALPHA $OBSDIR_E163/lowQ2_SSBands_122717_w_phi_fit_curves_for_ananote/cutsncors1 sim4_sim5_sim6_sim7_sim8_sim13 EC_EF_ST 2.00 3.00 1.400 2.125 e16 $dbg
