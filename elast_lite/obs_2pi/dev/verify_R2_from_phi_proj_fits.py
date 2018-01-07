@@ -8,7 +8,23 @@ import disp_obs as disp_obs
 
 
 '''
-Following is optimized for Q2,W=2.00-2.40,1.725-1.750
+Following is optimized for numerical demonstration of polarization observables for
++ alpha =[0deg,36deg] w.r.t phi_pim (VST1-ALPHA, [pf,pip][p,pim], psi_pim_phi_pim) 
++ Q2,W=2.40-2.30,1.725-1.750
+
++ The A, B, C, D, and E fit pars are obtained from:
+$OBSDIR_E163/lowQ2_SSBands_122717_w_phi_fit_curves_for_ananote/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/dbg/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/phiprojs/
+VST1_ALPHA/q_2.40-2.30_w1.725-1.750/c_EF(EC)_q2.40-2.30_w1.725-1.750.pdf
+
++ Using these parameters and other relevant information (see code for details),
+ this program calculates the value of the polarization observables.
+
++ These values can be compared with (and are found to be exactly the same):
+A:$OBSDIR_E162/thesis_obs_norm_ST_shape_122817/vm_format/R2/R2-T_plus_R2-L/q2_24_30/w_1725_1750/xsecR2-T_plus_R2-L_psi_pim_phi_pim.dat
+B:$OBSDIR_E162/thesis_obs_norm_ST_shape_122817/vm_format/R2/R2-c-LT/q2_24_30/w_1725_1750/xsecR2-c-LT_psi_pim_phi_pim.dat
+C:$OBSDIR_E162/thesis_obs_norm_ST_shape_122817/vm_format/R2/R2-c-TT/q2_24_30/w_1725_1750/xsecR2-c-TT_psi_pim_phi_pim.dat
+D:$OBSDIR_E162/thesis_obs_norm_ST_shape_122817/vm_format/R2/R2-s-LT/q2_24_30/w_1725_1750/xsecR2-s-LT_psi_pim_phi_pim.dat
+E:$OBSDIR_E162/thesis_obs_norm_ST_shape_122817/vm_format/R2/R2-s-TT/q2_24_30/w_1725_1750/xsecR2-s-TT_psi_pim_phi_pim.dat
 '''
 LUM_E16=28.18
 LUM_INVFB_TO_INVMICROB=1000000000
