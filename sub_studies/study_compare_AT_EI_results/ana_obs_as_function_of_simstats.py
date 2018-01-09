@@ -299,7 +299,7 @@ def hist_itg_athtcs(hobs):
 			h1[k].SetMarkerColor(clr)
 			h1[k].SetLineColor(clr)
 			
-def plot_1D(hobs,q2wbin):
+def plot_1D(hobs,q2wbin,q2r):
 	"""
 	"""
 	print "In plot_1D()"
@@ -334,6 +334,12 @@ def plot_1D(hobs,q2wbin):
 		pt.SetTextSize(0.40)
 		pt.Draw()
 		pad_p.Divide(3,3)
+		#! TLegend
+		l=ROOT.TLegend(0.53,0.60,0.90,0.90)
+		l.SetFillStyle(0)
+		#l.SetBorderSize(0)
+		l.SetTextSize(0.05)
+		l.SetHeader("sim-stats fraction")
 		for item in PAD_MAP_1D:
 			pad,vst,var=item[0],item[1],item[2]
 			#print "pad,vst,var=",pad,vst,var
@@ -354,6 +360,11 @@ def plot_1D(hobs,q2wbin):
 				draw_opt="" if iplt==0 else "same"
 				h1[seq,vst,var].Draw(draw_opt)
 				iplt+=1
+			#! Draw legend
+			if pad==1:
+				for isim,h1 in enumerate(hobs):
+					l.AddEntry(h1[seq,vst,var],"%s"%SIMFRCTN[q2r][isim],"p")
+				l.Draw()
 		#! Save canvas 
 		outdir=os.path.join(OUTDIR,"Obs_1D",q2wbin)
 		if not os.path.exists(outdir):
@@ -363,7 +374,7 @@ def plot_1D(hobs,q2wbin):
 	print "*** plot_1D() Done ***\n"
 	return
 
-def plot_itg(hobs,q2wbin):
+def plot_itg(hobs,q2wbin,q2r):
 	"""
 	"""
 	print "In plot_itg()"
@@ -391,6 +402,12 @@ def plot_itg(hobs,q2wbin):
 		pt.SetTextSize(0.32)
   		pt.Draw()
 		pad_p.cd()
+		#! TLegend
+		l=ROOT.TLegend(0.60,0.70,0.90,0.90)
+		l.SetFillStyle(0)
+		#l.SetBorderSize(0)
+		l.SetTextSize(0.04)
+		l.SetHeader("sim-stats fraction")
 		#! Set maximum of y axis as per all hists that go in this canvas
 		nsims=len(hobs)
 		histl=[]
@@ -409,6 +426,10 @@ def plot_itg(hobs,q2wbin):
 			#! Draw
 			hobs[isim][seq].SetTitle("")
 			hobs[isim][seq].Draw(draw_opt)
+		#! Legend
+		for isim in range(nsims):
+			l.AddEntry(hobs[isim][seq],"%s"%SIMFRCTN[q2r][isim],"p")
+		l.Draw()
 		#! Save canvas 
 		outdir=os.path.join(OUTDIR,"Obs_itg",q2bin)
 		if not os.path.exists(outdir):
@@ -434,12 +455,15 @@ if DBG==True:
 else:
 	#Q2WBINL[LQ2]=get_q2wbinlist(FYLD[LQ2][0])
 	#Q2WBINL[HQ2]=get_q2wbinlist(FYLD[HQ2][0])
-	Q2WBINL[LQ2]=get_q2wbinlist(FYLD[LQ2][0],dbg=True,dbg_bins=8,dbg_binl=['2.00-2.40_1.425-1.450','2.00-2.40_1.450-1.475','2.00-2.40_1.475-1.500','2.00-2.40_1.500-1.525',
-		                                                                   '2.40-3.00_1.425-1.450','2.40-3.00_1.450-1.475','2.40-3.00_1.475-1.500','2.40-3.00_1.500-1.525'])
-	Q2WBINL[HQ2]=get_q2wbinlist(FYLD[HQ2][0],dbg=True,dbg_bins=8,dbg_binl=['3.50-4.20_1.425-1.450','3.50-4.20_1.450-1.475','3.50-4.20_1.475-1.500','3.50-4.20_1.500-1.525',
-		                                                                   '4.20-5.00_1.425-1.450','4.20-5.00_1.450-1.475','4.20-5.00_1.475-1.500','4.20-5.00_1.500-1.525'])	                                                                	
-print "Q2WBINL[LQ2]=",Q2WBINL[LQ2]
-print "Q2WBINL[HQ2]=",Q2WBINL[HQ2]
+	# Q2WBINL[LQ2]=get_q2wbinlist(FYLD[LQ2][0],dbg=True,dbg_bins=8,dbg_binl=['2.00-2.40_1.425-1.450','2.00-2.40_1.450-1.475','2.00-2.40_1.475-1.500','2.00-2.40_1.500-1.525',
+	# 	                                                                   '2.40-3.00_1.425-1.450','2.40-3.00_1.450-1.475','2.40-3.00_1.475-1.500','2.40-3.00_1.500-1.525'])
+	# Q2WBINL[HQ2]=get_q2wbinlist(FYLD[HQ2][0],dbg=True,dbg_bins=8,dbg_binl=['3.50-4.20_1.425-1.450','3.50-4.20_1.450-1.475','3.50-4.20_1.475-1.500','3.50-4.20_1.500-1.525',
+	# 	                                                                   '4.20-5.00_1.425-1.450','4.20-5.00_1.450-1.475','4.20-5.00_1.475-1.500','4.20-5.00_1.500-1.525'])	                                                                	
+	Q2WBINL[LQ2]=get_q2wbinlist(FYLD[LQ2][0])
+	Q2WBINL[HQ2]=get_q2wbinlist(FYLD[HQ2][0])
+if DBG==True:
+	print "Q2WBINL[LQ2]=",Q2WBINL[LQ2]
+	print "Q2WBINL[HQ2]=",Q2WBINL[HQ2]
 #sys.exit()
 
 #! 1. Loop over Q2WBINL and for each q2wbin make Obs_1D=f(sim)
@@ -462,7 +486,7 @@ for q2r in range(NQ2RANGES):
 				for k in h1:
 					print k,h1[k].GetName()
 		#! plot
-		plot_1D(hobs,q2wbin)
+		plot_1D(hobs,q2wbin,q2r)
 
 #! 2. Plot Obs_itg=f(sim) 
 #! + use vst=1, var=THETA
@@ -488,7 +512,7 @@ for q2r in range(NQ2RANGES):
 				for k in h1:
 					print k,h1[k].GetName()
 		#! plot
-		plot_itg(hobs,q2wbin)
+		plot_itg(hobs,q2wbin,q2r)
 
 #! 3. Loop over Q2WBINL and for each q2wbin make simstats=f(sim)
 for q2r in range(NQ2RANGES):
