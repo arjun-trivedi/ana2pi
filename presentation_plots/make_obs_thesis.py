@@ -836,7 +836,7 @@ def get_SYST_ERR_REST():
 	#!   ix.   (11) Background Subtraction:                                                                  1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
 	#!   x.    (6) Acceptance Calculation:                                                                   1 (guess-est, conservative upper bound)
 	#!   xi.   (7) Radiative Effects correction:                                                             5 (ref)
-	#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   X (ana) (For details see function XXX)
+	#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   5.73 (make_obs_thesis.py ($OBSDIR_E162/thesis_obs_norm_ST_shape_122817/syst-errs/SYST_ERR_HF_REL_1D.png)
 	#!  xiii   (9) Luminosity measurement:                                                                   5 (ref)
 	#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
 	#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version) 

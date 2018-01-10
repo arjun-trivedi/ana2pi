@@ -114,7 +114,7 @@ for iq2 in range(NQ2BINS):
 	
 	pad=c.cd(2)
 	#! Titles
-	hdiff[iq2].SetTitle("Relative Contribution (%) to Cross-Sections from Hole Filling")
+	hdiff[iq2].SetTitle("Relative Systematic Error (%) to Integrated Cross-Sections from Hole Filling")
 	pad.SetBottomMargin(0.20)
 	#! Y-axis title: Remove \microbarns
 	hdiff[iq2].SetYTitle("")
@@ -126,21 +126,22 @@ c.cd(1)
 l1.Draw()
 c.cd(2)
 l1.Draw()
-c.SaveAs("%s/%s.png"%(OUTDIR,"qnt_hole_filling_effect"))
-c.SaveAs("%s/%s.pdf"%(OUTDIR,"qnt_hole_filling_effect"))
+c.SaveAs("%s/%s.png"%(OUTDIR,"HF_EC_EF_itg"))
+c.SaveAs("%s/%s.pdf"%(OUTDIR,"HF_EC_EF_itg"))
 
 #! Plot values of hdiff[iq2] in a single histogram to get average
 hdiff_hist=ROOT.TH1F("hdiff_hist","hdiff_hist",20,0,20)
-hdiff_hist.SetTitle("#splitline{Distribution of Relative Contribution (%) to}{       Cross-Sections from Hole Filling}")
+hdiff_hist.SetTitle("#splitline{Distribution of Relative Systematic Error (%) to}{       Cross-Sections from Hole Filling}")
 #! Not sure why, but the following line is needed to get stats to show after ROOT.gStyle.SetOptStat(0)
 #! + I tried ROOT.gStyle.Reset(), but that did not seem to work
+#ROOT.gStyle.Reset()
 hdiff_hist.SetStats(1) 
 ROOT.gStyle.SetStatY(0.9)
 ROOT.gStyle.SetStatX(0.9)
 ROOT.gStyle.SetStatW(0.2)
 ROOT.gStyle.SetStatH(0.3) 
 ROOT.gStyle.SetOptStat("mr") #! ("nemruo")
-hdiff_hist.SetXTitle("Relative Contribution (%)")
+hdiff_hist.SetXTitle("Relative Systematic Error (%)")
 for iq2 in range(NQ2BINS):
 	nbins=hdiff[iq2].GetNbinsX()
 	for ibin in range(nbins):
@@ -149,8 +150,8 @@ for iq2 in range(NQ2BINS):
 c1=ROOT.TCanvas("c1","c1",CWDTH,CHGHT)
 hdiff_hist.Draw("hist")
 c1.Update()
-c1.SaveAs("%s/%s.png"%(OUTDIR,"test"))
-c1.SaveAs("%s/%s.pdf"%(OUTDIR,"test"))
+c1.SaveAs("%s/%s.png"%(OUTDIR,"rel_syst_err_HF_itg"))
+c1.SaveAs("%s/%s.pdf"%(OUTDIR,"rel_syst_err_HF_itg"))
 
 print "make_quantify_hole_filling.py done"
 
