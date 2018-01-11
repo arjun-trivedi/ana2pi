@@ -823,10 +823,12 @@ def get_SYST_ERR_REST():
 	#!    + Hindu-Arabic numerals in parenthesis correspond to the entry of these errors in the  Systematic Error Table in the Analysis Note.
 	#!    + The Roman numerals itemize the list for this code
 	#! I. Errors estimated in h10->per_non_vst_SE->cmb_non_vst_SE->cmb_vst_SE process ('rel_err' in this code):
-	#!   i.   (3) Hadron Identification (SS-Bands):                     3.12 (ana) (lQ2,hQ2=2.83,3.41 -> avg = 3.12) ($OBSDIR_E16/SS/lowQ2_SSBands_080217_sim4_sim5_sim6_sim7_sim8_sim13_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponding folder)
+	#!   i.   (3) Hadron Identification (SS-Bands):                     3.14 (ana)
+	#!        + (lQ2,hQ2=2.82,3.46 -> avg = 3.14) ($OBSDIR_E16/SS/highQ2_lowQ2_SSBands_122717_sim4_sim5_sim6_sim7_sim8_sim13_122817/SE_plots/Obs_itg/itg.png hQ2=corresponding folder)
 	#!   ii.  (NA) Event Selection (MM-cut):                 NA (ana) removed in 're-obtain-obs-3'
-	#!   iii. (10) Variable set dependent extraction of Obs: 5.55 (ana)(lQ2,hQ2=4.88,6.22 -> avg = 5.55) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_080317/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
-	#!   --> Total = sqrt(3.12**2 + 5.55**2)=6.36
+	#!   iii. (10) Variable set dependent extraction of Obs: 5.50 (ana)
+	#!        + (lQ2,hQ2=4.77,6.23 -> avg = 5.50) ($OBSDIR_E16/SS/lowQ2_cmb_vst_SE_122817/SE_plots/Obs_itg/itg.png; hQ2=corresponging folder)
+	#!   --> Total = sqrt(3.14**2 + 5.50**2)=6.33
 	#! II. Rest of the Errors (returned in this function):
 	#!   iv.   (1) Electron Identification:                                                                  1 (guess-est, conservative upper bound)
 	#!   v.    (2) Electron Fiducial Boundary Selection:                                                     1 (guess-est, conservative upper bound)
@@ -836,10 +838,15 @@ def get_SYST_ERR_REST():
 	#!   ix.   (11) Background Subtraction:                                                                  1 (ana) (Estimated from curve of $STUDY_EVTSEL_BG_DATADIR/evtsel_BG_072717/2.00-5.00/MM2/bg.png) 
 	#!   x.    (6) Acceptance Calculation:                                                                   1 (guess-est, conservative upper bound)
 	#!   xi.   (7) Radiative Effects correction:                                                             5 (ref)
-	#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   5.73 (make_obs_thesis.py ($OBSDIR_E162/thesis_obs_norm_ST_shape_122817/syst-errs/SYST_ERR_HF_REL_1D.png)
+	#!   xii.  (8) Estimation of Experimental Yields in Kinematical Holes:                                   5.71 
+	#!             (make_obs_thesis.py, average from plots made using make_quantify_hole_filling_1D/R2.py using data in:
+		#!				+ $OBSDIR_E162/thesis_obs_norm_ST_shape_122817/syst-errs/syst-errs.root:SYST_ERR_HF_REL_1D
+		#!				+ $OBSDIR_E162/thesis_obs_norm_ST_shape_122817/syst-errs/syst-errs.root:SYST_ERR_HF_REL_R2
+		#!          + make_quantify_hole_filling_1D/R2.py slightly modifies the original averages due scaling x-axis for presentation
+		#!		   )
 	#!  xiii   (9) Luminosity measurement:                                                                   5 (ref)
-	#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5**2 + 5**2)=9.21
-	#! Total(I+II)=sqrt(6.36**2 + 9.21**2)=11.19 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version) 
+	#!   --> Total = sqrt(1**2 + 1**2 + 1**2 + 1**2 + 2**2 + 1**2 + 1**2 + 5**2 + 5.71**2 + 5**2)=9.62
+	#! Total(I+II)=sqrt(6.33**2 + 9.62**2)=11.52 (NOTE THAT THIS IS Q2WBIN AVERAGED but final observables have fully binned version) 
 	#! + Removed addition of Hole-Filling SE [II.xii (8), 5%] to SYST_ERR_REST, which 
 	#!   was hitherto obtained from Obs_itg-Q2-W averaged (obtained from Obs_itg and is averaged over Q2-W)
 	#!
