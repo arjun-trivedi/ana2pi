@@ -48,10 +48,12 @@ CUT_NAME=["pre_cut","pst_cut"]
 NPRTCLS=3
 E,P,PIP=range(NPRTCLS)
 PRTCL_NAME=["e","p","pip"]
+PRTCL_DSCRPTV_NAME=["e","p","#pi^{+}"]
 
 NDTYP=2
 ER,SR=range(NDTYP)
 DTYPE_NAME=["ER","SR"]
+DTYPE_DSCRPTV_NAME=["exp","sim"]
 
 NSCTR=6
 
@@ -94,9 +96,12 @@ def get_hists_from_canvas(c,idtyp,iprtcl,cut):
 									#! Set  titles
 									#! + Don't know where they got messed up
 									for htmp in [h[isctr],hn[isctr]]:
+										mt="%s,%s,sector %d"%(DTYPE_DSCRPTV_NAME[idtyp],PRTCL_DSCRPTV_NAME[iprtcl],isctr+1)
+										mt="sector %d"%(isctr+1)
 										xt="p [GeV]"#htmp.GetXaxis().GetTitle()
 										yt="#theta [deg]"#htmp.GetYaxis().GetTitle()
-										htmp.SetTitle(";%s;%s"%(xt,yt))
+										htmp.SetTitle("%s;%s;%s"%(mt,xt,yt))
+										#htmp.SetTitle(";%s;%s"%(xt,yt))
 										htmp.GetXaxis().SetTitleOffset(0.7)
 										htmp.GetYaxis().SetTitleOffset(1.3)
 					elif obj.InheritsFrom("TF1"):
@@ -124,6 +129,10 @@ print "FIN[PST=]",FIN[PST].GetName()
 ROOT.gStyle.SetOptStat(0)
 
 #! Now get relevant theta vs p TCanvas from the files and save them
+#ROOT.gStyle.SetTitleX(0.39)
+ROOT.gStyle.SetTitleY(0.90)
+#! define positions for TPaveText that will be use for some descripitive titles
+ptx1,pty1,ptx2,pty2=0.05,0.95,.95,1.00
 for cut in range(NCUTS):
 	#! Get TCanvas
 	#c=[[0 for j in range(NDTYP)] for i in range(NPRTCLS)]
@@ -135,8 +144,14 @@ for cut in range(NCUTS):
 				#! Save hists in a canvas each for theta_vs_p and theta_vs_p_norm
 				cc=ROOT.TCanvas("cc","cc",2000,1500)
 				cc.Divide(3,2)
+				ptcc=ROOT.TPaveText(ptx1,pty1,ptx2,pty2)
+				ptcc.AddText("#theta vs. momentum for %s in %s data"%(PRTCL_DSCRPTV_NAME[iprtcl], DTYPE_DSCRPTV_NAME[idtyp]))
+				ptcc.Draw("same")
 				ccn=ROOT.TCanvas("ccn","ccn",2000,1500)
 				ccn.Divide(3,2)
+				ptccn=ROOT.TPaveText(ptx1,pty1,ptx2,pty2)
+				ptccn.AddText("#theta vs. momentum for %s in %s data"%(PRTCL_DSCRPTV_NAME[iprtcl], DTYPE_DSCRPTV_NAME[idtyp]))
+				ptccn.Draw("same")
 				for isctr in range(NSCTR):
 					#! theta_vs_p
 					cc.cd(isctr+1)
@@ -154,8 +169,14 @@ for cut in range(NCUTS):
 				#! Save hists in a canvas each for theta_vs_p and theta_vs_p_norm
 				cc=ROOT.TCanvas("cc","cc",2000,1500)
 				cc.Divide(3,2)
+				ptcc=ROOT.TPaveText(ptx1,pty1,ptx2,pty2)
+				ptcc.AddText("#theta vs. momentum for %s in %s data with cuts superimposed"%(PRTCL_DSCRPTV_NAME[iprtcl], DTYPE_DSCRPTV_NAME[idtyp]))
+				ptcc.Draw("same")
 				ccn=ROOT.TCanvas("ccn","ccn",2000,1500)
 				ccn.Divide(3,2)
+				ptccn=ROOT.TPaveText(ptx1,pty1,ptx2,pty2)
+				ptccn.AddText("#theta vs. momentum for %s in %s data with cuts superimposed"%(PRTCL_DSCRPTV_NAME[iprtcl], DTYPE_DSCRPTV_NAME[idtyp]))
+				ptccn.Draw("same")
 				for isctr in range(NSCTR):
 					#! theta_vs_p
 					cc.cd(isctr+1)
