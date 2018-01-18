@@ -286,10 +286,22 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 			title="%s for Q^{2}=[%.2f,%.2f) GeV^{2}, W=[%.3f,%.3f) GeV"%(PLT_TITLE[iplt],q2min,q2max,wmin,wmax)
 			hmm[idtyp][iq][iw][iplt].SetTitle(title)#"%s %.2f-%.2f_%.3f-%.3f"%(PLT_TITLE[iplt],q2min,q2max,wmin,wmax))#("%s"%cut.GetTitle())
 			#print hmm[idtyp][i][j][icorr].GetName()
+			#! Set axis aesthetics
+			#! x-axis
+			hmm[idtyp][iq][iw][iplt].GetXaxis().SetTitleSize(.05)
+			hmm[idtyp][iq][iw][iplt].GetXaxis().SetLabelSize(.05)
+			hmm[idtyp][iq][iw][iplt].GetXaxis().SetTitleOffset(.90)
+			#! y-axis
+			hmm[idtyp][iq][iw][iplt].GetYaxis().SetTitleSize(.05)
+			hmm[idtyp][iq][iw][iplt].GetYaxis().SetLabelSize(.05)
+			#hmm[idtyp][iq][iw][iplt].GetYaxis().SetTitleOffset(.05)
 
 #! + Plot and save hmm
 ROOT.gStyle.SetOptStat(0) #"n"
 ROOT.gStyle.SetOptFit(0)#111)
+ROOT.gStyle.SetTitleH(0.20)
+ROOT.gStyle.SetTitleX(.55)
+ROOT.gStyle.SetTitleY(1.07)
 #! Aesthetic related objects
 CLRS_DTYP=[ROOT.gROOT.ProcessLine("kBlue"),ROOT.gROOT.ProcessLine("kRed")]
 
@@ -375,7 +387,8 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 
 			#! Create and add entries: hists and cut-lines
 			#! legend
-			lgnd=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
+			lgnd=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");
+			lgnd.SetTextSize(0.05)	
 			for hist,label in zip([hER,hSR],["exp","sim"]):
 				lgnd.AddEntry(hist,label,"lp")
 
@@ -397,8 +410,11 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM_T2_CUTL_AT.Draw("same")
 				MM_T2_CUTH_AT.Draw("same")
 				#! add to legend
-				lgnd.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
-				lgnd.AddEntry(MM_T2_CUTL_AT,"%.2f GeV < MM < %.2f GeV"%(AT_MML,AT_MMH),"l")
+				# lgnd.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
+				# lgnd.AddEntry(MM_T2_CUTL_AT,"%.2f GeV < MM < %.2f GeV"%(AT_MML,AT_MMH),"l")
+				lgnd.AddEntry(MM_T2_CUTL_EI,"MM cut EI","l")
+				lgnd.AddEntry(MM_T2_CUTL_AT,"MM cut AT","l")
+
 			elif iplt==MM2:
 				#! EI
 				MM2_T2_CUTL_EI.SetY1(hER.GetMinimum())
@@ -415,8 +431,10 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM2_T2_CUTL_AT.Draw("same")
 				MM2_T2_CUTH_AT.Draw("same")
 				#! add to legend
-				lgnd.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
-				lgnd.AddEntry(MM2_T2_CUTL_AT,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(AT_MM2L,AT_MM2H),"l")
+				# lgnd.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
+				# lgnd.AddEntry(MM2_T2_CUTL_AT,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(AT_MM2L,AT_MM2H),"l")
+				lgnd.AddEntry(MM2_T2_CUTL_EI,"MM^{2} cut EI","l")
+				lgnd.AddEntry(MM2_T2_CUTL_AT,"MM^{2} cut AT","l")
 			#! Draw legend
 			lgnd.Draw("same")
 			
@@ -551,6 +569,7 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 			#! Create and add entries: hists and cut-lines
 			#! legend
 			lgnd=ROOT.TLegend(0.66,0.72,0.9,0.9)#,"","NDC");	
+			lgnd.SetTextSize(0.05)
 			for hist,label in zip([hER,hSR],["exp","sim"]):
 				lgnd.AddEntry(hist,label,"lp")
 
@@ -565,7 +584,8 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM_T2_CUTL_EI.Draw("same")
 				MM_T2_CUTH_EI.Draw("same")
 				#! add to legend
-				lgnd.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
+				#lgnd.AddEntry(MM_T2_CUTL_EI,"%.2f GeV < MM < %.2f GeV"%(EI_MML,EI_MMH),"l")
+				lgnd.AddEntry(MM_T2_CUTL_EI,"MM cut","l")
 			elif iplt==MM2:
 				#! EI
 				MM2_T2_CUTL_EI.SetY1(hER.GetMinimum())
@@ -575,7 +595,9 @@ for iq,q2bin_le in enumerate(Q2BIN_LEL):
 				MM2_T2_CUTL_EI.Draw("same")
 				MM2_T2_CUTH_EI.Draw("same")
 				#! add to legend
-				lgnd.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
+				#lgnd.AddEntry(MM2_T2_CUTL_EI,"%.2f GeV^{2} < MM^{2} < %.2f GeV^{2}"%(EI_MM2L,EI_MM2H),"l")
+				lgnd.AddEntry(MM2_T2_CUTL_EI,"MM^{2} cut","l")
+
 			#! Draw legend
 			lgnd.Draw("same")
 			
