@@ -114,7 +114,7 @@ for iq2 in range(NQ2BINS):
 	
 	pad=c.cd(2)
 	#! Titles
-	hdiff[iq2].SetTitle("Relative Systematic Error (%) to Integrated Cross-Sections from Hole Filling")
+	hdiff[iq2].SetTitle("Relative Systematic Uncertainty (%) to Integrated Cross-Sections from Hole Filling")
 	pad.SetBottomMargin(0.20)
 	#! Y-axis title: Remove \microbarns
 	hdiff[iq2].SetYTitle("")
@@ -131,7 +131,7 @@ c.SaveAs("%s/%s.pdf"%(OUTDIR,"HF_EC_EF_itg"))
 
 #! Plot values of hdiff[iq2] in a single histogram to get average
 hdiff_hist=ROOT.TH1F("hdiff_hist","hdiff_hist",20,0,20)
-hdiff_hist.SetTitle("#splitline{Distribution of Relative Systematic Error (%) to}{       Cross-Sections from Hole Filling}")
+hdiff_hist.SetTitle("#splitline{Distribution of Relative Systematic Uncertainty (%) to}{       Cross-Sections from Hole Filling}")
 #! Not sure why, but the following line is needed to get stats to show after ROOT.gStyle.SetOptStat(0)
 #! + I tried ROOT.gStyle.Reset(), but that did not seem to work
 #ROOT.gStyle.Reset()
@@ -141,7 +141,7 @@ ROOT.gStyle.SetStatX(0.9)
 ROOT.gStyle.SetStatW(0.2)
 ROOT.gStyle.SetStatH(0.3) 
 ROOT.gStyle.SetOptStat("mr") #! ("nemruo")
-hdiff_hist.SetXTitle("Relative Systematic Error (%)")
+hdiff_hist.SetXTitle("Relative Systematic Uncertainty (%)")
 for iq2 in range(NQ2BINS):
 	nbins=hdiff[iq2].GetNbinsX()
 	for ibin in range(nbins):

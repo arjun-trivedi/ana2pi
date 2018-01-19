@@ -147,7 +147,7 @@ for q2wbin in Q2WBINS:#'2.40-3.00_1.725-1.750'
 
 #! Now make plot of the relative systematic error
 hrelse=fsyserrs.Get("SYST_ERR_HF_REL_1D")
-hrelse.SetTitle("#splitline{      Distribution of Relative Systematic Error (%) to}{Single Differential Cross-Sections from Hole Filling}")
+hrelse.SetTitle("#splitline{Distribution of Relative Systematic Uncertainty (%) to}{Single Differential Cross-Sections from Hole Filling}")
 #! Not sure why, but the following line is needed to get stats to show after ROOT.gStyle.SetOptStat(0)
 #! + I tried ROOT.gStyle.Reset() and hrelse.SetStats(1), but neither seem to work
 hrelse.SetName("")
@@ -165,7 +165,7 @@ c1=ROOT.TCanvas("c1","c1",800,500)
 # pad_p.Draw()
 # pad_p.cd()
 hrelse.GetXaxis().SetRangeUser(0,60)
-hrelse.SetXTitle("Relative Systematic Error (%)")
+hrelse.SetXTitle("Relative Systematic Uncertainty (%)")
 hrelse.Draw("hist")
 c1.Update()
 c1.SaveAs("%s/rel_syst_err_HF_1D.png"%(OUTDIR))
