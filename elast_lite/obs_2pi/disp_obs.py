@@ -3910,7 +3910,47 @@ class DispObs:
 			else:
 				c.Write()
 
+	def get_ER_stats(self):
+		"""
+		Walk the ROOT file and obtain ER stats(es) for a h5 in a Q2-W bin:
+		es=[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]
+			
+		where:
+			+ nbins=number of filled bins in a h5_UNPOL
+			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5_UNPOL)
+			+ mu=average({n_i} (average of number of events per bin)
+			+ sg=(RMS({n_i}) (RMS of number of events per bin)
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2wbinlist()
+		#print "Processing sim_stats for %s:"%self.Q2W
+		print q2ws
 
+		es=[]
+		for seq in ['ER']:
+			for q2w in q2ws:
+				print "Processing sim_stats for %s"%q2w
+				#! Determine q2,w
+				q2bin=q2w.split('_')[0]
+				wbin=q2w.split('_')[1]
+				#print q2bin,wbin
+				q2=float(q2bin.split('-')[0])
+				w=float(wbin.split('-')[0])
+				#print q2,w
+				#! Determine nbins,N,mu,sg for this q2,w
+				h5=self.FIN.Get("%s/%s/VST1/h5"%(q2w,seq))
+				nbins=thntool.GetNbinsNotEq0(h5)
+				N=thntool.GetIntegral(h5)
+				binc_stats=np.zeros(2,'f')
+				thntool.GetBinContentDistStats(h5,binc_stats)
+				mu=binc_stats[0]
+				sg=binc_stats[1]
+				es.append([q2,w,nbins,N,mu,sg])
+			# #! Compute average
+			# ss[seq].append(nevts/len(q2ws))
+			# ss[seq].append(nbins/len(q2ws))
+		return es
+		
 	def get_q2wbinlist(self,q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=4,
 		               dbg_binl=['2.00-2.40_1.500-1.525','2.40-3.00_1.725-1.750','3.00-3.50_1.500-1.525','4.20-5.00_1.725-1.750'],
 		               from_obs_itg_yld=False,from_obs_R2=False):
