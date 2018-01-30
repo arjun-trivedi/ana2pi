@@ -17,7 +17,8 @@ from presentation_plots_lib import *
   as noted in the analysis noted by example of Variable Dependent Integrated Cross-Sections
 '''
 
-FIN=ROOT.TFile("%s/SS/lowQ2_cmb_non_vst_SE_080317/Obs_itg.root"%(os.environ['OBSDIR_E16']),"READ")
+#FIN=ROOT.TFile("%s/SS/lowQ2_cmb_non_vst_SE_080317/Obs_itg.root"%(os.environ['OBSDIR_E16']),"READ")
+FIN=ROOT.TFile("%s/SS/lowQ2_cmb_non_vst_SE_122817/Obs_itg.root"%(os.environ['OBSDIR_E16']),"READ")
 
 #! OUTDIR
 OUTDIR="%s/figures/Results/"%os.environ['ANANOTE']

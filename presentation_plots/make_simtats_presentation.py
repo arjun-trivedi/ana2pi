@@ -16,8 +16,10 @@ Demonstrate typical simstats usings SSBands:cutsncors1 (gpart-PID*stat*PID=off*o
 '''
 
 FNAME=[0 for i in range(NSIMRNG)]
-FNAME[L]="%s/lowQ2_SSBands_092516/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/simstats/simstats.root"%(os.environ['OBSDIR_E16'])
-FNAME[H]="%s/highQ2_SSBands_092516/cutsncors1/sim9_sim10_sim11_sim12/simstats/simstats.root"%(os.environ['OBSDIR_E16'])
+# FNAME[L]="%s/lowQ2_SSBands_092516/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/simstats/simstats.root"%(os.environ['OBSDIR_E16'])
+# FNAME[H]="%s/highQ2_SSBands_092516/cutsncors1/sim9_sim10_sim11_sim12/simstats/simstats.root"%(os.environ['OBSDIR_E16'])
+FNAME[L]="%s/lowQ2_SSBands_122717/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/simstats/simstats.root"%(os.environ['OBSDIR_E16'])
+FNAME[H]="%s/highQ2_SSBands_122717/cutsncors1/sim9_sim10_sim11_sim12/simstats/simstats.root"%(os.environ['OBSDIR_E16'])
 
 #! Setup names of hists to get from simstats.root
 #! + Note that that name of hist that keeps track of fraction of holes does not have a clear title
@@ -28,7 +30,7 @@ NAME_HISTS   =["h_mu_ST","h_mu_SR","h_mu_SA","h_frc_SH"]
 TITLE_HISTS=["#LTST^{5}#GT(Q^{2},W)","#LTSR^{5}#GT(Q^{2},W)","#LTSA^{5}#GT(Q^{2},W)","5D Hole fraction(Q^{2},W)"]
 #nbins-SH^{5}/nbins-ST^{5}
 #! OUTDIR
-OUTDIR="%s/figures/Acceptance/"%os.environ['THESIS']
+OUTDIR="%s/figures/Acceptance/"%os.environ['ANANOTE']
 
 for ihist,hist in enumerate(SIMSTAT_HISTS):
 	#! Get simstat hist from each file
