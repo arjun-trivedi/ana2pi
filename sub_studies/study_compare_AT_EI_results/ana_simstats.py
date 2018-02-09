@@ -150,6 +150,8 @@ def plot_simstats_5D_vst_var(h5,q2wbin,outdir,show_rel_err_dist=False):
 				ax.set_ylabel('#empty-bin/#filled-bin',size='xx-large')
 				#! save
 				fig.savefig("%s/stats_%02d_%04.1f-%04.1f.png"%(outdir,ibin+1,binle,binue))        
+	#! Close all figures to avoid "/python2.7/matplotlib/pyplot.py:412: RuntimeWarning: More than 20 figures have been opened."
+	plt.close('all')
 
 def plot_simstats_5D(h5,q2wbin,outdir,show_rel_err_dist=False):
 	'''
@@ -181,6 +183,8 @@ def plot_simstats_5D(h5,q2wbin,outdir,show_rel_err_dist=False):
 	
 	h1   =[OrderedDict() for isim in range(nsim)]
 	stats=[OrderedDict() for isim in range(nsim)]
+	if show_rel_err_dist==True:
+		h1err=[OrderedDict() for isim in range(nsim)]
 	for isim in range(nsim):
 		#! isim dbg
 		# if isim!=5: 
@@ -196,6 +200,12 @@ def plot_simstats_5D(h5,q2wbin,outdir,show_rel_err_dist=False):
 				h1[isim][seq,pstyp].SetName("%s_seq%s_sim%s"%(pstyp,seq,isim+1))
 				h1[isim][seq,pstyp].SetTitle("%s:%s"%(seq,pstyp))
 				h1[isim][seq,pstyp].SetLineColor(CLRS[isim])
+				if show_rel_err_dist==True:
+					h1err[isim][seq,pstyp]=thntool.GetBinRelErrorDistCommonBins(h5[isim][seq],h5[isim][pstyp],100,0,1.5)
+					h1err[isim][seq,pstyp].SetName("%s_seq%srelerr_sim%s"%(pstyp,seq,isim+1))
+					h1err[isim][seq,pstyp].SetTitle("%srelerr:%s"%(seq,pstyp))
+					h1err[isim][seq,pstyp].SetLineColor(CLRS[isim])
+
 	#! Draw 
 	for seq in ['SA']:
 		for pstyp in ['ST','ER']:
@@ -204,13 +214,33 @@ def plot_simstats_5D(h5,q2wbin,outdir,show_rel_err_dist=False):
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
 			c=ROOT.TCanvas()
-			for isim in range(nsim):
-				draw_opt="hist"
-				if isim>0:draw_opt="hist sames"
-				h1[isim][seq,pstyp].Draw(draw_opt)
-				#! isim dbg
-				# if isim!=5: continue
-				# h1[isim][seq,pstyp].Draw("hist")
+			if show_rel_err_dist==True:
+				c.SetCanvasSize(700,700)
+				c.Divide(1,2)
+				c.cd(1)
+				for isim in range(nsim):
+					draw_opt="hist"
+					if isim>0:draw_opt="hist sames"
+					h1[isim][seq,pstyp].Draw(draw_opt)
+					#! isim dbg
+					# if isim!=5: continue
+					# h1[isim][seq,pstyp].Draw("hist")
+				c.cd(2)
+				for isim in range(nsim):
+					draw_opt="hist"
+					if isim>0:draw_opt="hist sames"
+					h1err[isim][seq,pstyp].Draw(draw_opt)
+					#! isim dbg
+					# if isim!=5: continue
+					# h1[isim][seq,pstyp].Draw("hist")
+			else:
+				for isim in range(nsim):
+					draw_opt="hist"
+					if isim>0:draw_opt="hist sames"
+					h1[isim][seq,pstyp].Draw(draw_opt)
+					#! isim dbg
+					# if isim!=5: continue
+					# h1[isim][seq,pstyp].Draw("hist")
 			c.SaveAs("/%s/c.png"%(outdir))
 			#! Draw stats
 			outdir="/%s/%s/%sPS/stats"%(outdir_root,seq,pstyp)
@@ -237,3 +267,5 @@ def plot_simstats_5D(h5,q2wbin,outdir,show_rel_err_dist=False):
 			ax.set_ylabel('#empty-bin/#filled-bin',size='xx-large')
 			#! save
 			fig.savefig("%s/stats.png"%(outdir)) 
+	#! Close all figures to avoid "/python2.7/matplotlib/pyplot.py:412: RuntimeWarning: More than 20 figures have been opened."
+	plt.close('all') 

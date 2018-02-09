@@ -58,6 +58,8 @@ thntool=THnTool()
 #! OUTDIR
 DATE=datetime.datetime.now().strftime('%m%d%y')
 OUTDIRNAME='results'
+if SIMSTATS_SHOW_REL_ERR_DIST==True:
+	OUTDIRNAME+='_w_SA_rel_err'
 OUTDIRNAME+='_%s'%DATE
 #! Finally create OUTDIR
 if DBG==True:
