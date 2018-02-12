@@ -1,0 +1,24 @@
+##-- For e16 dir where h10.lst and d2pi are kept (e1f setup in $ANA2P/obs)
+if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
+  #! All H10 related setup same as obs_2pi/setup.tcshrc
+  #setenv H10DIR_EXP_E16 
+  #setenv H10DIR_EXP_E16_2
+  #setenv H10DIR_SIM_E16 
+  #setenv H10DIR_SIM_E16_2
+  #setenv H10SKIMDIR_EXP_E16
+  setenv DELASTDIR_E16 "/data/trivedia/e16/2pi/delast"
+  setenv DELASTDIR_EXP_E16 "${DELASTDIR_E16}/exp"
+  setenv DELASTDIR_SIM_E16 "${DELASTDIR_E16}/sim"
+else if ($HOST =~ "*farm*" || $HOST =~ "qcd*") then
+  #! All H10 related setup same as obs_2pi/setup.tcshrc 
+  #setenv H10DIR_EXP_E16
+  #setenv H10DIR_SIM_E16
+  #setenv H10SKIMDIR_EXP_E16
+  setenv DELASTDIR_E16 "${EG3HOME}/data/e16/2pi/delast"
+  setenv DELASTDIR_EXP_E16 "${DELASTDIR_E16}/exp"
+  setenv DELASTDIR_SIM_E16 "${DELASTDIR_E16}/sim"
+endif
+
+##-- dir where obs_<date> are kepts (obs_<date> contains yields and their displays)
+setenv OBSDIR_ELAST_E16 "$DELASTDIR_E16"
+

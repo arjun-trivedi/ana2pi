@@ -75,3 +75,6 @@ source ${ANA2PI}/sub_studies/study_tgt_BG/e16/setup.tcshrc
 source ${ANA2PI}/sub_studies/study_MM_diff_ER_SR/setup.tcshrc
 #-- [08-30-17] env for e16:study_compare_AT_EI_results
 source ${ANA2PI}/sub_studies/study_compare_AT_EI_results/setup.tcshrc
+
+#-- [02-12-18] Setup env for 'lite'-elast observables
+source $ANA2PI/elast_lite/obs_elast/setup.tcshrc

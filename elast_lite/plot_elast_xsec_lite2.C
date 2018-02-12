@@ -77,13 +77,14 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
   for (int isctr=0;isctr<NSCTR;isctr++){
     TString hname="";
     if (sector_bng=="full"){
-      hname=TString::Format("hf_s%d",isctr+1);
+      hname=TString::Format("delast/hf_s%d",isctr+1);
     }else if (sector_bng=="central"){
-      hname=TString::Format("hc_s%d",isctr+1);
+      hname=TString::Format("delast/hc_s%d",isctr+1);
     }
     //! 1. Get SR
     //hSR[isctr]=(TH1D*)fSR[LTE]->Get(hname.Data());
     //hSR[isctr]->SetName(TString::Format("hSR_s%d",isctr+1));
+    cout <<hname.Data()<<endl;
     TH1D* h=(TH1D*)fSR->Get(hname.Data());
     hSR[isctr]=(TH1D*)h->Clone(TString::Format("hSR_s%d",isctr+1));
     //! 2. Get ST
