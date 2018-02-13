@@ -1,0 +1,18 @@
+#!/bin/bash
+
+date=`date +%m%d%y`
+
+EXP='e16'
+DTYP='sim'
+
+OUTDIR=$DELASTDIR_SIM_E16/delast_$date
+mkdir -p $OUTDIR
+
+#! Note no pcorr for SR
+PROCORDER="eid:efid:evtsel_elast:" 
+#! ADTNL_OPTS=BASIC_ADTNL_OPTS from 'h10_2_per_non_vst_results.py'
+ADTNL_OPTS=":1:3:17:2:18:20:" #! ECin-on:zvtx-on:eff_scpd_atmod:ECfid-ON:ECfid_atmod_ON:CC_cut_lse:
+
+h10lst=$HOME/ongoing/h10lsts_local/e16/elast/sim/h10.lst
+
+proc_h10_lite -i $h10lst -t $EXP:$DTYP:elast:recon -c $PROCORDER -o $OUTDIR/delastR.root $ADTNL_OPT

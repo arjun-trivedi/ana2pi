@@ -7,8 +7,8 @@
 
 void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString binw="binw-1"){
   printf("In plot_elast_xsec_lite2(). obsdir=%s,sector_bng=%s\n",obsdir.Data(),sector_bng.Data());
-  TString obsname(getenv("obsname"));
-  printf("obsname=%s\n",obsname.Data());
+  /*TString obsname(getenv("obsname"));
+  printf("obsname=%s\n",obsname.Data());*/
 
   //! Check to see if input args are OK
   if (sector_bng!="full" && sector_bng!="central"){
@@ -93,10 +93,22 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
     h=(TH1D*)fST->Get(hname.Data());
     hST[isctr]=(TH1D*)h->Clone(TString::Format("hST_s%d",isctr+1));
     //! 3. Calculate SA
-    hSR[isctr]->Sumw2();
-    hST[isctr]->Sumw2();
-    hSA[isctr]=(TH1D*)hSR[isctr]->Clone(TString::Format("hSA_s%d",isctr+1));
-    hSA[isctr]->Divide(hST[isctr]);
+    //! [02-13-18] Since in EI's sim's SR data, sectors 4,5,6 have no data (ST is OK),
+    //!            for their acceptance, I am getting data from sectors 1,2,3 respectively
+    if ((isctr+1)<4){ //!s=1,2,3 => calculate SA
+      hSR[isctr]->Sumw2();
+      hST[isctr]->Sumw2();
+      hSA[isctr]=(TH1D*)hSR[isctr]->Clone(TString::Format("hSA_s%d",isctr+1));
+      hSA[isctr]->Divide(hST[isctr]);
+    }else{//!s=4,5,6 => Use SA from 1,2,3 respectively
+      if (isctr==3){
+        hSA[isctr]=(TH1D*)hSA[0]->Clone(TString::Format("hSA_s%d",isctr+1));
+      }else if (isctr==4){
+        hSA[isctr]=(TH1D*)hSA[1]->Clone(TString::Format("hSA_s%d",isctr+1));
+      }else if (isctr==5){
+        hSA[isctr]=(TH1D*)hSA[2]->Clone(TString::Format("hSA_s%d",isctr+1));
+      }
+    }
     if (sector_bng=="full"){
       hSA[isctr]->SetMinimum(0);
       hSA[isctr]->SetMaximum(0.8);
@@ -137,31 +149,45 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
     hrto_EClumnorm_TTnorm[isctr]->Divide(hTTnorm);
     hrto_EClumnorm_TTnorm[isctr]->SetMinimum(0);
     hrto_EClumnorm_TTnorm[isctr]->SetMaximum(2);
+    //! Axis labels and aesthetics
+    //! + Optmized for .pdf (NOT for .png)
+    //! x-axis
+    hrto_EClumnorm_TTnorm[isctr]->GetXaxis()->SetTitleOffset(0.7); //0.7
+    hrto_EClumnorm_TTnorm[isctr]->GetXaxis()->SetLabelSize(0.03); //0.05
+    hrto_EClumnorm_TTnorm[isctr]->GetXaxis()->SetTitleSize(0.07); //0.10
+    hrto_EClumnorm_TTnorm[isctr]->SetXTitle("#theta [#circ]");
+    //! y-axis
+    hrto_EClumnorm_TTnorm[isctr]->GetYaxis()->SetTitleOffset(0.78); //0.7
+    hrto_EClumnorm_TTnorm[isctr]->GetYaxis()->SetLabelSize(0.03); //0.05
+    hrto_EClumnorm_TTnorm[isctr]->GetYaxis()->SetTitleSize(0.06); //0.10
+    hrto_EClumnorm_TTnorm[isctr]->SetYTitle("#Delta#sigma/#Delta#Omega^{exp}/#Delta#sigma/#Delta#Omega^{Bosted}");
     hrto_EClumnorm_TTnorm[isctr]->Draw(); 
-    //! if sector=1, then draw TPavetext which is useful for viewing .png of TCanvas
+    /*//! if sector=1, then draw TPavetext which is useful for viewing .png of TCanvas
     if (isctr+1==1){
       TPaveText *pt = new TPaveText(.30,.80,.90,.90,"NDC");
       pt->AddText(TString::Format("%s_%s",obsname.Data(),sector_bng.Data()));
       pt->Draw("same");
-    }
+    }*/
     ln->Draw("same");
   }
   crto_EClumnorm_TTnorm->Write();	
   crto_EClumnorm_TTnorm->SaveAs(TString::Format("%s/crto_EClumnorm_TTnorm_%s.png",obsdir.Data(),sector_bng.Data()));
+  crto_EClumnorm_TTnorm->SaveAs(TString::Format("%s/crto_EClumnorm_TTnorm_%s.pdf",obsdir.Data(),sector_bng.Data()));
 
   TCanvas *cSA=new TCanvas("cSA","cSA",1000,800);
   cSA->Divide(3,2);
   for (int isctr=0;isctr<NSCTR;isctr++){
     cSA->cd(isctr+1);
     hSA[isctr]->Draw();
-    if (isctr+1==1){
+    /*if (isctr+1==1){
       TPaveText *pt = new TPaveText(.30,.80,.90,.90,"NDC");
       pt->AddText(TString::Format("%s_%s",obsname.Data(),sector_bng.Data()));
       pt->Draw("same");
-    }
+    }*/
   }
   cSA->Write();
   cSA->SaveAs(TString::Format("%s/cSA_%s.png",obsdir.Data(),sector_bng.Data()));
+  cSA->SaveAs(TString::Format("%s/cSA_%s.pdf",obsdir.Data(),sector_bng.Data()));
 
   TCanvas *cEC=new TCanvas("cEC","cEC");
   cEC->Divide(3,2);

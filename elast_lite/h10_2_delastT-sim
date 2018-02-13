@@ -1,0 +1,17 @@
+#!/bin/bash
+
+date=`date +%m%d%y`
+
+EXP='e16'
+DTYP='sim'
+
+OUTDIR=$DELASTDIR_SIM_E16/delast_$date
+mkdir -p $OUTDIR
+
+#! Note no pcorr for SR
+PROCORDER="evtsel_elast:" 
+ADTNL_OPTS=""
+
+h10lst=$HOME/ongoing/h10lsts_local/e16/elast/sim/h10.lst
+
+proc_h10_lite -i $h10lst -t $EXP:$DTYP:elast:thrown -c $PROCORDER -o $OUTDIR/delastT.root $ADTNL_OPT
