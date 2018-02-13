@@ -30,7 +30,7 @@ void plot_elast_xsec_lite2(TString obsdir, TString sector_bng="full", TString bi
   }
 
   //! Prepare normalization histogram 
-  double LUM=19.844;// #fb^-1
+  double LUM=28.18;// #fb^-1
   double LUM_INVFB_TO_INVMICROB=1000000000.0;
   double DPHI=0;
   if (sector_bng=="full"){

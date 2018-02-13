@@ -2,6 +2,8 @@
 # general #
 ###########
 *.root
+!TT_theta-binw-1.root  #Exception located in $ANA2PI/elast_lite/thrtcl_xsec
+!TT_theta-binw-05.root #Exception located in $ANA2PI/elast_lite/thrtcl_xsec
 *bk*
 *log*
 *test*
