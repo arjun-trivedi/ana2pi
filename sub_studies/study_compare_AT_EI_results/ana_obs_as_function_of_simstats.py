@@ -15,13 +15,13 @@ import matplotlib.pyplot as plt
 
 import itertools
 
-import ana_simstats
+import ana_h5_stats
 
 '''
 
 '''
 
-USAGE='study_obs_as_function_of_simstats dbg[=False] simstats_show_rel_err_dist[=False]'
+USAGE='study_obs_as_function_of_simstats dbg[=False] simstats_show_rel_err_dist[=False] plot_h5_stats_vst_var[=False]'
 
 #! user inputs
 DBG=False
@@ -36,8 +36,15 @@ if len(sys.argv)>2: #!  show_rel_err_dist entered by user
 	elif  sys.argv[2]=="False": SIMSTATS_SHOW_REL_ERR_DIST=False
 	else: sys.exit('SIMSTATS_SHOW_REL_ERR_DIST=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
 
+PLOT_H5_STATS_VST_VAR=False
+if len(sys.argv)>3: #!  show_rel_err_dist entered by user
+	if    sys.argv[3]=="True":  PLOT_H5_STATS_VST_VAR=True
+	elif  sys.argv[3]=="False": PLOT_H5_STATS_VST_VAR=False
+	else: sys.exit('PLOT_H5_STATS_VST_VAR=%s is not valid. usage: %s'%(sys.argv[3],USAGE))
+
 print "DBG=",DBG
 print "SIMSTATS_SHOW_REL_ERR_DIST=",SIMSTATS_SHOW_REL_ERR_DIST
+print "PLOT_H5_STATS_VST_VAR=",PLOT_H5_STATS_VST_VAR
 #sys.exit()
 
 #! imports from proc_h8.py
@@ -534,5 +541,6 @@ for q2r in range(NQ2RANGES):
 					print k,h5[k].GetName()
 		#! plot
 		#! The following 2 steps take a while, especially plot_simstats_5D()
-		ana_simstats.plot_simstats_5D(h5l,q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
-		ana_simstats.plot_simstats_5D_vst_var(h5l,q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
+		ana_h5_stats.plot_h5_stats(h5l,'SA',q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
+		if PLOT_H5_STATS_VST_VAR:
+			ana_h5_stats.plot_h5_stats_vst_var(h5l,'SA',q2wbin,OUTDIR,show_rel_err_dist=SIMSTATS_SHOW_REL_ERR_DIST)
