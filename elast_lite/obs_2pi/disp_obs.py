@@ -3761,6 +3761,55 @@ class DispObs:
 			# ss[seq].append(nbins/len(q2ws))
 		return ss
 
+	def get_sim_stats_ER_PS(self):
+		"""
+		[02-21-18] 
+		+ Does the same thing as get_sim_stats(), but only in ER PS
+		+ Started as a copy of get_sim_stats ()
+
+		Walk the ROOT file and obtain simstats(ss) for a h5 in a Q2-W bin:
+		ss={'ST':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'SR':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'SA':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]],
+			'SH':[[q21,w1,nbins,N,mu,sg],...,[q2N,wN,nbins,N,mu,sg]]}
+
+		where:
+			+ nbins=number of filled bins in a h5_UNPOL
+			+ N=sum({n_i}) were n_i=events per bin (number of events in a h5_UNPOL)
+			+ mu=average({n_i} (average of number of events per bin)
+			+ sg=(RMS({n_i}) (RMS of number of events per bin)
+		"""
+		#! First get all q2wbin directories from file
+		q2ws=self.get_q2wbinlist()
+		#print "Processing sim_stats for %s:"%self.Q2W
+		print q2ws
+
+		ss={'ST':[],'SR':[],'SA':[],'SH':[]}
+		for seq in ['ST','SR','SA','SH']:
+			for q2w in q2ws:
+				print "Processing sim_stats for %s"%q2w
+				#! Determine q2,w
+				q2bin=q2w.split('_')[0]
+				wbin=q2w.split('_')[1]
+				#print q2bin,wbin
+				q2=float(q2bin.split('-')[0])
+				w=float(wbin.split('-')[0])
+				#print q2,w
+				#! Determine nbins,N,mu,sg in ER PS for this q2,w
+				h5=self.FIN.Get("%s/%s/VST1/h5"%(q2w,seq))
+				h5ER=self.FIN.Get("%s/%s/VST1/h5"%(q2w,'ER'))
+				nbins=thntool.GetNbinsNotEq0(h5ER)
+				N=thntool.GetIntegralCommonBins(h5,h5ER)
+				binc_stats=np.zeros(2,'f')
+				thntool.GetBinContentDistStatsCommonBins(h5,h5ER,binc_stats)
+				mu=binc_stats[0]
+				sg=binc_stats[1]
+				ss[seq].append([q2,w,nbins,N,mu,sg])
+			# #! Compute average
+			# ss[seq].append(nevts/len(q2ws))
+			# ss[seq].append(nbins/len(q2ws))
+		return ss
+
 	def get_sim_stats_commonbins(self):
 		"""
 		The same as get_sim_stats(), but with the difference that mu,sg

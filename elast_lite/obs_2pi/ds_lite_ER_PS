@@ -20,8 +20,8 @@ import numpy as np
 """
 ds [obsdir] [sim=siml] 
 
-+ This script displays simstats for user entered simnum (siml by default):
-+ The display is saved in obsdir/simnum/simstats
++ This script displays simstats in ER PS for user entered simnum (siml by default):
++ The display is saved in obsdir/simnum/simstats_ER_PS
 
 Issues while running this script:
 + [08-14-15]: Variable binning in TH2F is causing core dumps when trying to draw histograms post
@@ -39,7 +39,7 @@ if len(sys.argv)>2:#i.e. simnum entered by user
 else:
         simnum='siml'
 
-print "Displaying simstats for (obsdir,simnun)=(",obsdir,simnum,")"
+print "Displaying simstats in ER PS for (obsdir,simnun)=(",obsdir,simnum,")"
 
 
 #! + The following binning should match up with h8_bng.h/q2w_bng.py
@@ -120,7 +120,7 @@ def subtract(h1,h2):
 			#print num,den,res
 	return h
 
-#! Create histograms to display simstats(Q2,W)
+#! Create histograms to display simstats(Q2,W) in ER PS
 h={}
 for seq in ['ST','SR','SA','SH']:
 	for par in ['nbins','N','mu','sg']:
@@ -142,11 +142,11 @@ h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 #! Fill histograms
 #for topcmbn in topcmbnl:
 #outdir=os.path.join(obsdir,simnum,'simstats_top%s'%''.join(str(t) for t in topcmbn))
-outdir=os.path.join(obsdir,simnum,'simstats')
+outdir=os.path.join(obsdir,simnum,'simstats_ER_PS')
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 dy=DispObs(obsdir,simnum=simnum)#,tops=topcmbn)
-ss=dy.get_sim_stats()
+ss=dy.get_sim_stats_ER_PS()
 for seq in ['ST','SR','SA','SH']:
 	for d in ss[seq]:
 		q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
@@ -159,7 +159,7 @@ for seq in ['ST','SR','SA','SH']:
 		h[seq,'mu'].SetBinContent(bin,mu)
 		h[seq,'sg'].SetBinContent(bin,sg)			
 			
-#! Display "directly interesting" histograms to monitor simstats
+#! Display "directly interesting" histograms to monitor simstats in ER PS
 ROOT.gStyle.SetOptStat(0)
 c_pars=ROOT.TCanvas("cpars","cpars",1000,1000)
 c_pars.Divide(2,2)
@@ -232,7 +232,7 @@ c_pars3.SaveAs("%s/pars3.png"%outdir)
 
 #! Save all the histograms to file
 #f=ROOT.TFile("%s/simstats_top%s.root"%(outdir,''.join(str(t) for t in topcmbn)),"RECREATE")
-f=ROOT.TFile("%s/simstats.root"%outdir,"RECREATE")
+f=ROOT.TFile("%s/simstats_ER_PS.root"%outdir,"RECREATE")
 for seq in ['ST','SR','SA','SH']:
 	for par in ['nbins','N','mu','sg']:
 		h[seq,par].Write()

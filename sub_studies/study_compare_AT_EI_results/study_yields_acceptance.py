@@ -22,7 +22,7 @@ import ana_h5_stats
 Read documentation for function plot() to see what this code does.
 '''
 
-USAGE='study_yields_acceptance dbg[=False] stats_show_rel_err_dist[=False] plot_h5_stats_vst_var[=False]'
+USAGE='study_yields_acceptance.py dbg[=False] stats_show_rel_err_dist[=False] plot_h5_stats_vst_var[=False]'
 
 #! user inputs
 DBG=False
@@ -88,8 +88,10 @@ print "OUTDIR=",OUTDIR
 NQ2RANGES=2
 LQ2,HQ2=range(NQ2RANGES)
 FIN=[0 for i in range(NQ2RANGES)]
-FIN[LQ2]=root_open('%s/lowQ2_SSBands_080217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/yield.root'%(os.environ['OBSDIR_E16']),'r')
-FIN[HQ2]=root_open('%s/highQ2_SSBands_080217/cutsncors1/sim9_sim10_sim11_sim12/yield.root'%(os.environ['OBSDIR_E16']),'r')
+# FIN[LQ2]=root_open('%s/lowQ2_SSBands_080217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/yield.root'%(os.environ['OBSDIR_E16']),'r')
+# FIN[HQ2]=root_open('%s/highQ2_SSBands_080217/cutsncors1/sim9_sim10_sim11_sim12/yield.root'%(os.environ['OBSDIR_E16']),'r')
+FIN[LQ2]=root_open('%s/lowQ2_SSBands_121517/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/yield.root'%(os.environ['OBSDIR_E16']),'r')
+FIN[HQ2]=root_open('%s/highQ2_SSBands_121517/cutsncors1/sim9_sim10_sim11_sim12/yield.root'%(os.environ['OBSDIR_E16']),'r')
 
 
 def get_q2wbinlist(q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=4,

@@ -211,7 +211,7 @@ def plot_h5_stats(h5,seq,q2wbin,outdir,show_rel_err_dist=False):
 	+ If h5=h5[seq], i.e. function called for a particular sim, 
 	  then convert to h5[isim][seq]
 
-	+ if nsim=1 (i.e. max sim), then this function also returns 'frctn_SA_zero_in_ER_PS'
+	+ if nsim=1 (i.e. max sim) and when seq=SA and pstyp=ER, then this function also returns 'frctn_SA_zero_in_ER_PS'
 	  from all Q2-W bins, where
 	  	+ frctn_SA_zero_in_ER_PS is fraction of holes in SA in ER PS:
 	  		+ frctn_SA_zero_in_ER_PS=empty-bins/filled-bins when seq=SA and pstyp=ER
@@ -312,6 +312,8 @@ def plot_h5_stats(h5,seq,q2wbin,outdir,show_rel_err_dist=False):
 		if not os.path.exists(outdir):
 			os.makedirs(outdir)
 		ratio=[stats[isim][seq,pstyp][1]/stats[isim][seq,pstyp][0] for isim in range(nsim)]
+		if nsim==1 and seq=='SA' and pstyp=='ER':
+			frctn_SA_zero_in_ER_PS=ratio[0]
 		
 		x=range(nsim)
 		if   nsim==NSIM[LQ2]: xticks=[SIMFRCTN[LQ2][isim] for isim in range(nsim)]
