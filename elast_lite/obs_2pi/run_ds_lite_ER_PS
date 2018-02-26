@@ -1,0 +1,5 @@
+#!/bin/bash
+DBG=${1:-"False"}
+ds_lite_ER_PS $OBSDIR_E16/lowQ2_SSBands_122717/cutsncors1  sim4_sim5_sim6_sim7_sim8_sim13 $DBG>& /tmp/ds_lite_ER_PS_lQ2.log
+wait
+ds_lite_ER_PS $OBSDIR_E16/highQ2_SSBands_122717/cutsncors1 sim9_sim10_sim11_sim12 $DBG >& /tmp/ds_lite_ER_PS_hQ2.log

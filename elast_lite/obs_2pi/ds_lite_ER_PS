@@ -18,7 +18,7 @@ import numpy as np
 
 
 """
-ds [obsdir] [sim=siml] 
+ds [obsdir] [sim=siml] [dbg=False]
 
 + This script displays simstats in ER PS for user entered simnum (siml by default):
 + The display is saved in obsdir/simnum/simstats_ER_PS
@@ -37,9 +37,15 @@ else:
 if len(sys.argv)>2:#i.e. simnum entered by user
 	simnum=sys.argv[2]	
 else:
-        simnum='siml'
+	simnum='siml'
+#! DBG
+DBG=False
+if len(sys.argv)>3:#i.e. dbg entered by user
+	if    sys.argv[3]=="True":  DBG=True
+	elif  sys.argv[3]=="False": DBG=False	
+	else: sys.exit('plot_h5_stats_vst_var=%s is not valid. usage: %s'%(sys.argv[2],USAGE))
 
-print "Displaying simstats in ER PS for (obsdir,simnun)=(",obsdir,simnum,")"
+print "Displaying simstats in ER PS for (obsdir,simnum,DBG)=(",obsdir,simnum,DBG,")"
 
 
 #! + The following binning should match up with h8_bng.h/q2w_bng.py
@@ -143,10 +149,15 @@ h_nbins_vs_Q2W=make_h_nbins_vs_Q2W()
 #for topcmbn in topcmbnl:
 #outdir=os.path.join(obsdir,simnum,'simstats_top%s'%''.join(str(t) for t in topcmbn))
 outdir=os.path.join(obsdir,simnum,'simstats_ER_PS')
+if DBG==True:
+	outdir=os.path.join(obsdir,simnum,'simstats_ER_PS_dbg')
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
-dy=DispObs(obsdir,simnum=simnum)#,tops=topcmbn)
+dy=DispObs(obsdir,simnum=simnum,dbg=DBG)#,tops=topcmbn)
 ss=dy.get_sim_stats_ER_PS()
+if DBG:
+	print "ss:"
+	print ss
 for seq in ['ST','SR','SA','SH']:
 	for d in ss[seq]:
 		q2,w,nbins,N,mu,sg=d[0],d[1],d[2],d[3],d[4],d[5]
@@ -166,15 +177,16 @@ c_pars.Divide(2,2)
 c_pars.cd(1)
 h_rtio_nbinsT_nbins=divide(h['ST','nbins'],h_nbins_vs_Q2W)
 #h_rtio_nbinsT_nbins.SetTitle("nbins_T(Q2,W)/nbins(Q2,W))")
-h_rtio_nbinsT_nbins.SetTitle("Fraction of max. possible PS-bins that are ST filled(Q^{2},W)")# for top %s"%''.join(str(t) for t in topcmbn))
+h_rtio_nbinsT_nbins.SetTitle("Fraction of max. possible PS-bins that are ST filled in ER PS(Q^{2},W)")# for top %s"%''.join(str(t) for t in topcmbn))
 #h_rtio_nbinsT_nbins.GetZaxis().SetRangeUser(0,1)
 h_rtio_nbinsT_nbins.Draw("colz")
 c_pars.cd(2)
-h_rtio_nbinsH_nbinsT=divide(h['SH','nbins'],h['ST','nbins'])
-h_rtio_nbinsH_nbinsT.GetZaxis().SetRangeUser(0,1)
-#h_rtio_nbinsH_nbinsT.SetTitle("nbins_H(Q2,W)/nbins_T(Q2,W))")
-h_rtio_nbinsH_nbinsT.SetTitle("Fraction of T PS-bins that are Holes (Q^{2},W)")# for top %s"%''.join(str(t) for t in topcmbn))
-h_rtio_nbinsH_nbinsT.Draw("colz")
+#! The following is NA for ds_lite_ER_PS (applicable in ds_lite)
+# h_rtio_nbinsH_nbinsT=divide(h['SH','nbins'],h['ST','nbins'])
+# h_rtio_nbinsH_nbinsT.GetZaxis().SetRangeUser(0,1)
+# #h_rtio_nbinsH_nbinsT.SetTitle("nbins_H(Q2,W)/nbins_T(Q2,W))")
+# h_rtio_nbinsH_nbinsT.SetTitle("Fraction of T PS-bins that are Holes (Q^{2},W)")# for top %s"%''.join(str(t) for t in topcmbn))
+# h_rtio_nbinsH_nbinsT.Draw("colz")
 c_pars.cd(3)
 h['SA','mu'].SetTitle("#LTSA/bin#GT(Q^{2},W)")# for top=%s"%''.join(str(t) for t in topcmbn))
 h['SA','mu'].Draw("colz")
@@ -238,7 +250,7 @@ for seq in ['ST','SR','SA','SH']:
 		h[seq,par].Write()
 h_nbins_vs_Q2W.Write()
 h_rtio_nbinsT_nbins.Write()
-h_rtio_nbinsH_nbinsT.Write()
+#h_rtio_nbinsH_nbinsT.Write()
 #h_rtio_sgA_muA.Write()
 h_rtio_sgT_muT.Write()
 h_rtio_sgR_muR.Write()
