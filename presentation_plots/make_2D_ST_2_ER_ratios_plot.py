@@ -25,7 +25,7 @@ from presentation_plots_lib import *
 """
 
 DTYPS=['ST','ER','rto']
-DTYPS_TITLE={'ST':'Thrown Events','ER':'Exp. Events', 'rto':'Thrown/Exp Events'}
+DTYPS_TITLE={'ST':'Thrown Events','ER':'Exp. Events', 'rto':'Thrown/Exp'}
 
 #! Set up OBSDIR and SIMNUM
 OBSDIR=[0 for i in range(NSIMRNG)]
@@ -36,7 +36,7 @@ SIMNUM[L]='sim4_sim5_sim6_sim7_sim8_sim13'
 SIMNUM[H]='sim9_sim10_sim11_sim12'
 
 #! OUTDIR
-OUTDIR=os.path.join(os.environ['ANANOTE'],'figures','Acceptance','ST_2_ER_yields_ratio')
+OUTDIR=os.path.join(os.environ['ANANOTE'],'figures','Acceptance','ST_2_ER_ratios')
 #OUTDIR="/tmp/ST_2_ER_yields_ratio"
 if not os.path.exists(OUTDIR):
 	os.makedirs(OUTDIR)
@@ -125,7 +125,7 @@ for dtyp in DTYPS:
 	ROOT.gStyle.SetOptStat(0)
 	#! N
 	c=ROOT.TCanvas("cN_%s"%dtyp,"cN_%s"%dtyp)#,1000,1000)
-	h[dtyp]['N'].SetTitle("%s(Q^{2},W)"%(DTYPS_TITLE[dtyp]))
+	h[dtyp]['N'].SetTitle("%s(Q^{2},W) Events"%(DTYPS_TITLE[dtyp]))
 	h[dtyp]['N'].Draw("colz")
 	#! Adjust right margin so that palette is not cut off
 	c.SetRightMargin(0.13)
@@ -138,3 +138,20 @@ for dtyp in DTYPS:
 		lq[j].DrawLine(WMIN,qbin,WMAX,qbin)
 	c.SaveAs("%s/%s_N_2D.png"%(OUTDIR,dtyp))
 	c.SaveAs("%s/%s_N_2D.pdf"%(OUTDIR,dtyp))
+
+	#! nbins
+	c=ROOT.TCanvas("cnbins_%s"%dtyp,"cnbins_%s"%dtyp)#,1000,1000)
+	h[dtyp]['nbins'].SetTitle("%s(Q^{2},W) PS"%(DTYPS_TITLE[dtyp]))
+	h[dtyp]['nbins'].Draw("colz")
+	#! Adjust right margin so that palette is not cut off
+	c.SetRightMargin(0.13)
+	#! Draw Q2-W grid
+	lw=[ROOT.TLine() for j in range(len(WBINL))]
+	lq=[ROOT.TLine() for j in range(len(Q2BINL))]
+	for j,wbin in enumerate(WBINL):
+		lw[j].DrawLine(wbin,Q2MIN,wbin,Q2MAX)
+	for j,qbin in enumerate(Q2BINL):
+		lq[j].DrawLine(WMIN,qbin,WMAX,qbin)
+	c.SaveAs("%s/%s_nbins_2D.png"%(OUTDIR,dtyp))
+	c.SaveAs("%s/%s_nbins_2D.pdf"%(OUTDIR,dtyp))
+
