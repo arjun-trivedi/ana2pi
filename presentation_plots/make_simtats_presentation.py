@@ -69,6 +69,7 @@ for ihist,hist in enumerate(SIMSTAT_HISTS):
 	c.SaveAs("%s/%s.pdf"%(OUTDIR,NAME_HISTS[ihist]))
 
 print "make_simtats_presentation.py done"
+print "make_simtats_presentation.py: If not exiting immediately then Python is probably doing Garbage Collection which can take a while"
 
 
 #! If wanting to keep TCanvas open till program exits                           

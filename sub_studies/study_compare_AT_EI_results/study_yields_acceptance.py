@@ -90,8 +90,8 @@ LQ2,HQ2=range(NQ2RANGES)
 FIN=[0 for i in range(NQ2RANGES)]
 # FIN[LQ2]=root_open('%s/lowQ2_SSBands_080217/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/yield.root'%(os.environ['OBSDIR_E16']),'r')
 # FIN[HQ2]=root_open('%s/highQ2_SSBands_080217/cutsncors1/sim9_sim10_sim11_sim12/yield.root'%(os.environ['OBSDIR_E16']),'r')
-FIN[LQ2]=root_open('%s/lowQ2_SSBands_121517/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/yield.root'%(os.environ['OBSDIR_E16']),'r')
-FIN[HQ2]=root_open('%s/highQ2_SSBands_121517/cutsncors1/sim9_sim10_sim11_sim12/yield.root'%(os.environ['OBSDIR_E16']),'r')
+FIN[LQ2]=root_open('%s/lowQ2_SSBands_122717/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/yield.root'%(os.environ['OBSDIR_E16']),'r')
+FIN[HQ2]=root_open('%s/highQ2_SSBands_122717/cutsncors1/sim9_sim10_sim11_sim12/yield.root'%(os.environ['OBSDIR_E16']),'r')
 
 
 def get_q2wbinlist(q2min=0.00,q2max=6.00,wmin=0.000,wmax=3.000,dbg=False,dbg_bins=4,
@@ -160,7 +160,8 @@ def norm_1D_theta(hTheta):
 
 #! main
 if DBG==True:
-	q2wbinl=get_q2wbinlist(dbg=True,dbg_bins=1,dbg_binl=['2.00-2.40_1.500-1.525'])
+	#q2wbinl=get_q2wbinlist(dbg=True,dbg_bins=1,dbg_binl=['2.00-2.40_1.500-1.525'])
+	q2wbinl=get_q2wbinlist(dbg=True,dbg_bins=1,dbg_binl=['3.50-4.20_1.800-1.825'])
 else:
 	q2wbinl=get_q2wbinlist()
 print "q2wbinl=",q2wbinl
@@ -185,17 +186,19 @@ for q2wbin in q2wbinl:
 	#! plot stats
 	#! + Note ret=rctn_SA_zero_in_ER_PS and is only meaningul if seq=SA, else it is 'nan'
 	#! yields
-	ret=ana_h5_stats.plot_h5_stats(h5,'ER',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
-	ret=ana_h5_stats.plot_h5_stats(h5,'ST',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
-	ret=ana_h5_stats.plot_h5_stats(h5,'SR',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
+	if DBG!=True:
+		ret=ana_h5_stats.plot_h5_stats(h5,'ER',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
+		ret=ana_h5_stats.plot_h5_stats(h5,'ST',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
+		ret=ana_h5_stats.plot_h5_stats(h5,'SR',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
 	#! acceptance
 	ret=ana_h5_stats.plot_h5_stats(h5,'SA',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
 	frctn_SA_zero_in_ER_PS.append(ret)
 	if PLOT_H5_STATS_VST_VAR:
 		#! yields
-		ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'ER',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
-		ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'ST',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
-		ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'SR',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
+		if DBG!=True:
+			ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'ER',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
+			ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'ST',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
+			ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'SR',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
 		#! acceptance
 		ret=ana_h5_stats.plot_h5_stats_vst_var(h5,'SA',q2wbin,OUTDIR,show_rel_err_dist=STATS_SHOW_REL_ERR_DIST)
 

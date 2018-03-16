@@ -3749,7 +3749,12 @@ class DispObs:
 				#print q2,w
 				#! Determine nbins,N,mu,sg for this q2,w
 				h5=self.FIN.Get("%s/%s/VST1/h5"%(q2w,seq))
-				nbins=thntool.GetNbinsNotEq0(h5)
+				#! [03-12-18 ] Note use of special_case for nbins which is required for SH
+				#!             because for cases when ST-SH should be 0, is not exactly 0 due to
+				#!             precision issues (see documentation in THnTool::GetBinStats())
+				special_case=False
+				if seq=='SH':special_case=True
+				nbins=thntool.GetNbinsNotEq0(h5,special_case)
 				N=thntool.GetIntegral(h5)
 				binc_stats=np.zeros(2,'f')
 				thntool.GetBinContentDistStats(h5,binc_stats)

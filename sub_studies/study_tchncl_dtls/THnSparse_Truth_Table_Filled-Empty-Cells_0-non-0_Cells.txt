@@ -1,0 +1,23 @@
+[03-12-18]
+
++ The following truth table is noted from observations for THnSparse created for ana2pi (ST,SR,SA,SC,SH, and ER)
+	+ See notebooks in $SUBSTUDIES/study_tchncl_dtls/study_div_THnSparse
+
++ It is especially important to keep in mind when keeping track of statistics SA which is created during division i.e. SA=SR/ST
+
++ In this table, the following nomenclature is used:
+	+ empty  = empty cell in THnSparse  i.e. bin not accounted by THnSparse::GetNbins()
+	+ filled = filled cell in THnSparse i.e. bin accounted for by THnSparse::GetNbins() 
+	+ (0), (>0): Bin content, equal to zero and greater than 0 respectively
+
+	ST		SR		SA=SR/ST
+1. 	empty		empty		empty  (0)
+2.	filled (>0)	empty		empty  (0)
+3.	empty		filled (>0)	filled (0)
+4. 	filled (>0)	filled (>0)	filled (>0)
+
++ Note the following division specifics, which are used above, for THnSparse:
+	+ empty(0)/empty(0)    =empty(0)
+	+ empty(0)/filled(>0)  =empty(0)
+	+ filled(>0)/empty(0)  =filled(0)
+	+ filled(>0)/filled(>0)=filled(<0)
