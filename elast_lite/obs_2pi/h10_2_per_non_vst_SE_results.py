@@ -79,7 +79,7 @@ USAGE="h10_2_per_non_vst_SE_results expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SI
 #! *** Setup global variables ***
 EXPTS=['e1f','e16']
 SEQS=['ER','SR','ST']
-SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9','sim10','sim11','sim12','sim13']}
+SIMS={'e1f':['TBD'],'e16':['sim4','sim5','sim6','sim7','sim8','sim9','sim10','sim11','sim12','sim13','sim14','sim15']}
 #print EXPTS,SEQS,SIMS
 
 H10PATH='/home/trivedia/ongoing/h10lsts_local'
@@ -96,7 +96,9 @@ H10LSTS={
 ('e16','SR','sim10'):'%s/e16/sim/sim10/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
 ('e16','SR','sim11'):'%s/e16/sim/sim11/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
 ('e16','SR','sim12'):'%s/e16/sim/sim12/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
-('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_060717.lst'%(H10PATH)  #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim13'):'%s/e16/sim/sim13/h10_2_h10-skim-SS_060717.lst'%(H10PATH), #! h10_2_h10-skim-SS_081716.lst,h10_2_h10-skim-SS_031516.lst
+('e16','SR','sim14'):'%s/e16/sim/sim14/h10_2_h10-skim-SS_032318.lst'%(H10PATH),
+('e16','SR','sim15'):'%s/e16/sim/sim15/h10_2_h10-skim-SS_032318.lst'%(H10PATH)
 }
 #print H10LSTS
 DATE_ST={
@@ -111,6 +113,8 @@ DATE_ST={
 ('e16','sim11'):'032116',
 ('e16','sim12'):'032116',
 ('e16','sim13'):'032116',
+('e16','sim14'):'032318',
+('e16','sim15'):'032318'
 }
 
 #! *** Define WMIN,WMAX ***

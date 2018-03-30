@@ -110,22 +110,22 @@ print "OUTDIR=",OUTDIR
 
 #! Setup files that will be used to obtain ST data
 F_ST=OrderedDict()
-F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_122717/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_121517,lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
-F_ST['1D',"highQ2"]="%s/highQ2_SSBands_122717/cutsncors1/sim9_sim10_sim11_sim12/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_121517,highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417 
+F_ST['1D',"lowQ2"] ="%s/lowQ2_SSBands_032718/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13_sim14/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16 #! lowQ2_SSBands_122717, lowQ2_SSBands_121517,lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
+F_ST['1D',"highQ2"]="%s/highQ2_SSBands_032718/cutsncors1/sim9_sim10_sim11_sim12_sim15/Obs_1D_norm_EC_EF_SF/obs_1D.root"%OBSDIR_E16        #! highQ2_SSBands_122717,highQ2_SSBands_121517,highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417 
 
 F_ST['itg',"lowQ2"]=None
 F_ST['itg',"highQ2"]=None
 
-F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_122717/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_121517,lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
-F_ST['R2',"highQ2"]="%s/highQ2_SSBands_122717/cutsncors1/sim9_sim10_sim11_sim12/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_121517,highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417
+F_ST['R2',"lowQ2"] ="%s/lowQ2_SSBands_032718/cutsncors1/sim4_sim5_sim6_sim7_sim8_sim13_sim14/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16 #! lowQ2_SSBands_122717,  lowQ2_SSBands_121517,lowQ2_SSBands_080217,lowQ2_SSBands_071017, lowQ2_SSBands_061217, lowQ2_SSBands_092516, lowQ2_SSBands_061417
+F_ST['R2',"highQ2"]="%s/highQ2_SSBands_032718/cutsncors1/sim9_sim10_sim11_sim12_sim15/Obs_R2_EC_EF_ST/mthd_phi-proj-fit_NQ/obs_R2.root"%OBSDIR_E16        #! highQ2_SSBands_122717, highQ2_SSBands_121517,highQ2_SSBands_080217,highQ2_SSBands_071017,highQ2_SSBands_061217, highQ2_SSBands_092516, highQ2_SSBands_061417
 
 #! Setup files that will be used to get results
 F_RSLT=OrderedDict()
 F_RSLT['1D',"lowQ2"] =F_ST['1D',"lowQ2"]
 F_RSLT['1D',"highQ2"]=F_ST['1D',"highQ2"]
 
-F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_122817/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_121717,lowQ2_cmb_vst_SE_080317,lowQ2_cmb_vst_SE_071117, lowQ2_cmb_vst_SE_061317,lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
-F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_122817/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_121717,highQ2_cmb_vst_SE_080317,highQ2_cmb_vst_SE_071117,highQ2_cmb_vst_SE_061317,highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
+F_RSLT['itg',"lowQ2"] ="%s/SS/lowQ2_cmb_vst_SE_032818/Obs_itg.root"%OBSDIR_E16  #!lowQ2_cmb_vst_SE_122817, lowQ2_cmb_vst_SE_121717,lowQ2_cmb_vst_SE_080317,lowQ2_cmb_vst_SE_071117, lowQ2_cmb_vst_SE_061317,lowQ2_cmb_vst_SE_092716,  lowQ2_cmb_vst_SE_061517
+F_RSLT['itg',"highQ2"]="%s/SS/highQ2_cmb_vst_SE_032818/Obs_itg.root"%OBSDIR_E16 #!highQ2_cmb_vst_SE_122817,highQ2_cmb_vst_SE_121717,highQ2_cmb_vst_SE_080317,highQ2_cmb_vst_SE_071117,highQ2_cmb_vst_SE_061317,highQ2_cmb_vst_SE_092716, highQ2_cmb_vst_SE_061517
 
 F_RSLT['R2',"lowQ2"] =F_ST['R2',"lowQ2"]
 F_RSLT['R2',"highQ2"]=F_ST['R2',"highQ2"]

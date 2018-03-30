@@ -4,6 +4,7 @@ if ($HOST == "gothe14" || $HOST == "trivedia-laptop") then
   setenv H10DIR_EXP_E16_2 "/home/trivedia/data/e16/2pi/exp"
   setenv H10DIR_SIM_E16 "/data/trivedia/e16/2pi/sim"
   setenv H10DIR_SIM_E16_2 "/home/trivedia/data/e16/2pi/sim"
+  setenv H10DIR_SIM_E16_3 "/data1/trivedia/e16/2pi/sim"
   setenv H10SKIMDIR_EXP_E16 "${H10DIR_EXP_E16}/h10skim"
   setenv D2PIDIR_E16 "/data/trivedia/e16/2pi/d2pi"
   setenv D2PIDIR_EXP_E16 "${D2PIDIR_E16}/exp"

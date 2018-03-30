@@ -84,23 +84,23 @@ NQ2RANGES=2
 LQ2,HQ2=range(NQ2RANGES)
 #! Setup simulations
 ISIM=[0 for i in range(NQ2RANGES)]
-ISIM[LQ2] =[0,1,2,3,4,5]
-ISIM[HQ2]=[0,1,2,3]
+ISIM[LQ2] =[0,1,2,3,4,5,6]
+ISIM[HQ2]=[0,1,2,3,4]
 SIMNAME=[0 for i in range(NQ2RANGES)]
-SIMNAME[LQ2]=['sim4','sim4_sim5', 'sim4_sim5_sim6',  'sim4_sim5_sim6_sim7','sim4_sim5_sim6_sim7_sim8','sim4_sim5_sim6_sim7_sim8_sim13']
-SIMNAME[HQ2]=['sim9','sim9_sim10','sim9_sim10_sim11','sim9_sim10_sim11_sim12']
+SIMNAME[LQ2]=['sim4','sim4_sim5', 'sim4_sim5_sim6',  'sim4_sim5_sim6_sim7','sim4_sim5_sim6_sim7_sim8','sim4_sim5_sim6_sim7_sim8_sim13','sim4_sim5_sim6_sim7_sim8_sim13_sim14']
+SIMNAME[HQ2]=['sim9','sim9_sim10','sim9_sim10_sim11','sim9_sim10_sim11_sim12','sim9_sim10_sim11_sim12_sim15']
 NSIM=[0 for i in range(NQ2RANGES)]
 NSIM[LQ2]=len(ISIM[LQ2])
 NSIM[HQ2]=len(ISIM[HQ2])
 SIMPCNTG=[0 for i in range(NQ2RANGES)]
-SIMPCNTG[LQ2]=[16.7,33.3,50.0,66.7,83.3,100.0]
-SIMPCNTG[HQ2]=[25,50,75,100]
+SIMPCNTG[LQ2]=[14.3,28.6,42.8,57.1,71.4,85.7,100.0] #![16.7,33.3,50.0,66.7,83.3,100.0]
+SIMPCNTG[HQ2]=[20.0,40.0,60.0,80.0,100.0]#1[25,50,75,100]
 SIMFRCTN=[0 for i in range(NQ2RANGES)]
-SIMFRCTN[LQ2]=[0.17,0.33,0.50,0.67,0.83,1.00]
-SIMFRCTN[HQ2]=[0.25,0.50,0.75,1.00]
+SIMFRCTN[LQ2]=[0.14,0.28,0.43,0.57,0.71,0.86,1.0]#[0.17,0.33,0.50,0.67,0.83,1.00]
+SIMFRCTN[HQ2]=[0.20,0.40,0.60,0.80,1.0]#[0.25,0.50,0.75,1.00]
 SIMTOT=[0 for i in range(NQ2RANGES)]
-SIMTOT[LQ2]=['~6B']
-SIMTOT[HQ2]=['~4B']
+SIMTOT[LQ2]=['~7B']#['~6B']
+SIMTOT[HQ2]=['~5B']#['~4B']
 #! Finally setup and fill FYLD[q2r][sim],FO1D[q2r][sim],FOIT[q2r][sim]
 FYLD=[[0 for i in range(NSIM[LQ2])],[0 for i in range(NSIM[HQ2])]]
 FO1D=[[0 for i in range(NSIM[LQ2])],[0 for i in range(NSIM[HQ2])]]
@@ -112,15 +112,17 @@ for q2 in range(NQ2RANGES):
 	if q2==LQ2:
 		for isim in ISIM[LQ2]:
 			#if isim==0: continue #! data corrurpt. remaking. skip for now
-			if isim==0: date='102717'
-			else:       date='102617'
+			if   isim==0: date='032818'
+			#elif isim==6: date='032918'
+			else:         date='032918'
 			FYLD[q2][isim]=root_open('%s/lowQ2_SSBands_off_off_%s_%s/cutsncors1/%s/yield.root'%(os.environ['OBSDIR_E16'],SIMNAME[q2][isim],date,SIMNAME[q2][isim]),'r')
 			FO1D[q2][isim]=root_open('%s/lowQ2_SSBands_off_off_%s_%s/cutsncors1/%s/Obs_1D_norm/obs_1D.root'%(os.environ['OBSDIR_E16'],SIMNAME[q2][isim],date,SIMNAME[q2][isim]),'r')
 			FOIT[q2][isim]=root_open('%s/lowQ2_SSBands_off_off_%s_%s/cutsncors1/%s/Obs_Itg_Yld_norm/obs_itg_yld.root'%(os.environ['OBSDIR_E16'],SIMNAME[q2][isim],date,SIMNAME[q2][isim]),'r')
 	elif q2==HQ2:
 		for isim in ISIM[HQ2]:
-			if isim==0: date='102617'
-			else:       date='102717'
+			if   isim==4: date='033018'
+			#elif isim==4: date='032718'
+			else:         date='032918'
 			FYLD[q2][isim]=root_open('%s/highQ2_SSBands_off_off_%s_%s/cutsncors1/%s/yield.root'%(os.environ['OBSDIR_E16'],SIMNAME[q2][isim],date,SIMNAME[q2][isim]),'r')
 			FO1D[q2][isim]=root_open('%s/highQ2_SSBands_off_off_%s_%s/cutsncors1/%s/Obs_1D_norm/obs_1D.root'%(os.environ['OBSDIR_E16'],SIMNAME[q2][isim],date,SIMNAME[q2][isim]),'r')
 			FOIT[q2][isim]=root_open('%s/highQ2_SSBands_off_off_%s_%s/cutsncors1/%s/Obs_Itg_Yld_norm/obs_itg_yld.root'%(os.environ['OBSDIR_E16'],SIMNAME[q2][isim],date,SIMNAME[q2][isim]),'r')
@@ -136,8 +138,9 @@ PAD_MAP_1D=[(1,1,"M1"),   (2,3,'M2'),   (3,2,'M2'),
 		    (4,1,"THETA"),(5,3,'THETA'),(6,2,'THETA'),
 		    (7,1,"ALPHA"),(8,3,'ALPHA'),(9,2,'ALPHA')]
 
-#! Marker colors as per simulation stats: hot -> cold = low -> high
-CLRS=[ROOT.gROOT.ProcessLine("kBlue"),
+#! Marker colors as per simulation stats: inspired by ROOT's color pallette:hot -> cold = low -> high
+CLRS=[ROOT.gROOT.ProcessLine("kViolet-7"),
+      ROOT.gROOT.ProcessLine("kBlue"),
       ROOT.gROOT.ProcessLine("kCyan"),
       ROOT.gROOT.ProcessLine("kGreen"),
       ROOT.gROOT.ProcessLine("kYellow"),
@@ -145,8 +148,9 @@ CLRS=[ROOT.gROOT.ProcessLine("kBlue"),
       ROOT.gROOT.ProcessLine("kOrange"),
       ROOT.gROOT.ProcessLine("kRed")]
 
-#! Marker colors as per simulation stats: hot -> cold = low -> high
-CLRS_MPLT=['b',
+#! Marker colors as per simulation stats: to correlate with colors defined by ROOT's color pallette:hot -> cold = low -> high
+CLRS_MPLT=['rebeccapurple'
+           'b',
            'c',
            'g',
            'y',
