@@ -64,7 +64,7 @@ if [[ "$EXP" == "e1f" ]]; then
       MSSDIR=$E16D_EI
     elif [[ "$DTYP" == "sim" ]]; then
       MEMORY_SPACE="1500"
-      TIME="10"
+      TIME="20"
     fi
 fi
 
