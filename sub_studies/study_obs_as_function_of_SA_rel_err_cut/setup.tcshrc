@@ -1,0 +1,12 @@
+#--
+setenv STUDY_OBS_AS_FUNCTION_OF_SA_REL_ERR_CUT "${ANA2PI}/sub_studies/study_obs_as_function_of_SA_rel_err_cut"
+alias study_obs_as_function_of_SA_rel_err_cut 'cd ${STUDY_OBS_AS_FUNCTION_OF_SA_REL_ERR_CUT}'
+
+##- modify PATH
+#setenv PATH "${PATH}:${STUDY_OBS_AS_FUNCTION_OF_SA_REL_ERR_CUT}"
+
+##- modify PYTHONPATH
+#setenv PYTHONPATH "${PYTHONPATH}:${STUDY_OBS_AS_FUNCTION_OF_SA_REL_ERR_CUT}"
+
+##- Set up STUDY_OBS_AS_FUNCTION_OF_SA_REL_ERR_CUT
+setenv STUDY_OBS_AS_FUNCTION_OF_SA_REL_ERR_CUT "/data/trivedia/e16/study_obs_as_function_of_SA_rel_err_cut"
