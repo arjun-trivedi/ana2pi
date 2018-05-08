@@ -11,7 +11,8 @@ dbg=${1:-"False"}
 #dobs_1D $OBSDIR_E16/lowQ2_SSBands_080217/cutsncors1 sim4_sim5_sim6_sim7_sim8_sim13       norm_EC_EF_SF 2.00 3.00 1.400 2.125 e16 $dbg &
 #dobs_1D $OBSDIR_E16/lowQ2_SSBands_121517/cutsncors1 sim4_sim5_sim6_sim7_sim8_sim13       norm_EC_EF_SF 2.00 3.00 1.400 2.125 e16 $dbg &
 #dobs_1D $OBSDIR_E16/lowQ2_SSBands_122717/cutsncors1 sim4_sim5_sim6_sim7_sim8_sim13       norm_EC_EF_SF 2.00 3.00 1.400 2.125 e16 $dbg &
-dobs_1D $OBSDIR_E16/lowQ2_SSBands_032718/cutsncors1  sim4_sim5_sim6_sim7_sim8_sim13_sim14 norm_EC_EF_SF 2.00 3.00 1.400 2.125 e16 $dbg &
+#dobs_1D $OBSDIR_E16/lowQ2_SSBands_032718/cutsncors1  sim4_sim5_sim6_sim7_sim8_sim13_sim14 norm_EC_EF_SF 2.00 3.00 1.400 2.125 e16 $dbg &
+dobs_1D $OBSDIR_E16/lowQ2_SSBands_041718/cutsncors1  sim4_sim5_sim6_sim7_sim8_sim13_sim14 norm_EC_EF_SF 2.00 3.00 1.400 2.125 e16 $dbg &
 
 #! hQ2
 #dobs_1D $OBSDIR_E16/highQ2_SSBands_092516/cutsncors1 sim9_sim10_sim11_sim12         norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &
@@ -21,4 +22,5 @@ dobs_1D $OBSDIR_E16/lowQ2_SSBands_032718/cutsncors1  sim4_sim5_sim6_sim7_sim8_si
 #dobs_1D $OBSDIR_E16/highQ2_SSBands_080217/cutsncors1 sim9_sim10_sim11_sim12         norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &
 #dobs_1D $OBSDIR_E16/highQ2_SSBands_121517/cutsncors1 sim9_sim10_sim11_sim12         norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &
 #dobs_1D $OBSDIR_E16/highQ2_SSBands_122717/cutsncors1 sim9_sim10_sim11_sim12         norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &
-dobs_1D $OBSDIR_E16/highQ2_SSBands_032718/cutsncors1  sim9_sim10_sim11_sim12_sim15   norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &
+#dobs_1D $OBSDIR_E16/highQ2_SSBands_032718/cutsncors1  sim9_sim10_sim11_sim12_sim15   norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &
+dobs_1D $OBSDIR_E16/highQ2_SSBands_041718/cutsncors1  sim9_sim10_sim11_sim12_sim15   norm_EC_EF_SF 3.00 5.00 1.400 2.125 e16 $dbg &

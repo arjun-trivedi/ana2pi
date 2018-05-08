@@ -74,7 +74,7 @@ import disp_SS as tool_disp_SS#! for plot_SS
 	+ cumsiml: output created for every cumsim in cumsiml under jobtag/cumsim
 	+ date_of_existing_jobtag: date should be of existing jobtag since the program assumes that jobtag is going to be updated with, as set up currently in the code,for example, addition of a new simulation.
 '''
-USAGE="h10_2_per_non_vst_SE_results expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] systematic_effect date_of_existing_jobtag[=today's MMDDYY] skip_make_d2pi[=False] skip_dobs_R2[=False] acc_cut[=-1] acc_rel_err_cut[=-1]"
+USAGE="h10_2_per_non_vst_SE_results expt<=e1f/e16> Q2min Q2max idtfr cumsiml[=SIMS[EXPT]] systematic_effect acc_rel_err_cut[=-1] date_of_existing_jobtag[=today's MMDDYY] skip_make_d2pi[=False] skip_dobs_R2[=False] acc_cut[=-1]"
 
 #! *** Setup global variables ***
 EXPTS=['e1f','e16']
@@ -178,18 +178,21 @@ if len(sys.argv)>6:#i.e. SYSTEMATIC_EFFECT entered by user
 else:
 	sys.exit("Please enter SYSTEMATIC_EFFECT as per usage: %s"%USAGE)
 
+ACC_REL_ERR_CUT='-1'
+if len(sys.argv)>7: #! i.e. acc_rel_err_cut information entered by user
+	ACC_REL_ERR_CUT=sys.argv[7]
 
 PROC_NEW_JOBTAG=True
-if len(sys.argv)>7: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
-	DATE=sys.argv[7]
+if len(sys.argv)>8: #! i.e. date of existing jobtag entered by user i.e. update existing jobtag
+	DATE=sys.argv[8]
         PROC_NEW_JOBTAG=False
 else:
         DATE=datetime.datetime.now().strftime('%m%d%y')
 
-if len(sys.argv)>8: #! i.e. skip_make_d2pi information entered by user
-	if sys.argv[8]=="False":
+if len(sys.argv)>9: #! i.e. skip_make_d2pi information entered by user
+	if sys.argv[9]=="False":
 		SKIP_MAKE_D2PI=False
-	elif sys.argv[8]=="True":
+	elif sys.argv[9]=="True":
 		SKIP_MAKE_D2PI=True
 	else:
 		print "Please enter skip_make_d2pi=True or False only."
@@ -197,10 +200,10 @@ if len(sys.argv)>8: #! i.e. skip_make_d2pi information entered by user
 else:
 	SKIP_MAKE_D2PI=False
 
-if len(sys.argv)>9: #! i.e. skip_dobs_R2 information entered by user
-	if sys.argv[9]=="False":
+if len(sys.argv)>10: #! i.e. skip_dobs_R2 information entered by user
+	if sys.argv[10]=="False":
 		SKIP_DOBS_R2=False
-	elif sys.argv[9]=="True":
+	elif sys.argv[10]=="True":
 		SKIP_DOBS_R2=True
 	else:
 		print "Please enter skip_dobs_R2=True or False only."
@@ -208,13 +211,9 @@ if len(sys.argv)>9: #! i.e. skip_dobs_R2 information entered by user
 else:
 	SKIP_DOBS_R2=False
 
-ACC_CUT=-1
-if len(sys.argv)>10: #! i.e. acc_cut information entered by user
-	ACC_CUT=sys.argv[10]
-
-ACC_REL_ERR_CUT=-1
-if len(sys.argv)>11: #! i.e. acc_rel_err_cut information entered by user
-	ACC_REL_ERR_CUT=sys.argv[11]
+ACC_CUT='-1'
+if len(sys.argv)>11: #! i.e. acc_cut information entered by user
+	ACC_CUT=sys.argv[11]
 #! ******
 
 #! *** Set up some other global variables after getting user input *** 

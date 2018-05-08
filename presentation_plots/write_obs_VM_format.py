@@ -35,7 +35,7 @@ O1D,OIT,OR2=range(NOBS)
 OBSFILE=["Obs_1D/Obs_1D.root","Obs_itg/Obs_itg.root","Obs_R2/Obs_R2.root"]
 
 #! INDIR
-INDIR='%s/thesis_obs_norm_ST_shape_032818'%os.environ['OBSDIR_E162'] #! 122817,121817,111317,080317
+INDIR='%s/thesis_obs_norm_ST_shape_041818'%os.environ['OBSDIR_E162'] #! 032818,122817,121817,111317,080317
 #! Use the following when output of make_obs_thesis.py is in some debugging area
 #INDIR='%s/tmp/thesis_obs_norm_ST/dbg'%os.environ['OBSDIR_E163']
 #INDIR='%s/tmp/thesis_obs_norm_ST'%os.environ['OBSDIR_E163']
