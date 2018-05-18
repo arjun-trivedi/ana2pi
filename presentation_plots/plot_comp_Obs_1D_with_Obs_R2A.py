@@ -29,7 +29,8 @@ PAD_MAP['R2']=[(1,1,"M1"),    (2,3,'M1'),    (3,2,'M1'),
 R2_NAMED={'A':'R2_{T}+R2_{L}','B':'R2^{c}_{LT}','C':'R2^{c}_{TT}','D':'R2^{s}_{LT}','E':'R2^{s}_{TT}'}
 
 fobs=OrderedDict()
-OBSDIR="%s/thesis_obs_norm_ST_shape_122817"%os.environ['OBSDIR_E162']
+#OBSDIR="%s/thesis_obs_norm_ST_shape_122817"%os.environ['OBSDIR_E162']
+OBSDIR="%s/thesis_obs_norm_ST_shape_041818"%os.environ['OBSDIR_E162']
 fobs['1D']=ROOT.TFile("%s/lowQ2/Obs_1D/Obs_1D.root"%OBSDIR,"READ")
 fobs['R2']=ROOT.TFile("%s/lowQ2/Obs_R2/Obs_R2.root"%OBSDIR,"READ")
 

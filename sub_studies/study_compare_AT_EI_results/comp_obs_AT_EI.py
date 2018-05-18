@@ -29,7 +29,8 @@ DTYP_TITLE=["This analysis","E. Isupov"]
 
 INDIR=[0 for i in range(NDTYP)]
 #INDIR[AT]='%s/thesis_obs_norm_ST_shape_080317'%os.environ['OBSDIR_E162']
-INDIR[AT]='%s/thesis_obs_norm_ST_shape_122817'%os.environ['OBSDIR_E162']
+#INDIR[AT]='%s/thesis_obs_norm_ST_shape_122817'%os.environ['OBSDIR_E162']
+INDIR[AT]='%s/thesis_obs_norm_ST_shape_041818'%os.environ['OBSDIR_E162']
 INDIR[EI]='%s/EI_results'%os.environ['OBSDIR_E162']
 
 CLRS=[ROOT.gROOT.ProcessLine("kBlue"),ROOT.gROOT.ProcessLine("kBlack")]
